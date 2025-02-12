@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/utils/thems/theme.dart';
+
 class ServicesScreen extends StatelessWidget {
   final List<Map<String, String>> services = const [
     {"icon": "assets/icons/business.png", "title": "Business"},
@@ -43,16 +45,18 @@ class ServicesScreen extends StatelessWidget {
             itemCount: services.length,
             itemBuilder: (context, index) {
               return Container(
+                height: 140,
                 margin: EdgeInsets.only(bottom: 12),
                 padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 10,
-                      offset: Offset(0, 3),
+                      color: Colors.black.withOpacity(0.09),
+                      offset: Offset(0, 2.64),
+                      blurRadius: 33.05,
+                      spreadRadius: 0,
                     ),
                   ],
                 ),
@@ -60,10 +64,12 @@ class ServicesScreen extends StatelessWidget {
                   children: [
                     // Icon
                     Container(
+                      height: 64,
+                      width: 64,
                       padding: EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         color: Color(0xFFD9183B),
-                        borderRadius: BorderRadius.circular(50),
+                        shape: BoxShape.circle,
                       ),
                       child: Image.asset(
                         services[index]["icon"]!,
@@ -72,27 +78,25 @@ class ServicesScreen extends StatelessWidget {
                         color: Colors.white,
                       ),
                     ),
-                    SizedBox(width: 16),
+                    SizedBox(width: 20),
                     // Text Info
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            services[index]["title"]!,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          Text(services[index]["title"]!,
+                              style: defaultTextStyle.copyWith(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w500,
+                              )),
                           SizedBox(height: 4),
                           Text(
-                            "Lorem Ipsum is simply dummy text of the printing",
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
+                              "Lorem Ipsum is simply dummy text of the printing",
+                              style: defaultTextStyle.copyWith(
+                                fontSize: 14,
+                                color: Colors.grey,
+                                fontWeight: FontWeight.w300,
+                              )),
                           SizedBox(height: 8),
                           GestureDetector(
                             onTap: () {},
@@ -118,6 +122,7 @@ class ServicesScreen extends StatelessWidget {
                         ],
                       ),
                     ),
+                    SizedBox(width: 40),
                   ],
                 ),
               );

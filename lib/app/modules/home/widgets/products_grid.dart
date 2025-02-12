@@ -2,6 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:get/get.dart';
+
+import 'product_detail.dart';
 
 class ProductGrid extends StatelessWidget {
   final List<Map<String, dynamic>> products = const [
@@ -46,36 +49,41 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 310,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(13.22),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.09),
-            offset: Offset(0, 2.64),
-            blurRadius: 33.05,
-            spreadRadius: 0,
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(13.22)),
-            child: Image.asset(
-              index.isEven
-                  ? 'assets/images/beer2.png'
-                  : 'assets/images/beer.png',
-              fit: BoxFit.fill,
-              width: double.infinity,
-              height: 140,
+    return GestureDetector(
+      onTap: () {
+        Get.to(() => ProductDetailScreen());
+      },
+      child: Container(
+        height: 310,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(13.22),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.09),
+              offset: Offset(0, 2.64),
+              blurRadius: 33.05,
+              spreadRadius: 0,
             ),
-          ),
-          LightningDealCard()
-        ],
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(13.22)),
+              child: Image.asset(
+                index.isEven
+                    ? 'assets/images/beer2.png'
+                    : 'assets/images/beer.png',
+                fit: BoxFit.fill,
+                width: double.infinity,
+                height: 140,
+              ),
+            ),
+            LightningDealCard()
+          ],
+        ),
       ),
     );
   }

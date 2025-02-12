@@ -3,6 +3,7 @@ import '../../../core/widgets/base.dart';
 import '../widgets/categories.dart';
 import '../widgets/catnavbar.dart';
 
+import '../widgets/contest.dart';
 import '../widgets/job_searchbox.dart';
 import '../widgets/notice_promotion.dart';
 import '../widgets/offer_bar.dart';
@@ -25,7 +26,9 @@ class HomeViewBody extends StatelessWidget {
       ProductGrid(),
       OfferBannerWidget(),
       JobSearchBox(),
-      ServicesScreen()
+      ServicesScreen(),
+      ContestScreen(),
+      SizedBox(height: 150),
     ]);
   }
 }
