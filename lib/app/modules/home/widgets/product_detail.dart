@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/core/utils/thems/theme.dart';
+import 'package:tjara/app/routes/app_pages.dart';
 
 import '../../../core/widgets/appbar.dart';
 import 'products_grid.dart';
@@ -467,50 +468,56 @@ class ProductDetailsSection extends StatelessWidget {
           ),
         ),
         SizedBox(height: 15),
-        Container(
-          height: 157,
-          padding: EdgeInsets.all(30),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CircleAvatar(
-                radius: 32,
-                backgroundColor: Colors.red,
-                child: Text(
-                  "ECS",
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
+        GestureDetector(
+          onTap: () {
+            Get.toNamed(Routes.STORE_PAGE);
+          },
+          child: Container(
+            height: 157,
+            padding: EdgeInsets.all(30),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 32,
+                  backgroundColor: Colors.red,
+                  child: Text(
+                    "ECS",
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
                 ),
-              ),
-              SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "ECS Footwear",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    "800 Reviews",
-                    style: TextStyle(color: Colors.grey.shade600),
-                  ),
-                  Text(
-                    "Seller's other items",
-                    style: TextStyle(
-                        color: Colors.blue, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    "Contact seller",
-                    style: TextStyle(
-                        color: Colors.blue, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ],
+                SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "ECS Footwear",
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      "800 Reviews",
+                      style: TextStyle(color: Colors.grey.shade600),
+                    ),
+                    Text(
+                      "Seller's other items",
+                      style: TextStyle(
+                          color: Colors.blue, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      "Contact seller",
+                      style: TextStyle(
+                          color: Colors.blue, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
         SizedBox(height: 15),

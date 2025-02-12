@@ -1,15 +1,22 @@
 import 'package:get/get.dart';
 
+import '../modules/blog/bindings/blog_binding.dart';
+import '../modules/blog/views/blog_view.dart';
 import '../modules/categories/bindings/categories_binding.dart';
 import '../modules/categories/views/categories_view.dart';
+import '../modules/checkout/bindings/checkout_binding.dart';
+import '../modules/checkout/views/checkout_view.dart';
 import '../modules/dashboard/bindings/dashboard_binding.dart';
 import '../modules/dashboard/views/dashboard_view.dart';
 import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
+import '../modules/home/widgets/shopping_cart.dart';
 import '../modules/my_account/bindings/my_account_binding.dart';
 import '../modules/my_account/views/my_account_view.dart';
 import '../modules/my_cart/bindings/my_cart_binding.dart';
 import '../modules/my_cart/views/my_cart_view.dart';
+import '../modules/store_page/bindings/store_page_binding.dart';
+import '../modules/store_page/views/store_page_view.dart';
 
 // ignore_for_file: constant_identifier_names
 
@@ -52,6 +59,25 @@ class AppPages {
       name: _Paths.DASHBOARD,
       page: () => const DashboardView(),
       binding: DashboardBinding(),
+    ),
+    GetPage(
+      name: _Paths.ShoppingCartScreen,
+      page: () => const ShoppingCartScreen(),
+    ),
+    GetPage(
+      name: _Paths.CHECKOUT,
+      page: () => const CheckoutView(),
+      binding: CheckoutBinding(),
+    ),
+    GetPage(
+      name: _Paths.BLOG,
+      page: () => const BlogView(),
+      binding: BlogBinding(),
+    ),
+    GetPage(
+      name: _Paths.STORE_PAGE,
+      page: () => const StorePageView(),
+      binding: StorePageBinding(),
     ),
   ];
 }

@@ -81,7 +81,7 @@ class _CategorySectionState extends State<CategorySection> {
                   },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Container(
+                    child: SizedBox(
                       width: 84,
                       child: Column(
                         children: [
@@ -159,13 +159,12 @@ class _CategorySectionState extends State<CategorySection> {
           padding: const EdgeInsets.symmetric(vertical: 20),
           child: Align(
             alignment: Alignment.center,
-            child: Container(
+            child: SizedBox(
               width: 250,
               child: LinearProgressIndicator(
                 value: _scrollProgress, // Now starts at 0.2
                 backgroundColor: Colors.grey.shade300,
                 color: Colors.red,
-
                 minHeight: 4,
                 borderRadius: BorderRadius.circular(5),
               ),

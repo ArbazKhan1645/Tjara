@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:tjara/app/core/utils/thems/theme.dart';
+import 'package:tjara/app/routes/app_pages.dart';
 
 import '../../../core/widgets/appbar.dart';
 import 'products_grid.dart';
@@ -60,6 +62,7 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
               ),
             ),
             CheckoutScreen(),
+            SizedBox(height: 50),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
@@ -121,6 +124,131 @@ class CheckoutScreen extends StatelessWidget {
           ),
           SizedBox(height: 10),
           _buildOrderSummary(),
+          SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.all(0.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Secure logistics",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: "Package safety\n",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
+                        ),
+                      ),
+                      TextSpan(
+                        text: "Full refund for your damaged or lost package.",
+                        style: TextStyle(fontSize: 14, color: Colors.black),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: "Delivery guaranteed\n",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
+                        ),
+                      ),
+                      TextSpan(
+                        text: "Accurate and precise order tracking.",
+                        style: TextStyle(fontSize: 14, color: Colors.black),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 16),
+                Text(
+                  "Purchase protection",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  "Shop confidently on Temu knowing that if something goes wrong, we’ve always got your back.",
+                  style: TextStyle(fontSize: 14, color: Colors.black),
+                ),
+                SizedBox(height: 16),
+                Text(
+                  "Customer service",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  "Our customer service team is always here if you need help.",
+                  style: TextStyle(fontSize: 14, color: Colors.black),
+                ),
+                SizedBox(height: 32),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 32,
+                          backgroundColor: Colors.grey.shade300,
+                          child: Icon(Icons.question_answer,
+                              color: Colors.green, size: 32),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          "FAQ",
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red),
+                        ),
+                      ],
+                    ),
+                    SizedBox(width: 32),
+                    Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 32,
+                          backgroundColor: Colors.grey.shade300,
+                          child: Icon(Icons.chat, color: Colors.blue, size: 32),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          "Contact Us",
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -181,7 +309,7 @@ class CheckoutScreen extends StatelessWidget {
               fit: BoxFit.cover,
             ),
           ),
-          SizedBox(width: 10),
+          SizedBox(width: 5),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,6 +320,7 @@ class CheckoutScreen extends StatelessWidget {
                         fontWeight: FontWeight.w400, fontSize: 14)),
                 Text('Color Family: Mustard  |  Size: S',
                     style: TextStyle(fontSize: 12, color: Colors.grey)),
+                SizedBox(height: 10),
                 Row(
                   children: [
                     Text('\$78',
@@ -205,9 +334,16 @@ class CheckoutScreen extends StatelessWidget {
                             fontSize: 12,
                             color: Colors.grey,
                             decoration: TextDecoration.lineThrough)),
-                    SizedBox(width: 5),
-                    Text('-65%',
-                        style: TextStyle(fontSize: 12, color: Colors.red)),
+                    SizedBox(width: 15),
+                    Container(
+                      decoration: BoxDecoration(color: Colors.red.shade100),
+                      height: 25,
+                      width: 50,
+                      child: Center(
+                        child: Text('-65%',
+                            style: TextStyle(fontSize: 12, color: Colors.red)),
+                      ),
+                    ),
                   ],
                 ),
                 SizedBox(height: 5),
@@ -216,12 +352,12 @@ class CheckoutScreen extends StatelessWidget {
                     Container(
                       padding: EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade500)),
+                          border: Border.all(color: Colors.grey.shade300)),
                       child: Row(
                         children: [
                           Container(
                             decoration:
-                                BoxDecoration(color: Colors.grey.shade300),
+                                BoxDecoration(color: Colors.grey.shade200),
                             height: 25,
                             width: 25,
                             child: Center(
@@ -236,7 +372,7 @@ class CheckoutScreen extends StatelessWidget {
                           SizedBox(width: 10),
                           Container(
                             decoration:
-                                BoxDecoration(color: Colors.grey.shade300),
+                                BoxDecoration(color: Colors.grey.shade200),
                             height: 25,
                             width: 25,
                             child: Center(
@@ -316,7 +452,9 @@ class CheckoutScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
               child: InkWell(
                 borderRadius: BorderRadius.circular(10),
-                onTap: () {},
+                onTap: () {
+                  Get.toNamed(Routes.CHECKOUT);
+                },
                 child: Container(
                   width: double.infinity,
                   padding: EdgeInsets.symmetric(vertical: 15),
@@ -332,7 +470,7 @@ class CheckoutScreen extends StatelessWidget {
                 ),
               ),
             ),
-          )
+          ),
         ],
       ),
     );
