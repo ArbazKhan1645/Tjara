@@ -4,45 +4,61 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
 
+import '../../../models/products/products_model.dart';
+import '../controllers/home_controller.dart';
 import 'product_detail.dart';
 
-class ProductGrid extends StatelessWidget {
-  final List<Map<String, dynamic>> products = const [
-    {"name": "Product 1", "price": 15.20, "oldPrice": 16.20},
-    {"name": "Product 2", "price": 15.20, "oldPrice": 16.20},
-    {"name": "Product 1", "price": 15.20, "oldPrice": 16.20},
-    {"name": "Product 2", "price": 15.20, "oldPrice": 16.20},
-    {"name": "Product 1", "price": 15.20, "oldPrice": 16.20},
-    {"name": "Product 2", "price": 15.20, "oldPrice": 16.20},
-    {"name": "Product 1", "price": 15.20, "oldPrice": 16.20},
-    {"name": "Product 2", "price": 15.20, "oldPrice": 16.20},
-    {"name": "Product 1", "price": 15.20, "oldPrice": 16.20},
-    {"name": "Product 2", "price": 15.20, "oldPrice": 16.20},
-  ];
-
+class ProductGrid extends StatefulWidget {
   const ProductGrid({super.key});
 
   @override
+  State<ProductGrid> createState() => _ProductGridState();
+}
+
+class _ProductGridState extends State<ProductGrid> {
+  final HomeController _homeController = Get.put(HomeController());
+
+  @override
+  void initState() {
+    super.initState();
+    _homeController
+        .fetchProducts(); // Fetch products when the widget is initialized
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-      child: MasonryGridView.count(
-        shrinkWrap: true,
-        physics: NeverScrollableScrollPhysics(),
-        crossAxisCount: 2,
-        mainAxisSpacing: 20,
-        crossAxisSpacing: 10,
-        itemCount: products.length,
-        itemBuilder: (context, index) {
-          return ProductCard(product: products[index], index: index);
-        },
-      ),
+    return GetBuilder<HomeController>(
+      builder: (controller) {
+        if (controller.products.value.products!.data!.isEmpty) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (controller.products.value.products!.data!.isEmpty) {
+          return const Center(child: Text('No products available'));
+        }
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          child: MasonryGridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            mainAxisSpacing: 20,
+            crossAxisSpacing: 10,
+            itemCount: controller.products.value.products!.data!.length,
+            itemBuilder: (context, index) {
+              final product = controller.products.value.products!.data![index];
+              return ProductCard(product: product, index: index);
+            },
+          ),
+        );
+      },
     );
   }
 }
 
 class ProductCard extends StatelessWidget {
-  final Map<String, dynamic> product;
+  final Datum product; // Assuming Product is your model class
   final int index;
 
   const ProductCard({super.key, required this.product, required this.index});
@@ -51,17 +67,17 @@ class ProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Get.to(() => ProductDetailScreen());
+        Get.offAll(() => ProductDetailScreen(product: product));
       },
       child: Container(
-        height: 310,
+        height: 330,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(13.22),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.09),
-              offset: Offset(0, 2.64),
+              offset: const Offset(0, 2.64),
               blurRadius: 33.05,
               spreadRadius: 0,
             ),
@@ -71,17 +87,27 @@ class ProductCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(13.22)),
-              child: Image.asset(
-                index.isEven
-                    ? 'assets/images/beer2.png'
-                    : 'assets/images/beer.png',
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(13.22)),
+              child: Image.network(
+                product.thumbnail?.media?.url ??
+                    'moj', // Assuming your product model has an imageUrl field
                 fit: BoxFit.fill,
                 width: double.infinity,
                 height: 140,
+                errorBuilder: (context, error, stackTrace) {
+                  return Image.asset(
+                    index.isEven
+                        ? 'assets/images/beer2.png'
+                        : 'assets/images/beer.png',
+                    fit: BoxFit.fill,
+                    width: double.infinity,
+                    height: 140,
+                  );
+                },
               ),
             ),
-            LightningDealCard()
+            LightningDealCard(product: product),
           ],
         ),
       ),
@@ -90,7 +116,8 @@ class ProductCard extends StatelessWidget {
 }
 
 class LightningDealCard extends StatelessWidget {
-  const LightningDealCard({super.key});
+  const LightningDealCard({super.key, required this.product});
+  final Datum product; // Assuming Product is your model class
 
   @override
   Widget build(BuildContext context) {
@@ -148,10 +175,10 @@ class LightningDealCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Store Name",
+                        product.shop?.shop?.name ?? '',
                         style: TextStyle(
                           color: Colors.green,
-                          fontSize: 14,
+                          fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -173,23 +200,24 @@ class LightningDealCard extends StatelessWidget {
                   ),
                   SizedBox(height: 5),
                   Text(
-                    "Product Name Here",
+                    product.name.toString(),
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   SizedBox(height: 5),
                   Row(
                     children: [
-                      Text(
-                        "\$15.20",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
-                          decoration: TextDecoration.lineThrough,
+                      if (product.isDiscountProduct == true)
+                        Text(
+                          "\$${(product.price ?? 0).toString()}",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                            decoration: TextDecoration.lineThrough,
+                          ),
                         ),
-                      ),
                       SizedBox(width: 5),
                       Text(
-                        "\$15.20",
+                        "\$${(product.price ?? 0).toString()}",
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,

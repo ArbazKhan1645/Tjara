@@ -12,22 +12,15 @@ class PersistentCacheManager extends CacheManager {
             stalePeriod: const Duration(days: 90), maxNrOfCacheObjects: 500));
 }
 
-Future<void> prefetchMovieImages(List<String> posterPaths) async {
-  final cacheManager = PersistentCacheManager();
-  for (String path in posterPaths) {
-    final imageUrl = 'https://image.tmdb.org/t/p/w500$path';
+Future<void> prefetchImage(String imageUrl) async {
+  try {
+    final cacheManager = PersistentCacheManager();
     final fileInfo = await cacheManager.getFileFromCache(imageUrl);
+
     if (fileInfo == null) {
       await cacheManager.downloadFile(imageUrl);
     }
-  }
-}
-
-Future<void> prefetchMovieImage(String posterPaths) async {
-  final cacheManager = PersistentCacheManager();
-  final imageUrl = 'https://image.tmdb.org/t/p/w500$posterPaths';
-  final fileInfo = await cacheManager.getFileFromCache(imageUrl);
-  if (fileInfo == null) {
-    await cacheManager.downloadFile(imageUrl);
+  } on Exception catch (e) {
+    print(e);
   }
 }

@@ -9,7 +9,7 @@ import 'package:retry/retry.dart';
 import '../core/utils/helpers/api_exceptions.dart';
 import '../data/configs/api_configs.dart';
 import '../core/locators/cache_images.dart';
-import '../models/phones_model/imei_model.dart';
+import '../models/categories/categories_model.dart';
 import '../models/users_model.dart/customer_models.dart';
 import '../services/app/app_service.dart';
 import 'package:dio/dio.dart';
@@ -20,7 +20,6 @@ import 'package:get/get.dart';
 
 class NetworkRepository {
   final Dio _dio;
-  final AppService _appService = AppService.instance;
 
   NetworkRepository()
       : _dio = Dio(BaseOptions(
@@ -85,26 +84,5 @@ class NetworkRepository {
     } catch (e) {
       throw ApiException('Unexpected error: $e');
     }
-  }
-}
-
-callApiKing(String imei) async {
-  final repository = NetworkRepository();
-
-  try {
-    final basicImeiCheck = await repository.fetchData<ImeiCheckResponse>(
-      url:
-          'https://dash.imei.info/api/check/0/?API_KEY=${ApiConfig.api_key}&imei=$imei',
-      fromJson: (json) => ImeiCheckResponse.fromJson(json),
-    );
-
-    print(
-        "Customer: ${basicImeiCheck.result.brandName}, Age: ${basicImeiCheck.result.model}");
-  } catch (e) {
-    Get.showSnackbar(GetSnackBar(
-      title: 'Error',
-      message: e.toString(),
-    ));
-    print("Error: $e");
   }
 }

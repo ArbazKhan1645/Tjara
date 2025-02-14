@@ -4,11 +4,13 @@ import 'package:tjara/app/core/utils/thems/theme.dart';
 import 'package:tjara/app/routes/app_pages.dart';
 
 import '../../../core/widgets/appbar.dart';
+import '../../../models/products/products_model.dart';
 import 'products_grid.dart';
 import 'shopping_cart.dart';
 
 class ProductDetailScreen extends StatefulWidget {
-  const ProductDetailScreen({super.key});
+  const ProductDetailScreen({super.key, required this.product});
+  final Datum product; // Assuming Product is your model class
 
   @override
   _ProductDetailScreenState createState() => _ProductDetailScreenState();
@@ -19,20 +21,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int selectedColorIndex = 0;
   int selectedImageIndex = 0;
 
-  List<String> imageUrls = [
-    'assets/images/shoes.png',
-    'assets/images/shoes.png',
-    'assets/images/shoes.png',
-    'assets/images/shoes.png',
-    'assets/images/shoes.png',
-    'assets/images/shoes.png',
-    'assets/images/shoes.png',
-    'assets/images/shoes.png',
-    'assets/images/shoes.png',
-    'assets/images/shoes.png',
-    'assets/images/shoes.png',
-    'assets/images/shoes.png'
-  ];
+  late List<String> imageUrls = List.generate(
+          7, (index) => widget.product.thumbnail?.media?.url ?? ''.toString())
+      .toList();
   List<int> sizes = [34, 43, 44, 55, 33, 23];
   List<Color> colorsSubp = [
     Colors.black,
@@ -77,7 +68,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ),
                     ],
                     image: DecorationImage(
-                      image: AssetImage(imageUrls[selectedImageIndex]),
+                      image: NetworkImage(
+                          widget.product.thumbnail?.media?.url ??
+                              ''.toString()),
                       fit: BoxFit.fill,
                     ),
                   ),
@@ -112,7 +105,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ),
                           borderRadius: BorderRadius.circular(8),
                           image: DecorationImage(
-                            image: AssetImage(imageUrls[index]),
+                            image: NetworkImage(imageUrls[index]),
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -128,8 +121,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 10),
-                  Text(
-                      "Men's Knit Breathable Lace Running Shoes, Lightweight Comfy Sneaker, Spring And Summer",
+                  Text(widget.product.name.toString(),
                       style: defaultTextStyle.copyWith(
                           fontSize: 20, fontWeight: FontWeight.w500)),
                   Row(
@@ -154,14 +146,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   SizedBox(height: 5),
                   Row(
                     children: [
-                      Text("\$10.20",
-                          style: defaultTextStyle.copyWith(
-                              fontWeight: FontWeight.w400,
-                              fontSize: 18,
-                              decoration: TextDecoration.lineThrough,
-                              color: Color(0xff374856))),
+                      if (widget.product.isDiscountProduct == true)
+                        Text("\$${(widget.product.price ?? 0).toString()}",
+                            style: defaultTextStyle.copyWith(
+                                fontWeight: FontWeight.w400,
+                                fontSize: 18,
+                                decoration: TextDecoration.lineThrough,
+                                color: Color(0xff374856))),
                       SizedBox(width: 5),
-                      Text("\$15.20",
+                      Text("\$${(widget.product.price ?? 0).toString()}",
                           style: defaultTextStyle.copyWith(
                               fontWeight: FontWeight.w700,
                               fontSize: 25,

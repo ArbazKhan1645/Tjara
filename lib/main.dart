@@ -6,6 +6,7 @@ import 'app/core/locators/service_locator.dart';
 import 'app/core/utils/helpers/logger.dart';
 import 'app/core/utils/thems/theme.dart';
 import 'app/core/widgets/global_errorwidget.dart';
+
 import 'app/routes/app_pages.dart';
 
 Future<void> main() async {
@@ -31,6 +32,7 @@ Future<void> main() async {
 Future<void> _initializeApp() async {
   initDependencies();
   AppLogger.info('initialized');
+  // fetchCategoryApi();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 }
 
