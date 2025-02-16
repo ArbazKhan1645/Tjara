@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../repo/network_repository.dart';
 
 class DashboardController extends GetxController {
   RxInt selectedIndex = 0.obs;

@@ -18,7 +18,6 @@ class _CategoryNavBarState extends State<CategoryNavBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color.fromRGBO(233, 233, 233, 1),
       height: 45,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,

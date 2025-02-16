@@ -6,22 +6,18 @@ import 'app/core/locators/service_locator.dart';
 import 'app/core/utils/helpers/logger.dart';
 import 'app/core/utils/thems/theme.dart';
 import 'app/core/widgets/global_errorwidget.dart';
-
 import 'app/routes/app_pages.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   FlutterError.onError = (FlutterErrorDetails details) {
     AppLogger.error(details.toString());
     FlutterError.presentError(details);
   };
-
   PlatformDispatcher.instance.onError = (error, stack) {
     AppLogger.error('Async error: $error');
     return true;
   };
-
   ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
     return GlobalErrorWidget(errorDetails: errorDetails);
   };
@@ -32,13 +28,11 @@ Future<void> main() async {
 Future<void> _initializeApp() async {
   initDependencies();
   AppLogger.info('initialized');
-  // fetchCategoryApi();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(

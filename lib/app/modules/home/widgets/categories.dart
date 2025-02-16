@@ -1,7 +1,9 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../../core/locators/cache_images.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shimmer/shimmer.dart';
 import '../controllers/home_controller.dart';
 
@@ -82,19 +84,12 @@ class _CategorySectionState extends State<CategorySection> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.all(20.0),
-            child: Text(
-              'All Categories',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-            ),
-          ),
           SizedBox(
-            height: 250,
             child: SingleChildScrollView(
               controller: _scrollController,
               scrollDirection: Axis.horizontal,
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _CategoryRow(
                     categories: topCategories,
@@ -177,7 +172,9 @@ class _CategoryItem extends StatelessWidget {
               width: 84,
               child: Column(
                 children: [
-                  _CategoryImage(imageUrl: category['icon']!),
+                  _CategoryImage(
+                      key: ValueKey('image_${category["icon"]}'),
+                      imageUrl: category['icon']!),
                   const SizedBox(height: 5),
                   Text(
                     category["name"]!,
@@ -200,22 +197,72 @@ class _CategoryItem extends StatelessWidget {
   }
 }
 
-class _CategoryImage extends StatelessWidget {
-  const _CategoryImage({
-    required this.imageUrl,
-  });
+class _CategoryImage extends StatefulWidget {
+  const _CategoryImage({super.key, required this.imageUrl});
 
   final String imageUrl;
 
   @override
+  State<_CategoryImage> createState() => _CategoryImageState();
+}
+
+class _CategoryImageState extends State<_CategoryImage> {
+  bool isHovered = false;
+  bool isTapped = false;
+
+  @override
   Widget build(BuildContext context) {
-    return CachedNetworkImage(
-      imageUrl: imageUrl,
-      cacheManager: PersistentCacheManager(),
-      imageBuilder: (context, imageProvider) =>
-          _buildCircularImage(imageProvider),
-      errorWidget: (context, url, error) => _buildErrorWidget(),
-      placeholder: (context, url) => _buildShimmer(),
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: isHovered || isTapped
+            ? [
+                BoxShadow(
+                    color: Colors.red.withOpacity(0.50),
+                    // offset: const Offset(0, 0),
+                    blurRadius: 0.10,
+                    spreadRadius: 0.5)
+              ]
+            : null,
+      ),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => isHovered = true),
+        onExit: (_) => setState(() => isHovered = false),
+        child: GestureDetector(
+          onTapDown: (_) => setState(() => isTapped = true),
+          onTapUp: (_) => setState(() => isTapped = false),
+          onTapCancel: () => setState(() => isTapped = false),
+          child: TweenAnimationBuilder<double>(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+            tween: Tween<double>(
+              begin: 1.0,
+              end: isTapped ? 0.85 : (isHovered ? 0.85 : 1.0),
+            ),
+            builder: (context, scale, child) {
+              return Transform.scale(
+                scale: scale,
+                child: Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    border: Border.all(color: Color(0xffD21642), width: 2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: CachedNetworkImage(
+                    imageUrl: widget.imageUrl,
+                    imageBuilder: (context, imageProvider) =>
+                        _buildCircularImage(imageProvider),
+                    errorWidget: (context, url, error) => _buildErrorWidget(),
+                    placeholder: (context, url) => _buildShimmer(),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
     );
   }
 
@@ -248,6 +295,19 @@ class _CategoryImage extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildShimmer() {
+    return ClipOval(
+      child: Container(
+        width: 74,
+        height: 74,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.grey,
+        ),
+      ).animate().fade(duration: 500.ms),
     );
   }
 }

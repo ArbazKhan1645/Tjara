@@ -11,10 +11,12 @@ class HomeView extends GetView<HomeController> {
     return GetBuilder<HomeController>(
         init: HomeController(),
         builder: (controller) {
-          return Scaffold(
-              backgroundColor: Colors.white,
-              appBar: CustomAppBar(),
-              body: HomeViewBody());
+          return SafeArea(
+            child: Scaffold(
+                backgroundColor: Colors.white,
+                appBar: CustomAppBar(),
+                body: HomeViewBody()),
+          );
         });
   }
 }

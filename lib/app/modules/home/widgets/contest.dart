@@ -31,8 +31,9 @@ class ContestScreen extends StatelessWidget {
               ],
             ),
             SizedBox(height: 30),
-            Container(
+            SizedBox(
               child: ListView.separated(
+                physics: NeverScrollableScrollPhysics(),
                 separatorBuilder: (context, index) =>
                     const SizedBox(height: 20),
                 itemCount: 2,

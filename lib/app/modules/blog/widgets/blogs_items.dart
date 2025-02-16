@@ -8,6 +8,7 @@ class BlogListView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView.separated(
         shrinkWrap: true,
+        physics: NeverScrollableScrollPhysics(),
         separatorBuilder: (context, index) {
           return SizedBox(height: 15);
         },

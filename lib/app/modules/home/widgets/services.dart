@@ -44,6 +44,7 @@ class ServicesScreen extends StatelessWidget {
           // Service List
           ListView.builder(
             shrinkWrap: true,
+             physics: NeverScrollableScrollPhysics(),
             itemCount: services.length,
             itemBuilder: (context, index) {
               return GestureDetector(

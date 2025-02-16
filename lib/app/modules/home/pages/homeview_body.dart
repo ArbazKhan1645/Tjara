@@ -19,7 +19,7 @@ class HomeViewBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return CommonBaseBodyScreen(screens: [
       CategoryNavBar(),
-      PromoBanner(),
+      // PromoBanner(),
       SafePaymentButton(),
       CategorySection(),
       ProductNavBar(),
