@@ -6,6 +6,7 @@ import 'package:rxdart/rxdart.dart';
 import '../../../core/locators/cache_images.dart';
 import '../../../models/categories/categories_model.dart';
 import '../../../models/products/products_model.dart';
+import '../../../models/products/single_product_model.dart';
 import '../../../repo/network_repository.dart';
 import '../../../services/app/app_service.dart';
 
@@ -103,7 +104,7 @@ class HomeController extends GetxController {
   }
 
   Future<void> fetchProducts() async {
-    final url = 'https://api.tjara.com/api/products';
+    final url = 'https://api.tjara.com/api/products?page=3';
     try {
       final result = await _repository.fetchData<ProductModel>(
           url: url, fromJson: (json) => ProductModel.fromJson(json));
@@ -111,10 +112,21 @@ class HomeController extends GetxController {
       products.value = result;
       await _appService.sharedPreferences
           .setString('cache_Products', jsonEncode(result.toJson()));
-
       update();
     } catch (e) {
       print("Error fetching categories: $e");
+    }
+  }
+
+  Future<SingleModelClass?> fetchSingleProducts(String productId) async {
+    final url = 'https://api.tjara.com/api/products/$productId';
+    try {
+      final res = await _repository.fetchData<SingleModelClass>(
+          url: url, fromJson: (json) => SingleModelClass.fromJson(json));
+      print(res);
+      return res;
+    } catch (e) {
+      rethrow;
     }
   }
 }

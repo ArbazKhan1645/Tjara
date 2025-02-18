@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
@@ -7,14 +8,14 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shimmer/shimmer.dart';
 import '../controllers/home_controller.dart';
 
-class CategorySection extends StatefulWidget {
-  const CategorySection({super.key});
+class DrawerCategories extends StatefulWidget {
+  const DrawerCategories({super.key});
 
   @override
-  State<CategorySection> createState() => _CategorySectionState();
+  State<DrawerCategories> createState() => _DrawerCategoriesState();
 }
 
-class _CategorySectionState extends State<CategorySection> {
+class _DrawerCategoriesState extends State<DrawerCategories> {
   static const double _kInitialScrollProgress = 0.2;
   final ValueNotifier<int> _selectedIndex = ValueNotifier<int>(-1);
   final ScrollController _scrollController = ScrollController();
@@ -27,7 +28,7 @@ class _CategorySectionState extends State<CategorySection> {
   @override
   void initState() {
     super.initState();
-    _controller = Get.find<HomeController>();
+    _controller = Get.put(HomeController());
     _scrollController.addListener(_updateScrollProgress);
     _initializeCategoryList();
   }
@@ -81,36 +82,27 @@ class _CategorySectionState extends State<CategorySection> {
       final bottomCategories = _categoryList.sublist(midIndex);
 
       return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              scrollDirection: Axis.horizontal,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _CategoryRow(
-                    categories: topCategories,
-                    startIndex: 0,
-                    selectedIndexNotifier: _selectedIndex,
-                  ),
-                  const SizedBox(height: 15),
-                  _CategoryRow(
-                    categories: bottomCategories,
-                    startIndex: midIndex,
-                    selectedIndexNotifier: _selectedIndex,
-                  ),
-                ],
-              ),
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Categories', style: TextStyle(fontSize: 20)),
+                IconButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    icon: Icon(Icons.cancel))
+              ],
             ),
           ),
-          const SizedBox(height: 10),
-          ValueListenableBuilder<double>(
-            valueListenable: _scrollProgress,
-            builder: (context, progress, _) {
-              return _ScrollProgressIndicator(progress: progress);
-            },
+          Expanded(
+            child: _CategoryRow(
+              categories: topCategories,
+              startIndex: 0,
+              selectedIndexNotifier: _selectedIndex,
+            ),
           ),
         ],
       );
@@ -131,17 +123,23 @@ class _CategoryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: categories.asMap().entries.map((entry) {
-        final int index = entry.key + startIndex;
-        final category = entry.value;
+    return GridView.builder(
+      shrinkWrap: true,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+      ),
+      itemCount: categories.length,
+      itemBuilder: (context, index) {
+        final int realIndex = index + startIndex;
+        final category = categories[index];
         return _CategoryItem(
           category: category,
-          index: index,
+          index: realIndex,
           selectedIndexNotifier: selectedIndexNotifier,
         );
-      }).toList(),
+      },
     );
   }
 }
@@ -242,8 +240,8 @@ class _CategoryImageState extends State<_CategoryImage> {
               return Transform.scale(
                 scale: scale,
                 child: Container(
-                  width: 100,
-                  height: 100,
+                  width: 90,
+                  height: 90,
                   decoration: BoxDecoration(
                     color: Colors.grey.shade100,
                     border: Border.all(color: Color(0xffD21642), width: 2),

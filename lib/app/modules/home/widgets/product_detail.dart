@@ -1,16 +1,22 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/core/utils/thems/theme.dart';
+import 'package:tjara/app/modules/home/widgets/attributes.dart';
+import 'package:tjara/app/modules/home/widgets/shopping_cart.dart';
 import 'package:tjara/app/routes/app_pages.dart';
-
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../../core/widgets/appbar.dart';
 import '../../../models/products/products_model.dart';
-import 'products_grid.dart';
-import 'shopping_cart.dart';
+import '../../../models/products/single_product_model.dart';
+import '../controllers/home_controller.dart';
 
 class ProductDetailScreen extends StatefulWidget {
-  const ProductDetailScreen({super.key, required this.product});
-  final Datum product; // Assuming Product is your model class
+  const ProductDetailScreen(
+      {super.key, required this.product, this.controller});
+  final ProductDatum product;
+  final HomeController? controller;
 
   @override
   _ProductDetailScreenState createState() => _ProductDetailScreenState();
@@ -21,9 +27,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int selectedColorIndex = 0;
   int selectedImageIndex = 0;
 
-  late List<String> imageUrls = List.generate(
-          7, (index) => widget.product.thumbnail?.media?.url ?? ''.toString())
-      .toList();
+  late List<String> imageUrls = [];
   List<int> sizes = [34, 43, 44, 55, 33, 23];
   List<Color> colorsSubp = [
     Colors.black,
@@ -32,320 +36,311 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     Colors.green
   ];
 
+  final PageController _controller = PageController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: CustomAppBar(),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Row(
-                children: [
-                  Text("Home", style: defaultTextStyle.copyWith(fontSize: 16)),
-                  Text(" / Cart / ",
-                      style: defaultTextStyle.copyWith(fontSize: 16)),
-                  Text("Electronics",
-                      style: defaultTextStyle.copyWith(
-                          fontSize: 16, color: Color(0xffD21642))),
-                ],
-              ),
-            ),
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Container(
-                  height: 320,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 10,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                    image: DecorationImage(
-                      image: NetworkImage(
-                          widget.product.thumbnail?.media?.url ??
-                              ''.toString()),
-                      fit: BoxFit.fill,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 10),
-            // Thumbnail List
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(imageUrls.length, (index) {
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedImageIndex = index;
-                        });
-                      },
-                      child: Container(
-                        margin: EdgeInsets.symmetric(horizontal: 4),
-                        height: 68,
-                        width: 68,
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: selectedImageIndex == index
-                                ? Colors.red
-                                : Colors.transparent,
-                            width: 2,
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                          image: DecorationImage(
-                            image: NetworkImage(imageUrls[index]),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 10),
-                  Text(widget.product.name.toString(),
-                      style: defaultTextStyle.copyWith(
-                          fontSize: 20, fontWeight: FontWeight.w500)),
-                  Row(
-                    children: [
-                      ...List.generate(
-                        5,
-                        (index) => Padding(
-                          padding: EdgeInsets.only(left: 2),
-                          child: Image.asset(
-                            index < 4
-                                ? 'assets/images/star.png'
-                                : 'assets/images/star.png',
-                            height: 14,
-                          ),
-                        ),
-                      ),
-                      Text(" (4) 80 Reviews | 5,000+ sold",
-                          style: defaultTextStyle.copyWith(
-                              fontWeight: FontWeight.w400, fontSize: 14)),
-                    ],
-                  ),
-                  SizedBox(height: 5),
-                  Row(
-                    children: [
-                      if (widget.product.isDiscountProduct == true)
-                        Text("\$${(widget.product.price ?? 0).toString()}",
-                            style: defaultTextStyle.copyWith(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 18,
-                                decoration: TextDecoration.lineThrough,
-                                color: Color(0xff374856))),
-                      SizedBox(width: 5),
-                      Text("\$${(widget.product.price ?? 0).toString()}",
-                          style: defaultTextStyle.copyWith(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 25,
-                              color: Color(0xffD21642))),
-                    ],
-                  ),
-                  SizedBox(height: 10),
-                  Text("Size:",
-                      style: defaultTextStyle.copyWith(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 16,
-                      )),
-                  SizedBox(height: 10),
-                  Wrap(
-                    spacing: 10,
-                    children: List.generate(sizes.length, (index) {
-                      return Container(
-                        height: 40,
-                        width: 40,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(7),
-                            color: Color(0xffF7F7F7),
-                            border: Border.all(
-                              color: Color(0xffDCDCDC),
-                            )),
-                        child: Center(
-                          child: Text(sizes[index].toString()),
-                        ),
-                      );
-                    }),
-                  ),
-                  SizedBox(height: 10),
-                  Text("Color:",
-                      style: defaultTextStyle.copyWith(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 16,
-                      )),
-                  SizedBox(height: 10),
-                  Wrap(
-                    spacing: 10,
-                    children: List.generate(colorsSubp.length, (index) {
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            selectedColorIndex = index;
-                          });
-                        },
-                        child: CircleAvatar(
-                            radius: 19,
-                            backgroundColor: Colors.grey.shade300,
-                            child: CircleAvatar(
-                              radius: 15,
-                              backgroundColor: colorsSubp[index],
-                              child: selectedColorIndex == index
-                                  ? Icon(Icons.check, color: Colors.white)
-                                  : null,
-                            )),
-                      );
-                    }),
-                  ),
-                  SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Text("Quantity:",
-                          style: defaultTextStyle.copyWith(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 16,
-                          )),
-                      SizedBox(width: 10),
-                      Container(
-                        width: 67,
-                        height: 43,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(7),
-                            color: Color(0xffF7F7F7),
-                            border: Border.all(
-                              color: Color(0xffDCDCDC),
-                            )),
-                        child: TextField(
-                          decoration: InputDecoration(
-                            contentPadding:
-                                EdgeInsets.only(left: 20, bottom: 12),
-                            border: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            hintText: '5',
-                          ),
-                          keyboardType: TextInputType.number,
-                        ),
-                      ),
-                      Spacer(),
-                      SizedBox(width: 10),
-                      Text("Last One",
-                          style: defaultTextStyle.copyWith(
-                              fontSize: 14, color: Colors.green)),
-                      Text(" / 44 sold",
-                          style: defaultTextStyle.copyWith(fontSize: 14)),
-                    ],
-                  ),
-                  SizedBox(height: 20),
-                  Material(
-                    color: Colors.red.shade700,
-                    borderRadius: BorderRadius.circular(11),
-                    child: MaterialButton(
-                        height: 52,
-                        minWidth: double.infinity, // Full width
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        onPressed: () {
-                          Get.to(() => ShoppingCartScreen());
-                        },
-                        child: Text("Add To Cart",
-                            style: defaultTextStyle.copyWith(
-                                color: Colors.white))),
-                  ),
-                  SizedBox(height: 10),
-                  Material(
-                    color: Color(0xff34A853),
-                    borderRadius: BorderRadius.circular(11),
-                    child: MaterialButton(
-                      height: 52,
-                      minWidth: double.infinity, // Full width
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      onPressed: () {},
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text("Add To Wishlist",
-                              style: defaultTextStyle.copyWith(
-                                  color: Colors.white)),
-                          SizedBox(width: 8),
-                          Icon(Icons.favorite, color: Colors.white),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Material(
-                    color: Color(0xFF4285F4),
-                    borderRadius: BorderRadius.circular(11),
-                    child: MaterialButton(
-                      height: 52,
-                      minWidth: double.infinity, // Full width
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      onPressed: () {},
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text("Enquire Now",
-                              style: defaultTextStyle.copyWith(
-                                  color: Colors.white)),
-                          SizedBox(width: 8),
-                          Icon(Icons.support_agent, color: Colors.white),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 30),
-                  ProductDetailsSection(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Related Products",
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        "View All",
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFFD9183B),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+      body: FutureBuilder<SingleModelClass?>(
+          future: widget.controller!
+              .fetchSingleProducts(widget.product.id.toString()),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return Center(
+                child: Text(snapshot.error.toString()),
+              );
+            }
 
-            ProductGrid(),
-            SizedBox(height: 50)
-          ],
-        ),
-      ),
+            SingleModelClass? product = snapshot.data;
+
+            return ListView(
+              children: [
+                // Padding(
+                //   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                //   child: Row(
+                //     children: [
+                //       Text("Home", style: defaultTextStyle.copyWith(fontSize: 16)),
+                //       Text(" / Cart / ",
+                //           style: defaultTextStyle.copyWith(fontSize: 16)),
+                //       Text("Electronics",
+                //           style: defaultTextStyle.copyWith(
+                //               fontSize: 16, color: Color(0xffD21642))),
+                //     ],
+                //   ),
+                // ),
+                Builder(builder: (context) {
+                  if (product == null) {
+                    return Container();
+                  }
+
+                  if (product.product == null) {
+                    return Container();
+                  }
+                  imageUrls.clear();
+
+                  for (var e in product.product!.gallery) {
+                    imageUrls.add(e.media!.url.toString().trim());
+                  }
+
+                  return Column(
+                    children: [
+                      ImageSlider(
+                          imageUrls: imageUrls, controller: _controller),
+                      SizedBox(height: 15),
+                      Center(
+                        child: SmoothPageIndicator(
+                          controller: _controller,
+                          count: 3,
+                          effect: ExpandingDotsEffect(
+                            dotHeight: 10,
+                            dotWidth: 10,
+                            activeDotColor: Colors.red,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 10),
+                      Text(
+                          'ID:${widget.product.meta?.productId ?? ''.toString()}',
+                          style: defaultTextStyle.copyWith(
+                              fontSize: 20, fontWeight: FontWeight.w500)),
+                      Text(widget.product.name.toString(),
+                          style: defaultTextStyle.copyWith(
+                              fontSize: 20, fontWeight: FontWeight.w500)),
+                      Row(
+                        children: [
+                          ...List.generate(
+                            5,
+                            (index) => Padding(
+                              padding: EdgeInsets.only(left: 2),
+                              child: Image.asset(
+                                index < 4
+                                    ? 'assets/images/star.png'
+                                    : 'assets/images/star.png',
+                                height: 14,
+                              ),
+                            ),
+                          ),
+                          Text(" (4) 80 Reviews | 5,000+ sold",
+                              style: defaultTextStyle.copyWith(
+                                  fontWeight: FontWeight.w400, fontSize: 14)),
+                        ],
+                      ),
+                      SizedBox(height: 5),
+                      // Row(
+                      //   children: [
+                      //     if (widget.product.isDiscountProduct == true)
+                      //       Text("\$${(widget.product.price ?? 0).toString()}",
+                      //           style: defaultTextStyle.copyWith(
+                      //               fontWeight: FontWeight.w400,
+                      //               fontSize: 18,
+                      //               decoration: TextDecoration.lineThrough,
+                      //               color: Color(0xff374856))),
+                      //     SizedBox(width: 5),
+                      //     Text("\$${(widget.product.price ?? 0).toString()}",
+                      //         style: defaultTextStyle.copyWith(
+                      //             fontWeight: FontWeight.w700,
+                      //             fontSize: 25,
+                      //             color: Color(0xffD21642))),
+                      //   ],
+                      // ),
+                      Builder(
+                        builder: (context) {
+                          if (product == null) {
+                            return Container();
+                          }
+
+                          if (product.product == null) {
+                            return Container();
+                          }
+                          final variation = product.product?.variation;
+
+                          if (variation == null) {
+                            return SizedBox();
+                          }
+
+                          return ProductVariationDisplay(
+                            variation: variation,
+                            onAttributesSelected: (p) {},
+                          );
+                        },
+                      ),
+                      // Text(
+                      //   product.product?.categories?.productAttributeItems.first
+                      //           .attributeItem?.productAttributeItem?.name ??
+                      //       '',
+                      // ),
+                      // Text("Size:",
+                      //     style: defaultTextStyle.copyWith(
+                      //       fontWeight: FontWeight.w500,
+                      //       fontSize: 16,
+                      //     )),
+                      // SizedBox(height: 10),
+                      // Wrap(
+                      //   spacing: 10,
+                      //   children: List.generate(sizes.length, (index) {
+                      //     return Container(
+                      //       height: 40,
+                      //       width: 40,
+                      //       decoration: BoxDecoration(
+                      //           borderRadius: BorderRadius.circular(7),
+                      //           color: Color(0xffF7F7F7),
+                      //           border: Border.all(
+                      //             color: Color(0xffDCDCDC),
+                      //           )),
+                      //       child: Center(
+                      //         child: Text(sizes[index].toString()),
+                      //       ),
+                      //     );
+                      //   }),
+                      // ),
+                      // SizedBox(height: 10),
+                      // Text("Color:",
+                      //     style: defaultTextStyle.copyWith(
+                      //       fontWeight: FontWeight.w500,
+                      //       fontSize: 16,
+                      //     )),
+                      // SizedBox(height: 10),
+
+                      Row(
+                        children: [
+                          Text("Quantity:",
+                              style: defaultTextStyle.copyWith(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 16,
+                              )),
+                          SizedBox(width: 10),
+                          Container(
+                            width: 67,
+                            height: 43,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(7),
+                                color: Color(0xffF7F7F7),
+                                border: Border.all(
+                                  color: Color(0xffDCDCDC),
+                                )),
+                            child: TextField(
+                              decoration: InputDecoration(
+                                contentPadding:
+                                    EdgeInsets.only(left: 20, bottom: 12),
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                hintText: '1',
+                              ),
+                              keyboardType: TextInputType.number,
+                            ),
+                          ),
+                          Spacer(),
+                          SizedBox(width: 10),
+                          Text("Last One",
+                              style: defaultTextStyle.copyWith(
+                                  fontSize: 14, color: Colors.green)),
+                          Text(" / 44 sold",
+                              style: defaultTextStyle.copyWith(fontSize: 14)),
+                        ],
+                      ),
+                      SizedBox(height: 20),
+                      Material(
+                        color: Colors.red.shade700,
+                        borderRadius: BorderRadius.circular(11),
+                        child: MaterialButton(
+                            height: 52,
+                            minWidth: double.infinity, // Full width
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            onPressed: () {
+                              Get.to(() => ShoppingCartScreen());
+                            },
+                            child: Text("Add To Cart",
+                                style: defaultTextStyle.copyWith(
+                                    color: Colors.white))),
+                      ),
+                      SizedBox(height: 10),
+                      Material(
+                        color: Color(0xff34A853),
+                        borderRadius: BorderRadius.circular(11),
+                        child: MaterialButton(
+                          height: 52,
+                          minWidth: double.infinity, // Full width
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          onPressed: () {},
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text("Add To Wishlist",
+                                  style: defaultTextStyle.copyWith(
+                                      color: Colors.white)),
+                              SizedBox(width: 8),
+                              Icon(Icons.favorite, color: Colors.white),
+                            ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Material(
+                        color: Color(0xFF4285F4),
+                        borderRadius: BorderRadius.circular(11),
+                        child: MaterialButton(
+                          height: 52,
+                          minWidth: double.infinity, // Full width
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          onPressed: () {},
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text("Enquire Now",
+                                  style: defaultTextStyle.copyWith(
+                                      color: Colors.white)),
+                              SizedBox(width: 8),
+                              Icon(Icons.support_agent, color: Colors.white),
+                            ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 30),
+                      ProductDetailsSection(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Related Products",
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            "View All",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFFD9183B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ProductGrid(),
+                SizedBox(height: 50)
+              ],
+            );
+          }),
     );
   }
 }
@@ -579,6 +574,61 @@ class ProductDetailsSection extends StatelessWidget {
         ),
         SizedBox(height: 30),
       ],
+    );
+  }
+}
+
+class ImageSlider extends StatefulWidget {
+  final List<String> imageUrls;
+  final PageController controller;
+
+  const ImageSlider(
+      {super.key, required this.imageUrls, required this.controller});
+
+  @override
+  _ImageSliderState createState() => _ImageSliderState();
+}
+
+class _ImageSliderState extends State<ImageSlider> {
+  int selectedImageIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Container(
+          height: 320,
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.red, width: 2),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 10,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: PageView.builder(
+            itemCount: widget.imageUrls.length,
+            onPageChanged: (index) {
+              setState(() {
+                selectedImageIndex = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              return ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.network(
+                  widget.imageUrls[index],
+                  fit: BoxFit.cover,
+                ),
+              );
+            },
+          ),
+        ),
+      ),
     );
   }
 }

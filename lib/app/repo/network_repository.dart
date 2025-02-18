@@ -32,9 +32,16 @@ class NetworkRepository {
   }
 
   Future<CacheOptions> getCacheOptions() async {
-    final dir = await getApplicationDocumentsDirectory();
+    String path = '';
+    if (kIsWeb) {
+      path = 'cache_storage';
+    } else {
+      final dir = await getApplicationDocumentsDirectory();
+      path = dir.path;
+    }
+
     return CacheOptions(
-      store: HiveCacheStore(dir.path),
+      store: HiveCacheStore(path),
       policy: CachePolicy.refreshForceCache,
       hitCacheOnErrorExcept: [401, 403],
       maxStale: const Duration(days: 7),

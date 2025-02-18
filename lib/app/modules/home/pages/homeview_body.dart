@@ -9,8 +9,8 @@ import '../widgets/notice_promotion.dart';
 import '../widgets/offer_bar.dart';
 import '../widgets/prodnavbar.dart';
 import '../widgets/products_grid.dart';
-import '../widgets/promo_bar.dart';
 import '../widgets/services.dart';
+import '../widgets/super_deals.dart';
 
 class HomeViewBody extends StatelessWidget {
   const HomeViewBody({super.key});
@@ -22,6 +22,7 @@ class HomeViewBody extends StatelessWidget {
       // PromoBanner(),
       SafePaymentButton(),
       CategorySection(),
+      SuperDealsWidget(),
       ProductNavBar(),
       ProductGrid(),
       OfferBannerWidget(),

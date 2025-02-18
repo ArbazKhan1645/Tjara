@@ -15,6 +15,8 @@ import '../modules/my_account/bindings/my_account_binding.dart';
 import '../modules/my_account/views/my_account_view.dart';
 import '../modules/my_cart/bindings/my_cart_binding.dart';
 import '../modules/my_cart/views/my_cart_view.dart';
+import '../modules/product_detail_screen/bindings/product_detail_screen_binding.dart';
+import '../modules/product_detail_screen/views/product_detail_screen_view.dart';
 import '../modules/store_page/bindings/store_page_binding.dart';
 import '../modules/store_page/views/store_page_view.dart';
 
@@ -78,6 +80,11 @@ class AppPages {
       name: _Paths.STORE_PAGE,
       page: () => const StorePageView(),
       binding: StorePageBinding(),
+    ),
+    GetPage(
+      name: _Paths.PRODUCT_DETAIL_SCREEN,
+      page: () => const ProductDetailScreenView(),
+      binding: ProductDetailScreenBinding(),
     ),
   ];
 }

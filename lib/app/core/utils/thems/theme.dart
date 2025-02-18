@@ -18,7 +18,7 @@ ThemeData lightThemeData(BuildContext context) {
     iconTheme: const IconThemeData(color: AppColors.black),
     // Globally set Cabin as the default font
     textTheme: GoogleFonts.cabinTextTheme(
-      ThemeData.light().textTheme, // Base text theme
+      ThemeData.light().textTheme,
     ).apply(
       bodyColor: AppColors.textColor,
       displayColor: AppColors.textColor,

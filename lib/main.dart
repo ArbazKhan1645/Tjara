@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
 import 'app/core/locators/service_locator.dart';
 import 'app/core/utils/helpers/logger.dart';
-import 'app/core/utils/thems/theme.dart';
 import 'app/core/widgets/global_errorwidget.dart';
 import 'app/routes/app_pages.dart';
 
@@ -44,7 +43,7 @@ class MyApp extends StatelessWidget {
                 .copyWith(textScaler: const TextScaler.linear(1.0)),
             child: widget!);
       },
-      theme: lightThemeData(context),
+      // theme: lightThemeData(context),
       themeMode: ThemeMode.light,
       useInheritedMediaQuery: true,
       defaultTransition: Transition.fadeIn,

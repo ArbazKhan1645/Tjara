@@ -4,6 +4,7 @@ import 'package:tjara/app/core/utils/thems/theme.dart';
 import 'package:tjara/app/routes/app_pages.dart';
 
 import '../../../core/widgets/appbar.dart';
+import 'catnavbar.dart';
 import 'products_grid.dart';
 
 class ShoppingCartScreen extends StatefulWidget {
@@ -43,24 +44,14 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: CustomAppBar(),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Row(
-                children: [
-                  Text("Home", style: defaultTextStyle.copyWith(fontSize: 16)),
-                  Text(" / Cart / ",
-                      style: defaultTextStyle.copyWith(fontSize: 16)),
-                  Text("Shopping Cart",
-                      style: defaultTextStyle.copyWith(
-                          fontSize: 16, color: Color(0xffD21642))),
-                ],
-              ),
-            ),
+            CategoryNavBar(),
+            SizedBox(height: 50),
             CheckoutScreen(),
             SizedBox(height: 50),
             Padding(
@@ -101,29 +92,35 @@ class CheckoutScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         children: [
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.grey.shade300),
-              boxShadow: [],
-            ),
-            child: Column(
-              children: [
-                _buildSellerSection(),
-                Container(
-                  height: 2,
-                  color: Colors.grey.shade300,
-                ),
-                SizedBox(height: 10),
-                _buildProductCard(),
-                Divider(color: Colors.grey.shade400),
-                _buildProductCard(),
-              ],
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.grey.shade300),
+                boxShadow: [],
+              ),
+              child: Column(
+                children: [
+                  _buildSellerSection(),
+                  Container(
+                    height: 2,
+                    color: Colors.grey.shade300,
+                  ),
+                  SizedBox(height: 10),
+                  _buildProductCard(),
+                  Divider(color: Colors.grey.shade400),
+                  _buildProductCard(),
+                ],
+              ),
             ),
           ),
           SizedBox(height: 10),
-          _buildOrderSummary(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _buildOrderSummary(),
+          ),
           SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.all(0.0),
@@ -265,12 +262,18 @@ class CheckoutScreen extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            height: 37,
-            width: 37,
+            height: 87,
+            width: 87,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
+              shape: BoxShape.circle,
             ),
-            child: Image.asset('assets/images/sktech.png'),
+            child: ClipOval(
+              child: Image.asset(
+                'assets/images/sktech.png',
+                fit: BoxFit
+                    .cover, // Ensures the image fills the circular area properly
+              ),
+            ),
           ),
           SizedBox(width: 10),
           Expanded(
@@ -280,7 +283,7 @@ class CheckoutScreen extends StatelessWidget {
                 Text('Stylish Collection Wholesellers',
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 Text("You've got free shipping with specific products!",
-                    style: TextStyle(fontSize: 12, color: Colors.grey)),
+                    style: TextStyle(fontSize: 14, color: Colors.grey)),
               ],
             ),
           ),
@@ -300,8 +303,9 @@ class CheckoutScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          SizedBox(width: 15),
           ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(18),
             child: Image.asset(
               'assets/images/shoes.png',
               width: 60,
@@ -309,7 +313,7 @@ class CheckoutScreen extends StatelessWidget {
               fit: BoxFit.cover,
             ),
           ),
-          SizedBox(width: 5),
+          SizedBox(width: 15),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -318,8 +322,6 @@ class CheckoutScreen extends StatelessWidget {
                     'hand bag for girls crossbody & shoulder handbag for women new design handbags',
                     style: defaultTextStyle.copyWith(
                         fontWeight: FontWeight.w400, fontSize: 14)),
-                Text('Color Family: Mustard  |  Size: S',
-                    style: TextStyle(fontSize: 12, color: Colors.grey)),
                 SizedBox(height: 10),
                 Row(
                   children: [
@@ -328,22 +330,6 @@ class CheckoutScreen extends StatelessWidget {
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.red)),
-                    SizedBox(width: 5),
-                    Text('\$2222',
-                        style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
-                            decoration: TextDecoration.lineThrough)),
-                    SizedBox(width: 15),
-                    Container(
-                      decoration: BoxDecoration(color: Colors.red.shade100),
-                      height: 25,
-                      width: 50,
-                      child: Center(
-                        child: Text('-65%',
-                            style: TextStyle(fontSize: 12, color: Colors.red)),
-                      ),
-                    ),
                   ],
                 ),
                 SizedBox(height: 5),
@@ -387,7 +373,7 @@ class CheckoutScreen extends StatelessWidget {
                     ),
                     Spacer(),
                     IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red),
+                      icon: Icon(Icons.delete, color: Colors.grey),
                       onPressed: () {},
                     ),
                   ],
@@ -405,7 +391,7 @@ class CheckoutScreen extends StatelessWidget {
       height: 250,
       padding: EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
+        color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(

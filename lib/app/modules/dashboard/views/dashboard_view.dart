@@ -6,6 +6,7 @@ import 'package:tjara/app/modules/categories/views/categories_view.dart';
 import 'package:tjara/app/modules/home/views/home_view.dart';
 import 'package:tjara/app/modules/my_account/views/my_account_view.dart';
 import 'package:tjara/app/modules/my_cart/views/my_cart_view.dart';
+import '../../home/widgets/drawer_categories.dart';
 import '../controllers/dashboard_controller.dart';
 
 class DashboardView extends GetView<DashboardController> {
@@ -17,6 +18,13 @@ class DashboardView extends GetView<DashboardController> {
       init: DashboardController(),
       builder: (controller) {
         return Scaffold(
+          key: controller.scaffoldKey,
+          drawer: Container(
+              color: Colors.white,
+              width: MediaQuery.of(context).size.width / 1.5,
+              child: Drawer(
+                child: DrawerCategories(),
+              )),
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerDocked,
           floatingActionButton: Container(
@@ -113,7 +121,13 @@ class DashboardView extends GetView<DashboardController> {
         bool isSelected = controller.selectedIndex.value == index;
 
         return InkWell(
-          onTap: () => controller.changeIndex(index),
+          onTap: () {
+            if (index == 1) {
+              controller.scaffoldKey.currentState?.openDrawer();
+            } else {
+              controller.changeIndex(index);
+            }
+          },
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

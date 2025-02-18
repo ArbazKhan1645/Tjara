@@ -18,7 +18,7 @@ class ProductModel {
 
 class Products {
   final num? currentPage; // Changed to num?
-  final List<Datum>? data;
+  final List<ProductDatum>? data;
 
   Products({this.currentPage, this.data});
 
@@ -28,7 +28,8 @@ class Products {
           ? num.parse(json!['current_page'].toString())
           : null,
       data: json?['data'] != null
-          ? List<Datum>.from(json!['data'].map((x) => Datum.fromJson(x)))
+          ? List<ProductDatum>.from(
+              json!['data'].map((x) => ProductDatum.fromJson(x)))
           : null,
     );
   }
@@ -39,7 +40,7 @@ class Products {
       };
 }
 
-class Datum {
+class ProductDatum {
   final String? id;
   final dynamic prevId;
   final String? shopId;
@@ -73,7 +74,7 @@ class Datum {
   final DatumMeta? meta;
   final bool? isDiscountProduct;
 
-  Datum({
+  ProductDatum({
     this.id,
     this.prevId,
     this.shopId,
@@ -108,8 +109,8 @@ class Datum {
     this.isDiscountProduct,
   });
 
-  factory Datum.fromJson(Map<String, dynamic>? json) {
-    return Datum(
+  factory ProductDatum.fromJson(Map<String, dynamic>? json) {
+    return ProductDatum(
       id: json?['id']?.toString(),
       prevId: json?['prev_id'],
       shopId: json?['shop_id']?.toString(),
