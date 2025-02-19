@@ -27,7 +27,7 @@ class CheckoutViewBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CommonBaseBodyScreen(screens: [
+    return CommonBaseBodyScreen(scrollController: ScrollController(), screens: [
       FormScreen(),
       SizedBox(height: 150),
     ]);

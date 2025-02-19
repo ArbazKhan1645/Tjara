@@ -29,7 +29,7 @@ class CheckoutViewBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CommonBaseBodyScreen(screens: [
+    return CommonBaseBodyScreen(scrollController: ScrollController(), screens: [
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         child: Row(

@@ -25,7 +25,7 @@ class StorePageViewBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CommonBaseBodyScreen(screens: [
+    return CommonBaseBodyScreen(scrollController: ScrollController(), screens: [
       StorePageSectionForm(),
       SizedBox(height: 150),
     ]);

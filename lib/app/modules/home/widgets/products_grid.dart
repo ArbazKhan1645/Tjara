@@ -20,7 +20,7 @@ class _ProductGridState extends State<ProductGrid> {
   @override
   void initState() {
     super.initState();
-    _homeController.fetchProducts();
+    _homeController.fetchInitialProducts();
   }
 
   @override
@@ -92,7 +92,7 @@ class ProductCard extends StatelessWidget {
                       const BorderRadius.vertical(top: Radius.circular(13.22)),
                   child: Stack(
                     children: [
-                      Container(
+                      SizedBox(
                         child: Image.network(
                           product.thumbnail?.media?.url ?? 'moj',
                           fit: BoxFit.fill,

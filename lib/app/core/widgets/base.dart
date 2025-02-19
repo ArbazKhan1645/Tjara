@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'optimized_animated_container.dart';
 
 class CommonBaseBodyScreen extends StatelessWidget {
-  const CommonBaseBodyScreen({super.key, required this.screens});
+  const CommonBaseBodyScreen(
+      {super.key, required this.screens, required this.scrollController});
   final List<Widget> screens;
+  final ScrollController scrollController;
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +17,9 @@ class CommonBaseBodyScreen extends StatelessWidget {
         return OptimizedAnimatedContainer(
           shouldAnimate: enableAnimations,
           child: CommonBaseBodySubScreen(
-              constraints: constraints, screens: screens),
+              scrollController: scrollController,
+              constraints: constraints,
+              screens: screens),
         );
       },
     );
@@ -24,9 +28,13 @@ class CommonBaseBodyScreen extends StatelessWidget {
 
 class CommonBaseBodySubScreen extends StatefulWidget {
   const CommonBaseBodySubScreen(
-      {super.key, required this.screens, required this.constraints});
+      {super.key,
+      required this.screens,
+      required this.constraints,
+      required this.scrollController});
   final List<Widget> screens;
   final BoxConstraints constraints;
+  final ScrollController scrollController;
 
   @override
   State<CommonBaseBodySubScreen> createState() =>
@@ -34,26 +42,16 @@ class CommonBaseBodySubScreen extends StatefulWidget {
 }
 
 class _CommonBaseBodySubScreenState extends State<CommonBaseBodySubScreen> {
-  final ScrollController _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-
-    _scrollController.addListener(() {
-      setState(() {});
-    });
-  }
-
   @override
   void dispose() {
-    _scrollController.dispose();
+    widget.scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
+      controller: widget.scrollController,
       slivers: [
         _buildSliverList(),
       ],
@@ -65,10 +63,10 @@ class _CommonBaseBodySubScreenState extends State<CommonBaseBodySubScreen> {
       delegate: SliverChildBuilderDelegate(
         (BuildContext context, int index) {
           double scale = 1.0;
-          if (_scrollController.hasClients) {
-            double offset = _scrollController.offset;
-            scale = 1 + ((index * 100 - offset).abs() / 200).clamp(0.8, 1.0);
-          }
+          // if (widget.scrollController.hasClients) {
+          //   double offset = widget.scrollController.offset;
+          //   scale = 1 + ((index * 100 - offset).abs() / 200).clamp(0.8, 1.0);
+          // }
           return Transform.scale(scale: scale, child: widget.screens[index]);
         },
         childCount: widget.screens.length,

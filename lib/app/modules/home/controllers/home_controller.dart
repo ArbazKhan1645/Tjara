@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print, depend_on_referenced_packages
 
 import 'dart:convert';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:rxdart/rxdart.dart';
 import '../../../core/locators/cache_images.dart';
@@ -11,6 +12,10 @@ import '../../../repo/network_repository.dart';
 import '../../../services/app/app_service.dart';
 
 class HomeController extends GetxController {
+  final ScrollController scrollController = ScrollController();
+  bool isLoading = false;
+  int page = 1;
+
   var categories = CategoryModel(productAttributeItems: []).obs;
   var products =
       (ProductModel(products: Products(currentPage: 1, data: []))).obs;
@@ -28,7 +33,18 @@ class HomeController extends GetxController {
     _initializeCategories();
     _initializeProducts();
     fetchCategories();
-    fetchProducts();
+    fetchInitialProducts();
+    scrollController.addListener(() {
+      if (scrollController.position.pixels >=
+          scrollController.position.maxScrollExtent - 400) {
+        if (!isLoading) {
+          fetchMoreProducts();
+          print('loadinf');
+        } else {
+          print('loadinf2');
+        }
+      }
+    });
     super.onInit();
   }
 
@@ -103,16 +119,34 @@ class HomeController extends GetxController {
     return filteredItems;
   }
 
-  Future<void> fetchProducts() async {
-    final url = 'https://api.tjara.com/api/products?page=3';
+  Future<void> fetchInitialProducts() async {
+    final url = 'https://api.tjara.com/api/products';
     try {
       final result = await _repository.fetchData<ProductModel>(
           url: url, fromJson: (json) => ProductModel.fromJson(json));
       _productsCache.add(result);
       products.value = result;
+      update();
       await _appService.sharedPreferences
           .setString('cache_Products', jsonEncode(result.toJson()));
+    } catch (e) {
+      print("Error fetching categories: $e");
+    }
+  }
+
+  Future<void> fetchMoreProducts() async {
+    final url = 'https://api.tjara.com/api/products?page=$page';
+    try {
+      final result = await _repository.fetchData<ProductModel>(
+          url: url, fromJson: (json) => ProductModel.fromJson(json));
+      _productsCache.add(result);
+      products.value.products!.data!.addAll(result.products!.data ?? []);
+      page++;
+      isLoading = false;
       update();
+
+      await _appService.sharedPreferences
+          .setString('cache_Products', jsonEncode(result.toJson()));
     } catch (e) {
       print("Error fetching categories: $e");
     }
