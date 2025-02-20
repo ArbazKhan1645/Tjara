@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:tjara/app/modules/auth/auth.dart';
 
 import '../modules/blog/bindings/blog_binding.dart';
 import '../modules/blog/views/blog_view.dart';
@@ -85,6 +86,10 @@ class AppPages {
       name: _Paths.PRODUCT_DETAIL_SCREEN,
       page: () => const ProductDetailScreenView(),
       binding: ProductDetailScreenBinding(),
+    ),
+    GetPage(
+      name: _Paths.login,
+      page: () => const LoginScreen(),
     ),
   ];
 }

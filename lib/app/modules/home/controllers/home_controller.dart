@@ -12,9 +12,15 @@ import '../../../repo/network_repository.dart';
 import '../../../services/app/app_service.dart';
 
 class HomeController extends GetxController {
+  ProductAttributeItems? selectedCategory;
+  setSelectedCategory(ProductAttributeItems val) {
+    selectedCategory = val;
+    update();
+  }
+
   final ScrollController scrollController = ScrollController();
   bool isLoading = false;
-  int page = 1;
+  int page = 2;
 
   var categories = CategoryModel(productAttributeItems: []).obs;
   var products =
@@ -85,6 +91,7 @@ class HomeController extends GetxController {
       final updatedModel = CategoryModel(productAttributeItems: updatedItems);
       _categoriesCache.add(updatedModel);
       categories.value = updatedModel;
+
       for (var el in categories.value.productAttributeItems ?? []) {
         if (el.thumbnail?.media?.url != null) {
           prefetchImage(el.thumbnail!.media!.url!);
@@ -137,14 +144,14 @@ class HomeController extends GetxController {
   Future<void> fetchMoreProducts() async {
     final url = 'https://api.tjara.com/api/products?page=$page';
     try {
+      isLoading = true;
       final result = await _repository.fetchData<ProductModel>(
           url: url, fromJson: (json) => ProductModel.fromJson(json));
       _productsCache.add(result);
       products.value.products!.data!.addAll(result.products!.data ?? []);
-      page++;
+      page = page + 1;
       isLoading = false;
       update();
-
       await _appService.sharedPreferences
           .setString('cache_Products', jsonEncode(result.toJson()));
     } catch (e) {
@@ -157,7 +164,6 @@ class HomeController extends GetxController {
     try {
       final res = await _repository.fetchData<SingleModelClass>(
           url: url, fromJson: (json) => SingleModelClass.fromJson(json));
-      print(res);
       return res;
     } catch (e) {
       rethrow;

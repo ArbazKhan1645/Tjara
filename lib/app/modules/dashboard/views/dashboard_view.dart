@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/modules/categories/views/categories_view.dart';
 import 'package:tjara/app/modules/home/views/home_view.dart';
+import 'package:tjara/app/modules/home/widgets/auth.dart';
 import 'package:tjara/app/modules/my_account/views/my_account_view.dart';
 import 'package:tjara/app/modules/my_cart/views/my_cart_view.dart';
 import '../../home/widgets/drawer_categories.dart';
@@ -49,11 +50,12 @@ class DashboardView extends GetView<DashboardController> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildNavItem(0, 'assets/icons/home.png', "Home"),
-                  _buildNavItem(1, 'assets/icons/apps.png', "Categories"),
-                  _buildNavItem(2, 'assets/icons/user.png', "Account"),
-                  _buildNavItem(3, 'assets/icons/bag.png', "My Cart"),
-                  _buildNavItem(4, 'assets/icons/menu.png', "More"),
+                  _buildNavItem(0, 'assets/icons/home.png', "Home", context),
+                  _buildNavItem(
+                      1, 'assets/icons/apps.png', "Categories", context),
+                  _buildNavItem(2, 'assets/icons/user.png', "Account", context),
+                  _buildNavItem(3, 'assets/icons/bag.png', "My Cart", context),
+                  _buildNavItem(4, 'assets/icons/menu.png', "More", context),
                 ],
               ),
             ),
@@ -115,7 +117,8 @@ class DashboardView extends GetView<DashboardController> {
     );
   }
 
-  Widget _buildNavItem(int index, String iconPath, String label) {
+  Widget _buildNavItem(
+      int index, String iconPath, String label, BuildContext context) {
     return GetBuilder<DashboardController>(
       builder: (controller) {
         bool isSelected = controller.selectedIndex.value == index;
@@ -124,6 +127,11 @@ class DashboardView extends GetView<DashboardController> {
           onTap: () {
             if (index == 1) {
               controller.scaffoldKey.currentState?.openDrawer();
+            } else if (index == 2) {
+              showDialog(
+                context: context,
+                builder: (context) => AnimatedDialog(),
+              );
             } else {
               controller.changeIndex(index);
             }

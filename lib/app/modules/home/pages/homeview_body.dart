@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tjara/app/modules/home/widgets/categories_new.dart';
 import '../../../core/widgets/base.dart';
 import '../widgets/categories.dart';
 import '../widgets/catnavbar.dart';
@@ -20,6 +21,29 @@ class HomeViewBody extends StatelessWidget {
       CategorySection(),
       SuperDealsWidget(),
       ProductNavBar(),
+      ProductGrid(),
+      // OfferBannerWidget(),
+      // JobSearchBox(),
+      // ServicesScreen(),
+      // ContestScreen(),
+      // SizedBox(height: 150),
+    ]);
+  }
+}
+
+class CategoryViewBody extends StatelessWidget {
+  const CategoryViewBody({super.key, required this.scrollController});
+  final ScrollController scrollController;
+
+  @override
+  Widget build(BuildContext context) {
+    return CommonBaseBodyScreen(scrollController: scrollController, screens: [
+      CategoryNavBar(),
+      // PromoBanner(),
+      // SafePaymentButton(),
+      CategorySectionNew(),
+      // SuperDealsWidget(),
+      // ProductNavBar(),
       ProductGrid(),
       // OfferBannerWidget(),
       // JobSearchBox(),

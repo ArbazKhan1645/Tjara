@@ -15,8 +15,11 @@ class HomeView extends GetView<HomeController> {
             child: Scaffold(
                 backgroundColor: Colors.white,
                 appBar: CustomAppBar(),
-                body: HomeViewBody(
-                    scrollController: controller.scrollController)),
+                body: controller.selectedCategory != null
+                    ? CategoryViewBody(
+                        scrollController: controller.scrollController)
+                    : HomeViewBody(
+                        scrollController: controller.scrollController)),
           );
         });
   }

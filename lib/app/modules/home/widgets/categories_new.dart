@@ -8,14 +8,14 @@ import 'package:shimmer/shimmer.dart';
 import 'package:tjara/app/models/categories/categories_model.dart';
 import '../controllers/home_controller.dart';
 
-class CategorySection extends StatefulWidget {
-  const CategorySection({super.key});
+class CategorySectionNew extends StatefulWidget {
+  const CategorySectionNew({super.key});
 
   @override
-  State<CategorySection> createState() => _CategorySectionState();
+  State<CategorySectionNew> createState() => _CategorySectionNewState();
 }
 
-class _CategorySectionState extends State<CategorySection> {
+class _CategorySectionNewState extends State<CategorySectionNew> {
   static const double _kInitialScrollProgress = 0.2;
   final ValueNotifier<int> _selectedIndex = ValueNotifier<int>(-1);
   final ScrollController _scrollController = ScrollController();
@@ -91,28 +91,71 @@ class _CategorySectionState extends State<CategorySection> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  SizedBox(height: 20),
                   _CategoryRow(
                     categories: topCategories,
                     startIndex: 0,
                     selectedIndexNotifier: _selectedIndex,
                   ),
-                  const SizedBox(height: 15),
-                  _CategoryRow(
-                    categories: bottomCategories,
-                    startIndex: midIndex,
-                    selectedIndexNotifier: _selectedIndex,
-                  ),
+                  SizedBox(height: 20),
+                  Container(
+                      height: 60,
+                      width: MediaQuery.of(context).size.width,
+                      color: Colors.grey.shade300,
+                      child: Row(
+                        children: [
+                          SizedBox(width: 10),
+                          Container(
+                            width: 150,
+                            height: 40,
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20)),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.filter),
+                                SizedBox(width: 10),
+                                Text('Filter')
+                              ],
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Container(
+                            width: 200,
+                            height: 40,
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20)),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                SizedBox(width: 10),
+                                Text('Most Recent'),
+                                Icon(Icons.arrow_forward_ios, size: 12),
+                                SizedBox(width: 10),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ))
+                  // const SizedBox(height: 15),
+                  // _CategoryRow(
+                  //   categories: bottomCategories,
+                  //   startIndex: midIndex,
+                  //   selectedIndexNotifier: _selectedIndex,
+                  // ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 10),
-          ValueListenableBuilder<double>(
-            valueListenable: _scrollProgress,
-            builder: (context, progress, _) {
-              return _ScrollProgressIndicator(progress: progress);
-            },
-          ),
+          // const SizedBox(height: 10),
+          // ValueListenableBuilder<double>(
+          //   valueListenable: _scrollProgress,
+          //   builder: (context, progress, _) {
+          //     return _ScrollProgressIndicator(progress: progress);
+          //   },
+          // ),
         ],
       );
     });
