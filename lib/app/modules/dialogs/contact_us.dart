@@ -98,17 +98,14 @@ class ContactFormDialog extends StatelessWidget {
   }
 }
 
-showContactDialog(BuildContext context) async {
+showContactDialog(BuildContext context, Widget widget) async {
   return showGeneralDialog(
     context: context,
     barrierDismissible: true,
     barrierLabel: '',
     transitionDuration: const Duration(milliseconds: 300),
     pageBuilder: (context, animation, secondaryAnimation) {
-      return Align(
-        alignment: Alignment.bottomCenter,
-        child: ContactFormDialog(),
-      );
+      return Align(alignment: Alignment.topCenter, child: widget);
     },
     transitionBuilder: (context, animation, secondaryAnimation, child) {
       return SlideTransition(

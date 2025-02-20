@@ -3,6 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/modules/categories/views/categories_view.dart';
+import 'package:tjara/app/modules/dialogs/contact_us.dart';
+import 'package:tjara/app/modules/dialogs/login.dart';
+import 'package:tjara/app/modules/dialogs/signUpaccount.dart';
 import 'package:tjara/app/modules/home/views/home_view.dart';
 import 'package:tjara/app/modules/home/widgets/auth.dart';
 import 'package:tjara/app/modules/more/views/more_view.dart';
@@ -94,10 +97,9 @@ class DashboardView extends GetView<DashboardController> {
             if (index == 1) {
               controller.scaffoldKey.currentState?.openDrawer();
             } else if (index == 2) {
-              showDialog(
-                context: context,
-                builder: (context) => AnimatedDialog(),
-              );
+              showContactDialog(context, LoginUi());
+            } else if (index == 3) {
+              controller.changeIndex(index);
             } else {
               controller.changeIndex(index);
             }

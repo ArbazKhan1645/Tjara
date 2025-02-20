@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/core/utils/thems/theme.dart';
 import 'package:tjara/app/modules/dialogs/contact_us.dart';
+import 'package:tjara/app/routes/app_pages.dart';
 
 class MoreviewBody extends StatelessWidget {
   const MoreviewBody({super.key});
@@ -56,7 +57,9 @@ class MoreviewBody extends StatelessWidget {
                       SizedBox(height: 4),
                       buildTextWidget('Services'),
                       SizedBox(height: 4),
-                      buildTextWidget('Jobs'),
+                      buildTextWidget('Jobs', onPressed: () {
+                        Get.toNamed(Routes.STORE_PAGE);
+                      }),
                       SizedBox(height: 4),
                       buildTextWidget('Contests'),
                       SizedBox(height: 4),
@@ -78,7 +81,7 @@ class MoreviewBody extends StatelessWidget {
                                   fontWeight: FontWeight.w500))),
                       SizedBox(height: 15),
                       buildTextWidget('Contact us', onPressed: () {
-                        showContactDialog(context);
+                        showContactDialog(context, ContactFormDialog());
                       }),
                       SizedBox(height: 4),
                       buildTextWidget('Help Center'),

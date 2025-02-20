@@ -141,7 +141,7 @@ class Superdeals extends StatelessWidget {
                   ),
                 ],
               ),
-              Container(
+              SizedBox(
                 width: 140,
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

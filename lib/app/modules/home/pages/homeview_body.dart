@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tjara/app/modules/home/widgets/categories_new.dart';
+import 'package:tjara/app/modules/home/widgets/categories_products.dart';
 import '../../../core/widgets/base.dart';
 import '../widgets/categories.dart';
 import '../widgets/catnavbar.dart';
@@ -44,7 +45,7 @@ class CategoryViewBody extends StatelessWidget {
       CategorySectionNew(),
       // SuperDealsWidget(),
       // ProductNavBar(),
-      ProductGrid(),
+      CategoriesProductGrid(),
       // OfferBannerWidget(),
       // JobSearchBox(),
       // ServicesScreen(),

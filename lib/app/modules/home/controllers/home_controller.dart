@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print, depend_on_referenced_packages
 
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:rxdart/rxdart.dart';
@@ -9,6 +10,8 @@ import '../../../models/categories/categories_model.dart';
 import '../../../models/products/products_model.dart';
 import '../../../models/products/single_product_model.dart';
 import '../../../repo/network_repository.dart';
+import 'package:http/http.dart' as http;
+
 import '../../../services/app/app_service.dart';
 
 class HomeController extends GetxController {
@@ -19,6 +22,8 @@ class HomeController extends GetxController {
   int page = 2;
   var categories = CategoryModel(productAttributeItems: []).obs;
   var products =
+      (ProductModel(products: Products(currentPage: 1, data: []))).obs;
+  var categoryproducts =
       (ProductModel(products: Products(currentPage: 1, data: []))).obs;
   final AppService _appService = AppService.instance;
   final NetworkRepository _repository = NetworkRepository();
@@ -138,6 +143,62 @@ class HomeController extends GetxController {
           .setString('cache_Products', jsonEncode(result.toJson()));
     } catch (e) {
       print("Error fetching categories: $e");
+    }
+  }
+
+  Future<void> fetchCategoryProducts(String categoryId) async {
+    final baseUrl = 'https://api.tjara.com/api/products';
+
+    // JSON filter without encoding
+    final filterByAttributes = jsonEncode({
+      'filterJoin': 'AND',
+      'attributes': [
+        {'key': 'categories', 'value': categoryId, 'operator': '='}
+      ],
+    });
+
+    // Manually appending it to the URL
+    final url = '$baseUrl?filterByAttributes=$filterByAttributes';
+
+    print(url); // Debugging
+
+    try {
+      final result = await _repository.fetchData<ProductModel>(
+        url: url,
+        fromJson: (json) => ProductModel.fromJson(json),
+      );
+
+      categoryproducts.value = result;
+      update();
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error fetching categories: $e");
+      }
+    }
+  }
+
+  Future<void> fetchAlbum(String categoryId) async {
+    final response = await http.get(
+      Uri.parse('https://api.tjara.com/api/products'),
+      headers: {
+        'filterByAttributes': jsonEncode({
+          'filterJoin': 'AND',
+          'attributes': [
+            {'key': 'categories', 'value': categoryId, 'operator': '='}
+          ],
+        }),
+      },
+    );
+
+    try {
+      var res = jsonDecode(response.body) as Map<String, dynamic>;
+      categoryproducts.value = ProductModel.fromJson(res);
+      print(ProductModel.fromJson(res));
+      update();
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error fetching categories: $e");
+      }
     }
   }
 

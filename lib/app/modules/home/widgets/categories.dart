@@ -168,7 +168,10 @@ class _CategoryItem extends StatelessWidget {
           onTap: () {
             selectedIndexNotifier.value = index;
             var controller = Get.find<HomeController>();
-            print('object');
+            controller.fetchCategoryProducts(controller
+                .categories.value.productAttributeItems!.first.id
+                .toString());
+
             controller.setSelectedCategory(
                 controller.categories.value.productAttributeItems?.first ??
                     ProductAttributeItems());
