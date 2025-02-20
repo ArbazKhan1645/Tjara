@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
-import 'package:tjara/app/modules/auth/auth.dart';
 
+import '../modules/auth/auth.dart';
 import '../modules/blog/bindings/blog_binding.dart';
 import '../modules/blog/views/blog_view.dart';
 import '../modules/categories/bindings/categories_binding.dart';
@@ -12,6 +12,8 @@ import '../modules/dashboard/views/dashboard_view.dart';
 import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
 import '../modules/home/widgets/shopping_cart.dart';
+import '../modules/more/bindings/more_binding.dart';
+import '../modules/more/views/more_view.dart';
 import '../modules/my_account/bindings/my_account_binding.dart';
 import '../modules/my_account/views/my_account_view.dart';
 import '../modules/my_cart/bindings/my_cart_binding.dart';
@@ -90,6 +92,11 @@ class AppPages {
     GetPage(
       name: _Paths.login,
       page: () => const LoginScreen(),
+    ),
+    GetPage(
+      name: _Paths.MORE,
+      page: () => const MoreView(),
+      binding: MoreBinding(),
     ),
   ];
 }

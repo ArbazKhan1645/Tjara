@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:tjara/app/modules/categories/views/categories_view.dart';
 import 'package:tjara/app/modules/home/views/home_view.dart';
 import 'package:tjara/app/modules/home/widgets/auth.dart';
+import 'package:tjara/app/modules/more/views/more_view.dart';
 import 'package:tjara/app/modules/my_account/views/my_account_view.dart';
 import 'package:tjara/app/modules/my_cart/views/my_cart_view.dart';
 import '../../home/widgets/drawer_categories.dart';
@@ -61,41 +62,6 @@ class DashboardView extends GetView<DashboardController> {
             ),
           ),
           backgroundColor: Colors.grey.shade100,
-          // bottomNavigationBar: ClipRRect(
-          //   borderRadius: const BorderRadius.only(
-          //       topLeft: Radius.circular(40), topRight: Radius.circular(40)),
-          //   child: Container(
-          //     decoration: BoxDecoration(
-          //       boxShadow: [
-          //         BoxShadow(
-          //           color: const Color(0xFF000000)
-          //               .withOpacity(0.25), // Black with 25% opacity
-          //           offset: const Offset(0, 4), // X: 0, Y: 4
-          //           blurRadius: 84.7, // Blur: 34.7
-          //           spreadRadius: 0, // Spread: 0
-          //         ),
-          //       ],
-          //     ),
-          //     child: BottomAppBar(
-          //       shadowColor: Colors.grey,
-          //       shape: const CircularNotchedRectangle(),
-          //       notchMargin: 4,
-          //       child: Padding(
-          //         padding: const EdgeInsets.symmetric(horizontal: 10),
-          //         child: Row(
-          //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //           children: [
-          //             _buildNavItem(0, 'assets/icons/home.png', "Home"),
-          //             _buildNavItem(1, 'assets/icons/apps.png', "Categories"),
-          //             _buildNavItem(2, 'assets/icons/user.png', "Account"),
-          //             _buildNavItem(3, 'assets/icons/bag.png', "My Cart"),
-          //             _buildNavItem(4, 'assets/icons/menu.png', "More"),
-          //           ],
-          //         ),
-          //       ),
-          //     ),
-          //   ),
-          // ),
           body: Obx(() {
             switch (controller.selectedIndex.value) {
               case 0:
@@ -107,7 +73,7 @@ class DashboardView extends GetView<DashboardController> {
               case 3:
                 return MyCartView();
               case 4:
-                return Container();
+                return MoreView();
               default:
                 return HomeView();
             }

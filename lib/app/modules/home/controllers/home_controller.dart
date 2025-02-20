@@ -13,15 +13,10 @@ import '../../../services/app/app_service.dart';
 
 class HomeController extends GetxController {
   ProductAttributeItems? selectedCategory;
-  setSelectedCategory(ProductAttributeItems val) {
-    selectedCategory = val;
-    update();
-  }
 
   final ScrollController scrollController = ScrollController();
   bool isLoading = false;
   int page = 2;
-
   var categories = CategoryModel(productAttributeItems: []).obs;
   var products =
       (ProductModel(products: Products(currentPage: 1, data: []))).obs;
@@ -31,6 +26,11 @@ class HomeController extends GetxController {
   late final BehaviorSubject<ProductModel?> _productsCache;
   BehaviorSubject<CategoryModel?>? get categoriesSubject => _categoriesCache;
   BehaviorSubject<ProductModel?>? get productsSubject => _productsCache;
+
+  setSelectedCategory(ProductAttributeItems val) {
+    selectedCategory = val;
+    update();
+  }
 
   @override
   void onInit() {
@@ -42,7 +42,7 @@ class HomeController extends GetxController {
     fetchInitialProducts();
     scrollController.addListener(() {
       if (scrollController.position.pixels >=
-          scrollController.position.maxScrollExtent - 400) {
+          scrollController.position.maxScrollExtent - 0) {
         if (!isLoading) {
           fetchMoreProducts();
           print('loadinf');
