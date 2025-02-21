@@ -147,33 +147,43 @@ class HomeController extends GetxController {
   }
 
   Future<void> fetchCategoryProducts(String categoryId) async {
-    final baseUrl = 'https://api.tjara.com/api/products';
+    fetchProducts(categoryId);
+  }
 
-    // JSON filter without encoding
-    final filterByAttributes = jsonEncode({
-      'filterJoin': 'AND',
-      'attributes': [
-        {'key': 'categories', 'value': categoryId, 'operator': '='}
-      ],
-    });
+  Future<void> fetchProducts(String categoryId) async {
+    final Uri url = Uri.parse('https://api.tjara.com/api/products');
 
-    // Manually appending it to the URL
-    final url = '$baseUrl?filterByAttributes=$filterByAttributes';
+    Map<String, dynamic> apiParams = {
+      "with": "thumbnail,shop",
+      "filterJoin": "OR",
+      "orderBy": "name",
+      "order": "asc",
+      "page": "1",
+      "per_page": "16",
+      "filterByAttributes[filterJoin]": "AND",
+      "filterByAttributes[attributes][0][key]": "categories",
+      "filterByAttributes[attributes][0][value]": categoryId,
+      "filterByAttributes[attributes][0][operator]": "="
+    };
 
-    print(url); // Debugging
+    final Uri requestUrl = url.replace(queryParameters: apiParams);
 
     try {
-      final result = await _repository.fetchData<ProductModel>(
-        url: url,
-        fromJson: (json) => ProductModel.fromJson(json),
+      final response = await http.get(
+        requestUrl,
+        headers: {
+          "Accept": "application/json",
+        },
       );
 
-      categoryproducts.value = result;
-      update();
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error fetching categories: $e");
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print("Fetched Products: $data");
+      } else {
+        print("Error: ${response.statusCode}, ${response.body}");
       }
+    } catch (e) {
+      print("Error fetching products: $e");
     }
   }
 

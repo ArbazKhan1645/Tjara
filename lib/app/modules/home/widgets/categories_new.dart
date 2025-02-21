@@ -16,11 +16,8 @@ class CategorySectionNew extends StatefulWidget {
 }
 
 class _CategorySectionNewState extends State<CategorySectionNew> {
-  static const double _kInitialScrollProgress = 0.2;
   final ValueNotifier<int> _selectedIndex = ValueNotifier<int>(-1);
   final ScrollController _scrollController = ScrollController();
-  final ValueNotifier<double> _scrollProgress =
-      ValueNotifier<double>(_kInitialScrollProgress);
 
   late final HomeController _controller;
   List<Map<String, String>> _categoryList = [];
@@ -29,7 +26,6 @@ class _CategorySectionNewState extends State<CategorySectionNew> {
   void initState() {
     super.initState();
     _controller = Get.find<HomeController>();
-    _scrollController.addListener(_updateScrollProgress);
     _initializeCategoryList();
   }
 
@@ -44,27 +40,6 @@ class _CategorySectionNewState extends State<CategorySectionNew> {
         [];
   }
 
-  void _updateScrollProgress() {
-    if (!_scrollController.hasClients ||
-        _scrollController.position.maxScrollExtent == 0) {
-      return;
-    }
-
-    final progress =
-        _scrollController.offset / _scrollController.position.maxScrollExtent;
-    _scrollProgress.value =
-        (progress.isNaN ? _kInitialScrollProgress : progress).clamp(0.2, 1.0);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.removeListener(_updateScrollProgress);
-    _scrollController.dispose();
-    _selectedIndex.dispose();
-    _scrollProgress.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Obx(() {
@@ -77,86 +52,66 @@ class _CategorySectionNewState extends State<CategorySectionNew> {
         return const SizedBox.shrink();
       }
 
-      final int midIndex = (_categoryList.length / 2).ceil();
-      final topCategories = _categoryList.sublist(0, midIndex);
-      final bottomCategories = _categoryList.sublist(midIndex);
+      final topCategories = _categoryList;
 
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              scrollDirection: Axis.horizontal,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 20),
-                  _CategoryRow(
-                    categories: topCategories,
-                    startIndex: 0,
-                    selectedIndexNotifier: _selectedIndex,
-                  ),
-                  SizedBox(height: 20),
-                  Container(
-                      height: 60,
-                      width: MediaQuery.of(context).size.width,
-                      color: Colors.grey.shade300,
-                      child: Row(
-                        children: [
-                          SizedBox(width: 10),
-                          Container(
-                            width: 150,
-                            height: 40,
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20)),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.filter),
-                                SizedBox(width: 10),
-                                Text('Filter')
-                              ],
-                            ),
-                          ),
-                          SizedBox(width: 10),
-                          Container(
-                            width: 200,
-                            height: 40,
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20)),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                SizedBox(width: 10),
-                                Text('Most Recent'),
-                                Icon(Icons.arrow_forward_ios, size: 12),
-                                SizedBox(width: 10),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ))
-                  // const SizedBox(height: 15),
-                  // _CategoryRow(
-                  //   categories: bottomCategories,
-                  //   startIndex: midIndex,
-                  //   selectedIndexNotifier: _selectedIndex,
-                  // ),
-                ],
+      return SizedBox(
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          scrollDirection: Axis.horizontal,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 20),
+              _CategoryRow(
+                categories: topCategories,
+                startIndex: 0,
+                selectedIndexNotifier: _selectedIndex,
               ),
-            ),
+              SizedBox(height: 20),
+              Container(
+                  height: 60,
+                  width: MediaQuery.of(context).size.width,
+                  color: Colors.grey.shade300,
+                  child: Row(
+                    children: [
+                      SizedBox(width: 10),
+                      Container(
+                        width: 150,
+                        height: 40,
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20)),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.filter),
+                            SizedBox(width: 10),
+                            Text('Filter')
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      Container(
+                        width: 200,
+                        height: 40,
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20)),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            SizedBox(width: 10),
+                            Text('Most Recent'),
+                            Icon(Icons.arrow_forward_ios, size: 12),
+                            SizedBox(width: 10),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ))
+            ],
           ),
-          // const SizedBox(height: 10),
-          // ValueListenableBuilder<double>(
-          //   valueListenable: _scrollProgress,
-          //   builder: (context, progress, _) {
-          //     return _ScrollProgressIndicator(progress: progress);
-          //   },
-          // ),
-        ],
+        ),
       );
     });
   }
