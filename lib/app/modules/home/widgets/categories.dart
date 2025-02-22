@@ -23,7 +23,7 @@ class _CategorySectionState extends State<CategorySection> {
       ValueNotifier<double>(_kInitialScrollProgress);
 
   late final HomeController _controller;
-  List<Map<String, String>> _categoryList = [];
+  List<Map<String, dynamic>> _categoryList = [];
 
   @override
   void initState() {
@@ -39,6 +39,8 @@ class _CategorySectionState extends State<CategorySection> {
             .map((e) => {
                   "icon": e.thumbnail!.media!.url!,
                   "name": e.name!,
+                  'id': e.id!,
+                  'model': e
                 })
             .toList() ??
         [];
@@ -126,7 +128,7 @@ class _CategoryRow extends StatelessWidget {
     required this.selectedIndexNotifier,
   });
 
-  final List<Map<String, String>> categories;
+  final List<Map<String, dynamic>> categories;
   final int startIndex;
   final ValueNotifier<int> selectedIndexNotifier;
 
@@ -154,7 +156,7 @@ class _CategoryItem extends StatelessWidget {
     required this.selectedIndexNotifier,
   });
 
-  final Map<String, String> category;
+  final Map<String, dynamic> category;
   final int index;
   final ValueNotifier<int> selectedIndexNotifier;
 
@@ -166,15 +168,11 @@ class _CategoryItem extends StatelessWidget {
         final bool isSelected = index == selectedIndex;
         return GestureDetector(
           onTap: () {
-            selectedIndexNotifier.value = index;
             var controller = Get.find<HomeController>();
-            controller.fetchCategoryProducts(controller
-                .categories.value.productAttributeItems!.first.id
-                .toString());
-
+            selectedIndexNotifier.value = index;
+            controller.fetchCategoryProductsa(category["id"].toString());
             controller.setSelectedCategory(
-                controller.categories.value.productAttributeItems?.first ??
-                    ProductAttributeItems());
+                category['model'] ?? ProductAttributeItems());
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),

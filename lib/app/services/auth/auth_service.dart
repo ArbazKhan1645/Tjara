@@ -10,9 +10,9 @@ import '../app/app_service.dart';
 class AuthService extends GetxService {
   static AuthService get instance => Get.find<AuthService>();
   late final AppService _appService;
-  late final BehaviorSubject<CustomerModel?> _authCustomerBehaviorSubject;
+  late final BehaviorSubject<LoginResponse?> _authCustomerBehaviorSubject;
 
-  BehaviorSubject<CustomerModel?>? get authCustomerBehaviorSubject =>
+  BehaviorSubject<LoginResponse?>? get authCustomerBehaviorSubject =>
       _authCustomerBehaviorSubject;
 
   Future<AuthService> init() async {
@@ -27,17 +27,17 @@ class AuthService extends GetxService {
         _appService.sharedPreferences.getString('current_user');
     if (authCustomerId != null) {
       _authCustomerBehaviorSubject
-          .add(CustomerModel.fromJson(jsonDecode(authCustomerId)));
+          .add(LoginResponse.fromJson(jsonDecode(authCustomerId)));
     }
   }
 
-  void saveAuthState(CustomerModel customer) {
+  void saveAuthState(LoginResponse customer) {
     _appService.sharedPreferences
         .setString('current_user', jsonEncode(customer.toJson()));
     _authCustomerBehaviorSubject.add(customer);
   }
 
-  CustomerModel? get authCustomer {
+  LoginResponse? get authCustomer {
     return _authCustomerBehaviorSubject.value;
   }
 

@@ -46,6 +46,7 @@ class CategoryViewBody extends StatelessWidget {
       // SuperDealsWidget(),
       // ProductNavBar(),
       CategoriesProductGrid(),
+      SizedBox(height: 100)
       // OfferBannerWidget(),
       // JobSearchBox(),
       // ServicesScreen(),

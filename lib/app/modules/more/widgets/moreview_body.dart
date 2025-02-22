@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/core/utils/thems/theme.dart';
-import 'package:tjara/app/modules/dialogs/contact_us.dart';
+import 'package:tjara/app/modules/authentication/dialogs/contact_us.dart';
 import 'package:tjara/app/routes/app_pages.dart';
 import 'package:tjara/app/services/auth/apis.dart';
 
@@ -47,7 +47,7 @@ class MoreviewBody extends StatelessWidget {
                     children: [
                       SizedBox(height: 20),
                       TextButton(
-                          onPressed: () {},
+                          onPressed: () async {},
                           child: Text('Links',
                               style: TextStyle(
                                   color: Colors.black87,

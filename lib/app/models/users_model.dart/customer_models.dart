@@ -1,118 +1,155 @@
-class CustomerModel {
-  final int? id;
-  final String? createdAt;
-  final String? updatedAt;
+import 'dart:convert';
+
+class LoginResponse {
+  final String? message;
+  final String? token;
+  final String? role;
+  final User? user;
+
+  LoginResponse({this.message, this.token, this.role, this.user});
+
+  factory LoginResponse.fromJson(Map<String, dynamic> json) {
+    return LoginResponse(
+      message: json['message'],
+      token: json['token'],
+      role: json['role'],
+      user: json['user'] != null ? User.fromJson(json['user']) : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'message': message,
+      'token': token,
+      'role': role,
+      'user': user?.toJson(),
+    };
+  }
+}
+
+class User {
+  final String? id;
+  final String? prevId;
   final String? firstName;
   final String? lastName;
   final String? email;
   final String? phone;
-  final String? buildingNumber;
-  final String? street;
-  final String? city;
-  final String? country;
-  final String? zipCode;
-  final String? roles;
-  final String? accountName;
-  final String? accountNumber;
-  final int? sortCode;
+  final String? thumbnailId;
+  final String? authToken;
+  final String? phoneVerificationCode;
+  final String? emailVerifiedAt;
+  final String? role;
+  final String? status;
+  final String? createdAt;
+  final String? updatedAt;
+  final Thumbnail? thumbnail;
+  final Meta? meta;
+  final String? address;
 
-  CustomerModel({
+  User({
     this.id,
-    this.createdAt,
-    this.updatedAt,
+    this.prevId,
     this.firstName,
     this.lastName,
     this.email,
     this.phone,
-    this.buildingNumber,
-    this.street,
-    this.city,
-    this.country,
-    this.zipCode,
-    this.roles,
-    this.accountName,
-    this.accountNumber,
-    this.sortCode,
+    this.thumbnailId,
+    this.authToken,
+    this.phoneVerificationCode,
+    this.emailVerifiedAt,
+    this.role,
+    this.status,
+    this.createdAt,
+    this.updatedAt,
+    this.thumbnail,
+    this.meta,
+    this.address,
   });
 
-  factory CustomerModel.fromJson(Map<String, dynamic> json) {
-    return CustomerModel(
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
       id: json['id'],
+      prevId: json['prev_id'],
+      firstName: json['first_name'],
+      lastName: json['last_name'],
+      email: json['email'],
+      phone: json['phone'],
+      thumbnailId: json['thumbnail_id'],
+      authToken: json['authToken'],
+      phoneVerificationCode: json['phone_verification_code'],
+      emailVerifiedAt: json['email_verified_at'],
+      role: json['role'],
+      status: json['status'],
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],
-      firstName: json['first_name'] ?? 'N/A',
-      lastName: json['last_name'] ?? 'N/A',
-      email: json['email'] ?? 'N/A',
-      phone: json['phone'] ?? 'N/A',
-      buildingNumber: json['building_number'] ?? 'N/A',
-      street: json['street'] ?? 'N/A',
-      city: json['city'] ?? 'N/A',
-      country: json['country'] ?? 'N/A',
-      zipCode: json['zip_code'] ?? 'N/A',
-      roles: json['roles'] ?? 'user',
-      accountName: json['account_name'] ?? 'N/A',
-      accountNumber: json['account_number'] ?? 'N/A',
-      sortCode: json['sort_code'],
+      thumbnail: json['thumbnail'] != null
+          ? Thumbnail.fromJson(json['thumbnail'])
+          : null,
+      meta: json['meta'] != null ? Meta.fromJson(json['meta']) : null,
+      address: json['address'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'created_at': createdAt,
-      'updated_at': updatedAt,
+      'prev_id': prevId,
       'first_name': firstName,
       'last_name': lastName,
       'email': email,
       'phone': phone,
-      'building_number': buildingNumber,
-      'street': street,
-      'city': city,
-      'country': country,
-      'zip_code': zipCode,
-      'roles': roles,
-      'account_name': accountName,
-      'account_number': accountNumber,
-      'sort_code': sortCode,
+      'thumbnail_id': thumbnailId,
+      'authToken': authToken,
+      'phone_verification_code': phoneVerificationCode,
+      'email_verified_at': emailVerifiedAt,
+      'role': role,
+      'status': status,
+      'created_at': createdAt,
+      'updated_at': updatedAt,
+      'thumbnail': thumbnail?.toJson(),
+      'meta': meta?.toJson(),
+      'address': address,
     };
   }
+}
 
-  // CopyWith function
-  CustomerModel copyWith({
-    int? id,
-    String? createdAt,
-    String? updatedAt,
-    String? firstName,
-    String? lastName,
-    String? email,
-    String? phone,
-    String? buildingNumber,
-    String? street,
-    String? city,
-    String? country,
-    String? zipCode,
-    String? roles,
-    String? accountName,
-    String? accountNumber,
-    int? sortCode,
-  }) {
-    return CustomerModel(
-      id: id ?? this.id,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      firstName: firstName ?? this.firstName,
-      lastName: lastName ?? this.lastName,
-      email: email ?? this.email,
-      phone: phone ?? this.phone,
-      buildingNumber: buildingNumber ?? this.buildingNumber,
-      street: street ?? this.street,
-      city: city ?? this.city,
-      country: country ?? this.country,
-      zipCode: zipCode ?? this.zipCode,
-      roles: roles ?? this.roles,
-      accountName: accountName ?? this.accountName,
-      accountNumber: accountNumber ?? this.accountNumber,
-      sortCode: sortCode ?? this.sortCode,
+class Thumbnail {
+  final String? message;
+
+  Thumbnail({this.message});
+
+  factory Thumbnail.fromJson(Map<String, dynamic> json) {
+    return Thumbnail(
+      message: json['message'],
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'message': message,
+    };
+  }
+}
+
+class Meta {
+  final String? dashboardView;
+
+  Meta({this.dashboardView});
+
+  factory Meta.fromJson(Map<String, dynamic> json) {
+    return Meta(
+      dashboardView: json['dashboard-view'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'dashboard-view': dashboardView,
+    };
+  }
+}
+
+LoginResponse parseLoginResponse(String jsonString) {
+  final Map<String, dynamic> jsonData = json.decode(jsonString);
+  return LoginResponse.fromJson(jsonData);
 }

@@ -16,11 +16,7 @@ class _CategoriesProductGridState extends State<CategoriesProductGrid> {
   Widget build(BuildContext context) {
     return GetBuilder<HomeController>(
       builder: (controller) {
-        if (controller.categoryproducts.value.products!.data!.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (controller.categoryproducts.value.products!.data!.isEmpty) {
+        if (controller.filterCategoryproducts.value.products!.data!.isEmpty) {
           return const Center(child: Text('No products available'));
         }
 
@@ -32,10 +28,11 @@ class _CategoriesProductGridState extends State<CategoriesProductGrid> {
             crossAxisCount: 2,
             mainAxisSpacing: 20,
             crossAxisSpacing: 10,
-            itemCount: controller.categoryproducts.value.products!.data!.length,
+            itemCount:
+                controller.filterCategoryproducts.value.products!.data!.length,
             itemBuilder: (context, index) {
-              final product =
-                  controller.categoryproducts.value.products!.data![index];
+              final product = controller
+                  .filterCategoryproducts.value.products!.data![index];
               return ProductCard(product: product, index: index);
             },
           ),

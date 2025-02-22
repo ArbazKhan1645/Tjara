@@ -18,7 +18,7 @@ class ProductModel {
 
 class Products {
   final num? currentPage; // Changed to num?
-  final List<ProductDatum>? data;
+  List<ProductDatum>? data;
 
   Products({this.currentPage, this.data});
 

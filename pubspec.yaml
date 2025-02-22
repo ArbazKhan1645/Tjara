@@ -54,6 +54,7 @@ dependencies:
   flutter_animate: ^4.5.2
   smooth_page_indicator: ^1.2.0+3
   color_parser: ^0.0.3
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:

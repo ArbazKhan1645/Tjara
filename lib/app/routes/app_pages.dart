@@ -1,6 +1,8 @@
 import 'package:get/get.dart';
 
 import '../modules/auth/auth.dart';
+import '../modules/authentication/bindings/authentication_binding.dart';
+import '../modules/authentication/views/authentication_view.dart';
 import '../modules/blog/bindings/blog_binding.dart';
 import '../modules/blog/views/blog_view.dart';
 import '../modules/categories/bindings/categories_binding.dart';
@@ -97,6 +99,11 @@ class AppPages {
       name: _Paths.MORE,
       page: () => const MoreView(),
       binding: MoreBinding(),
+    ),
+    GetPage(
+      name: _Paths.AUTHENTICATION,
+      page: () => const AuthenticationView(),
+      binding: AuthenticationBinding(),
     ),
   ];
 }

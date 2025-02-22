@@ -20,7 +20,7 @@ class _CategorySectionNewState extends State<CategorySectionNew> {
   final ScrollController _scrollController = ScrollController();
 
   late final HomeController _controller;
-  List<Map<String, String>> _categoryList = [];
+  List<Map<String, dynamic>> _categoryList = [];
 
   @override
   void initState() {
@@ -35,6 +35,8 @@ class _CategorySectionNewState extends State<CategorySectionNew> {
             .map((e) => {
                   "icon": e.thumbnail!.media!.url!,
                   "name": e.name!,
+                  'id': e.id!,
+                  'model': e
                 })
             .toList() ??
         [];
@@ -55,43 +57,55 @@ class _CategorySectionNewState extends State<CategorySectionNew> {
       final topCategories = _categoryList;
 
       return SizedBox(
-        child: SingleChildScrollView(
-          controller: _scrollController,
-          scrollDirection: Axis.horizontal,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 20),
-              _CategoryRow(
-                categories: topCategories,
-                startIndex: 0,
-                selectedIndexNotifier: _selectedIndex,
+        child: Column(
+          children: [
+            SingleChildScrollView(
+              controller: _scrollController,
+              scrollDirection: Axis.horizontal,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 20),
+                  _CategoryRow(
+                    categories: topCategories,
+                    startIndex: 0,
+                    selectedIndexNotifier: _selectedIndex,
+                  ),
+                ],
               ),
-              SizedBox(height: 20),
-              Container(
-                  height: 60,
-                  width: MediaQuery.of(context).size.width,
-                  color: Colors.grey.shade300,
-                  child: Row(
-                    children: [
-                      SizedBox(width: 10),
-                      Container(
-                        width: 150,
-                        height: 40,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20)),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.filter),
-                            SizedBox(width: 10),
-                            Text('Filter')
-                          ],
-                        ),
+            ),
+            SizedBox(height: 20),
+            Container(
+                height: 60,
+                width: MediaQuery.of(context).size.width,
+                color: Colors.grey.shade300,
+                child: Row(
+                  children: [
+                    SizedBox(width: 10),
+                    Container(
+                      width: 150,
+                      height: 40,
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.filter),
+                          SizedBox(width: 10),
+                          Text('Filter')
+                        ],
                       ),
-                      SizedBox(width: 10),
-                      Container(
+                    ),
+                    SizedBox(width: 10),
+                    InkWell(
+                      onTap: () async {
+                        String? res = await showdialogwidget(context);
+                        if (res != null) {
+                          _controller.filterCategoryProductss(res);
+                        }
+                      },
+                      child: Container(
                         width: 200,
                         height: 40,
                         decoration: BoxDecoration(
@@ -107,10 +121,10 @@ class _CategorySectionNewState extends State<CategorySectionNew> {
                           ],
                         ),
                       ),
-                    ],
-                  ))
-            ],
-          ),
+                    ),
+                  ],
+                ))
+          ],
         ),
       );
     });
@@ -124,7 +138,7 @@ class _CategoryRow extends StatelessWidget {
     required this.selectedIndexNotifier,
   });
 
-  final List<Map<String, String>> categories;
+  final List<Map<String, dynamic>> categories;
   final int startIndex;
   final ValueNotifier<int> selectedIndexNotifier;
 
@@ -152,7 +166,7 @@ class _CategoryItem extends StatelessWidget {
     required this.selectedIndexNotifier,
   });
 
-  final Map<String, String> category;
+  final Map<String, dynamic> category;
   final int index;
   final ValueNotifier<int> selectedIndexNotifier;
 
@@ -164,12 +178,11 @@ class _CategoryItem extends StatelessWidget {
         final bool isSelected = index == selectedIndex;
         return GestureDetector(
           onTap: () {
-            selectedIndexNotifier.value = index;
             var controller = Get.find<HomeController>();
-            print('object');
+            selectedIndexNotifier.value = index;
+            controller.fetchCategoryProductsa(category["id"].toString());
             controller.setSelectedCategory(
-                controller.categories.value.productAttributeItems?.first ??
-                    ProductAttributeItems());
+                category['model'] ?? ProductAttributeItems());
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
