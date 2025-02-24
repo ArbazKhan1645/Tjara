@@ -189,31 +189,6 @@ class HomeController extends GetxController {
     update();
   }
 
-  // Future<void> fetchAlbum(String categoryId) async {
-  //   final response = await http.get(
-  //     Uri.parse('https://api.tjara.com/api/products'),
-  //     headers: {
-  //       'filterByAttributes': jsonEncode({
-  //         'filterJoin': 'AND',
-  //         'attributes': [
-  //           {'key': 'categories', 'value': categoryId, 'operator': '='}
-  //         ],
-  //       }),
-  //     },
-  //   );
-
-  //   try {
-  //     var res = jsonDecode(response.body) as Map<String, dynamic>;
-  //     categoryproducts.value = ProductModel.fromJson(res);
-  //     print(ProductModel.fromJson(res));
-  //     update();
-  //   } catch (e) {
-  //     if (kDebugMode) {
-  //       print("Error fetching categories: $e");
-  //     }
-  //   }
-  // }
-
   Future<void> fetchMoreProducts() async {
     final url = 'https://api.tjara.com/api/products?page=$page';
     try {

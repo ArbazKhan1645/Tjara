@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
+import 'package:tjara/app/routes/app_pages.dart';
 import '../../../models/products/products_model.dart';
 import '../../product_detail_screen/views/product_detail_screen_view.dart';
 import '../controllers/home_controller.dart';
@@ -247,17 +248,22 @@ class LightningDealCard extends StatelessWidget {
                             size: 14, color: Colors.red),
                       SizedBox(width: 5),
                       Expanded(
-                        flex: 4,
-                        child: Text(
-                          product.shop?.shop?.name ?? '',
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
+                          flex: 4,
+                          child: TextButton(
+                              onPressed: () {
+                                Get.toNamed(Routes.STORE_PAGE, arguments: {
+                                  'shopid': product.shop?.shop?.id.toString()
+                                });
+                              },
+                              child: Text(
+                                product.shop?.shop?.name ?? '',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ))),
                       Expanded(
                         flex: 6,
                         child: Row(

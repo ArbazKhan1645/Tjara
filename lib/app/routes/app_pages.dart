@@ -41,10 +41,9 @@ class AppPages {
       // binding: HomeBinding(),
       children: [
         GetPage(
-          name: _Paths.HOME,
-          page: () => const HomeView(),
-          binding: HomeBinding(),
-        ),
+            name: _Paths.HOME,
+            page: () => const HomeView(),
+            binding: HomeBinding()),
       ],
     ),
     GetPage(

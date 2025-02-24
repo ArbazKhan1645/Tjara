@@ -119,6 +119,24 @@ class CategoryApiService {
     }
   }
 
+  Future<dynamic> fetchProductsOfShop({int page = 1, String? shopId}) async {
+    final Uri url = Uri.parse(
+        '$baseUrl?with=thumbnail,shop&filterJoin=OR&orderBy=created_at&order=desc&page=$page&per_page=$perPage&filterByColumn[filterJoin]=AND&filterByColumn[attributes][0][key]=shop_id&filterByColumn[attributes][0][value]=$shopId&filterByColumn[attributes][0][operator]=%3D');
+
+    try {
+      final response = await http.get(url);
+      print(response.body);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        return data;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
+
   // Future<Map<String, dynamic>> fetchNextPage() async {
   //   if (!hasMoreData)
   //     return {'success': false, 'message': 'No more data available'};

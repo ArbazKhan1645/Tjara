@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:tjara/app/core/utils/constants/assets_manager.dart';
 import 'package:tjara/app/core/utils/thems/my_colors.dart';
 import 'package:tjara/app/core/utils/thems/theme.dart';
-import 'package:tjara/app/modules/home/widgets/products_grid.dart';
+import 'package:tjara/app/modules/store_page/pages/products_grid.dart';
 
 class StorePageSectionForm extends StatefulWidget {
   const StorePageSectionForm({super.key});
@@ -17,7 +17,7 @@ class _StorePageSectionFormState extends State<StorePageSectionForm> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
-    ProductGrid(),
+    StoreProductGrid(),
     Center(child: Text("All Products")),
     Center(child: Text("About Us")),
   ];
