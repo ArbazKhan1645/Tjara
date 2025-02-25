@@ -65,9 +65,9 @@ class AuthenticationApiService {
       print(response.statusCode);
       print(response.body);
       if (response.statusCode == 200) {
+        Get.back();
         Get.snackbar('Success', 'User Register Sucessfully',
             backgroundColor: Colors.green, colorText: Colors.white);
-        Get.back();
         showContactDialog(context, LoginUi());
       } else {
         Get.snackbar('Error', 'User Register failed ${response.statusCode}',

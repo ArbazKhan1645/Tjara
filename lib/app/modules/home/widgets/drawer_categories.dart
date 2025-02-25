@@ -15,20 +15,14 @@ class DrawerCategories extends StatefulWidget {
 }
 
 class _DrawerCategoriesState extends State<DrawerCategories> {
-  static const double _kInitialScrollProgress = 0.2;
-  final ValueNotifier<int> _selectedIndex = ValueNotifier<int>(-1);
-  final ScrollController _scrollController = ScrollController();
-  final ValueNotifier<double> _scrollProgress =
-      ValueNotifier<double>(_kInitialScrollProgress);
-
   late final HomeController _controller;
   List<Map<String, String>> _categoryList = [];
 
   @override
   void initState() {
     super.initState();
-    _controller = Get.put(HomeController());
-    _scrollController.addListener(_updateScrollProgress);
+    _controller = Get.find<HomeController>();
+
     _initializeCategoryList();
   }
 
@@ -43,27 +37,6 @@ class _DrawerCategoriesState extends State<DrawerCategories> {
         [];
   }
 
-  void _updateScrollProgress() {
-    if (!_scrollController.hasClients ||
-        _scrollController.position.maxScrollExtent == 0) {
-      return;
-    }
-
-    final progress =
-        _scrollController.offset / _scrollController.position.maxScrollExtent;
-    _scrollProgress.value =
-        (progress.isNaN ? _kInitialScrollProgress : progress).clamp(0.2, 1.0);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.removeListener(_updateScrollProgress);
-    _scrollController.dispose();
-    _selectedIndex.dispose();
-    _scrollProgress.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Obx(() {
@@ -76,9 +49,7 @@ class _DrawerCategoriesState extends State<DrawerCategories> {
         return const SizedBox.shrink();
       }
 
-      final int midIndex = (_categoryList.length / 2).ceil();
-      final topCategories = _categoryList.sublist(0, midIndex);
-      final bottomCategories = _categoryList.sublist(midIndex);
+      final topCategories = _categoryList;
 
       return Column(
         children: [
@@ -100,7 +71,6 @@ class _DrawerCategoriesState extends State<DrawerCategories> {
             child: _CategoryRow(
               categories: topCategories,
               startIndex: 0,
-              selectedIndexNotifier: _selectedIndex,
             ),
           ),
         ],
@@ -110,15 +80,10 @@ class _DrawerCategoriesState extends State<DrawerCategories> {
 }
 
 class _CategoryRow extends StatelessWidget {
-  const _CategoryRow({
-    required this.categories,
-    required this.startIndex,
-    required this.selectedIndexNotifier,
-  });
+  const _CategoryRow({required this.categories, required this.startIndex});
 
   final List<Map<String, String>> categories;
   final int startIndex;
-  final ValueNotifier<int> selectedIndexNotifier;
 
   @override
   Widget build(BuildContext context) {
@@ -126,8 +91,8 @@ class _CategoryRow extends StatelessWidget {
       shrinkWrap: true,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
+        crossAxisSpacing: 0,
+        mainAxisSpacing: 0,
       ),
       itemCount: categories.length,
       itemBuilder: (context, index) {
@@ -136,7 +101,6 @@ class _CategoryRow extends StatelessWidget {
         return _CategoryItem(
           category: category,
           index: realIndex,
-          selectedIndexNotifier: selectedIndexNotifier,
         );
       },
     );
@@ -147,48 +111,39 @@ class _CategoryItem extends StatelessWidget {
   const _CategoryItem({
     required this.category,
     required this.index,
-    required this.selectedIndexNotifier,
   });
 
   final Map<String, String> category;
   final int index;
-  final ValueNotifier<int> selectedIndexNotifier;
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<int>(
-      valueListenable: selectedIndexNotifier,
-      builder: (context, selectedIndex, _) {
-        final bool isSelected = index == selectedIndex;
-        return GestureDetector(
-          onTap: () => selectedIndexNotifier.value = index,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: SizedBox(
-              width: 84,
-              child: Column(
-                children: [
-                  _CategoryImage(
-                      key: ValueKey('image_${category["icon"]}'),
-                      imageUrl: category['icon']!),
-                  const SizedBox(height: 5),
-                  Text(
-                    category["name"]!,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w400,
-                      color: isSelected ? Colors.red : Colors.black,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+    return GestureDetector(
+      onTap: () => {},
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: SizedBox(
+          child: Column(
+            children: [
+              _CategoryImage(
+                  key: ValueKey('image_${category["icon"]}'),
+                  imageUrl: category['icon']!),
+              const SizedBox(height: 5),
+              Text(
+                category["name"].toString(),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.black,
+                ),
+                textAlign: TextAlign.center,
               ),
-            ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }
@@ -239,8 +194,8 @@ class _CategoryImageState extends State<_CategoryImage> {
               return Transform.scale(
                 scale: scale,
                 child: Container(
-                  width: 90,
-                  height: 90,
+                  width: 70,
+                  height: 70,
                   decoration: BoxDecoration(
                     color: Colors.grey.shade100,
                     border: Border.all(color: Color(0xffD21642), width: 2),

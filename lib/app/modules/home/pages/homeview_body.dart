@@ -19,7 +19,9 @@ class HomeViewBody extends StatelessWidget {
       CategoryNavBar(),
       // PromoBanner(),
       SafePaymentButton(),
-      CategorySection(),
+      CategorySection(
+        key: ValueKey('categories'),
+      ),
       SuperDealsWidget(),
       ProductNavBar(),
       ProductGrid(),

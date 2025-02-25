@@ -50,12 +50,14 @@ class _CommonBaseBodySubScreenState extends State<CommonBaseBodySubScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      controller: widget.scrollController,
-      slivers: [
-        _buildSliverList(),
-      ],
-    );
+    return ListView.builder(
+        shrinkWrap: true,
+        itemCount: widget.screens.length,
+        cacheExtent: MediaQuery.of(context).size.height * 5,
+        controller: widget.scrollController,
+        itemBuilder: (context, index) {
+          return widget.screens[index];
+        });
   }
 
   Widget _buildSliverList() {

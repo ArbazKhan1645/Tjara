@@ -4,11 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/models/users_model.dart/customer_models.dart';
 import 'package:tjara/app/modules/categories/views/categories_view.dart';
-import 'package:tjara/app/modules/authentication/dialogs/contact_us.dart';
-import 'package:tjara/app/modules/authentication/dialogs/login.dart';
-import 'package:tjara/app/modules/authentication/dialogs/signUpaccount.dart';
 import 'package:tjara/app/modules/home/views/home_view.dart';
-import 'package:tjara/app/modules/home/widgets/auth.dart';
 import 'package:tjara/app/modules/more/views/more_view.dart';
 import 'package:tjara/app/modules/my_account/views/my_account_view.dart';
 import 'package:tjara/app/modules/my_cart/views/my_cart_view.dart';
@@ -29,8 +25,9 @@ class DashboardView extends GetView<DashboardController> {
           key: controller.scaffoldKey,
           drawer: Container(
               color: Colors.white,
-              width: MediaQuery.of(context).size.width / 1.5,
+              width: MediaQuery.of(context).size.width / 1.6,
               child: Drawer(
+                backgroundColor: Colors.white,
                 child: DrawerCategories(),
               )),
           floatingActionButtonLocation:
@@ -101,7 +98,13 @@ class DashboardView extends GetView<DashboardController> {
             if (index == 1) {
               controller.scaffoldKey.currentState?.openDrawer();
             } else if (index == 2) {
-              showContactDialog(context, LoginUi());
+              LoginResponse? usercurrent = AuthService.instance.authCustomer;
+              controller.changeIndex(index);
+              // if (usercurrent?.user == null) {
+              //   showContactDialog(context, LoginUi());
+              // } else {
+              //   controller.changeIndex(index);
+              // }
             } else if (index == 3) {
               controller.changeIndex(index);
             } else {

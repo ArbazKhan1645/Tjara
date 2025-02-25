@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class DashboardController extends GetxController {
-  RxInt selectedIndex = 4.obs;
+  RxInt selectedIndex = 0.obs;
 
   final List<Widget> pages = [
     const Center(child: Text("Home", style: TextStyle(fontSize: 20))),
