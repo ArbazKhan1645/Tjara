@@ -32,7 +32,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   borderRadius: BorderRadius.circular(40)),
               child: TextField(
                 controller: _searchController,
-                autofocus: true,
+                autofocus: false,
                 decoration: InputDecoration(
                   suffixIcon: CircleAvatar(
                     backgroundColor: Colors.black,

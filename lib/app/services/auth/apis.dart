@@ -120,6 +120,7 @@ class CategoryApiService {
   }
 
   Future<dynamic> fetchProductsOfShop({int page = 1, String? shopId}) async {
+    print(shopId);
     final Uri url = Uri.parse(
         '$baseUrl?with=thumbnail,shop&filterJoin=OR&orderBy=created_at&order=desc&page=$page&per_page=$perPage&filterByColumn[filterJoin]=AND&filterByColumn[attributes][0][key]=shop_id&filterByColumn[attributes][0][value]=$shopId&filterByColumn[attributes][0][operator]=%3D');
 

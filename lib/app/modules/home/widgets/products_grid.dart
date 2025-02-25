@@ -37,7 +37,7 @@ class _ProductGridState extends State<ProductGrid> {
         }
 
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: MasonryGridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -236,17 +236,15 @@ class LightningDealCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.only(left: 8, right: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       if ((product.shop?.shop?.isVerified ?? 0) == 1)
                         Icon(Icons.verified_outlined,
-                            size: 14, color: Colors.red),
-                      SizedBox(width: 5),
+                            size: 10, color: Colors.red),
                       Expanded(
                           flex: 4,
                           child: TextButton(
@@ -257,40 +255,39 @@ class LightningDealCard extends StatelessWidget {
                               },
                               child: Text(
                                 product.shop?.shop?.name ?? '',
-                                maxLines: 2,
+                                maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  fontSize: 11,
+                                  fontSize: 8,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ))),
                       Expanded(
-                        flex: 6,
+                        flex: 4,
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               ...List.generate(
                                 5,
-                                (index) => Padding(
-                                  padding: EdgeInsets.only(),
-                                  child: Image.asset(
-                                    index < 4
-                                        ? 'assets/images/star.png'
-                                        : 'assets/images/star.png',
-                                    height: 14,
-                                  ),
+                                (index) => Image.asset(
+                                  index < 4
+                                      ? 'assets/images/star.png'
+                                      : 'assets/images/star.png',
+                                  height: 8,
                                 ),
                               ),
+                              SizedBox(width: 2),
                               Text(
-                                  '(${(product.rating?.length ?? 0).toString()})'),
+                                  '(${(product.rating?.length ?? 0).toString()})',
+                                  style: TextStyle(fontSize: 10)),
                             ]),
                       ),
-                      Icon(Icons.remove_red_eye, size: 15),
                       SizedBox(width: 2),
-                      Text((product.meta?.views ?? 0).toString())
+                      Icon(Icons.remove_red_eye, size: 12),
+                      Text((product.meta?.views ?? 0).toString(),
+                          style: TextStyle(fontSize: 12)),
                     ],
                   ),
-                  SizedBox(height: 5),
                   Text(
                     product.name.toString(),
                     maxLines: 1,
@@ -300,7 +297,7 @@ class LightningDealCard extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                         color: Colors.green),
                   ),
-                  SizedBox(height: 15),
+                  SizedBox(height: 5),
                   Row(
                     children: [
                       // Text(
