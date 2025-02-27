@@ -214,6 +214,10 @@ class DeviceActivationController extends GetxController {
   final _authService = Get.find<AuthService>();
 
   var isLoading = false.obs;
+  setIsloading(){
+    isLoading.value = !isLoading.value;
+    update();
+  }
 
   XFile? image;
 

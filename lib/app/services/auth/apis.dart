@@ -1,20 +1,16 @@
-// ignore_for_file: depend_on_referenced_packages
+// ignore_for_file: depend_on_referenced_packages, use_build_context_synchronously
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:tjara/app/models/users_model.dart/customer_models.dart';
-import 'package:tjara/app/modules/authentication/dialogs/contact_us.dart';
-
 import 'dart:async';
-
-import 'package:tjara/app/modules/authentication/dialogs/login.dart';
+import 'package:tjara/app/services/auth/auth_service.dart';
 
 class AuthenticationApiService {
   static Future<dynamic> loginUser(String email, String password) async {
     const String url = 'https://api.tjara.com/api/login';
-
     try {
       final response = await http.post(
         Uri.parse(url),
@@ -62,22 +58,34 @@ class AuthenticationApiService {
           // 'invited_by': invitedBy,
         },
       );
-      print(response.statusCode);
-      print(response.body);
+
       if (response.statusCode == 200) {
-        Get.back();
-        Get.snackbar('Success', 'User Register Sucessfully',
-            backgroundColor: Colors.green, colorText: Colors.white);
-        showContactDialog(context, LoginUi());
+        final responseLogin = await http.post(
+          Uri.parse('https://api.tjara.com/api/login'),
+          headers: {"Content-Type": "application/x-www-form-urlencoded"},
+          body: {'email': email, 'password': password},
+        ).timeout(Duration(seconds: 10));
+
+        if (responseLogin.statusCode == 200) {
+          LoginResponse login = parseLoginResponse(responseLogin.body);
+          _authService.saveAuthState(login);
+          Get.back();
+          Get.snackbar('Success', 'User Register Sucessfully',
+              backgroundColor: Colors.green, colorText: Colors.white);
+        } else {
+          return "Error: ${response.statusCode} - ${response.body}";
+        }
       } else {
-        Get.snackbar('Error', 'User Register failed ${response.statusCode}',
+        Get.snackbar('Error', 'User Register failed ${response.body}',
             backgroundColor: Colors.red, colorText: Colors.white);
       }
     } catch (e) {
-      Get.snackbar('Error', 'User Register failed  ${e}',
+      Get.snackbar('Error', 'User Register failed  $e',
           backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
+
+  static final _authService = Get.find<AuthService>();
 }
 
 void login() async {
@@ -120,13 +128,14 @@ class CategoryApiService {
   }
 
   Future<dynamic> fetchProductsOfShop({int page = 1, String? shopId}) async {
-    print(shopId);
-    final Uri url = Uri.parse(
-        '$baseUrl?with=thumbnail,shop&filterJoin=OR&orderBy=created_at&order=desc&page=$page&per_page=$perPage&filterByColumn[filterJoin]=AND&filterByColumn[attributes][0][key]=shop_id&filterByColumn[attributes][0][value]=$shopId&filterByColumn[attributes][0][operator]=%3D');
+    String url =
+        'https://api.tjara.com/api/products?with=thumbnail,shop&filterJoin=OR&orderBy=created_at&order=desc&page=1&per_page=50&filterByColumns[filterJoin]=AND&filterByColumns[columns][0][column]=shop_id&filterByColumns[columns][0][value]=$shopId&filterByColumns[columns][0][operator]=%3D';
+    // final Uri url = Uri.parse(
+    //     '$baseUrl?with=thumbnail,shop&filterJoin=OR&orderBy=created_at&order=desc&page=$page&per_page=$perPage&filterByColumn[filterJoin]=AND&filterByColumn[attributes][0][key]=shop_id&filterByColumn[attributes][0][value]=$shopId&filterByColumn[attributes][0][operator]=%3D');
 
     try {
-      final response = await http.get(url);
-      print(response.body);
+      final response = await http.get(Uri.parse(url));
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         return data;

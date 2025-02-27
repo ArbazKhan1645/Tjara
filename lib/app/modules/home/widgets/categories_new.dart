@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:tjara/app/core/locators/cache_images.dart';
 import 'package:tjara/app/models/categories/categories_model.dart';
 import '../controllers/home_controller.dart';
 
@@ -79,50 +80,53 @@ class _CategorySectionNewState extends State<CategorySectionNew> {
                 height: 60,
                 width: MediaQuery.of(context).size.width,
                 color: Colors.grey.shade300,
-                child: Row(
-                  children: [
-                    SizedBox(width: 10),
-                    Container(
-                      width: 150,
-                      height: 40,
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20)),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.filter),
-                          SizedBox(width: 10),
-                          Text('Filter')
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: 10),
-                    InkWell(
-                      onTap: () async {
-                        String? res = await showdialogwidget(context);
-                        if (res != null) {
-                          _controller.filterCategoryProductss(res);
-                        }
-                      },
-                      child: Container(
-                        width: 200,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      SizedBox(width: 10),
+                      Container(
+                        width: 150,
                         height: 40,
                         decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(20)),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
+                            Icon(Icons.filter),
                             SizedBox(width: 10),
-                            Text('Most Recent'),
-                            Icon(Icons.arrow_forward_ios, size: 12),
-                            SizedBox(width: 10),
+                            Text('Filter')
                           ],
                         ),
                       ),
-                    ),
-                  ],
+                      SizedBox(width: 10),
+                      InkWell(
+                        onTap: () async {
+                          String? res = await showdialogwidget(context);
+                          if (res != null) {
+                            _controller.filterCategoryProductss(res);
+                          }
+                        },
+                        child: Container(
+                          width: 200,
+                          height: 40,
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              SizedBox(width: 10),
+                              Text('Most Recent'),
+                              Icon(Icons.arrow_forward_ios, size: 12),
+                              SizedBox(width: 10),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ))
           ],
         ),
@@ -269,6 +273,7 @@ class _CategoryImageState extends State<_CategoryImage> {
                     shape: BoxShape.circle,
                   ),
                   child: CachedNetworkImage(
+                    cacheManager: PersistentCacheManager(),
                     imageUrl: widget.imageUrl,
                     imageBuilder: (context, imageProvider) =>
                         _buildCircularImage(imageProvider),

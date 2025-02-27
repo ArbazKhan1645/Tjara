@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/core/utils/constants/assets_manager.dart';
-import 'package:tjara/app/routes/app_pages.dart';
+// import 'package:tjara/app/routes/app_pages.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final TextEditingController _searchController = TextEditingController();
@@ -20,7 +20,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         children: [
           GestureDetector(
               onTap: () {
-                Get.offNamed(Routes.DASHBOARD);
+                if (Get.previousRoute.isNotEmpty) {
+                  Navigator.of(context).pop();
+                }
               },
               child: Image.asset(AppAssets.logo, height: 40)),
           SizedBox(width: 10),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:tjara/app/modules/home/controllers/home_controller.dart';
 import 'package:tjara/app/modules/home/widgets/products_grid.dart';
 
@@ -16,8 +17,25 @@ class _CategoriesProductGridState extends State<CategoriesProductGrid> {
   Widget build(BuildContext context) {
     return GetBuilder<HomeController>(
       builder: (controller) {
+        if (controller.iscategoryLoading.value) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            child: MasonryGridView.count(
+              key: PageStorageKey<String>('productGridKey'),
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              mainAxisSpacing: 20,
+              crossAxisSpacing: 10,
+              itemCount: 6,
+              itemBuilder: (context, index) {
+                return _buildShimmerCard();
+              },
+            ),
+          );
+        }
         if (controller.filterCategoryproducts.value.products!.data!.isEmpty) {
-          return const Center(child: Text('No products available'));
+          return Center(child: Text('No Products found of this category'));
         }
 
         return Padding(
@@ -38,6 +56,20 @@ class _CategoriesProductGridState extends State<CategoriesProductGrid> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildShimmerCard() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Container(
+        height: 180,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
     );
   }
 }

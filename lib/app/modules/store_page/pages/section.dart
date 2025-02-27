@@ -1,9 +1,11 @@
 // ignore_for_file: library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:tjara/app/core/utils/constants/assets_manager.dart';
 import 'package:tjara/app/core/utils/thems/my_colors.dart';
 import 'package:tjara/app/core/utils/thems/theme.dart';
+import 'package:tjara/app/modules/store_page/controllers/store_page_controller.dart';
 import 'package:tjara/app/modules/store_page/pages/products_grid.dart';
 
 class StorePageSectionForm extends StatefulWidget {
@@ -18,18 +20,24 @@ class _StorePageSectionFormState extends State<StorePageSectionForm> {
 
   final List<Widget> _screens = [
     StoreProductGrid(),
-    Center(child: Text("All Products")),
     Center(child: Text("About Us")),
   ];
 
+  var shopController = Get.find<StorePageController>();
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         Container(
-          color: AppColors.primaryColor,
+          decoration: BoxDecoration(
+            color: AppColors.primaryColor,
+            image: DecorationImage(
+                image: NetworkImage(
+                    shopController.currentSHop?.banner?.media.url ?? ''),
+                fit: BoxFit.cover),
+          ),
           height: 215,
-          padding: EdgeInsets.symmetric(horizontal: 30, vertical: 30),
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
           child: Column(
             children: [
               Row(
@@ -39,37 +47,46 @@ class _StorePageSectionFormState extends State<StorePageSectionForm> {
                     height: 62,
                     width: 62,
                     decoration: BoxDecoration(
-                        image: DecorationImage(
-                            image: AssetImage('assets/images/store.png')),
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12)),
+                        shape: BoxShape.circle, color: Colors.red),
+                    child: Center(
+                      child: Text(
+                        (shopController.currentSHop?.name ??
+                            'Shop Name not found '.toString())[0],
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 30),
+                      ),
+                    ),
                   ),
                   SizedBox(width: 20),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text("Stylish Collection Wholesellers",
-                          style: defaultTextStyle.copyWith(
-                              letterSpacing: 1.5,
-                              wordSpacing: 2,
-                              color: Colors.white)),
-                      Text("98.2% positive feedback (279)",
-                          style: defaultTextStyle.copyWith(
-                              color: Colors.white70,
-                              fontWeight: FontWeight.w400,
-                              fontSize: 14)),
-                      Text("1.1K items sold",
-                          style: defaultTextStyle.copyWith(
-                              color: Colors.white70,
-                              fontWeight: FontWeight.w400,
-                              fontSize: 14)),
-                      Text("96 followers",
-                          style: defaultTextStyle.copyWith(
-                              color: Colors.white70,
-                              fontWeight: FontWeight.w400,
-                              fontSize: 14)),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text(
+                            shopController.currentSHop?.name ??
+                                'Shop Name not found '.toString(),
+                            style: defaultTextStyle.copyWith(
+                                color: Colors.white, fontSize: 14)),
+                        Text("98.2% positive feedback (279)",
+                            style: defaultTextStyle.copyWith(
+                                color: Colors.white70,
+                                fontWeight: FontWeight.w400,
+                                fontSize: 12)),
+                        Text("1.1K items sold",
+                            style: defaultTextStyle.copyWith(
+                                color: Colors.white70,
+                                fontWeight: FontWeight.w400,
+                                fontSize: 12)),
+                        Text("96 followers",
+                            style: defaultTextStyle.copyWith(
+                                color: Colors.white70,
+                                fontWeight: FontWeight.w400,
+                                fontSize: 12)),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -165,15 +182,16 @@ class _StorePageSectionFormState extends State<StorePageSectionForm> {
           ),
         ),
         SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(width: 10),
-            _buildTabButton(0, "Home"),
-            _buildTabButton(1, "All Products"),
-            _buildTabButton(2, "About Us"),
-            SizedBox(width: 10),
-          ],
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              _buildTabButton(0, "All Products"),
+              _buildTabButton(1, "About Us"),
+            ],
+          ),
         ),
         SizedBox(height: 10),
         StoreProductNavBar(),
@@ -183,27 +201,25 @@ class _StorePageSectionFormState extends State<StorePageSectionForm> {
   }
 
   Widget _buildTabButton(int index, String label) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        child: Container(
-          margin: EdgeInsets.symmetric(horizontal: 4, vertical: 10),
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          decoration: BoxDecoration(
-            color: _selectedIndex == index ? Colors.red : Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Center(
-            child: Text(
-              label,
-              style: TextStyle(
-                color: _selectedIndex == index ? Colors.white : Colors.grey,
-                fontWeight: FontWeight.bold,
-              ),
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedIndex = index;
+        });
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+        decoration: BoxDecoration(
+          color: _selectedIndex == index ? Colors.red : Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: _selectedIndex == index ? Colors.white : Colors.grey,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),
@@ -236,52 +252,58 @@ class _StoreProductNavBarState extends State<StoreProductNavBar> {
         Container(
           color: AppColors.greyColor,
           height: 45,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: categories.asMap().entries.map((entry) {
-              int index = entry.key;
-              String category = entry.value;
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedIndex = index;
-                  });
-                },
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Center(
-                        child: Text(
-                          category,
-                          style: defaultTextStyle.copyWith(
-                            color: _selectedIndex == index
-                                ? AppColors.primaryColor
-                                : Color(0xff8E8E8E),
-                            fontWeight: _selectedIndex == index
-                                ? FontWeight.w500
-                                : FontWeight.w400,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: categories.asMap().entries.map((entry) {
+                int index = entry.key;
+                String category = entry.value;
+                return Padding(
+                  padding: const EdgeInsets.only(left: 20),
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedIndex = index;
+                      });
+                    },
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Center(
+                            child: Text(
+                              category,
+                              style: defaultTextStyle.copyWith(
+                                color: _selectedIndex == index
+                                    ? AppColors.primaryColor
+                                    : Color(0xff8E8E8E),
+                                fontWeight: _selectedIndex == index
+                                    ? FontWeight.w500
+                                    : FontWeight.w400,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                        Container(
+                          height: 4,
+                          width: _selectedIndex == index ? 80 : 20,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(6),
+                                topRight: Radius.circular(6)),
+                            color: _selectedIndex == index
+                                ? AppColors.primaryColor
+                                : Colors.transparent,
+                          ),
+                        ),
+                      ],
                     ),
-                    Container(
-                      height: 4,
-                      width: _selectedIndex == index ? 80 : 20,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(6),
-                            topRight: Radius.circular(6)),
-                        color: _selectedIndex == index
-                            ? AppColors.primaryColor
-                            : Colors.transparent,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
+                  ),
+                );
+              }).toList(),
+            ),
           ),
         ),
         Container(height: 2, color: Colors.grey.shade300)

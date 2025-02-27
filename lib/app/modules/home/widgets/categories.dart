@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:tjara/app/core/locators/cache_images.dart';
 import 'package:tjara/app/models/categories/categories_model.dart';
 import '../controllers/home_controller.dart';
 
@@ -15,7 +16,8 @@ class CategorySection extends StatefulWidget {
   State<CategorySection> createState() => _CategorySectionState();
 }
 
-class _CategorySectionState extends State<CategorySection> {
+class _CategorySectionState extends State<CategorySection>
+    with AutomaticKeepAliveClientMixin {
   static const double _kInitialScrollProgress = 0.2;
   final ValueNotifier<int> _selectedIndex = ValueNotifier<int>(-1);
   final ScrollController _scrollController = ScrollController();
@@ -67,57 +69,67 @@ class _CategorySectionState extends State<CategorySection> {
     super.dispose();
   }
 
+  final PageStorageBucket _bucket = PageStorageBucket();
+
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      if (_controller.categories.value.productAttributeItems == null) {
-        return const SizedBox.shrink();
-      }
-      _initializeCategoryList();
+    super.build(context);
+    return PageStorage(
+      bucket: _bucket,
+      child: Obx(() {
+        if (_controller.categories.value.productAttributeItems == null) {
+          return const SizedBox.shrink();
+        }
+        _initializeCategoryList();
 
-      if (_categoryList.isEmpty) {
-        return const SizedBox.shrink();
-      }
+        if (_categoryList.isEmpty) {
+          return const SizedBox.shrink();
+        }
 
-      final int midIndex = (_categoryList.length / 2).ceil();
-      final topCategories = _categoryList.sublist(0, midIndex);
-      final bottomCategories = _categoryList.sublist(midIndex);
+        final int midIndex = (_categoryList.length / 2).ceil();
+        final topCategories = _categoryList.sublist(0, midIndex);
+        final bottomCategories = _categoryList.sublist(midIndex);
 
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              scrollDirection: Axis.horizontal,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _CategoryRow(
-                    categories: topCategories,
-                    startIndex: 0,
-                    selectedIndexNotifier: _selectedIndex,
-                  ),
-                  const SizedBox(height: 15),
-                  _CategoryRow(
-                    categories: bottomCategories,
-                    startIndex: midIndex,
-                    selectedIndexNotifier: _selectedIndex,
-                  ),
-                ],
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              child: SingleChildScrollView(
+                key: PageStorageKey('product_categories'),
+                controller: _scrollController,
+                scrollDirection: Axis.horizontal,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _CategoryRow(
+                      categories: topCategories,
+                      startIndex: 0,
+                      selectedIndexNotifier: _selectedIndex,
+                    ),
+                    const SizedBox(height: 15),
+                    _CategoryRow(
+                      categories: bottomCategories,
+                      startIndex: midIndex,
+                      selectedIndexNotifier: _selectedIndex,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 10),
-          ValueListenableBuilder<double>(
-            valueListenable: _scrollProgress,
-            builder: (context, progress, _) {
-              return _ScrollProgressIndicator(progress: progress);
-            },
-          ),
-        ],
-      );
-    });
+            const SizedBox(height: 10),
+            ValueListenableBuilder<double>(
+              valueListenable: _scrollProgress,
+              builder: (context, progress, _) {
+                return _ScrollProgressIndicator(progress: progress);
+              },
+            ),
+          ],
+        );
+      }),
+    );
   }
 }
 
@@ -258,12 +270,15 @@ class _CategoryImageState extends State<_CategoryImage> {
                     border: Border.all(color: Color(0xffD21642), width: 2),
                     shape: BoxShape.circle,
                   ),
-                  child: CachedNetworkImage(
-                    imageUrl: widget.imageUrl,
-                    imageBuilder: (context, imageProvider) =>
-                        _buildCircularImage(imageProvider),
-                    errorWidget: (context, url, error) => _buildErrorWidget(),
-                    placeholder: (context, url) => _buildShimmer(),
+                  child: FutureBuilder<ImageProvider>(
+                    future: loadCachedImage(widget.imageUrl),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return _buildCircularImage(snapshot.data!);
+                      } else {
+                        return _buildErrorWidget();
+                      }
+                    },
                   ),
                 ),
               );

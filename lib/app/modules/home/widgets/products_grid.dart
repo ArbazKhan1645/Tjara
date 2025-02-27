@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:tjara/app/core/locators/cache_images.dart';
 import 'package:tjara/app/routes/app_pages.dart';
 import '../../../models/products/products_model.dart';
 import '../../product_detail_screen/views/product_detail_screen_view.dart';
@@ -15,43 +17,78 @@ class ProductGrid extends StatefulWidget {
   State<ProductGrid> createState() => _ProductGridState();
 }
 
-class _ProductGridState extends State<ProductGrid> {
-  final HomeController _homeController = Get.put(HomeController());
+class _ProductGridState extends State<ProductGrid>
+    with AutomaticKeepAliveClientMixin {
+  final PageStorageBucket _bucket = PageStorageBucket();
 
   @override
-  void initState() {
-    super.initState();
-    _homeController.fetchInitialProducts();
-  }
+  bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<HomeController>(
-      builder: (controller) {
-        if (controller.products.value.products!.data!.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    super.build(context);
+    return PageStorage(
+        bucket: _bucket,
+        child: GetBuilder<HomeController>(
+          builder: (controller) {
+            if ((controller.products.value.products?.data ?? []).isEmpty) {
+              return Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                child: MasonryGridView.count(
+                  key: PageStorageKey<String>('productGridKey'),
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 20,
+                  crossAxisSpacing: 10,
+                  itemCount: 6,
+                  itemBuilder: (context, index) {
+                    return _buildShimmerCard();
+                  },
+                ),
+              );
+            }
 
-        if (controller.products.value.products!.data!.isEmpty) {
-          return const Center(child: Text('No products available'));
-        }
+            if (controller.products.value.products!.data!.isEmpty) {
+              return const Center(child: Text('No products available'));
+            }
 
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          child: MasonryGridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            mainAxisSpacing: 20,
-            crossAxisSpacing: 10,
-            itemCount: controller.products.value.products!.data!.length,
-            itemBuilder: (context, index) {
-              final product = controller.products.value.products!.data![index];
-              return ProductCard(product: product, index: index);
-            },
-          ),
-        );
-      },
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              child: MasonryGridView.count(
+                key: PageStorageKey<String>('productGridKey'),
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                mainAxisSpacing: 20,
+                crossAxisSpacing: 10,
+                itemCount: controller.products.value.products!.data!.length,
+                itemBuilder: (context, index) {
+                  final product =
+                      controller.products.value.products!.data![index];
+                  return ProductCard(
+                      key: PageStorageKey('product_${product.id}'),
+                      product: product,
+                      index: index);
+                },
+              ),
+            );
+          },
+        ));
+  }
+
+  Widget _buildShimmerCard() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Container(
+        height: 180,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
     );
   }
 }
@@ -66,8 +103,11 @@ class ProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Get.to(() => ProductDetailScreenView(product: product));
-        // Get.offAll(() => ProductDetailScreen(product: product));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    ProductDetailScreenView(product: product)));
       },
       child: Stack(
         children: [
@@ -93,24 +133,61 @@ class ProductCard extends StatelessWidget {
                       const BorderRadius.vertical(top: Radius.circular(13.22)),
                   child: Stack(
                     children: [
-                      SizedBox(
-                        child: Image.network(
-                          product.thumbnail?.media?.url ?? 'moj',
-                          fit: BoxFit.fill,
-                          width: double.infinity,
-                          height: 140,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Image.asset(
-                              index.isEven
-                                  ? 'assets/images/beer2.png'
-                                  : 'assets/images/beer.png',
-                              fit: BoxFit.fill,
-                              width: double.infinity,
+                      FutureBuilder<ImageProvider>(
+                        future: loadCachedImage(
+                            product.thumbnail?.media?.url ?? 'moj'),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            return Container(
                               height: 140,
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: snapshot.data!,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
                             );
-                          },
-                        ),
+                          } else {
+                            return Container(
+                              height: 140,
+                              decoration: BoxDecoration(),
+                            );
+                          }
+                        },
                       ),
+                      // CachedNetworkImage(
+                      //   cacheManager: PersistentCacheManager(),
+                      //   imageUrl: product.thumbnail?.media?.url ?? 'moj',
+                      //   imageBuilder: (context, imageProvider) => Container(
+                      //     height: 140,
+                      //     decoration: BoxDecoration(
+                      //       image: DecorationImage(
+                      //         image: imageProvider,
+                      //         fit: BoxFit.cover,
+                      //       ),
+                      //     ),
+                      //   ),
+                      //   placeholder: (context, url) => Container(),
+                      //   errorWidget: (context, url, error) => Container(),
+                      // ),
+                      // SizedBox(
+                      //   child: Image.asset(
+                      //     'assets/images/beer2.png',
+                      //     fit: BoxFit.fill,
+                      //     width: double.infinity,
+                      //     height: 140,
+                      //     // errorBuilder: (context, error, stackTrace) {
+                      //     //   return Image.asset(
+                      //     //     index.isEven
+                      //     //         ? 'assets/images/beer2.png'
+                      //     //         : 'assets/images/beer.png',
+                      //     //     fit: BoxFit.fill,
+                      //     //     width: double.infinity,
+                      //     //     height: 140,
+                      //     //   );
+                      //     // },
+                      //   ),
+                      // ),
                       Positioned(
                         bottom: 0,
                         left: 0,
@@ -246,11 +323,12 @@ class LightningDealCard extends StatelessWidget {
                         Icon(Icons.verified_outlined,
                             size: 10, color: Colors.red),
                       Expanded(
-                          flex: 4,
+                          flex: 5,
                           child: TextButton(
                               onPressed: () {
                                 Get.toNamed(Routes.STORE_PAGE, arguments: {
-                                  'shopid': product.shop?.shop?.id.toString()
+                                  'shopid': product.shop?.shop?.id ?? '',
+                                  'ShopShop': product.shop?.shop,
                                 });
                               },
                               child: Text(
@@ -273,7 +351,7 @@ class LightningDealCard extends StatelessWidget {
                                   index < 4
                                       ? 'assets/images/star.png'
                                       : 'assets/images/star.png',
-                                  height: 8,
+                                  height: 6,
                                 ),
                               ),
                               SizedBox(width: 2),
@@ -283,9 +361,9 @@ class LightningDealCard extends StatelessWidget {
                             ]),
                       ),
                       SizedBox(width: 2),
-                      Icon(Icons.remove_red_eye, size: 12),
+                      Icon(Icons.remove_red_eye, size: 10),
                       Text((product.meta?.views ?? 0).toString(),
-                          style: TextStyle(fontSize: 12)),
+                          style: TextStyle(fontSize: 10)),
                     ],
                   ),
                   Text(
@@ -293,26 +371,17 @@ class LightningDealCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: Colors.green),
                   ),
                   SizedBox(height: 5),
                   Row(
                     children: [
-                      // Text(
-                      //   "\$${( ?? 0).toString()}",
-                      //   style: TextStyle(
-                      //     fontSize: 14,
-                      //     color: Colors.grey,
-                      //     decoration: TextDecoration.lineThrough,
-                      //   ),
-                      // ),
-                      // SizedBox(width: 5),
                       Text(
                         "\$${(product.price ?? product.maxPrice ?? 0).toStringAsFixed(2)}",
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.red,
                         ),
@@ -322,33 +391,22 @@ class LightningDealCard extends StatelessWidget {
                     ],
                   ),
                   SizedBox(height: 8),
-                  if ((product.stock ?? 0) < 10)
-                    Text(
-                      "Almost Sold Out",
-                      style: TextStyle(
-                        color: Colors.orange,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 17,
-                      ),
-                    ),
-
-                  // Row(
-                  //   children: [
-                  //     CircleAvatar(
-                  //       radius: 12,
-                  //       backgroundColor: Colors.red,
-                  //       child: Text(
-                  //         "T",
-                  //         style: TextStyle(color: Colors.white, fontSize: 14),
-                  //       ),
-                  //     ),
-                  //     SizedBox(width: 8),
-                  //     Text(
-                  //       "rated 5 star 5 min ago",
-                  //       style: TextStyle(fontSize: 12, color: Colors.grey),
-                  //     ),
-                  //   ],
-                  // ),
+                  Builder(builder: (controller) {
+                    if ((product.stock ?? 0) < 10) {
+                      if (product.productGroup == 'car') {
+                        return Container();
+                      }
+                      return Text(
+                        "Almost Sold Out",
+                        style: TextStyle(
+                          color: Colors.orange,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      );
+                    }
+                    return Container();
+                  })
                 ],
               ),
             ),

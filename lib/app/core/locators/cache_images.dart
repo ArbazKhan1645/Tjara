@@ -1,5 +1,6 @@
-// ignore_for_file: depend_on_referenced_packages
+// ignore_for_file: depend_on_referenced_packages, avoid_print
 
+import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class PersistentCacheManager extends CacheManager {
@@ -14,6 +15,7 @@ class PersistentCacheManager extends CacheManager {
 
 Future<void> prefetchImage(String imageUrl) async {
   try {
+    if (imageUrl.isEmpty) return;
     final cacheManager = PersistentCacheManager();
     final fileInfo = await cacheManager.getFileFromCache(imageUrl);
 
@@ -22,5 +24,19 @@ Future<void> prefetchImage(String imageUrl) async {
     }
   } on Exception catch (e) {
     print(e);
+  }
+}
+
+Future<ImageProvider> loadCachedImage(String imageUrl) async {
+  final cacheManager = PersistentCacheManager();
+  final fileInfo = await cacheManager.getFileFromCache(imageUrl);
+
+  if (fileInfo != null) {
+    // If the image is cached, load it directly from the file
+    return FileImage(fileInfo.file);
+  } else {
+    // If the image is not cached, download it and return the network image
+    await cacheManager.downloadFile(imageUrl);
+    return NetworkImage(imageUrl);
   }
 }

@@ -1,7 +1,6 @@
 // ignore_for_file: depend_on_referenced_packages
 
 import 'package:flutter/material.dart';
-import 'optimized_animated_container.dart';
 
 class CommonBaseBodyScreen extends StatelessWidget {
   const CommonBaseBodyScreen(
@@ -11,16 +10,12 @@ class CommonBaseBodyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool enableAnimations = true;
     return LayoutBuilder(
       builder: (context, constraints) {
-        return OptimizedAnimatedContainer(
-          shouldAnimate: enableAnimations,
-          child: CommonBaseBodySubScreen(
-              scrollController: scrollController,
-              constraints: constraints,
-              screens: screens),
-        );
+        return CommonBaseBodySubScreen(
+            scrollController: scrollController,
+            constraints: constraints,
+            screens: screens);
       },
     );
   }
@@ -58,21 +53,5 @@ class _CommonBaseBodySubScreenState extends State<CommonBaseBodySubScreen> {
         itemBuilder: (context, index) {
           return widget.screens[index];
         });
-  }
-
-  Widget _buildSliverList() {
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (BuildContext context, int index) {
-          double scale = 1.0;
-          // if (widget.scrollController.hasClients) {
-          //   double offset = widget.scrollController.offset;
-          //   scale = 1 + ((index * 100 - offset).abs() / 200).clamp(0.8, 1.0);
-          // }
-          return Transform.scale(scale: scale, child: widget.screens[index]);
-        },
-        childCount: widget.screens.length,
-      ),
-    );
   }
 }

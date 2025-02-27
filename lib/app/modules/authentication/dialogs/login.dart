@@ -22,17 +22,16 @@ class _LoginUiState extends State<LoginUi> {
               return Container(
                 height: 500,
                 margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.only(left: 16, right: 16),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 40, right: 40, top: 30),
+                  padding: const EdgeInsets.only(left: 10, right: 10, top: 0),
                   child: Form(
                     key: controller.formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: ListView(
                       children: [
                         const Row(
                           mainAxisAlignment: MainAxisAlignment.center,

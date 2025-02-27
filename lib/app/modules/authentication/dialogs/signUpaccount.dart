@@ -17,202 +17,160 @@ class Registration extends StatelessWidget {
               return Container(
                 height: 650,
                 margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.only(left: 16, right: 16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                ),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16)),
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 30, right: 30, top: 20),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Register your account",
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold),
-                            )
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        const Text(
-                          "Register as:",
-                          style: TextStyle(color: Colors.black),
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Row(
-                          children: [
-                            CustomerCircularCheckbox(
-                              backgroundcolor: Colors.red.shade700,
-                              innerbackcolor: Colors.white,
-                            ),
-                            const SizedBox(
-                              width: 5,
-                            ),
-                            const Text(
-                              "Seller",
-                              style: TextStyle(fontSize: 16),
-                            ),
-                            const SizedBox(
-                              width: 20,
-                            ),
-                            CustomerCircularCheckbox(
-                              backgroundcolor: Colors.white,
-                              innerbackcolor: Colors.red.shade700,
-                            ),
-                            const SizedBox(
-                              width: 5,
-                            ),
-                            const Text(
-                              "Customer",
-                              style: TextStyle(fontSize: 16),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Row(
-                          children: [
-                            Expanded(
-                                child: Padding(
-                              padding: const EdgeInsets.only(right: 5),
-                              child: Container(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "First Name ",
-                                      style: TextStyle(
-                                          color: Colors.black, fontSize: 15),
-                                    ),
-                                    SizedBox(
-                                      height: 5,
-                                    ),
-                                    CustomTextfield(
-                                        controller:
-                                            controller.firstNameController),
-                                  ],
-                                ),
-                              ),
-                            )),
-                            Expanded(
-                                child: Padding(
-                              padding: const EdgeInsets.only(left: 5),
-                              child: Container(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "Last Name ",
-                                      style: TextStyle(
-                                          color: Colors.black, fontSize: 15),
-                                    ),
-                                    SizedBox(
-                                      height: 5,
-                                    ),
-                                    CustomTextfield(
-                                        controller:
-                                            controller.lastNameController)
-                                  ],
-                                ),
-                              ),
-                            )),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        const Text(
-                          "Email Address",
-                          style: TextStyle(color: Colors.black),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        CustomTextfield(
-                            controller: controller.signupemailController),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        const Text(
-                          "Phone",
-                          style: TextStyle(color: Colors.black),
-                        ),
-                        CustomTextfield(controller: controller.phoneController),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        const Text(
-                          "Password",
-                          style: TextStyle(color: Colors.black),
-                        ),
-                        CustomTextfield(
-                            controller: controller.sinuppasswordController),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        const Text(
-                          "Referrel Code",
-                          style: TextStyle(color: Colors.black),
-                        ),
-                        CustomTextfield(controller: TextEditingController()),
-                        const SizedBox(height: 30),
-                        ButtonW(
-                          onTap: () async {
-                            await controller.onregister(context);
-                          },
-                          isloading: false,
-                          txt: 'Register',
-                          color: Colors.red,
-                          bordercolor: Colors.red,
-                          txtcolor: Colors.white,
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Do you have account?",
-                              style: TextStyle(
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        InkWell(
-                          onTap: () {
-                            Get.back();
-                            showContactDialog(context, LoginUi());
-                          },
-                          child: ButtonW(
-                            isloading: false,
-                            txt: 'Login',
-                            color: Colors.white,
-                            bordercolor: Colors.red.shade100,
-                            txtcolor: Colors.red,
+                  padding: const EdgeInsets.only(left: 10, right: 10),
+                  child: ListView(
+                    children: [
+                      const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Register your account",
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold),
+                          )
+                        ],
+                      ),
+                      const Text(
+                        "Register as:",
+                        style: TextStyle(color: Colors.black),
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          CustomerCircularCheckbox(
+                            backgroundcolor: Colors.red.shade700,
+                            innerbackcolor: Colors.white,
                           ),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          const Text(
+                            "Seller",
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(
+                            width: 20,
+                          ),
+                          CustomerCircularCheckbox(
+                            backgroundcolor: Colors.white,
+                            innerbackcolor: Colors.red.shade700,
+                          ),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          const Text(
+                            "Customer",
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                              child: Padding(
+                            padding: const EdgeInsets.only(right: 5),
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "First Name ",
+                                    style: TextStyle(
+                                        color: Colors.black, fontSize: 15),
+                                  ),
+                                  SizedBox(height: 5),
+                                  CustomTextfield(
+                                      controller:
+                                          controller.firstNameController),
+                                ]),
+                          )),
+                          Expanded(
+                              child: Padding(
+                            padding: const EdgeInsets.only(left: 5),
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Last Name ",
+                                    style: TextStyle(
+                                        color: Colors.black, fontSize: 15),
+                                  ),
+                                  SizedBox(height: 5),
+                                  CustomTextfield(
+                                      controller: controller.lastNameController)
+                                ]),
+                          )),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      const Text("Email Address",
+                          style: TextStyle(color: Colors.black)),
+                      const SizedBox(height: 5),
+                      CustomTextfield(
+                          controller: controller.signupemailController),
+                      const SizedBox(height: 10),
+                      const Text("Phone",
+                          style: TextStyle(color: Colors.black)),
+                      CustomTextfield(controller: controller.phoneController),
+                      const SizedBox(height: 10),
+                      const Text("Password",
+                          style: TextStyle(color: Colors.black)),
+                      CustomTextfield(
+                          controller: controller.sinuppasswordController),
+                      const SizedBox(height: 10),
+                      const Text("Referral Code",
+                          style: TextStyle(color: Colors.black)),
+                      CustomTextfield(controller: TextEditingController()),
+                      const SizedBox(height: 10),
+                      ButtonW(
+                        onTap: () async {
+                          controller.setIsloading();
+                          await controller.onregister(context);
+                          controller.setIsloading();
+                        },
+                        isloading: controller.isLoading.value,
+                        txt: 'Register',
+                        color: Colors.red,
+                        bordercolor: Colors.red,
+                        txtcolor: Colors.white,
+                      ),
+                      const SizedBox(height: 10),
+                      const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Do you have an account?",
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      InkWell(
+                        onTap: () {
+                          Get.back();
+                          showContactDialog(context, LoginUi());
+                        },
+                        child: ButtonW(
+                          isloading: false,
+                          txt: 'Login',
+                          color: Colors.white,
+                          bordercolor: Colors.red.shade100,
+                          txtcolor: Colors.red,
                         ),
-                        const SizedBox(
-                          height: 30,
-                        )
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 300),
+                    ],
                   ),
                 ),
               );

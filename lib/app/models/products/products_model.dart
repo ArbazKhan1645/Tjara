@@ -284,7 +284,7 @@ class ShopShop {
   final String? status;
   final DateTime? createdAt;
   final DateTime? updatedAt;
-  final Video? banner;
+  final BannerModel? banner;
   final Video? thumbnail;
   final Video? membership;
   final ShopMeta? meta;
@@ -344,7 +344,9 @@ class ShopShop {
       updatedAt: json?['updated_at'] != null
           ? DateTime.parse(json!['updated_at'])
           : null,
-      banner: json?['banner'] != null ? Video.fromJson(json!['banner']) : null,
+      banner: json?['banner'] != null
+          ? BannerModel.fromJson(json!['banner'])
+          : null,
       thumbnail: json?['thumbnail'] != null
           ? Video.fromJson(json!['thumbnail'])
           : null,
@@ -395,6 +397,24 @@ class Video {
   Map<String, dynamic> toJson() => {
         'message': message,
       };
+}
+
+class BannerModel {
+  final Media media;
+
+  BannerModel({required this.media});
+
+  factory BannerModel.fromJson(Map<String, dynamic> json) {
+    return BannerModel(
+      media: Media.fromJson(json['media']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'media': media.toJson(),
+    };
+  }
 }
 
 class ShopMeta {

@@ -12,10 +12,12 @@ class StorePageView extends GetView<StorePageController> {
     return GetBuilder<StorePageController>(
         init: StorePageController(),
         builder: (controller) {
-          return Scaffold(
-              backgroundColor: Colors.white,
-              appBar: CustomAppBar(),
-              body: StorePageViewBody());
+          return SafeArea(
+            child: Scaffold(
+                backgroundColor: Colors.white,
+                appBar: CustomAppBar(),
+                body: StorePageViewBody()),
+          );
         });
   }
 }

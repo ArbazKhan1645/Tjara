@@ -22,6 +22,8 @@ import '../modules/my_cart/bindings/my_cart_binding.dart';
 import '../modules/my_cart/views/my_cart_view.dart';
 import '../modules/product_detail_screen/bindings/product_detail_screen_binding.dart';
 import '../modules/product_detail_screen/views/product_detail_screen_view.dart';
+import '../modules/splash_screen/bindings/splash_screen_binding.dart';
+import '../modules/splash_screen/views/splash_screen_view.dart';
 import '../modules/store_page/bindings/store_page_binding.dart';
 import '../modules/store_page/views/store_page_view.dart';
 
@@ -103,6 +105,11 @@ class AppPages {
       name: _Paths.AUTHENTICATION,
       page: () => const AuthenticationView(),
       binding: AuthenticationBinding(),
+    ),
+    GetPage(
+      name: _Paths.SPLASH_SCREEN,
+      page: () => const SplashScreenView(),
+      binding: SplashScreenBinding(),
     ),
   ];
 }

@@ -138,7 +138,12 @@ class HomeController extends GetxController {
           url: url, fromJson: (json) => ProductModel.fromJson(json));
       _productsCache.add(result);
       products.value = result;
+      for (var e in (result.products?.data ?? <ProductDatum>[])) {
+        prefetchImage(e.thumbnail?.media?.url ?? '');
+      }
+
       update();
+
       await _appService.sharedPreferences
           .setString('cache_Products', jsonEncode(result.toJson()));
     } catch (e) {
@@ -151,20 +156,33 @@ class HomeController extends GetxController {
   }
 
   Future<void> fetchProducts(String categoryId) async {
-    final ress =
-        await CategoryApiService().fetchProducts(categoryId: categoryId);
-    print(ress);
-    if (ress is Map<String, dynamic>) {
-      categoryproducts.value = ProductModel.fromJson(ress);
-      filterCategoryproducts.value = categoryproducts.value;
-      update();
-    } else {
-      categoryproducts.value =
-          ProductModel(products: Products(currentPage: 1, data: []));
-      filterCategoryproducts.value = categoryproducts.value;
+    try {
+      iscategoryLoading.value = true;
+      final ress =
+          await CategoryApiService().fetchProducts(categoryId: categoryId);
+      if (ress is Map<String, dynamic>) {
+        categoryproducts.value = ProductModel.fromJson(ress);
+        filterCategoryproducts.value = categoryproducts.value;
+        for (var e
+            in (categoryproducts.value.products?.data ?? <ProductDatum>[])) {
+          prefetchImage(e.thumbnail?.media?.url ?? '');
+        }
+
+        update();
+      } else {
+        categoryproducts.value =
+            ProductModel(products: Products(currentPage: 1, data: []));
+        filterCategoryproducts.value = categoryproducts.value;
+        update();
+      }
+      iscategoryLoading.value = false;
+    } on Exception catch (e) {
+      iscategoryLoading.value = false;
       update();
     }
   }
+
+  RxBool iscategoryLoading = false.obs;
 
   void filterCategoryProductss(String sortBy) {
     filterCategoryproducts.value = categoryproducts.value;
@@ -212,6 +230,13 @@ class HomeController extends GetxController {
     try {
       final res = await _repository.fetchData<SingleModelClass>(
           url: url, fromJson: (json) => SingleModelClass.fromJson(json));
+      if (res.product?.gallery != null) {
+        for (var ele in res.product!.gallery) {
+          if (ele.media?.url != null) {
+            prefetchImage(ele.media!.url);
+          }
+        }
+      }
       return res;
     } catch (e) {
       rethrow;

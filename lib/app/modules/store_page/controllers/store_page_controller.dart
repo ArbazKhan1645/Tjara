@@ -3,6 +3,7 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:tjara/app/core/locators/cache_images.dart';
 import 'package:tjara/app/models/categories/categories_model.dart';
 import 'package:tjara/app/models/products/products_model.dart';
 import 'package:tjara/app/services/auth/apis.dart';
@@ -30,23 +31,26 @@ class StorePageController extends GetxController {
     _productsCache = BehaviorSubject.seeded(null);
     if (Get.arguments == null) return;
     String? shopId = Get.arguments?['shopid'] as String?;
+
     if (shopId != null) {
-      print(shopId);
+      currentSHop = Get.arguments?['ShopShop'] as ShopShop?;
       initState(shopId);
     }
     super.onInit();
   }
 
+  ShopShop? currentSHop = ShopShop();
+
   initState(String shopid) {
     fetchCategoryProduct(shopid);
-    scrollController.addListener(() {
-      if (scrollController.position.pixels >=
-          scrollController.position.maxScrollExtent - 0) {
-        if (!isLoading) {
-          fetchCategoryProduct(shopid);
-        }
-      }
-    });
+    // scrollController.addListener(() {
+    //   if (scrollController.position.pixels >=
+    //       scrollController.position.maxScrollExtent - 0) {
+    //     if (!isLoading) {
+    //       // fetchCategoryProduct(shopid);
+    //     }
+    //   }
+    // });
   }
 
   Future<void> fetchCategoryProduct(String shopId) async {
@@ -57,6 +61,12 @@ class StorePageController extends GetxController {
     final ress = await CategoryApiService().fetchProductsOfShop(shopId: shopId);
     if (ress is Map<String, dynamic>) {
       products.value = ProductModel.fromJson(ress);
+
+      for (var el in products.value.products?.data ?? <ProductDatum>[]) {
+        if (el.thumbnail?.media?.url != null) {
+          prefetchImage(el.thumbnail!.media!.url!);
+        }
+      }
 
       filterCategoryproducts.value = categoryproducts.value;
       update();

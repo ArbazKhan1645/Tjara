@@ -1,0 +1,2 @@
+C:/Users/HSE Techno/Documents/GitHub/Tjara/android/app/.cxx/RelWithDebInfo/643b3w3u/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/HSE Techno/Documents/GitHub/Tjara/android/app/.cxx/RelWithDebInfo/643b3w3u/x86_64/CMakeFiles/rebuild_cache.dir

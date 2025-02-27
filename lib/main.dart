@@ -45,19 +45,9 @@ class MyApp extends StatelessWidget {
       },
       // theme: lightThemeData(context),
       themeMode: ThemeMode.light,
-      useInheritedMediaQuery: true,
       defaultTransition: Transition.fadeIn,
-      opaqueRoute: Get.isOpaqueRouteDefault,
-      popGesture: Get.isPopGestureEnable,
-      enableLog: false,
-      supportedLocales: const [Locale('en', 'US')],
-      localizationsDelegates: const [
-        DefaultMaterialLocalizations.delegate,
-        DefaultWidgetsLocalizations.delegate,
-      ],
       transitionDuration: const Duration(milliseconds: 200),
-      initialRoute: AppPages.INITIAL,
-      navigatorObservers: [GetObserver()],
+      initialRoute: AppPages.INITIAL, 
       getPages: AppPages.routes,
     );
   }

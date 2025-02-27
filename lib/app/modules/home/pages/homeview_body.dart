@@ -22,7 +22,9 @@ class HomeViewBody extends StatelessWidget {
       CategorySection(
         key: ValueKey('categories'),
       ),
-      SuperDealsWidget(),
+      SuperDealsWidget(
+        key: ValueKey('super_deals'),
+      ),
       ProductNavBar(),
       ProductGrid(),
       // OfferBannerWidget(),

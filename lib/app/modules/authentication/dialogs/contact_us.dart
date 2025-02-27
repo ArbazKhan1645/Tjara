@@ -105,7 +105,7 @@ showContactDialog(BuildContext context, Widget widget) async {
     barrierLabel: '',
     transitionDuration: const Duration(milliseconds: 300),
     pageBuilder: (context, animation, secondaryAnimation) {
-      return Align(alignment: Alignment.topCenter, child: widget);
+      return Align(alignment: Alignment.center, child: widget);
     },
     transitionBuilder: (context, animation, secondaryAnimation, child) {
       return SlideTransition(

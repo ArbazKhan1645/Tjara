@@ -18,6 +18,7 @@ abstract class Routes {
   static const login = _Paths.login;
   static const MORE = _Paths.MORE;
   static const AUTHENTICATION = _Paths.AUTHENTICATION;
+  static const SPLASH_SCREEN = _Paths.SPLASH_SCREEN;
 }
 
 abstract class _Paths {
@@ -35,4 +36,5 @@ abstract class _Paths {
   static const login = '/login';
   static const MORE = '/more';
   static const AUTHENTICATION = '/authentication';
+  static const SPLASH_SCREEN = '/splash-screen';
 }

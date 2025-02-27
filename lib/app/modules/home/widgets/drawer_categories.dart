@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:tjara/app/core/locators/cache_images.dart';
 import '../controllers/home_controller.dart';
 
 class DrawerCategories extends StatefulWidget {
@@ -54,7 +55,7 @@ class _DrawerCategoriesState extends State<DrawerCategories> {
       return Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.only(left: 10, right: 10, top: 40),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -89,11 +90,12 @@ class _CategoryRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return GridView.builder(
       shrinkWrap: true,
+      padding: EdgeInsets.all(0),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 0,
-        mainAxisSpacing: 0,
-      ),
+          crossAxisCount: 2,
+          crossAxisSpacing: 0,
+          mainAxisSpacing: 0,
+          childAspectRatio: 0.8),
       itemCount: categories.length,
       itemBuilder: (context, index) {
         final int realIndex = index + startIndex;
@@ -202,6 +204,7 @@ class _CategoryImageState extends State<_CategoryImage> {
                     shape: BoxShape.circle,
                   ),
                   child: CachedNetworkImage(
+                    cacheManager: PersistentCacheManager(),
                     imageUrl: widget.imageUrl,
                     imageBuilder: (context, imageProvider) =>
                         _buildCircularImage(imageProvider),
