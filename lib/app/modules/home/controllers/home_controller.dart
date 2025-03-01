@@ -176,7 +176,7 @@ class HomeController extends GetxController {
         update();
       }
       iscategoryLoading.value = false;
-    } on Exception catch (e) {
+    } on Exception {
       iscategoryLoading.value = false;
       update();
     }

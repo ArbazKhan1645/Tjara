@@ -12,6 +12,7 @@ import 'package:tjara/app/modules/my_account/views/my_account_view.dart';
 import 'package:tjara/app/modules/my_cart/views/my_cart_view.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
 import '../../home/widgets/drawer_categories.dart';
+import '../../my_cart/controllers/my_cart_controller.dart';
 import '../controllers/dashboard_controller.dart';
 
 class DashboardView extends GetView<DashboardController> {
@@ -103,6 +104,10 @@ class DashboardView extends GetView<DashboardController> {
             } else {
               controller.changeIndex(index);
             }
+          } else if (index == 3) {
+            CartService cartService = Get.find<CartService>();
+            cartService.initcall();
+            controller.changeIndex(index);
           } else {
             controller.changeIndex(index);
           }

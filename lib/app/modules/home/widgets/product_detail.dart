@@ -1,21 +1,25 @@
-// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: library_private_types_in_public_api, use_key_in_widget_constructors
 
 import 'dart:convert';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tjara/app/core/locators/cache_images.dart';
 import 'package:tjara/app/core/utils/thems/theme.dart';
 import 'package:tjara/app/modules/home/widgets/attributes.dart';
+import 'package:tjara/app/modules/home/widgets/products_grid.dart';
 import 'package:tjara/app/modules/home/widgets/shopping_cart.dart';
+
 import 'package:tjara/app/routes/app_pages.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../../core/widgets/appbar.dart';
 import '../../../models/products/products_model.dart';
 import '../../../models/products/single_product_model.dart';
+
+import '../../my_cart/controllers/my_cart_controller.dart';
 import '../controllers/home_controller.dart';
 
 class ProductDetailScreen extends StatefulWidget {
@@ -67,6 +71,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     await prefs.setString(
         'product_${widget.product.id}', json.encode(product.toJson()));
   }
+
+  CartService cartService = Get.find<CartService>();
 
   @override
   Widget build(BuildContext context) {
@@ -277,8 +283,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              onPressed: () {
-                                Get.to(() => ShoppingCartScreen());
+                              onPressed: () async {
+                                await cartService
+                                    .updateCart(
+                                        widget.product.shopId ?? '',
+                                        widget.product.id ?? '',
+                                        1,
+                                        double.tryParse(widget.product.price
+                                                .toString()) ??
+                                            0.0)
+                                    .then((val) {
+                                  Get.to(() => ShoppingCartScreen());
+                                });
                               },
                               child: Text("Add To Cart",
                                   style: defaultTextStyle.copyWith(
@@ -353,8 +369,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ],
                     ),
                   ),
-
-                  // ProductGrid(),
+                  ProductGrid(),
                   SizedBox(height: 50)
                 ],
               );
@@ -528,71 +543,105 @@ class ProductDetailsSection extends StatelessWidget {
           ),
         ),
         SizedBox(height: 15),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.grey.shade300),
-            boxShadow: [],
-          ),
-          child: Column(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: Color(0xffF9F9F9),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(color: Colors.red, width: 3),
-                          ),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          "Description",
-                          style: TextStyle(
-                              color: Colors.red, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Container(
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        alignment: Alignment.center,
-                        child: Text(
-                          "Customer Reviews (4471)",
-                          style: TextStyle(color: Colors.grey.shade600),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                height: 2,
-                color: Colors.grey.shade300,
-              ),
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Text(
-                    "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a gallery of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing.",
-                    style: defaultTextStyle.copyWith(
-                        fontSize: 14,
-                        wordSpacing: 4,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.grey)),
-              ),
-              SizedBox(height: 10)
-            ],
-          ),
-        ),
+        TabbedContainer(),
         SizedBox(height: 30),
       ],
+    );
+  }
+}
+
+class TabbedContainer extends StatefulWidget {
+  @override
+  _TabbedContainerState createState() => _TabbedContainerState();
+}
+
+class _TabbedContainerState extends State<TabbedContainer> {
+  int selectedIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Color(0xffF9F9F9),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                _buildTab("Description", 0),
+                _buildTab("Customer Reviews (0)", 1),
+              ],
+            ),
+          ),
+          Container(
+            height: 2,
+            color: Colors.grey.shade300,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: selectedIndex == 0 ? _descriptionWidget() : _reviewsWidget(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTab(String text, int index) {
+    bool isSelected = selectedIndex == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            selectedIndex = index;
+          });
+        },
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            border: isSelected
+                ? Border(bottom: BorderSide(color: Colors.red, width: 3))
+                : null,
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            text,
+            style: TextStyle(
+              color: isSelected ? Colors.red : Colors.grey.shade600,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _descriptionWidget() {
+    return Text(
+      "Lorem Ipsum is simply dummy text of the printing and typesetting industry...",
+      style: TextStyle(
+        fontSize: 14,
+        wordSpacing: 4,
+        fontWeight: FontWeight.w400,
+        color: Colors.grey,
+      ),
+    );
+  }
+
+  Widget _reviewsWidget() {
+    return Text(
+      "No customer reviews yet.",
+      style: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+        color: Colors.grey,
+      ),
     );
   }
 }

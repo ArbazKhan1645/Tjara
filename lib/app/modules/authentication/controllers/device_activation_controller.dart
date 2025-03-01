@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/models/users_model.dart/customer_models.dart';
+import 'package:tjara/app/modules/my_cart/controllers/my_cart_controller.dart';
 import 'package:tjara/app/services/auth/apis.dart';
 import '../../../services/app/app_service.dart';
 import '../../../services/auth/auth_service.dart';
@@ -37,8 +38,9 @@ class DeviceActivationController extends GetxController {
       final res = await AuthenticationApiService.loginUser(email, password);
       if (res is LoginResponse) {
         _authService.saveAuthState(res);
+        CartService cartService = Get.find<CartService>();
+        cartService.initcall();
         Get.back();
-
         Get.snackbar('Success', 'User Login Sucessfully',
             backgroundColor: Colors.green, colorText: Colors.white);
       } else {
@@ -214,7 +216,7 @@ class DeviceActivationController extends GetxController {
   final _authService = Get.find<AuthService>();
 
   var isLoading = false.obs;
-  setIsloading(){
+  setIsloading() {
     isLoading.value = !isLoading.value;
     update();
   }

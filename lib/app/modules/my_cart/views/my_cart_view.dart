@@ -9,6 +9,10 @@ class MyCartView extends GetView<MyCartController> {
   const MyCartView({super.key});
   @override
   Widget build(BuildContext context) {
-    return ShoppingCartScreen();
+    return GetBuilder<MyCartController>(
+        init: MyCartController(),
+        builder: (controller) {
+          return ShoppingCartScreen();
+        });
   }
 }

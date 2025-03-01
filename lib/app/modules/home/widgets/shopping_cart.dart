@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:tjara/app/core/utils/thems/theme.dart';
+import 'package:tjara/app/models/cart/cart_model.dart';
+import 'package:tjara/app/modules/my_cart/controllers/my_cart_controller.dart';
 import 'package:tjara/app/routes/app_pages.dart';
 
 import '../../../core/widgets/appbar.dart';
+import '../../../models/products/single_product_model.dart';
 import 'catnavbar.dart';
 import 'products_grid.dart';
 
@@ -41,53 +45,69 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
     Colors.green
   ];
 
+  CartService cartService = Get.find<CartService>();
+
+  @override
+  void initState() {
+    super.initState();
+    print('object323');
+    cartService.initcall();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: CustomAppBar(),
-        body: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CategoryNavBar(),
-              SizedBox(height: 20),
-              CheckoutScreen(),
-              SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          backgroundColor: Colors.white,
+          appBar: CustomAppBar(),
+          body: StreamBuilder<CartModel>(
+            stream: cartService.cartStream,
+            builder: (context, snapshot) {
+              CartModel cart = snapshot.data ?? CartModel(cartItems: []);
+
+              return SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "Find Related Products!",
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      "View All",
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFFD9183B),
+                    CategoryNavBar(),
+                    SizedBox(height: 20),
+                    CheckoutScreen(cart: cart),
+                    SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Find Related Products!",
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            "View All",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFFD9183B),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+                    ProductGrid(),
+                    SizedBox(height: 50)
                   ],
                 ),
-              ),
-              ProductGrid(),
-              SizedBox(height: 50)
-            ],
-          ),
-        ),
-      ),
+              );
+            },
+          )),
     );
   }
 }
 
 class CheckoutScreen extends StatelessWidget {
-  const CheckoutScreen({super.key});
+  const CheckoutScreen({super.key, required this.cart});
+  final CartModel cart;
 
   @override
   Widget build(BuildContext context) {
@@ -95,30 +115,59 @@ class CheckoutScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.grey.shade300),
-                boxShadow: [],
-              ),
-              child: Column(
-                children: [
-                  _buildSellerSection(),
-                  Container(
-                    height: 2,
-                    color: Colors.grey.shade300,
-                  ),
-                  SizedBox(height: 10),
-                  _buildProductCard(),
-                  Divider(color: Colors.grey.shade400),
-                  _buildProductCard(),
-                ],
+          if (cart.cartItems.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: ListView.separated(
+                  physics: NeverScrollableScrollPhysics(),
+                  separatorBuilder: (context, index) {
+                    return SizedBox(height: 10);
+                  },
+                  shrinkWrap: true,
+                  itemCount: cart.cartItems.length,
+                  itemBuilder: (context, index) {
+                    CartItem cartItem = cart.cartItems[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        child: Column(
+                          children: [
+                            _buildSellerSection(cartItem, cartItem.items.first),
+                            Container(
+                              height: 2,
+                              color: Colors.grey.shade300,
+                            ),
+                            ListView.builder(
+                                physics: NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                itemCount: cartItem.items.length,
+                                itemBuilder: (context, productIndex) {
+                                  Item item = cartItem.items[productIndex];
+                                  return _buildProductCard(item, cartItem);
+                                })
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                "Your Cart is empty",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
               ),
             ),
-          ),
           SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -254,48 +303,82 @@ class CheckoutScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSellerSection() {
+  Widget _buildSellerSection(CartItem cart, Item product) {
+    String getEstimatedDelivery() {
+      final currentDate = DateTime.now();
+      final shippingTimeFrom = int.tryParse(product.meta.shippingTimeFrom) ?? 0;
+      final shippingTimeTo = int.tryParse(product.meta.shippingTimeTo) ?? 0;
+
+      final earliestDelivery =
+          currentDate.add(Duration(days: shippingTimeFrom));
+      final latestDelivery = currentDate.add(Duration(days: shippingTimeTo));
+
+      final dateFormat = DateFormat('MMM d'); // Format: March 1, 2025
+      return 'Estd delivery : ${dateFormat.format(latestDelivery)}';
+    }
+
     return Container(
       padding: EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
+        color: Colors.grey.shade50,
         borderRadius: BorderRadius.only(
             topLeft: Radius.circular(10), topRight: Radius.circular(10)),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            height: 87,
-            width: 87,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-            ),
-            child: ClipOval(
-              child: Image.asset(
-                'assets/images/sktech.png',
-                fit: BoxFit
-                    .cover, // Ensures the image fills the circular area properly
+          Row(
+            children: [
+              Container(
+                height: 87,
+                width: 87,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                ),
+                child: ClipOval(
+                  child: Image.network(
+                      cart.shop.shop.thumbnail.media?.url ?? '',
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.red,
+                        ),
+                        child: Center(
+                          child: Text(
+                              cart.shop.shop.name.toString().substring(0, 1),
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 32)),
+                        ));
+                  }),
+                ),
               ),
-            ),
+              SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(cart.shop.shop.name.toString(),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18)),
+                    Text(cart.freeShippingNotice.toString(),
+                        style: TextStyle(fontSize: 14, color: Colors.grey)),
+                  ],
+                ),
+              ),
+            ],
           ),
-          SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Stylish Collection Wholesellers',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                Text("You've got free shipping with specific products!",
-                    style: TextStyle(fontSize: 14, color: Colors.grey)),
-              ],
-            ),
-          ),
+          SizedBox(height: 5),
+          Text(getEstimatedDelivery())
         ],
       ),
     );
   }
 
-  Widget _buildProductCard() {
+  Widget _buildProductCard(Item product, CartItem cart) {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 5),
       padding: EdgeInsets.all(10),
@@ -309,8 +392,8 @@ class CheckoutScreen extends StatelessWidget {
           SizedBox(width: 15),
           ClipRRect(
             borderRadius: BorderRadius.circular(18),
-            child: Image.asset(
-              'assets/images/shoes.png',
+            child: Image.network(
+              product.thumbnail.media?.url ?? '',
               width: 60,
               height: 60,
               fit: BoxFit.cover,
@@ -321,20 +404,38 @@ class CheckoutScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                    'hand bag for girls crossbody & shoulder handbag for women new design handbags',
+                Text(product.product.name.toString(),
                     style: defaultTextStyle.copyWith(
                         fontWeight: FontWeight.w400, fontSize: 14)),
                 SizedBox(height: 10),
-                Row(
-                  children: [
-                    Text('\$78',
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red)),
-                  ],
-                ),
+                product.originalPrice != null
+                    ? Row(
+                        children: [
+                          Text('\$${product.originalPrice.toString()}',
+                              style: TextStyle(
+                                  decoration: TextDecoration.lineThrough,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey)),
+                          SizedBox(width: 30),
+                          Text(
+                              '\$${(product.displayDiscountedPrice ?? 0).toStringAsFixed(2)}',
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              )),
+                        ],
+                      )
+                    : Row(
+                        children: [
+                          Text('\$${cart.shopTotal.toString()}',
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.red)),
+                        ],
+                      ),
                 SizedBox(height: 5),
                 Row(
                   children: [
@@ -352,12 +453,21 @@ class CheckoutScreen extends StatelessWidget {
                             child: Center(
                               child: IconButton(
                                 icon: Icon(Icons.remove, size: 10),
-                                onPressed: () {},
+                                onPressed: () async {
+                                  CartService cartService =
+                                      Get.find<CartService>();
+
+                                  await cartService
+                                      .updatecar(
+                                          product.id, product.quantity - 1)
+                                      .then((val) {});
+                                },
                               ),
                             ),
                           ),
                           SizedBox(width: 10),
-                          Text('1', style: TextStyle(fontSize: 16)),
+                          Text(product.quantity.toString(),
+                              style: TextStyle(fontSize: 16)),
                           SizedBox(width: 10),
                           Container(
                             decoration:
@@ -367,7 +477,20 @@ class CheckoutScreen extends StatelessWidget {
                             child: Center(
                               child: IconButton(
                                 icon: Icon(Icons.add, size: 10),
-                                onPressed: () {},
+                                onPressed: () async {
+                                  CartService cartService =
+                                      Get.find<CartService>();
+
+                                  await cartService
+                                      .updateCart(
+                                          product.product.shopId ?? '',
+                                          product.product.id ?? '',
+                                          1,
+                                          double.tryParse(product.product.price
+                                                  .toString()) ??
+                                              0.0)
+                                      .then((val) {});
+                                },
                               ),
                             ),
                           ),
@@ -377,10 +500,14 @@ class CheckoutScreen extends StatelessWidget {
                     Spacer(),
                     IconButton(
                       icon: Icon(Icons.delete, color: Colors.grey),
-                      onPressed: () {},
+                      onPressed: () async {
+                        CartService cartService = Get.find<CartService>();
+
+                        await cartService.deleteCart(product.id).then((val) {});
+                      },
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ),
