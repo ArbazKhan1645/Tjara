@@ -1,7 +1,7 @@
 name: tjara
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
-# pub.dev using `flutter pub publish`. This is preferred for private packages.
+# pub.dev using flutter pub publish. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
@@ -19,40 +19,78 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.6.1
+  sdk: ^3.7.2
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
-# consider running `flutter pub upgrade --major-versions`. Alternatively,
+# consider running flutter pub upgrade --major-versions. Alternatively,
 # dependencies can be manually updated by changing the version numbers below to
 # the latest version available on pub.dev. To see which dependencies have newer
-# versions available, run `flutter pub outdated`.
+# versions available, run flutter pub outdated.
 dependencies:
+  animate_do: ^4.2.0
+  animated_custom_dropdown: ^3.1.1
+  back_button_interceptor: ^8.0.4
+  badges: ^3.1.2
   cached_network_image: ^3.4.1
   color_parser: ^0.0.3
+  connectivity_plus: ^6.1.3
+  country_code_picker: ^3.2.0
+  csv: ^6.0.0
   cupertino_icons: ^1.0.8
   dio: ^5.8.0+1
   dio_cache_interceptor: ^3.5.1
   dio_cache_interceptor_hive_store: ^4.0.0
+  dotted_border: ^3.0.1
+  dotted_line: ^3.2.3
+  dropdown_search: ^6.0.2
   elegant_notification: ^2.4.2
-  file_picker: ^8.3.5
+  excel: ^4.0.6
+  file_picker: ^10.1.9
+  file_saver: ^0.2.14
+  fl_chart: ^1.0.0
+  flex_color_picker: ^3.7.1
   flutter:
     sdk: flutter
+  flutter_advanced_switch: ^3.1.0
   flutter_animate: ^4.5.2
   flutter_cache_manager: ^3.4.1
+  flutter_colorpicker: ^1.1.0
   flutter_dotenv: ^5.2.1
+  flutter_html: ^3.0.0
+  flutter_quill: ^11.4.2
+  flutter_quill_extensions: ^11.0.0-dev.3
   flutter_secure_storage: ^9.2.4
   flutter_staggered_grid_view: ^0.7.0
+  flutter_xlider: ^3.5.0
+  font_awesome_flutter: ^10.12.0
+  freezed_annotation: ^3.0.0
   get: ^4.6.6
-  google_fonts: ^6.2.1
+  get_storage: ^2.1.1
+  google_fonts: 6.2.1
+  google_sign_in: ^7.2.0
+  html_unescape: ^2.0.0
+  http: ^1.1.0
+  iconsax: ^0.0.8
+  image_cropper: ^9.1.0
   image_picker: ^1.1.2
-  intl: ^0.20.2
+  intl: 0.20.2
+  intl_phone_field: ^3.2.0
+  loading_overlay: ^0.4.2
   logger: ^2.5.0
+  mobile_scanner: ^7.0.1
+  photo_view: ^0.15.0
+  qr_flutter: ^4.1.0
   responsive_framework: ^1.5.1
   retry: ^3.1.2
+  share_plus: ^11.0.0
   shared_preferences: ^2.5.2
   shimmer: ^3.0.0
+  simple_icons: ^14.6.1
   smooth_page_indicator: ^1.2.0+3
+  url_launcher: ^6.3.1
+  video_player: ^2.9.3
+  visibility_detector: ^0.4.0+2
 
 dev_dependencies:
   flutter_lints: ^5.0.0
@@ -73,6 +111,8 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/banner/
+  generate: true
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
   # For details regarding adding assets from package dependencies, see

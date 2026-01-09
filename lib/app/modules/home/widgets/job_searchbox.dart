@@ -7,8 +7,8 @@ class JobSearchBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(top: 80, bottom: 50, left: 20, right: 20),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.only(top: 80, bottom: 50, left: 20, right: 20),
+      decoration: const BoxDecoration(
         color: Color(0xFF2C3E50),
       ),
       child: Column(
@@ -25,25 +25,25 @@ class JobSearchBox extends StatelessWidget {
                   text: "93,178",
                   style: defaultTextStyle.copyWith(
                     fontSize: 25,
-                    color: Color(0xFFFFEB3B),
+                    color: const Color(0xFFFFEB3B),
                   ),
                 ),
-                TextSpan(
+                const TextSpan(
                   text: " Postings \n Here For you!",
                 ),
               ],
             ),
           ),
-          SizedBox(height: 25),
+          const SizedBox(height: 25),
           // Search Box 1
           Container(
             height: 50,
-            padding: EdgeInsets.symmetric(horizontal: 15),
+            padding: const EdgeInsets.symmetric(horizontal: 15),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Row(
+            child: const Row(
               children: [
                 Icon(Icons.search, color: Colors.grey),
                 SizedBox(width: 10),
@@ -59,16 +59,16 @@ class JobSearchBox extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           // Search Box 2
           Container(
             height: 50,
-            padding: EdgeInsets.symmetric(horizontal: 15),
+            padding: const EdgeInsets.symmetric(horizontal: 15),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Row(
+            child: const Row(
               children: [
                 Icon(Icons.location_on, color: Colors.grey),
                 SizedBox(width: 10),
@@ -84,7 +84,7 @@ class JobSearchBox extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: 25),
+          const SizedBox(height: 25),
           // Find Jobs Button
           SizedBox(
             width: double.infinity,
@@ -92,12 +92,12 @@ class JobSearchBox extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () {},
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFFD9183B), // Red Color
+                backgroundColor: const Color(0xFFD9183B), // Red Color
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: Text(
+              child: const Text(
                 "Find Jobs",
                 style: TextStyle(
                   fontSize: 16,

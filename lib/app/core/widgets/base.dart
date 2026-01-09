@@ -3,55 +3,52 @@
 import 'package:flutter/material.dart';
 
 class CommonBaseBodyScreen extends StatelessWidget {
-  const CommonBaseBodyScreen(
-      {super.key, required this.screens, required this.scrollController});
+  const CommonBaseBodyScreen({
+    super.key,
+    required this.screens,
+    required this.scrollController,
+  });
+
   final List<Widget> screens;
   final ScrollController scrollController;
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return CommonBaseBodySubScreen(
-            scrollController: scrollController,
-            constraints: constraints,
-            screens: screens);
-      },
+    return OptimizedBodySubScreen(
+      scrollController: scrollController,
+      screens: screens,
     );
   }
 }
 
-class CommonBaseBodySubScreen extends StatefulWidget {
-  const CommonBaseBodySubScreen(
-      {super.key,
-      required this.screens,
-      required this.constraints,
-      required this.scrollController});
+class OptimizedBodySubScreen extends StatefulWidget {
+  const OptimizedBodySubScreen({
+    super.key,
+    required this.screens,
+    required this.scrollController,
+  });
+
   final List<Widget> screens;
-  final BoxConstraints constraints;
   final ScrollController scrollController;
 
   @override
-  State<CommonBaseBodySubScreen> createState() =>
-      _CommonBaseBodySubScreenState();
+  State<OptimizedBodySubScreen> createState() => _OptimizedBodySubScreenState();
 }
 
-class _CommonBaseBodySubScreenState extends State<CommonBaseBodySubScreen> {
-  @override
-  void dispose() {
-    widget.scrollController.dispose();
-    super.dispose();
-  }
-
+class _OptimizedBodySubScreenState extends State<OptimizedBodySubScreen> {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-        shrinkWrap: true,
-        itemCount: widget.screens.length,
-        cacheExtent: MediaQuery.of(context).size.height * 5,
-        controller: widget.scrollController,
-        itemBuilder: (context, index) {
-          return widget.screens[index];
-        });
+      padding: const EdgeInsets.all(0),
+      // Remove shrinkWrap for better performance
+      itemCount: widget.screens.length,
+
+      controller: widget.scrollController,
+
+      itemBuilder: (context, index) {
+        // Lazily build screens as needed
+        return widget.screens[index];
+      },
+    );
   }
 }

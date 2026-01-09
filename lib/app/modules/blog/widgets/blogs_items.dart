@@ -8,13 +8,13 @@ class BlogListView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView.separated(
         shrinkWrap: true,
-        physics: NeverScrollableScrollPhysics(),
+        physics: const NeverScrollableScrollPhysics(),
         separatorBuilder: (context, index) {
-          return SizedBox(height: 15);
+          return const SizedBox(height: 15);
         },
         itemCount: 5,
         itemBuilder: (context, index) {
-          return Blogwidget();
+          return const Blogwidget();
         });
   }
 }
@@ -28,7 +28,7 @@ class Blogwidget extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
         height: 460,
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border.all(
@@ -38,7 +38,7 @@ class Blogwidget extends StatelessWidget {
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.09),
-              offset: Offset(0, 2.64),
+              offset: const Offset(0, 2.64),
               blurRadius: 33.05,
               spreadRadius: 0,
             ),
@@ -59,7 +59,7 @@ class Blogwidget extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 15,
             ),
             Row(
@@ -70,9 +70,9 @@ class Blogwidget extends StatelessWidget {
                     fit: BoxFit.contain,
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 5, right: 15),
-                  child: const Text(
+                const Padding(
+                  padding: EdgeInsets.only(left: 5, right: 15),
+                  child: Text(
                     "Cameron",
                     style: TextStyle(
                         color: Color(0xff475156),
@@ -86,9 +86,9 @@ class Blogwidget extends StatelessWidget {
                     fit: BoxFit.contain,
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 5, right: 15),
-                  child: const Text(
+                const Padding(
+                  padding: EdgeInsets.only(left: 5, right: 15),
+                  child: Text(
                     "1 Feb, 2020",
                     style: TextStyle(
                         color: Color(0xff475156),
@@ -102,7 +102,7 @@ class Blogwidget extends StatelessWidget {
                     fit: BoxFit.contain,
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 5,
                 ),
                 const Text(
@@ -114,13 +114,13 @@ class Blogwidget extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
             Text(
                 "Curabitur pulvinar aliquam lectus, non blandit erat mattis vitae. ",
                 style: defaultTextStyle.copyWith()),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
             const Text(
@@ -130,7 +130,7 @@ class Blogwidget extends StatelessWidget {
                   fontSize: 14,
                   fontWeight: FontWeight.w400),
             ),
-            SizedBox(
+            const SizedBox(
               height: 30,
             ),
             Container(
@@ -142,9 +142,9 @@ class Blogwidget extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: const Text(
+                  const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
                       "Read More",
                       style: TextStyle(
                           color: Color(0xffD21642),

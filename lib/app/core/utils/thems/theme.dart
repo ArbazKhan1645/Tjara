@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:google_fonts/google_fonts.dart';
 
-import 'my_colors.dart';
+import 'package:tjara/app/core/utils/thems/my_colors.dart';
 
 ThemeData lightThemeData(BuildContext context) {
   return ThemeData.light().copyWith(
@@ -13,21 +13,20 @@ ThemeData lightThemeData(BuildContext context) {
     appBarTheme: const AppBarTheme(
       centerTitle: false,
       elevation: 0,
-      color: AppColors.appColor1,
+      backgroundColor: AppColors.appColor1,
     ),
     iconTheme: const IconThemeData(color: AppColors.black),
     // Globally set Cabin as the default font
     textTheme: GoogleFonts.cabinTextTheme(
       ThemeData.light().textTheme,
-    ).apply(
-      bodyColor: AppColors.textColor,
-      displayColor: AppColors.textColor,
-    ),
+    ).apply(bodyColor: AppColors.textColor, displayColor: AppColors.textColor),
     radioTheme: RadioThemeData(
       fillColor: WidgetStateProperty.resolveWith(
-          (states) => AppColors.lightContainerColor),
+        (states) => AppColors.lightContainerColor,
+      ),
       overlayColor: WidgetStateProperty.resolveWith(
-          (states) => AppColors.themeOrangeColor),
+        (states) => AppColors.themeOrangeColor,
+      ),
     ),
     colorScheme: const ColorScheme.light(
       primary: AppColors.textColor,

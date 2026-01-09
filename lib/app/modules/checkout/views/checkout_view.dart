@@ -2,23 +2,19 @@ import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 
-import '../../../core/widgets/appbar.dart';
-import '../../../core/widgets/base.dart';
-import '../controllers/checkout_controller.dart';
-import '../pages/form.dart';
+import 'package:tjara/app/modules/checkout/controllers/checkout_controller.dart';
+import 'package:tjara/app/modules/checkout/pages/form.dart';
 
 class CheckoutView extends GetView<CheckoutController> {
   const CheckoutView({super.key});
   @override
   Widget build(BuildContext context) {
     return GetBuilder<CheckoutController>(
-        init: CheckoutController(),
-        builder: (controller) {
-          return Scaffold(
-              backgroundColor: Colors.white,
-              appBar: CustomAppBar(),
-              body: CheckoutViewBody());
-        });
+      init: CheckoutController(),
+      builder: (controller) {
+        return const CheckoutViewBody();
+      },
+    );
   }
 }
 
@@ -27,9 +23,6 @@ class CheckoutViewBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CommonBaseBodyScreen(scrollController: ScrollController(), screens: [
-      FormScreen(),
-      SizedBox(height: 150),
-    ]);
+    return const FormScreen();
   }
 }

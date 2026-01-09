@@ -13,27 +13,39 @@ class SafePaymentButton extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.only(top: 20, bottom: 20),
         child: Container(
-          height: 53,
+          height: 40,
           decoration: BoxDecoration(
-              color: AppColors.primaryColor,
-              borderRadius: BorderRadius.circular(9)),
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(9),
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
+              Text(
+                'تدعم الأفراد عبر برنامج الموزعين',
+                style: defaultTextStyle.copyWith(
+                  fontSize: 12,
+                  color: Colors.black,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                "تجارة لبنانية",
+                style: defaultTextStyle.copyWith(
+                  fontSize: 13,
+                  color: Colors.black,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
+              const SizedBox(width: 5),
               CircleAvatar(
+                radius: 15,
                 backgroundColor: Colors.red,
                 child: Center(child: Image.asset(AppAssets.secure)),
               ),
-              SizedBox(width: 5),
-              Text("Tjara Commitment",
-                  style: defaultTextStyle.copyWith(
-                      color: Colors.white, fontWeight: FontWeight.w400)),
-              Spacer(),
-              Text("Low Prices",
-                  style: defaultTextStyle.copyWith(
-                      color: Colors.white, fontWeight: FontWeight.w300)),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
             ],
           ),
         ),

@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../core/widgets/appbar.dart';
-import '../../../core/widgets/base.dart';
-import '../controllers/store_page_controller.dart';
-import '../pages/section.dart';
+import 'package:tjara/app/core/widgets/appbar.dart';
+import 'package:tjara/app/core/widgets/base.dart';
+import 'package:tjara/app/modules/store_page/controllers/store_page_controller.dart';
+import 'package:tjara/app/modules/store_page/pages/section.dart';
 
 class StorePageView extends GetView<StorePageController> {
   const StorePageView({super.key});
   @override
   Widget build(BuildContext context) {
     return GetBuilder<StorePageController>(
-        init: StorePageController(),
-        builder: (controller) {
-          return SafeArea(
-            child: Scaffold(
-                backgroundColor: Colors.white,
-                appBar: CustomAppBar(),
-                body: StorePageViewBody()),
-          );
-        });
+      init: StorePageController(),
+      builder: (controller) {
+        return const Scaffold(
+          backgroundColor: Colors.white,
+
+          body: StorePageViewBody(),
+        );
+      },
+    );
   }
 }
 
@@ -27,9 +27,18 @@ class StorePageViewBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CommonBaseBodyScreen(scrollController: ScrollController(), screens: [
-      StorePageSectionForm(),
-      SizedBox(height: 150),
-    ]);
+    final con = Get.find<StorePageController>();
+    return CommonBaseBodyScreen(
+      scrollController: con.scrollController,
+      screens: [
+        Container(
+          height: MediaQuery.of(context).padding.top,
+          color: const Color(0xFFfda730),
+        ),
+        const CustomAppBar(showActions: false),
+        const StorePageSectionForm(),
+        const SizedBox(height: 150),
+      ],
+    );
   }
 }

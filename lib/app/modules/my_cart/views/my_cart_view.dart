@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/modules/home/widgets/shopping_cart.dart';
 
-import '../controllers/my_cart_controller.dart';
+import 'package:tjara/app/modules/my_cart/controllers/my_cart_controller.dart';
 
 class MyCartView extends GetView<MyCartController> {
   const MyCartView({super.key});
@@ -12,7 +12,7 @@ class MyCartView extends GetView<MyCartController> {
     return GetBuilder<MyCartController>(
         init: MyCartController(),
         builder: (controller) {
-          return ShoppingCartScreen();
+          return const ShoppingCartScreen();
         });
   }
 }

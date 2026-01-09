@@ -3,11 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:shimmer/shimmer.dart';
+import 'package:tjara/app/core/dialogs/dialogs.dart';
 import 'package:tjara/app/core/locators/cache_images.dart';
+import 'package:tjara/app/core/widgets/filter_dialog.dart';
 import 'package:tjara/app/models/categories/categories_model.dart';
-import '../controllers/home_controller.dart';
+import 'package:tjara/app/modules/home/controllers/home_controller.dart';
 
 class CategorySectionNew extends StatefulWidget {
   const CategorySectionNew({super.key});
@@ -17,148 +17,138 @@ class CategorySectionNew extends StatefulWidget {
 }
 
 class _CategorySectionNewState extends State<CategorySectionNew> {
-  final ValueNotifier<int> _selectedIndex = ValueNotifier<int>(-1);
-  final ScrollController _scrollController = ScrollController();
-
-  late final HomeController _controller;
-  List<Map<String, dynamic>> _categoryList = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = Get.find<HomeController>();
-    _initializeCategoryList();
-  }
-
-  void _initializeCategoryList() {
-    _categoryList = _controller.categories.value.productAttributeItems
-            ?.where((e) => e.thumbnail?.media?.url != null && e.name != null)
-            .map((e) => {
-                  "icon": e.thumbnail!.media!.url!,
-                  "name": e.name!,
-                  'id': e.id!,
-                  'model': e
-                })
-            .toList() ??
-        [];
-  }
+  final PageStorageBucket _bucket = PageStorageBucket();
+  final double _categoryItemWidth = 84;
+  final double _categoryImageSize = 70; // Thoda chota for circular look
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      if (_controller.categories.value.productAttributeItems == null) {
-        return const SizedBox.shrink();
-      }
-      _initializeCategoryList();
+    return GetX<HomeController>(
+      builder: (controller) {
+        if (controller.categories.value.productAttributeItems == null ||
+            controller.categoryList.isEmpty) {
+          return const SizedBox.shrink();
+        }
 
-      if (_categoryList.isEmpty) {
-        return const SizedBox.shrink();
-      }
-
-      final topCategories = _categoryList;
-
-      return SizedBox(
-        child: Column(
-          children: [
-            SingleChildScrollView(
-              controller: _scrollController,
-              scrollDirection: Axis.horizontal,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 20),
-                  _CategoryRow(
-                    categories: topCategories,
-                    startIndex: 0,
-                    selectedIndexNotifier: _selectedIndex,
-                  ),
+        return PageStorage(
+          bucket: _bucket,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  const Color(0xFFfea52d), // top
+                  const Color(0xFFfea52d).withOpacity(0.05), // fade
                 ],
               ),
             ),
-            SizedBox(height: 20),
-            Container(
-                height: 60,
-                width: MediaQuery.of(context).size.width,
-                color: Colors.grey.shade300,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      SizedBox(width: 10),
-                      Container(
-                        width: 150,
-                        height: 40,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20)),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.filter),
-                            SizedBox(width: 10),
-                            Text('Filter')
-                          ],
-                        ),
-                      ),
-                      SizedBox(width: 10),
-                      InkWell(
-                        onTap: () async {
-                          String? res = await showdialogwidget(context);
-                          if (res != null) {
-                            _controller.filterCategoryProductss(res);
-                          }
-                        },
-                        child: Container(
-                          width: 200,
-                          height: 40,
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(20)),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              SizedBox(width: 10),
-                              Text('Most Recent'),
-                              Icon(Icons.arrow_forward_ios, size: 12),
-                              SizedBox(width: 10),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ))
-          ],
-        ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 10),
+                _buildCategoryList(controller),
+                _buildFilterBar(controller),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCategoryList(HomeController controller) {
+    return SizedBox(
+      height: 120, // Increased for circular design
+      child: _OptimizedCategoryRow(
+        categories: controller.allCategories,
+        itemWidth: _categoryItemWidth,
+        imageSize: _categoryImageSize,
+      ),
+    );
+  }
+
+  Widget _buildFilterBar(HomeController controller) {
+    return SizedBox(
+      child: Row(
+        children: [
+          const SizedBox(width: 10),
+          _FilterButton(
+            icon: Icons.filter_list_rounded,
+            label: 'Filter',
+            width: 150,
+            onTap: () async => await _handleFilterTap(controller),
+          ),
+          const SizedBox(width: 10),
+          _FilterButton(
+            icon: Icons.arrow_forward_ios,
+            label: controller.selectedFilter.value.toString(),
+            width: 200,
+            onTap: () async => await _handleSortTap(controller),
+          ),
+          const SizedBox(width: 10),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleFilterTap(HomeController controller) async {
+    final res = await showFilterBottomSheet(context);
+    if (res != null && res is Map<String, double>) {
+      controller.minFilter.value = res['min'] as double;
+      controller.maxFilter.value = res['max'] as double;
+      controller.filterCategoryProductss(
+        controller.selectedFilter.value,
+        res['min'] as double,
+        res['max'] as double,
+        context,
       );
-    });
+    }
+  }
+
+  Future<void> _handleSortTap(HomeController controller) async {
+    final res = await showdialogwidget(
+      context,
+      controller.selectedFilter.value,
+    );
+    if (res != null) {
+      controller.filterCategoryProductss(
+        res,
+        controller.minFilter.value,
+        controller.maxFilter.value,
+        context,
+      );
+    }
   }
 }
 
-class _CategoryRow extends StatelessWidget {
-  const _CategoryRow({
+class _OptimizedCategoryRow extends StatelessWidget {
+  const _OptimizedCategoryRow({
     required this.categories,
-    required this.startIndex,
-    required this.selectedIndexNotifier,
+    required this.itemWidth,
+    required this.imageSize,
   });
 
   final List<Map<String, dynamic>> categories;
-  final int startIndex;
-  final ValueNotifier<int> selectedIndexNotifier;
+  final double itemWidth;
+  final double imageSize;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: categories.asMap().entries.map((entry) {
-        final int index = entry.key + startIndex;
-        final category = entry.value;
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+
+      itemCount: categories.length,
+      shrinkWrap: true,
+      cacheExtent: 1000,
+      itemBuilder: (context, index) {
         return _CategoryItem(
-          category: category,
-          index: index,
-          selectedIndexNotifier: selectedIndexNotifier,
+          category: categories[index],
+          itemWidth: itemWidth,
+          imageSize: imageSize,
         );
-      }).toList(),
+      },
     );
   }
 }
@@ -166,215 +156,301 @@ class _CategoryRow extends StatelessWidget {
 class _CategoryItem extends StatelessWidget {
   const _CategoryItem({
     required this.category,
-    required this.index,
-    required this.selectedIndexNotifier,
+    required this.itemWidth,
+    required this.imageSize,
   });
 
   final Map<String, dynamic> category;
-  final int index;
-  final ValueNotifier<int> selectedIndexNotifier;
+  final double itemWidth;
+  final double imageSize;
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<int>(
-      valueListenable: selectedIndexNotifier,
-      builder: (context, selectedIndex, _) {
-        final bool isSelected = index == selectedIndex;
-        return GestureDetector(
-          onTap: () {
-            var controller = Get.find<HomeController>();
-            selectedIndexNotifier.value = index;
-            controller.fetchCategoryProductsa(category["id"].toString());
-            controller.setSelectedCategory(
-                category['model'] ?? ProductAttributeItems());
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: SizedBox(
-              width: 84,
-              child: Column(
-                children: [
-                  _CategoryImage(
-                      key: ValueKey('image_${category["icon"]}'),
-                      imageUrl: category['icon']!),
-                  const SizedBox(height: 5),
-                  Text(
-                    category["name"]!,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w400,
-                      color: isSelected ? Colors.red : Colors.black,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+    // ✨ Dynamic color aur icon
+    final categoryName = category["name"]?.toString() ?? 'Unknown';
+    final bgColor = CategoryColorHelper.getColorFromName(categoryName);
+    final fallbackIcon = CategoryColorHelper.getIconFromName(categoryName);
+
+    return GestureDetector(
+      onTap: () => _handleCategoryTap(),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: SizedBox(
+          width: itemWidth,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // ✨ Circular container with gradient border
+              _OptimizedCategoryImage(
+                imageUrl: category['icon'] ?? '',
+                size: imageSize,
+                bgColor: bgColor,
+                fallbackIcon: fallbackIcon,
               ),
-            ),
+              const SizedBox(height: 8),
+              Expanded(child: _CategoryName(name: categoryName)),
+            ],
           ),
-        );
-      },
+        ),
+      ),
+    );
+  }
+
+  void _handleCategoryTap() async {
+    final controller = Get.find<HomeController>();
+    await controller.setSelectedCategory(
+      category['model'] ?? ProductAttributeItems(),
+    );
+    controller.fetchCategoryProductsa(category["id"].toString());
+  }
+}
+
+class _CategoryName extends StatelessWidget {
+  const _CategoryName({required this.name});
+
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      name,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w500,
+        color: Colors.black87,
+        height: 1.2,
+      ),
+      textAlign: TextAlign.center,
     );
   }
 }
 
-class _CategoryImage extends StatefulWidget {
-  const _CategoryImage({super.key, required this.imageUrl});
+// ========================================
+// ✨ UPDATED: Circular Image with Fallback Icon
+// ========================================
+class _OptimizedCategoryImage extends StatelessWidget {
+  const _OptimizedCategoryImage({
+    required this.imageUrl,
+    required this.size,
+    required this.bgColor,
+    required this.fallbackIcon,
+  });
 
   final String imageUrl;
-
-  @override
-  State<_CategoryImage> createState() => _CategoryImageState();
-}
-
-class _CategoryImageState extends State<_CategoryImage> {
-  bool isHovered = false;
-  bool isTapped = false;
+  final double size;
+  final Color bgColor;
+  final IconData fallbackIcon;
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: bgColor.withOpacity(0.15),
+        shape: BoxShape.circle,
+        border: Border.all(color: bgColor.withOpacity(0.4), width: 2.5),
+        boxShadow: [
+          BoxShadow(
+            color: bgColor.withOpacity(0.25),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child:
+            imageUrl.isNotEmpty
+                ? CachedNetworkImage(
+                  cacheManager: PersistentCacheManager(),
+                  imageUrl: imageUrl,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => _buildIconPlaceholder(),
+                  errorWidget: (context, url, error) => _buildIconPlaceholder(),
+                )
+                : _buildIconPlaceholder(),
+      ),
+    );
+  }
+
+  Widget _buildIconPlaceholder() {
+    return Container(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        boxShadow: isHovered || isTapped
-            ? [
-                BoxShadow(
-                    color: Colors.red.withOpacity(0.50),
-                    // offset: const Offset(0, 0),
-                    blurRadius: 0.10,
-                    spreadRadius: 0.5)
-              ]
-            : null,
-      ),
-      child: MouseRegion(
-        onEnter: (_) => setState(() => isHovered = true),
-        onExit: (_) => setState(() => isHovered = false),
-        child: GestureDetector(
-          onTapDown: (_) => setState(() => isTapped = true),
-          onTapUp: (_) => setState(() => isTapped = false),
-          onTapCancel: () => setState(() => isTapped = false),
-          child: TweenAnimationBuilder<double>(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOut,
-            tween: Tween<double>(
-              begin: 1.0,
-              end: isTapped ? 0.85 : (isHovered ? 0.85 : 1.0),
-            ),
-            builder: (context, scale, child) {
-              return Transform.scale(
-                scale: scale,
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    border: Border.all(color: Color(0xffD21642), width: 2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: CachedNetworkImage(
-                    cacheManager: PersistentCacheManager(),
-                    imageUrl: widget.imageUrl,
-                    imageBuilder: (context, imageProvider) =>
-                        _buildCircularImage(imageProvider),
-                    errorWidget: (context, url, error) => _buildErrorWidget(),
-                    placeholder: (context, url) => _buildShimmer(),
-                  ),
-                ),
-              );
-            },
-          ),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [bgColor, bgColor.withOpacity(0.7)],
         ),
       ),
-    );
-  }
-
-  Widget _buildCircularImage(ImageProvider imageProvider) {
-    return ClipOval(
-      child: Container(
-        width: 74,
-        height: 74,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          image: DecorationImage(
-            image: imageProvider,
-            fit: BoxFit.cover,
-          ),
+      child: Center(
+        child: Icon(
+          fallbackIcon,
+          size: size * 0.45, // Icon size = 45% of container
+          color: Colors.white,
         ),
       ),
-    );
-  }
-
-  Widget _buildErrorWidget() {
-    return ClipOval(
-      child: Container(
-        width: 74,
-        height: 74,
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          image: DecorationImage(
-            image: AssetImage('assets/icons/logo.png'),
-            fit: BoxFit.fill,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildShimmer() {
-    return ClipOval(
-      child: Container(
-        width: 74,
-        height: 74,
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.grey,
-        ),
-      ).animate().fade(duration: 500.ms),
     );
   }
 }
 
-class _ScrollProgressIndicator extends StatelessWidget {
-  const _ScrollProgressIndicator({
-    required this.progress,
+// ========================================
+// 🎨 Helper: Dynamic Color & Icon Generator
+// ========================================
+class CategoryColorHelper {
+  static Color getColorFromName(String name) {
+    final colors = [
+      const Color(0xFF2C6B7A), // Blue-green
+      const Color(0xFF4A90E2), // Blue
+      const Color(0xFFF5A623), // Orange
+      const Color(0xFF50C9CE), // Cyan
+      const Color(0xFF2D5E3F), // Green
+      const Color(0xFFE8A23D), // Yellow
+      const Color(0xFFE76F6F), // Red
+      const Color(0xFF9B59B6), // Purple
+      const Color(0xFF3498DB), // Light blue
+      const Color(0xFFE67E22), // Dark orange
+      const Color(0xFF1ABC9C), // Turquoise
+      const Color(0xFFE74C3C), // Alizarin
+    ];
+
+    // Name se hash code nikal ke color assign
+    final index = name.hashCode.abs() % colors.length;
+    return colors[index];
+  }
+
+  static IconData getIconFromName(String name) {
+    final lowerName = name.toLowerCase();
+
+    // Common keywords se icon match
+    if (lowerName.contains('shoe') || lowerName.contains('foot')) {
+      return Icons.shopping_bag;
+    } else if (lowerName.contains('cloth') ||
+        lowerName.contains('fashion') ||
+        lowerName.contains('wear') ||
+        lowerName.contains('dress')) {
+      return Icons.checkroom;
+    } else if (lowerName.contains('food') || lowerName.contains('eat')) {
+      return Icons.fastfood;
+    } else if (lowerName.contains('game') || lowerName.contains('play')) {
+      return Icons.videogame_asset;
+    } else if (lowerName.contains('home') || lowerName.contains('furniture')) {
+      return Icons.weekend;
+    } else if (lowerName.contains('cook') || lowerName.contains('kitchen')) {
+      return Icons.restaurant;
+    } else if (lowerName.contains('green') ||
+        lowerName.contains('eco') ||
+        lowerName.contains('plant')) {
+      return Icons.eco;
+    } else if (lowerName.contains('car') ||
+        lowerName.contains('auto') ||
+        lowerName.contains('vehicle')) {
+      return Icons.directions_car;
+    } else if (lowerName.contains('beauty') ||
+        lowerName.contains('makeup') ||
+        lowerName.contains('cosmetic')) {
+      return Icons.face;
+    } else if (lowerName.contains('electronic') ||
+        lowerName.contains('tech') ||
+        lowerName.contains('gadget')) {
+      return Icons.devices;
+    } else if (lowerName.contains('book') || lowerName.contains('read')) {
+      return Icons.menu_book;
+    } else if (lowerName.contains('sport') ||
+        lowerName.contains('fitness') ||
+        lowerName.contains('gym')) {
+      return Icons.fitness_center;
+    } else if (lowerName.contains('baby') ||
+        lowerName.contains('kid') ||
+        lowerName.contains('child')) {
+      return Icons.child_care;
+    } else if (lowerName.contains('pet') || lowerName.contains('animal')) {
+      return Icons.pets;
+    } else if (lowerName.contains('toy')) {
+      return Icons.toys;
+    } else if (lowerName.contains('watch') || lowerName.contains('time')) {
+      return Icons.watch;
+    } else if (lowerName.contains('bag') || lowerName.contains('backpack')) {
+      return Icons.backpack;
+    } else if (lowerName.contains('jewel') ||
+        lowerName.contains('accessory') ||
+        lowerName.contains('ring')) {
+      return Icons.diamond;
+    } else if (lowerName.contains('health') || lowerName.contains('medical')) {
+      return Icons.health_and_safety;
+    } else if (lowerName.contains('music') || lowerName.contains('audio')) {
+      return Icons.headphones;
+    } else if (lowerName.contains('phone') || lowerName.contains('mobile')) {
+      return Icons.phone_iphone;
+    }
+
+    // Default icon
+    return Icons.category;
+  }
+}
+
+// ========================================
+// 🎨 Updated Filter Button (Matching theme)
+// ========================================
+class _FilterButton extends StatelessWidget {
+  const _FilterButton({
+    required this.icon,
+    required this.label,
+    required this.width,
+    required this.onTap,
   });
 
-  final double progress;
+  final IconData icon;
+  final String label;
+  final double width;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      child: Align(
-        alignment: Alignment.center,
-        child: SizedBox(
-          width: 250,
-          child: LinearProgressIndicator(
-            value: progress,
-            backgroundColor: Colors.grey.shade300,
-            color: Colors.red,
-            minHeight: 4,
-            borderRadius: BorderRadius.circular(5),
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          height: 44,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: icon == Icons.arrow_forward_ios ? 14 : 18,
+                color: const Color(0xFFF97316),
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (icon == Icons.arrow_forward_ios) const SizedBox(width: 8),
+            ],
           ),
         ),
       ),
     );
   }
-}
-
-Widget _buildShimmer() {
-  return Shimmer.fromColors(
-    baseColor: Colors.grey.shade300,
-    highlightColor: Colors.grey.shade100,
-    child: ClipOval(
-      child: Container(
-        width: 74,
-        height: 74,
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-        ),
-      ),
-    ),
-  );
 }

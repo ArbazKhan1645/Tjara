@@ -3,16 +3,15 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import '../../core/utils/helpers/api_exceptions.dart';
-
+import 'package:tjara/app/core/utils/helpers/api_exceptions.dart';
 
 class ApiConfig {
   static const String baseUrl = 'https://dash.imei.info/api/check/';
   static const String upcoming = '/upcoming';
   static const String basixServiceImeiId = '/upcoming';
-  
+
   static const String api_key = '0611ecea-3a98-490d-a4ad-522fe86c29a7';
-  
+
   static const Duration timeout = Duration(seconds: 30);
   static const int maxRetries = 3;
   static const Duration retryDelay = Duration(seconds: 2);

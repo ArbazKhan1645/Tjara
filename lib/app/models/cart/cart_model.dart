@@ -1,4 +1,6 @@
+import 'package:tjara/app/models/media_model/media_model.dart';
 import 'package:tjara/app/models/products/single_product_model.dart';
+import 'package:tjara/app/models/products/variation.dart';
 
 class CartModel {
   List<CartItem> cartItems;
@@ -25,31 +27,40 @@ class CartModel {
 
   factory CartModel.fromJson(Map<String, dynamic> json) {
     return CartModel(
-      cartItems: (json['cartItems'] as List?)
+      cartItems:
+          (json['cartItems'] as List?)
               ?.map((item) => CartItem.fromJson(item))
               .toList() ??
           [],
-      cartTotal: json['cartTotal'] != null
-          ? double.tryParse(json['cartTotal'].toString()) ?? 0.0
-          : 0.0,
-      totalDiscounts: json['totalDiscounts'] != null
-          ? double.tryParse(json['totalDiscounts'].toString()) ?? 0.0
-          : 0.0,
-      totalBonuses: json['totalBonuses'] != null
-          ? double.tryParse(json['totalBonuses'].toString()) ?? 0.0
-          : 0.0,
-      totalWithDiscount: json['totalWithDiscount'] != null
-          ? double.tryParse(json['totalWithDiscount'].toString()) ?? 0.0
-          : 0.0,
-      totalShippingFees: json['totalShippingFees'] != null
-          ? double.tryParse(json['totalShippingFees'].toString()) ?? 0.0
-          : 0.0,
-      grandTotal: json['grandTotal'] != null
-          ? double.tryParse(json['grandTotal'].toString()) ?? 0.0
-          : 0.0,
-      resellerProgress:
-          ResellerProgress.fromJson(json['resellerProgress'] ?? {}),
-      discountMessages: (json['discountMessages'] as List?)
+      cartTotal:
+          json['cartTotal'] != null
+              ? double.tryParse(json['cartTotal'].toString()) ?? 0.0
+              : 0.0,
+      totalDiscounts:
+          json['totalDiscounts'] != null
+              ? double.tryParse(json['totalDiscounts'].toString()) ?? 0.0
+              : 0.0,
+      totalBonuses:
+          json['totalBonuses'] != null
+              ? double.tryParse(json['totalBonuses'].toString()) ?? 0.0
+              : 0.0,
+      totalWithDiscount:
+          json['totalWithDiscount'] != null
+              ? double.tryParse(json['totalWithDiscount'].toString()) ?? 0.0
+              : 0.0,
+      totalShippingFees:
+          json['totalShippingFees'] != null
+              ? double.tryParse(json['totalShippingFees'].toString()) ?? 0.0
+              : 0.0,
+      grandTotal:
+          json['grandTotal'] != null
+              ? double.tryParse(json['grandTotal'].toString()) ?? 0.0
+              : 0.0,
+      resellerProgress: ResellerProgress.fromJson(
+        json['resellerProgress'] ?? {},
+      ),
+      discountMessages:
+          (json['discountMessages'] as List?)
               ?.map((e) => e?.toString())
               .toList() ??
           [],
@@ -73,6 +84,7 @@ class CartItem {
   LevelProgress? levelProgress;
   bool isEligibleForDiscount;
   bool freeShipping;
+  String? firstOrderDiscountMessage;
   String freeShippingNotice;
   LebanonTechDiscount? lebanonTechDiscount;
 
@@ -82,6 +94,7 @@ class CartItem {
     required this.shopTotal,
     required this.maxShippingFee,
     this.currentPlan,
+    required this.firstOrderDiscountMessage,
     required this.shopDiscount,
     required this.shopBonus,
     required this.displayDiscount,
@@ -98,41 +111,51 @@ class CartItem {
 
   factory CartItem.fromJson(Map<String, dynamic> json) {
     return CartItem(
+      firstOrderDiscountMessage: json['firstOrderDiscountMessage'],
       shop: Shop.fromJson(json['shop'] ?? {}),
-      items: (json['items'] as List?)
+      items:
+          (json['items'] as List?)
               ?.map((item) => Item.fromJson(item))
               .toList() ??
           [],
-      shopTotal: json['shopTotal'] != null
-          ? double.tryParse(json['shopTotal'].toString()) ?? 0.0
-          : 0.0,
-      maxShippingFee: json['maxShippingFee'] != null
-          ? double.tryParse(json['maxShippingFee'].toString()) ?? 0.0
-          : 0.0,
-      shopDiscount: json['shopDiscount'] != null
-          ? double.tryParse(json['shopDiscount'].toString()) ?? 0.0
-          : 0.0,
-      shopBonus: json['shopBonus'] != null
-          ? double.tryParse(json['shopBonus'].toString()) ?? 0.0
-          : 0.0,
-      displayDiscount: json['displayDiscount'] != null
-          ? double.tryParse(json['displayDiscount'].toString()) ?? 0.0
-          : 0.0,
-      displayBonus: json['displayBonus'] != null
-          ? double.tryParse(json['displayBonus'].toString()) ?? 0.0
-          : 0.0,
+      shopTotal:
+          json['shopTotal'] != null
+              ? double.tryParse(json['shopTotal'].toString()) ?? 0.0
+              : 0.0,
+      maxShippingFee:
+          json['maxShippingFee'] != null
+              ? double.tryParse(json['maxShippingFee'].toString()) ?? 0.0
+              : 0.0,
+      shopDiscount:
+          json['shopDiscount'] != null
+              ? double.tryParse(json['shopDiscount'].toString()) ?? 0.0
+              : 0.0,
+      shopBonus:
+          json['shopBonus'] != null
+              ? double.tryParse(json['shopBonus'].toString()) ?? 0.0
+              : 0.0,
+      displayDiscount:
+          json['displayDiscount'] != null
+              ? double.tryParse(json['displayDiscount'].toString()) ?? 0.0
+              : 0.0,
+      displayBonus:
+          json['displayBonus'] != null
+              ? double.tryParse(json['displayBonus'].toString()) ?? 0.0
+              : 0.0,
       displayHasLevelFreeShipping: json['displayHasLevelFreeShipping'] ?? false,
       nextTierMessage: json['nextTierMessage'],
       nextTierMessageCheckout: json['nextTierMessageCheckout'],
-      levelProgress: json['levelProgress'] != null
-          ? LevelProgress.fromJson(json['levelProgress'])
-          : null,
+      levelProgress:
+          json['levelProgress'] != null
+              ? LevelProgress.fromJson(json['levelProgress'])
+              : null,
       isEligibleForDiscount: json['isEligibleForDiscount'] ?? false,
       freeShipping: json['freeShipping'] ?? false,
       freeShippingNotice: json['freeShippingNotice'] ?? '',
-      lebanonTechDiscount: json['lebanonTechDiscount'] != null
-          ? LebanonTechDiscount.fromJson(json['lebanonTechDiscount'])
-          : null,
+      lebanonTechDiscount:
+          json['lebanonTechDiscount'] != null
+              ? LebanonTechDiscount.fromJson(json['lebanonTechDiscount'])
+              : null,
     );
   }
 }
@@ -140,14 +163,10 @@ class CartItem {
 class Shop {
   ShopDetails shop;
 
-  Shop({
-    required this.shop,
-  });
+  Shop({required this.shop});
 
   factory Shop.fromJson(Map<String, dynamic> json) {
-    return Shop(
-      shop: ShopDetails.fromJson(json['shop'] ?? {}),
-    );
+    return Shop(shop: ShopDetails.fromJson(json['shop'] ?? {}));
   }
 }
 
@@ -213,9 +232,10 @@ class ShopDetails {
       thumbnailId: json['thumbnail_id'],
       bannerImageId: json['banner_image_id'],
       stripeAccountId: json['stripe_account_id'],
-      balance: json['balance'] != null
-          ? double.tryParse(json['balance'].toString()) ?? 0.0
-          : 0.0,
+      balance:
+          json['balance'] != null
+              ? double.tryParse(json['balance'].toString()) ?? 0.0
+              : 0.0,
       description: json['description'] ?? '',
       isVerified: json['is_verified'] ?? 0,
       isFeatured: json['is_featured'],
@@ -233,27 +253,24 @@ class ShopDetails {
 class Banner {
   String message;
 
-  Banner({
-    required this.message,
-  });
+  Banner({required this.message});
 
   factory Banner.fromJson(Map<String, dynamic> json) {
-    return Banner(
-      message: json['message'] ?? '',
-    );
+    return Banner(message: json['message'] ?? '');
   }
 }
 
 class Thumbnail {
-  Media? media;
+  MediaUniversalModel? media;
 
-  Thumbnail({
-    this.media,
-  });
+  Thumbnail({this.media});
 
   factory Thumbnail.fromJson(Map<String, dynamic> json) {
     return Thumbnail(
-      media: json['media'] != null ? Media.fromJson(json['media']) : null,
+      media:
+          json['media'] != null
+              ? MediaUniversalModel.fromJson(json['media'])
+              : null,
     );
   }
 }
@@ -293,9 +310,7 @@ class Media {
 class Membership {
   MembershipPlan membershipPlan;
 
-  Membership({
-    required this.membershipPlan,
-  });
+  Membership({required this.membershipPlan});
 
   factory Membership.fromJson(Map<String, dynamic> json) {
     return Membership(
@@ -341,9 +356,10 @@ class MembershipPlan {
       slug: json['slug'] ?? '',
       userType: json['user_type'] ?? '',
       name: json['name'] ?? '',
-      price: json['price'] != null
-          ? double.tryParse(json['price'].toString()) ?? 0.0
-          : 0.0,
+      price:
+          json['price'] != null
+              ? double.tryParse(json['price'].toString()) ?? 0.0
+              : 0.0,
       description: json['description'] ?? '',
       duration: json['duration'] ?? '',
       parentId: json['parent_id'],
@@ -359,13 +375,12 @@ class MembershipPlan {
 class Features {
   List<dynamic> membershipPlanFeatures;
 
-  Features({
-    required this.membershipPlanFeatures,
-  });
+  Features({required this.membershipPlanFeatures});
 
   factory Features.fromJson(Map<String, dynamic> json) {
     return Features(
-      membershipPlanFeatures: (json['membership_plan_features'] as List?)
+      membershipPlanFeatures:
+          (json['membership_plan_features'] as List?)
               ?.map((e) => e) // Keeps the dynamic type
               .toList() ??
           [],
@@ -439,6 +454,7 @@ class Item {
   Product product;
   ItemMeta meta;
   Thumbnail thumbnail;
+  ProductVariationShop? productVariation;
   double? originalPrice;
   double? displayDiscountedPrice;
   double? displayItemDiscount;
@@ -476,21 +492,26 @@ class Item {
       product: Product.fromJson(json['product'] ?? {}),
       meta: ItemMeta.fromJson(json['meta'] ?? {}),
       thumbnail: Thumbnail.fromJson(json['thumbnail'] ?? {}),
-      price: json['price'] != null
-          ? double.tryParse(json['price'].toString()) ?? 0.0
-          : 0.0,
-      originalPrice: json['original_price'] != null
-          ? double.tryParse(json['original_price'].toString())
-          : null,
-      displayDiscountedPrice: json['displayDiscountedPrice'] != null
-          ? double.tryParse(json['displayDiscountedPrice'].toString())
-          : null,
-      displayItemDiscount: json['display_item_discount'] != null
-          ? double.tryParse(json['display_item_discount'].toString())
-          : null,
-      displayDiscountPerUnit: json['display_discount_per_unit'] != null
-          ? double.tryParse(json['display_discount_per_unit'].toString())
-          : null,
+      price:
+          json['price'] != null
+              ? double.tryParse(json['price'].toString()) ?? 0.0
+              : 0.0,
+      originalPrice:
+          json['original_price'] != null
+              ? double.tryParse(json['original_price'].toString())
+              : null,
+      displayDiscountedPrice:
+          json['displayDiscountedPrice'] != null
+              ? double.tryParse(json['displayDiscountedPrice'].toString())
+              : null,
+      displayItemDiscount:
+          json['display_item_discount'] != null
+              ? double.tryParse(json['display_item_discount'].toString())
+              : null,
+      displayDiscountPerUnit:
+          json['display_discount_per_unit'] != null
+              ? double.tryParse(json['display_discount_per_unit'].toString())
+              : null,
     );
   }
 }
@@ -580,15 +601,17 @@ class LevelProgress {
 
   factory LevelProgress.fromJson(Map<String, dynamic> json) {
     return LevelProgress(
-      levels: (json['levels'] as List?)
+      levels:
+          (json['levels'] as List?)
               ?.map((level) => Level.fromJson(level))
               .toList() ??
           [],
       currentLevel: json['currentLevel'],
       nextLevel: json['nextLevel'],
-      progress: json['progress'] != null
-          ? double.tryParse(json['progress'].toString()) ?? 0.0
-          : 0.0,
+      progress:
+          json['progress'] != null
+              ? double.tryParse(json['progress'].toString()) ?? 0.0
+              : 0.0,
     );
   }
 }
@@ -611,18 +634,22 @@ class Level {
   factory Level.fromJson(Map<String, dynamic> json) {
     return Level(
       level: json['level'],
-      shopTotal: json['shopTotal'] != null
-          ? double.tryParse(json['shopTotal'].toString()) ?? 0.0
-          : 0.0,
-      minSpent: json['minSpent'] != null
-          ? double.tryParse(json['minSpent'].toString()) ?? 0.0
-          : 0.0,
-      discount: json['discount'] != null
-          ? double.tryParse(json['discount'].toString()) ?? 0.0
-          : 0.0,
-      bonus: json['bonus'] != null
-          ? double.tryParse(json['bonus'].toString()) ?? 0.0
-          : 0.0,
+      shopTotal:
+          json['shopTotal'] != null
+              ? double.tryParse(json['shopTotal'].toString()) ?? 0.0
+              : 0.0,
+      minSpent:
+          json['minSpent'] != null
+              ? double.tryParse(json['minSpent'].toString()) ?? 0.0
+              : 0.0,
+      discount:
+          json['discount'] != null
+              ? double.tryParse(json['discount'].toString()) ?? 0.0
+              : 0.0,
+      bonus:
+          json['bonus'] != null
+              ? double.tryParse(json['bonus'].toString()) ?? 0.0
+              : 0.0,
     );
   }
 }
@@ -643,12 +670,14 @@ class LebanonTechDiscount {
   factory LebanonTechDiscount.fromJson(Map<String, dynamic> json) {
     return LebanonTechDiscount(
       isEnabled: json['isEnabled'],
-      discountAmount: json['discountAmount'] != null
-          ? double.tryParse(json['discountAmount'].toString()) ?? 0.0
-          : 0.0,
-      discountPercentage: json['discountPercentage'] != null
-          ? double.tryParse(json['discountPercentage'].toString()) ?? 0.0
-          : 0.0,
+      discountAmount:
+          json['discountAmount'] != null
+              ? double.tryParse(json['discountAmount'].toString()) ?? 0.0
+              : 0.0,
+      discountPercentage:
+          json['discountPercentage'] != null
+              ? double.tryParse(json['discountPercentage'].toString()) ?? 0.0
+              : 0.0,
       message: json['message'],
     );
   }
@@ -661,7 +690,8 @@ class ResellerProgress {
 
   factory ResellerProgress.fromJson(Map<String, dynamic> json) {
     return ResellerProgress(
-      levels: (json['levels'] as List?)
+      levels:
+          (json['levels'] as List?)
               ?.map((level) => ResellerLevel.fromJson(level))
               .toList() ??
           [],
@@ -687,18 +717,164 @@ class ResellerLevel {
   factory ResellerLevel.fromJson(Map<String, dynamic> json) {
     return ResellerLevel(
       level: json['level'],
-      minSpent: json['minSpent'] != null
-          ? double.tryParse(json['minSpent'].toString()) ?? 0.0
-          : 0.0,
-      discount: json['discount'] != null
-          ? double.tryParse(json['discount'].toString()) ?? 0.0
-          : 0.0,
-      bonus: json['bonus'] != null
-          ? double.tryParse(json['bonus'].toString()) ?? 0.0
-          : 0.0,
-      referrelEarnings: json['referrel_earnings'] != null
-          ? double.tryParse(json['referrel_earnings'].toString()) ?? 0.0
-          : 0.0,
+      minSpent:
+          json['minSpent'] != null
+              ? double.tryParse(json['minSpent'].toString()) ?? 0.0
+              : 0.0,
+      discount:
+          json['discount'] != null
+              ? double.tryParse(json['discount'].toString()) ?? 0.0
+              : 0.0,
+      bonus:
+          json['bonus'] != null
+              ? double.tryParse(json['bonus'].toString()) ?? 0.0
+              : 0.0,
+      referrelEarnings:
+          json['referrel_earnings'] != null
+              ? double.tryParse(json['referrel_earnings'].toString()) ?? 0.0
+              : 0.0,
     );
+  }
+}
+
+// Extensions for accessing size name from ProductVariationShop
+extension ItemSizeExtension on Item {
+  String getSizeName() {
+    try {
+      final variation = productVariation;
+      if (variation != null) {
+        // Method 1: Try to access the variation structure
+        try {
+          final dynamic dynVariation = variation;
+
+          // Check if ProductVariationShop has productVariation property
+          if (dynVariation.productVariation != null) {
+            final nested = dynVariation.productVariation;
+            if (nested.attributes != null) {
+              final attributes = nested.attributes;
+              if (attributes.productVariationAttributeItems != null) {
+                final items = attributes.productVariationAttributeItems;
+                if (items is List && items.isNotEmpty) {
+                  final firstItem = items.first;
+                  if (firstItem.attributeItem != null &&
+                      firstItem.attributeItem.name != null) {
+                    return firstItem.attributeItem.name;
+                  }
+                }
+              }
+            }
+          }
+
+          // Try direct attributes access
+          if (dynVariation.attributes != null) {
+            final attributes = dynVariation.attributes;
+            if (attributes.productVariationAttributeItems != null) {
+              final items = attributes.productVariationAttributeItems;
+              if (items is List && items.isNotEmpty) {
+                final firstItem = items.first;
+                if (firstItem.attributeItem != null &&
+                    firstItem.attributeItem.name != null) {
+                  return firstItem.attributeItem.name;
+                }
+              }
+            }
+          }
+        } catch (e) {
+          print('Direct access failed: $e');
+        }
+
+        // Method 2: String parsing fallback
+        try {
+          final String variationStr = variation.toString();
+
+          // Look for size patterns in the string representation
+          final RegExp sizePattern = RegExp(
+            r'\b(XS|S|Small|M|Medium|L|Large|XL|XXL|2XL|3XL)\b',
+            caseSensitive: false,
+          );
+          final match = sizePattern.firstMatch(variationStr);
+          if (match != null) {
+            final String foundSize = match.group(0)!;
+            // Normalize the size name
+            switch (foundSize.toLowerCase()) {
+              case 's':
+                return 'Small';
+              case 'm':
+                return 'Medium';
+              case 'l':
+                return 'Large';
+              case 'XL':
+                return 'Xtra Large';
+              default:
+                return foundSize;
+            }
+          }
+        } catch (e) {
+          print('String parsing failed: $e');
+        }
+      }
+    } catch (e) {
+      print('Error getting size name: $e');
+    }
+
+    // Fallback to product name
+    return product.name;
+  }
+
+  String getDisplayNameWithSize() {
+    final sizeName = getSizeName();
+    if (sizeName != product.name && !product.name.contains(sizeName)) {
+      return '${product.name} - $sizeName';
+    }
+    return product.name;
+  }
+}
+
+// Debug extension to help identify ProductVariationShop structure
+extension DebugItemExtension on Item {
+  void debugProductVariation() {
+    print('=== DEBUG PRODUCT VARIATION ===');
+    print('Product name: ${product.name}');
+    print('ProductVariation exists: ${productVariation != null}');
+
+    if (productVariation != null) {
+      print('ProductVariation type: ${productVariation.runtimeType}');
+      print('ProductVariation toString: ${productVariation.toString()}');
+
+      try {
+        final dynamic variation = productVariation;
+        print('Available properties in variation:');
+
+        // Check common properties
+        try {
+          print('- Has attributes: ${variation.attributes != null}');
+        } catch (e) {
+          print('- No attributes property');
+        }
+
+        try {
+          print(
+            '- Has productVariation: ${variation.productVariation != null}',
+          );
+        } catch (e) {
+          print('- No productVariation property');
+        }
+
+        try {
+          print('- Has variations: ${variation.variations != null}');
+        } catch (e) {
+          print('- No variations property');
+        }
+
+        try {
+          print('- Has name: ${variation.name != null}');
+        } catch (e) {
+          print('- No name property');
+        }
+      } catch (e) {
+        print('Error accessing variation properties: $e');
+      }
+    }
+    print('=== END DEBUG ===');
   }
 }

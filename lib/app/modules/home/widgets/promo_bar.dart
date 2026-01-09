@@ -30,8 +30,8 @@ class _PromoBannerState extends State<PromoBanner> {
             },
             itemBuilder: (context, index) {
               return Container(
-                decoration: BoxDecoration(
-                  image: const DecorationImage(
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
                     image: AssetImage('assets/images/banner.png'),
                     fit: BoxFit.cover,
                   ),

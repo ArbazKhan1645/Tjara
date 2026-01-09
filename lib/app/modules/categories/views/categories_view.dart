@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 
-import '../controllers/categories_controller.dart';
+import 'package:tjara/app/modules/categories/controllers/categories_controller.dart';
 
 class CategoriesView extends GetView<CategoriesController> {
   const CategoriesView({super.key});

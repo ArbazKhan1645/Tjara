@@ -8,7 +8,7 @@ class AppAssets {
   static const String heart = '$iconPath/heart.png';
   static const String home = '$iconPath/home.png';
   static const String language = '$iconPath/language.png';
-  static const String logo = '$iconPath/logo.png';
+  static const String logo = 'assets/icons/Group 1000005487.png';
   static const String menu = '$iconPath/menu.png';
   static const String secure = '$iconPath/secure.png';
   static const String user = '$iconPath/user.png';

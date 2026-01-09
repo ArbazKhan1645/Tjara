@@ -1,24 +1,14 @@
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
+import 'package:tjara/app/modules/authentication/new/sign_in.dart';
 
-import '../controllers/authentication_controller.dart';
+import 'package:tjara/app/modules/authentication/controllers/authentication_controller.dart';
 
 class AuthenticationView extends GetView<AuthenticationController> {
   const AuthenticationView({super.key});
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('AuthenticationView'),
-        centerTitle: true,
-      ),
-      body: const Center(
-        child: Text(
-          'AuthenticationView is working',
-          style: TextStyle(fontSize: 20),
-        ),
-      ),
-    );
+    return const LoginScreenNew();
   }
 }

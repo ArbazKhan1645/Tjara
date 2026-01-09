@@ -43,8 +43,8 @@ class Responsive {
   }
 
   double calculateTextSize() {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double screenHeight = MediaQuery.of(context).size.height;
 
     const double widthFactor = 0.002;
     const double heightFactor = 0.002;

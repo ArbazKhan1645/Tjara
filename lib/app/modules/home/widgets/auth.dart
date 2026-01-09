@@ -17,8 +17,8 @@ class AnimatedDialog extends StatelessWidget {
           child: SizedBox(
             height: MediaQuery.of(context).size.height * 0.70,
             width: MediaQuery.of(context).size.width,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
+            child: const Padding(
+              padding: EdgeInsets.all(8.0),
               child: LoginScreen(),
             ),
           ),
@@ -39,58 +39,49 @@ class LoginScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
+          const Text(
             "Login to your account",
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 20),
-          Text("Email Address"),
-          TextField(
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-            ),
-          ),
-          SizedBox(height: 10),
-          Text("Password"),
-          TextField(
+          const SizedBox(height: 20),
+          const Text("Email Address"),
+          const TextField(decoration: InputDecoration(border: OutlineInputBorder())),
+          const SizedBox(height: 10),
+          const Text("Password"),
+          const TextField(
             obscureText: true,
             decoration: InputDecoration(
               border: OutlineInputBorder(),
               suffixIcon: Icon(Icons.remove_red_eye),
             ),
           ),
-          SizedBox(height: 10),
-          Align(
+          const SizedBox(height: 10),
+          const Align(
             alignment: Alignment.centerLeft,
             child: Text(
               "Reset Password",
               style: TextStyle(color: Colors.green),
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
             height: 50,
             child: ElevatedButton(
               onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-              ),
-              child: Text(
-                "Login",
-                style: TextStyle(color: Colors.white),
-              ),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text("Login", style: TextStyle(color: Colors.white)),
             ),
           ),
-          SizedBox(height: 20),
-          Center(child: Text("Don't have account ?")),
-          SizedBox(height: 10),
+          const SizedBox(height: 20),
+          const Center(child: Text("Don't have account ?")),
+          const SizedBox(height: 10),
           SizedBox(
             width: double.infinity,
             height: 50,
             child: OutlinedButton(
               onPressed: () {},
-              child: Text(
+              child: const Text(
                 "Create account",
                 style: TextStyle(color: Colors.red),
               ),

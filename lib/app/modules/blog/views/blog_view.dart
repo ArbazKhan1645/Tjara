@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/core/utils/constants/assets_manager.dart';
 
-import '../../../core/utils/thems/theme.dart';
-import '../../../core/widgets/appbar.dart';
-import '../../../core/widgets/base.dart';
-import '../controllers/blog_controller.dart';
-import '../widgets/blogs_items.dart';
+import 'package:tjara/app/core/utils/thems/theme.dart';
+import 'package:tjara/app/core/widgets/appbar.dart';
+import 'package:tjara/app/core/widgets/base.dart';
+import 'package:tjara/app/modules/blog/controllers/blog_controller.dart';
+import 'package:tjara/app/modules/blog/widgets/blogs_items.dart';
 
 class BlogView extends GetView<BlogController> {
   const BlogView({super.key});
@@ -16,7 +16,7 @@ class BlogView extends GetView<BlogController> {
     return GetBuilder<BlogController>(
         init: BlogController(),
         builder: (controller) {
-          return Scaffold(
+          return const Scaffold(
               backgroundColor: Colors.white,
               appBar: CustomAppBar(),
               body: CheckoutViewBody());
@@ -38,7 +38,7 @@ class CheckoutViewBody extends StatelessWidget {
             Text(" /  ", style: defaultTextStyle.copyWith(fontSize: 16)),
             Text("Blog",
                 style: defaultTextStyle.copyWith(
-                    fontSize: 16, color: Color(0xffD21642))),
+                    fontSize: 16, color: const Color(0xffD21642))),
           ],
         ),
       ),
@@ -49,14 +49,14 @@ class CheckoutViewBody extends StatelessWidget {
             children: [
               Expanded(
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Color(0xffEAEAEA)),
+                    border: Border.all(color: const Color(0xffEAEAEA)),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: TextField(
                     decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.search, color: Colors.grey),
+                        prefixIcon: const Icon(Icons.search, color: Colors.grey),
                         hintStyle: defaultTextStyle.copyWith(
                             color: Colors.grey.shade400, fontSize: 14),
                         hintText: 'Search in store',
@@ -66,20 +66,20 @@ class CheckoutViewBody extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(width: 20),
+              const SizedBox(width: 20),
               Container(
-                padding: EdgeInsets.all(8),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: Colors.black,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(Icons.tune, color: Colors.white),
+                child: const Icon(Icons.tune, color: Colors.white),
               ),
             ],
           ),
         ),
       ),
-      SizedBox(height: 10),
+      const SizedBox(height: 10),
       Container(
         color: const Color.fromRGBO(233, 233, 233, 1),
         height: 45,
@@ -93,14 +93,14 @@ class CheckoutViewBody extends StatelessWidget {
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(19),
                   color: Colors.white,
-                  border: Border.all(color: Color(0xffECECEC))),
+                  border: Border.all(color: const Color(0xffECECEC))),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text('Sort by',
                       style: defaultTextStyle.copyWith(
                           fontSize: 14, fontWeight: FontWeight.w300)),
-                  SizedBox(width: 5),
+                  const SizedBox(width: 5),
                   Image.asset(AppAssets.dropdown)
                 ],
               ),
@@ -108,9 +108,9 @@ class CheckoutViewBody extends StatelessWidget {
           ),
         ),
       ),
-      SizedBox(height: 20),
-      BlogListView(),
-      SizedBox(height: 150),
+      const SizedBox(height: 20),
+      const BlogListView(),
+      const SizedBox(height: 150),
     ]);
   }
 }

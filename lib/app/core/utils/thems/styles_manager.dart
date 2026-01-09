@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:google_fonts/google_fonts.dart';
 
-import '../constants/font_manager.dart';
+import 'package:tjara/app/core/utils/constants/font_manager.dart';
 
 TextStyle _getTextStyle(
   double fontSize,

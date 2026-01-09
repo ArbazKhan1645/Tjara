@@ -1,43 +1,50 @@
+// ignore_for_file: non_constant_identifier_names
+
+import 'package:tjara/app/models/media_model/media_model.dart';
+import 'package:tjara/app/models/products/single_product_model.dart';
+
 class ProductModel {
-  final Products? products;
-
+  Products? products;
   ProductModel({this.products});
-
   factory ProductModel.fromJson(Map<String, dynamic>? json) {
     return ProductModel(
-      products: json?['products'] != null
-          ? Products.fromJson(json!['products'])
-          : null,
+      products:
+          json?['products'] != null
+              ? Products.fromJson(json!['products'])
+              : null,
     );
   }
 
-  Map<String, dynamic> toJson() => {
-        'products': products?.toJson(),
-      };
+  Map<String, dynamic> toJson() => {'products': products?.toJson()};
 }
 
 class Products {
-  final num? currentPage; // Changed to num?
+  num? currentPage; // Changed to num?
   List<ProductDatum>? data;
 
   Products({this.currentPage, this.data});
 
   factory Products.fromJson(Map<String, dynamic>? json) {
     return Products(
-      currentPage: json?['current_page'] != null
-          ? num.parse(json!['current_page'].toString())
-          : null,
-      data: json?['data'] != null
-          ? List<ProductDatum>.from(
-              json!['data'].map((x) => ProductDatum.fromJson(x)))
-          : null,
+      currentPage:
+          json?['current_page'] is num
+              ? json!['current_page']
+              : (json?['current_page'] is String
+                  ? num.tryParse(json!['current_page'])
+                  : null),
+      data:
+          json?['data'] != null
+              ? List<ProductDatum>.from(
+                json!['data'].map((x) => ProductDatum.fromJson(x)),
+              )
+              : null,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'current_page': currentPage,
-        'data': data?.map((x) => x.toJson()).toList(),
-      };
+    'current_page': currentPage,
+    'data': data?.map((x) => x.toJson()).toList(),
+  };
 }
 
 class ProductDatum {
@@ -120,19 +127,43 @@ class ProductDatum {
       productGroup: json?['product_group'],
       thumbnailId: json?['thumbnail_id'],
       description: json?['description'],
+      // Fix for numeric fields - check if it's already a num first
       stock:
-          json?['stock'] != null ? num.parse(json!['stock'].toString()) : null,
-      isFeatured: json?['is_featured'] != null
-          ? num.parse(json!['is_featured'].toString())
-          : null,
-      isDeal: json?['is_deal'] != null
-          ? num.parse(json!['is_deal'].toString())
-          : null,
+          json?['stock'] is int || json?['stock'] is double
+              ? json!['stock']
+              : (json?['stock'] is String
+                  ? num.tryParse(json!['stock'])
+                  : null),
+
+      isFeatured:
+          json?['is_featured'] is int || json?['is_featured'] is double
+              ? json!['is_featured']
+              : (json?['is_featured'] is String
+                  ? num.tryParse(json!['is_featured'])
+                  : null),
+
+      isDeal:
+          json?['is_deal'] is int || json?['is_deal'] is double
+              ? json!['is_deal']
+              : (json?['is_deal'] is String
+                  ? num.tryParse(json!['is_deal'])
+                  : null),
+
       price:
-          json?['price'] != null ? num.parse(json!['price'].toString()) : null,
-      salePrice: json?['sale_price'] != null
-          ? num.parse(json!['sale_price'].toString())
-          : null,
+          json?['price'] is int || json?['price'] is double
+              ? json!['price']
+              : (json?['price'] is String
+                  ? num.tryParse(json!['price'])
+                  : null),
+
+      salePrice:
+          json?['sale_price'] is int || json?['sale_price'] is double
+              ? json!['sale_price']
+              : (json?['sale_price'] is String
+                  ? num.tryParse(json!['sale_price'])
+                  : null),
+
+      // Rest of the fields...
       reservedPrice: json?['reserved_price'],
       auctionStartTime: json?['auction_start_time'],
       auctionEndTime: json?['auction_end_time'],
@@ -142,17 +173,20 @@ class ProductDatum {
       saleStartTime: json?['sale_start_time'],
       saleEndTime: json?['sale_end_time'],
       status: json?['status'],
-      createdAt: json?['created_at'] != null
-          ? DateTime.parse(json!['created_at'])
-          : null,
-      updatedAt: json?['updated_at'] != null
-          ? DateTime.parse(json!['updated_at'])
-          : null,
-      thumbnail: json?['thumbnail'] != null
-          ? Thumbnail.fromJson(json!['thumbnail'])
-          : null,
-      rating:
-          json?['rating'] != null ? List<dynamic>.from(json!['rating']) : null,
+      createdAt:
+          json?['created_at'] != null
+              ? DateTime.parse(json!['created_at'])
+              : null,
+      updatedAt:
+          json?['updated_at'] != null
+              ? DateTime.parse(json!['updated_at'])
+              : null,
+      thumbnail:
+          json?['thumbnail'] != null
+              ? Thumbnail.fromJson(json!['thumbnail'])
+              : null,
+      // rating:
+      //     json?['rating'] != null ? List<dynamic>.from(json!['rating']) : null,
       shop: json?['shop'] != null ? DatumShop.fromJson(json!['shop']) : null,
       brands: json?['brands'] != null ? Brands.fromJson(json!['brands']) : null,
       video: json?['video'] != null ? Video.fromJson(json!['video']) : null,
@@ -162,72 +196,90 @@ class ProductDatum {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'prev_id': prevId,
-        'shop_id': shopId,
-        'slug': slug,
-        'name': name,
-        'product_type': productType,
-        'product_group': productGroup,
-        'thumbnail_id': thumbnailId,
-        'description': description,
-        'stock': stock,
-        'is_featured': isFeatured,
-        'is_deal': isDeal,
-        'price': price,
-        'sale_price': salePrice,
-        'reserved_price': reservedPrice,
-        'auction_start_time': auctionStartTime,
-        'auction_end_time': auctionEndTime,
-        'winner_id': winnerId,
-        'min_price': minPrice,
-        'max_price': maxPrice,
-        'sale_start_time': saleStartTime,
-        'sale_end_time': saleEndTime,
-        'status': status,
-        'created_at': createdAt?.toIso8601String(),
-        'updated_at': updatedAt?.toIso8601String(),
-        'thumbnail': thumbnail?.toJson(),
-        'rating': rating,
-        'shop': shop?.toJson(),
-        'brands': brands?.toJson(),
-        'video': video?.toJson(),
-        'meta': meta?.toJson(),
-        'is_discount_product': isDiscountProduct,
-      };
+    'id': id,
+    'prev_id': prevId,
+    'shop_id': shopId,
+    'slug': slug,
+    'name': name,
+    'product_type': productType,
+    'product_group': productGroup,
+    'thumbnail_id': thumbnailId,
+    'description': description,
+    'stock': stock,
+    'is_featured': isFeatured,
+    'is_deal': isDeal,
+    'price': price,
+    'sale_price': salePrice,
+    'reserved_price': reservedPrice,
+    'auction_start_time': auctionStartTime,
+    'auction_end_time': auctionEndTime,
+    'winner_id': winnerId,
+    'min_price': minPrice,
+    'max_price': maxPrice,
+    'sale_start_time': saleStartTime,
+    'sale_end_time': saleEndTime,
+    'status': status,
+    'created_at': createdAt?.toIso8601String(),
+    'updated_at': updatedAt?.toIso8601String(),
+    'thumbnail': thumbnail?.toJson(),
+    'rating': rating,
+    'shop': shop?.toJson(),
+    'brands': brands?.toJson(),
+    'video': video?.toJson(),
+    'meta': meta?.toJson(),
+    'is_discount_product': isDiscountProduct,
+  };
 }
 
 class Brands {
   final List<dynamic>? productAttributeItems;
-
   Brands({this.productAttributeItems});
-
   factory Brands.fromJson(Map<String, dynamic>? json) {
     return Brands(
-      productAttributeItems: json?['product_attribute_items'] != null
-          ? List<dynamic>.from(json!['product_attribute_items'])
-          : null,
+      productAttributeItems:
+          json?['product_attribute_items'] != null
+              ? List<dynamic>.from(json!['product_attribute_items'])
+              : null,
     );
   }
-
   Map<String, dynamic> toJson() => {
-        'product_attribute_items': productAttributeItems,
-      };
+    'product_attribute_items': productAttributeItems,
+  };
 }
 
 class DatumMeta {
   final String? productId;
   final String? views;
+  final String? recent_buyer;
   final String? countryId;
   final dynamic videoId;
+  final num? is_featured;
   final String? gallery;
+  final String? sold;
+
+  // Newly added fields
+  final String? shipping_time_to;
+  final String? shipping_company;
+  final String? shipping_fees;
+  final String? shipping_time_from;
+  final String? shipping_time_unit;
+  final String? shipping_method;
 
   DatumMeta({
     this.productId,
     this.views,
     this.countryId,
     this.videoId,
+    this.recent_buyer,
+    this.is_featured,
+    this.sold,
     this.gallery,
+    this.shipping_time_to,
+    this.shipping_company,
+    this.shipping_fees,
+    this.shipping_time_from,
+    this.shipping_time_unit,
+    this.shipping_method,
   });
 
   factory DatumMeta.fromJson(Map<String, dynamic>? json) {
@@ -237,16 +289,43 @@ class DatumMeta {
       countryId: json?['country_id']?.toString(),
       videoId: json?['video_id'],
       gallery: json?['gallery'],
+      sold: json?['sold'],
+      is_featured:
+          json?['is_featured'] is num
+              ? json!['is_featured']
+              : (json?['is_featured'] is String
+                  ? num.tryParse(json!['is_featured'])
+                  : 0),
+      recent_buyer: json?['recent_buyer'],
+
+      // Shipping fields
+      shipping_time_to: json?['shipping_time_to']?.toString(),
+      shipping_company: json?['shipping_company']?.toString(),
+      shipping_fees: json?['shipping_fees']?.toString(),
+      shipping_time_from: json?['shipping_time_from']?.toString(),
+      shipping_time_unit: json?['shipping_time_unit']?.toString(),
+      shipping_method: json?['shipping_method']?.toString(),
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'product_id': productId,
-        'views': views,
-        'country_id': countryId,
-        'video_id': videoId,
-        'gallery': gallery,
-      };
+    'product_id': productId,
+    'views': views,
+    'country_id': countryId,
+    'sold': sold,
+    'video_id': videoId,
+    'is_featured': is_featured,
+    'gallery': gallery,
+    'recent_buyer': recent_buyer,
+
+    // Shipping fields
+    'shipping_time_to': shipping_time_to,
+    'shipping_company': shipping_company,
+    'shipping_fees': shipping_fees,
+    'shipping_time_from': shipping_time_from,
+    'shipping_time_unit': shipping_time_unit,
+    'shipping_method': shipping_method,
+  };
 }
 
 class DatumShop {
@@ -260,9 +339,7 @@ class DatumShop {
     );
   }
 
-  Map<String, dynamic> toJson() => {
-        'shop': shop?.toJson(),
-      };
+  Map<String, dynamic> toJson() => {'shop': shop?.toJson()};
 }
 
 class ShopShop {
@@ -327,131 +404,143 @@ class ShopShop {
       thumbnailId: json?['thumbnail_id'],
       bannerImageId: json?['banner_image_id'],
       stripeAccountId: json?['stripe_account_id'],
-      balance: json?['balance'] != null
-          ? num.parse(json!['balance'].toString())
-          : null,
       description: json?['description'],
-      isVerified: json?['is_verified'] != null
-          ? num.parse(json!['is_verified'].toString())
-          : null,
-      isFeatured: json?['is_featured'] != null
-          ? num.parse(json!['is_featured'].toString())
-          : null,
+      balance:
+          json?['balance'] is num
+              ? json!['balance']
+              : (json?['balance'] is String
+                  ? num.tryParse(json!['balance'])
+                  : null),
+      isVerified:
+          json?['is_verified'] is num
+              ? json!['is_verified']
+              : (json?['is_verified'] is String
+                  ? num.tryParse(json!['is_verified'])
+                  : null),
+      isFeatured:
+          json?['is_featured'] is num
+              ? json!['is_featured']
+              : (json?['is_featured'] is String
+                  ? num.tryParse(json!['is_featured'])
+                  : null),
       status: json?['status'],
-      createdAt: json?['created_at'] != null
-          ? DateTime.parse(json!['created_at'])
-          : null,
-      updatedAt: json?['updated_at'] != null
-          ? DateTime.parse(json!['updated_at'])
-          : null,
-      banner: json?['banner'] != null
-          ? BannerModel.fromJson(json!['banner'])
-          : null,
-      thumbnail: json?['thumbnail'] != null
-          ? Video.fromJson(json!['thumbnail'])
-          : null,
-      membership: json?['membership'] != null
-          ? Video.fromJson(json!['membership'])
-          : null,
-      meta: json?['meta'] != null ? ShopMeta.fromJson(json!['meta']) : null,
+      createdAt:
+          json?['created_at'] != null
+              ? DateTime.parse(json!['created_at'])
+              : null,
+      updatedAt:
+          json?['updated_at'] != null
+              ? DateTime.parse(json!['updated_at'])
+              : null,
+      banner:
+          json?['banner'] != null
+              ? BannerModel.fromJson(json!['banner'])
+              : null,
+      thumbnail:
+          json?['thumbnail'] != null
+              ? Video.fromJson(json!['thumbnail'])
+              : null,
+      membership:
+          json?['membership'] != null
+              ? Video.fromJson(json!['membership'])
+              : null,
+      meta:
+          (json?['meta'] is Map<String, dynamic>)
+              ? ShopMeta.fromJson(json?['meta'])
+              : null,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'prev_id': prevId,
-        'user_id': userId,
-        'membership_id': membershipId,
-        'membership_start_date': membershipStartDate,
-        'membership_end_date': membershipEndDate,
-        'slug': slug,
-        'name': name,
-        'thumbnail_id': thumbnailId,
-        'banner_image_id': bannerImageId,
-        'stripe_account_id': stripeAccountId,
-        'balance': balance,
-        'description': description,
-        'is_verified': isVerified,
-        'is_featured': isFeatured,
-        'status': status,
-        'created_at': createdAt?.toIso8601String(),
-        'updated_at': updatedAt?.toIso8601String(),
-        'banner': banner?.toJson(),
-        'thumbnail': thumbnail?.toJson(),
-        'membership': membership?.toJson(),
-        'meta': meta?.toJson(),
-      };
+    'id': id,
+    'prev_id': prevId,
+    'user_id': userId,
+    'membership_id': membershipId,
+    'membership_start_date': membershipStartDate,
+    'membership_end_date': membershipEndDate,
+    'slug': slug,
+    'name': name,
+    'thumbnail_id': thumbnailId,
+    'banner_image_id': bannerImageId,
+    'stripe_account_id': stripeAccountId,
+    'balance': balance,
+    'description': description,
+    'is_verified': isVerified,
+    'is_featured': isFeatured,
+    'status': status,
+    'created_at': createdAt?.toIso8601String(),
+    'updated_at': updatedAt?.toIso8601String(),
+    'banner': banner?.toJson(),
+    'thumbnail': thumbnail?.toJson(),
+    'membership': membership?.toJson(),
+    'meta': meta?.toJson(),
+  };
 }
 
 class Video {
-  final String? message;
+  Video({required this.message});
 
-  Video({this.message});
+  final MediaUniversalModel? message;
 
-  factory Video.fromJson(Map<String, dynamic>? json) {
+  Video copyWith({String? Media}) {
+    return Video(message: message ?? message);
+  }
+
+  factory Video.fromJson(Map<String, dynamic> json) {
+    if (json['media'] is String) {
+      return Video(message: MediaUniversalModel());
+    }
     return Video(
-      message: json?['message'],
+      message:
+          json['media'] == null
+              ? MediaUniversalModel()
+              : MediaUniversalModel.fromJson(json["media"]),
     );
   }
 
-  Map<String, dynamic> toJson() => {
-        'message': message,
-      };
+  Map<String, dynamic> toJson() => {"media": message};
+
+  @override
+  String toString() {
+    return "$message, ";
+  }
 }
 
 class BannerModel {
-  final Media media;
+  final MediaUniversalModel media;
 
   BannerModel({required this.media});
 
   factory BannerModel.fromJson(Map<String, dynamic> json) {
-    return BannerModel(
-      media: Media.fromJson(json['media']),
-    );
+    return BannerModel(media: MediaUniversalModel.fromJson(json['media']));
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'media': media.toJson(),
-    };
+    return {'media': media.toJson()};
   }
-}
-
-class ShopMeta {
-  final String? phone;
-
-  ShopMeta({this.phone});
-
-  factory ShopMeta.fromJson(Map<String, dynamic>? json) {
-    return ShopMeta(
-      phone: json?['phone'],
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-        'phone': phone,
-      };
 }
 
 class Thumbnail {
-  final Media? media;
+  final MediaUniversalModel? media;
 
   Thumbnail({this.media});
 
   factory Thumbnail.fromJson(Map<String, dynamic>? json) {
     return Thumbnail(
-      media: json?['media'] != null ? Media.fromJson(json!['media']) : null,
+      media:
+          json?['media'] != null
+              ? MediaUniversalModel.fromJson(json!['media'])
+              : null,
     );
   }
 
-  Map<String, dynamic> toJson() => {
-        'media': media?.toJson(),
-      };
+  Map<String, dynamic> toJson() => {'media': media?.toJson()};
 }
 
 class Media {
   final String? id;
   final String? url;
+  final String? localUrl;
   final String? optimizedMediaUrl;
   final String? mediaType;
   final dynamic isUsed;
@@ -460,6 +549,7 @@ class Media {
 
   Media({
     this.id,
+    this.localUrl,
     this.url,
     this.optimizedMediaUrl,
     this.mediaType,
@@ -472,25 +562,81 @@ class Media {
     return Media(
       id: json?['id'],
       url: json?['url'],
+      localUrl: json?['local_url'],
       optimizedMediaUrl: json?['optimized_media_url'],
       mediaType: json?['media_type'],
       isUsed: json?['is_used'],
-      createdAt: json?['created_at'] != null
-          ? DateTime.parse(json!['created_at'])
-          : null,
-      updatedAt: json?['updated_at'] != null
-          ? DateTime.parse(json!['updated_at'])
-          : null,
+      createdAt:
+          json?['created_at'] != null
+              ? DateTime.parse(json!['created_at'])
+              : null,
+      updatedAt:
+          json?['updated_at'] != null
+              ? DateTime.parse(json!['updated_at'])
+              : null,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'url': url,
-        'optimized_media_url': optimizedMediaUrl,
-        'media_type': mediaType,
-        'is_used': isUsed,
-        'created_at': createdAt?.toIso8601String(),
-        'updated_at': updatedAt?.toIso8601String(),
-      };
+    'id': id,
+    'local_url': localUrl,
+    'url': url,
+    'optimized_media_url': optimizedMediaUrl,
+    'media_type': mediaType,
+    'is_used': isUsed,
+    'created_at': createdAt?.toIso8601String(),
+    'updated_at': updatedAt?.toIso8601String(),
+  };
+}
+
+extension ShopShopCopyWith on ShopShop {
+  ShopShop copyWith({
+    String? id,
+    dynamic prevId,
+    String? userId,
+    dynamic membershipId,
+    dynamic membershipStartDate,
+    dynamic membershipEndDate,
+    String? slug,
+    String? name,
+    dynamic thumbnailId,
+    dynamic bannerImageId,
+    dynamic stripeAccountId,
+    num? balance,
+    String? description,
+    num? isVerified,
+    num? isFeatured,
+    String? status,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    BannerModel? banner,
+    Video? thumbnail,
+    Video? membership,
+    ShopMeta? meta,
+  }) {
+    return ShopShop(
+      id: id ?? this.id,
+      prevId: prevId ?? this.prevId,
+      userId: userId ?? this.userId,
+      membershipId: membershipId ?? this.membershipId,
+      membershipStartDate: membershipStartDate ?? this.membershipStartDate,
+      membershipEndDate: membershipEndDate ?? this.membershipEndDate,
+      slug: slug ?? this.slug,
+      name: name ?? this.name,
+      thumbnailId: thumbnailId ?? this.thumbnailId,
+      bannerImageId: bannerImageId ?? this.bannerImageId,
+      stripeAccountId: stripeAccountId ?? this.stripeAccountId,
+      balance: balance ?? this.balance,
+      description: description ?? this.description,
+      isVerified: isVerified ?? this.isVerified,
+      isFeatured: isFeatured ?? this.isFeatured,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      banner: banner ?? this.banner,
+      thumbnail: thumbnail ?? this.thumbnail,
+      membership: membership ?? this.membership,
+      meta: meta ?? this.meta,
+    );
+  }
 }

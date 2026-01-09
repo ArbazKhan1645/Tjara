@@ -15,14 +15,31 @@ abstract class Routes {
   static const BLOG = _Paths.BLOG;
   static const STORE_PAGE = _Paths.STORE_PAGE;
   static const PRODUCT_DETAIL_SCREEN = _Paths.PRODUCT_DETAIL_SCREEN;
-  static const login = _Paths.login;
+
   static const MORE = _Paths.MORE;
   static const AUTHENTICATION = _Paths.AUTHENTICATION;
   static const SPLASH_SCREEN = _Paths.SPLASH_SCREEN;
+  static const WISHLIST = _Paths.WISHLIST;
+  static const ORDERS_DASHBOARD = _Paths.ORDERS_DASHBOARD;
+  static const CONTESTS = _Paths.CONTESTS;
+  static const TJARA_JOBS = _Paths.TJARA_JOBS;
+  static const SERVICES = _Paths.SERVICES;
+
+  // admin page routes ...
+  static const DASHBOARD_ADMIN = _Paths.DASHBOARD_ADMIN;
+  static const ADMIN_PRODUCTS = _Paths.ADMIN_PRODUCTS;
+  static const ADMIN_CATEGORIES_VIEW = _Paths.ADMIN_CATEGORIES_VIEW;
+  static const ADD_PRODUCT_ADMIN_VIEW = _Paths.ADD_PRODUCT_ADMIN_VIEW;
+  static const ISOLATE_API_SERVICE = _Paths.ISOLATE_API_SERVICE;
+  static const ADD_AUCTION_PRODUCT_ADMIN_VIEW =
+      _Paths.ADD_AUCTION_PRODUCT_ADMIN_VIEW;
 }
 
 abstract class _Paths {
   _Paths._();
+  static const SERVICES = '/services';
+  static const ADD_AUCTION_PRODUCT_ADMIN_VIEW =
+      '/ADD_AUCTION_PRODUCT_ADMIN_VIEW';
   static const HOME = '/home';
   static const CATEGORIES = '/categories';
   static const MY_ACCOUNT = '/my-account';
@@ -33,8 +50,19 @@ abstract class _Paths {
   static const BLOG = '/blog';
   static const STORE_PAGE = '/store-page';
   static const PRODUCT_DETAIL_SCREEN = '/product-detail-screen';
-  static const login = '/login';
+
   static const MORE = '/more';
   static const AUTHENTICATION = '/authentication';
   static const SPLASH_SCREEN = '/splash-screen';
+  static const WISHLIST = '/wishlist';
+  static const ORDERS_DASHBOARD = '/orders-dashboard';
+  static const CONTESTS = '/contests';
+  static const TJARA_JOBS = '/tjara-jobs';
+
+  // admin page routes ...
+  static const DASHBOARD_ADMIN = '/dashboard_admin';
+  static const ADMIN_PRODUCTS = '/admin-products';
+  static const ADMIN_CATEGORIES_VIEW = '/admin_categories_view';
+  static const ADD_PRODUCT_ADMIN_VIEW = '/add_product_admin_view';
+  static const ISOLATE_API_SERVICE = '/isolate-api-service';
 }

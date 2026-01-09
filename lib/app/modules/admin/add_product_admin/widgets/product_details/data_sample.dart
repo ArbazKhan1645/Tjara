@@ -1,0 +1,5 @@
+
+const kQuillDefaultSample = [
+  {'insert': '\n'}
+];
+

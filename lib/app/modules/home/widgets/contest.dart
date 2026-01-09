@@ -20,7 +20,7 @@ class ContestScreen extends StatelessWidget {
                       fontSize: 26,
                       fontWeight: FontWeight.w600,
                     )),
-                Text(
+                const Text(
                   "View All",
                   style: TextStyle(
                     fontSize: 14,
@@ -30,10 +30,10 @@ class ContestScreen extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             SizedBox(
               child: ListView.separated(
-                physics: NeverScrollableScrollPhysics(),
+                physics: const NeverScrollableScrollPhysics(),
                 separatorBuilder: (context, index) =>
                     const SizedBox(height: 20),
                 itemCount: 2,
@@ -62,7 +62,7 @@ class ContestItem extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.10),
-            offset: Offset(0, 2.64),
+            offset: const Offset(0, 2.64),
             blurRadius: 33.05,
             spreadRadius: 0,
           ),

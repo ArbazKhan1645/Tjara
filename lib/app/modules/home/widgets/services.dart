@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/routes/app_pages.dart';
 
-import '../../../core/utils/thems/theme.dart';
+import 'package:tjara/app/core/utils/thems/theme.dart';
 
 class ServicesScreen extends StatelessWidget {
   final List<Map<String, String>> services = const [
@@ -23,7 +23,7 @@ class ServicesScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
@@ -40,11 +40,11 @@ class ServicesScreen extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           // Service List
           ListView.builder(
             shrinkWrap: true,
-             physics: NeverScrollableScrollPhysics(),
+             physics: const NeverScrollableScrollPhysics(),
             itemCount: services.length,
             itemBuilder: (context, index) {
               return GestureDetector(
@@ -53,15 +53,15 @@ class ServicesScreen extends StatelessWidget {
                 },
                 child: Container(
                   height: 140,
-                  margin: EdgeInsets.only(bottom: 12),
-                  padding: EdgeInsets.all(16),
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(18),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.09),
-                        offset: Offset(0, 2.64),
+                        offset: const Offset(0, 2.64),
                         blurRadius: 33.05,
                         spreadRadius: 0,
                       ),
@@ -73,8 +73,8 @@ class ServicesScreen extends StatelessWidget {
                       Container(
                         height: 64,
                         width: 64,
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
+                        padding: const EdgeInsets.all(10),
+                        decoration: const BoxDecoration(
                           color: Color(0xFFD9183B),
                           shape: BoxShape.circle,
                         ),
@@ -85,7 +85,7 @@ class ServicesScreen extends StatelessWidget {
                           color: Colors.white,
                         ),
                       ),
-                      SizedBox(width: 20),
+                      const SizedBox(width: 20),
                       // Text Info
                       Expanded(
                         child: Column(
@@ -96,7 +96,7 @@ class ServicesScreen extends StatelessWidget {
                                   fontSize: 20,
                                   fontWeight: FontWeight.w500,
                                 )),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Text(
                                 "Lorem Ipsum is simply dummy text of the printing",
                                 style: defaultTextStyle.copyWith(
@@ -104,10 +104,10 @@ class ServicesScreen extends StatelessWidget {
                                   color: Colors.grey,
                                   fontWeight: FontWeight.w300,
                                 )),
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             GestureDetector(
                               onTap: () {},
-                              child: Row(
+                              child: const Row(
                                 children: [
                                   Text(
                                     "View Service",
@@ -129,7 +129,7 @@ class ServicesScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      SizedBox(width: 40),
+                      const SizedBox(width: 40),
                     ],
                   ),
                 ),

@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 
-import '../controllers/blog_controller.dart';
+import 'package:tjara/app/modules/blog/controllers/blog_controller.dart';
 
 class BlogBinding extends Bindings {
   @override

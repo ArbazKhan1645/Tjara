@@ -2,378 +2,152 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:shimmer/shimmer.dart';
-import 'package:tjara/app/core/locators/cache_images.dart';
 import 'package:tjara/app/models/categories/categories_model.dart';
-import '../controllers/home_controller.dart';
+import 'package:tjara/app/modules/dashboard/controllers/dashboard_controller.dart';
+import 'package:tjara/app/modules/home/controllers/home_controller.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:simple_icons/simple_icons.dart';
 
-class CategorySection extends StatefulWidget {
-  const CategorySection({super.key});
+class CategorySection extends StatelessWidget {
+  const CategorySection({super.key, this.isCarSection = false});
 
-  @override
-  State<CategorySection> createState() => _CategorySectionState();
-}
+  final bool isCarSection;
 
-class _CategorySectionState extends State<CategorySection>
-    with AutomaticKeepAliveClientMixin {
-  static const double _kInitialScrollProgress = 0.2;
-  final ValueNotifier<int> _selectedIndex = ValueNotifier<int>(-1);
-  final ScrollController _scrollController = ScrollController();
-  final ValueNotifier<double> _scrollProgress =
-      ValueNotifier<double>(_kInitialScrollProgress);
+  // Static categories list for general items
+  static const List<Map<String, dynamic>> staticCategories = [
+    {'name': 'Shoes', 'icon': Icons.shopping_bag, 'color': Color(0xFF2C6B7A)},
+    {
+      'name': 'Games',
+      'icon': Icons.videogame_asset,
+      'color': Color(0xFF4A90E2),
+    },
+    {'name': 'Clothing', 'icon': Icons.checkroom, 'color': Color(0xFFF5A623)},
+    {'name': 'Home', 'icon': Icons.weekend, 'color': Color(0xFF50C9CE)},
+    {'name': 'Greeko', 'icon': Icons.eco, 'color': Color(0xFF2D5E3F)},
+    {'name': 'E-cook', 'icon': Icons.restaurant, 'color': Color(0xFFE8A23D)},
+    {'name': 'Food', 'icon': Icons.fastfood, 'color': Color(0xFFE76F6F)},
+  ];
 
-  late final HomeController _controller;
-  List<Map<String, dynamic>> _categoryList = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = Get.find<HomeController>();
-    _scrollController.addListener(_updateScrollProgress);
-    _initializeCategoryList();
-  }
-
-  void _initializeCategoryList() {
-    _categoryList = _controller.categories.value.productAttributeItems
-            ?.where((e) => e.thumbnail?.media?.url != null && e.name != null)
-            .map((e) => {
-                  "icon": e.thumbnail!.media!.url!,
-                  "name": e.name!,
-                  'id': e.id!,
-                  'model': e
-                })
-            .toList() ??
-        [];
-  }
-
-  void _updateScrollProgress() {
-    if (!_scrollController.hasClients ||
-        _scrollController.position.maxScrollExtent == 0) {
-      return;
-    }
-
-    final progress =
-        _scrollController.offset / _scrollController.position.maxScrollExtent;
-    _scrollProgress.value =
-        (progress.isNaN ? _kInitialScrollProgress : progress).clamp(0.2, 1.0);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.removeListener(_updateScrollProgress);
-    _scrollController.dispose();
-    _selectedIndex.dispose();
-    _scrollProgress.dispose();
-    super.dispose();
-  }
-
-  final PageStorageBucket _bucket = PageStorageBucket();
-
-  @override
-  bool get wantKeepAlive => true;
+  // Car brands categories list with actual brand logos
+  static const List<Map<String, dynamic>> carCategories = [
+    {
+      'name': 'Chevrolet',
+      'icon': FontAwesomeIcons.car,
+      'color': Color(0xFFC41E3A),
+    },
+    {'name': 'Honda', 'icon': SimpleIcons.honda, 'color': Color(0xFF1E88E5)},
+    {'name': 'BMW', 'icon': SimpleIcons.bmw, 'color': Color(0xFF333333)},
+    {'name': 'Toyota', 'icon': SimpleIcons.toyota, 'color': Color(0xFFEB0A1E)},
+    {'name': 'Ford', 'icon': SimpleIcons.ford, 'color': Color(0xFF004B87)},
+    {'name': 'Kia', 'icon': SimpleIcons.kia, 'color': Color(0xFF05141F)},
+    {'name': 'Suzuki', 'icon': SimpleIcons.suzuki, 'color': Color(0xFFE30613)},
+  ];
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
-    return PageStorage(
-      bucket: _bucket,
-      child: Obx(() {
-        if (_controller.categories.value.productAttributeItems == null) {
-          return const SizedBox.shrink();
-        }
-        _initializeCategoryList();
+    final categories = isCarSection ? carCategories : staticCategories;
+    final sectionTitle = isCarSection ? 'Car Brands' : 'Categories';
 
-        if (_categoryList.isEmpty) {
-          return const SizedBox.shrink();
-        }
-
-        final int midIndex = (_categoryList.length / 2).ceil();
-        final topCategories = _categoryList.sublist(0, midIndex);
-        final bottomCategories = _categoryList.sublist(midIndex);
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              child: SingleChildScrollView(
-                key: PageStorageKey('product_categories'),
-                controller: _scrollController,
-                scrollDirection: Axis.horizontal,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _CategoryRow(
-                      categories: topCategories,
-                      startIndex: 0,
-                      selectedIndexNotifier: _selectedIndex,
-                    ),
-                    const SizedBox(height: 15),
-                    _CategoryRow(
-                      categories: bottomCategories,
-                      startIndex: midIndex,
-                      selectedIndexNotifier: _selectedIndex,
-                    ),
-                  ],
-                ),
+    return Container(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title
+          Padding(
+            padding: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
+            child: Text(
+              sectionTitle,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
               ),
             ),
-            const SizedBox(height: 10),
-            ValueListenableBuilder<double>(
-              valueListenable: _scrollProgress,
-              builder: (context, progress, _) {
-                return _ScrollProgressIndicator(progress: progress);
-              },
+          ),
+          // Categories Row
+          Padding(
+            padding: const EdgeInsets.only(
+              left: 10,
+              top: 0,
+              bottom: 8,
+              right: 10,
             ),
-          ],
-        );
-      }),
-    );
-  }
-}
-
-class _CategoryRow extends StatelessWidget {
-  const _CategoryRow({
-    required this.categories,
-    required this.startIndex,
-    required this.selectedIndexNotifier,
-  });
-
-  final List<Map<String, dynamic>> categories;
-  final int startIndex;
-  final ValueNotifier<int> selectedIndexNotifier;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: categories.asMap().entries.map((entry) {
-        final int index = entry.key + startIndex;
-        final category = entry.value;
-        return _CategoryItem(
-          category: category,
-          index: index,
-          selectedIndexNotifier: selectedIndexNotifier,
-        );
-      }).toList(),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children:
+                  categories.map((category) {
+                    return Expanded(child: _CategoryItem(category: category));
+                  }).toList(),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
 class _CategoryItem extends StatelessWidget {
-  const _CategoryItem({
-    required this.category,
-    required this.index,
-    required this.selectedIndexNotifier,
-  });
+  const _CategoryItem({required this.category});
 
   final Map<String, dynamic> category;
-  final int index;
-  final ValueNotifier<int> selectedIndexNotifier;
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<int>(
-      valueListenable: selectedIndexNotifier,
-      builder: (context, selectedIndex, _) {
-        final bool isSelected = index == selectedIndex;
-        return GestureDetector(
-          onTap: () {
-            var controller = Get.find<HomeController>();
-            selectedIndexNotifier.value = index;
-            controller.fetchCategoryProductsa(category["id"].toString());
-            controller.setSelectedCategory(
-                category['model'] ?? ProductAttributeItems());
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: SizedBox(
-              width: 84,
-              child: Column(
-                children: [
-                  _CategoryImage(
-                      key: ValueKey('image_${category["icon"]}'),
-                      imageUrl: category['icon']!),
-                  const SizedBox(height: 5),
-                  Text(
-                    category["name"]!,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w400,
-                      color: isSelected ? Colors.red : Colors.black,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _CategoryImage extends StatefulWidget {
-  const _CategoryImage({super.key, required this.imageUrl});
-
-  final String imageUrl;
-
-  @override
-  State<_CategoryImage> createState() => _CategoryImageState();
-}
-
-class _CategoryImageState extends State<_CategoryImage> {
-  bool isHovered = false;
-  bool isTapped = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        boxShadow: isHovered || isTapped
-            ? [
-                BoxShadow(
-                    color: Colors.red.withOpacity(0.50),
-                    // offset: const Offset(0, 0),
-                    blurRadius: 0.10,
-                    spreadRadius: 0.5)
-              ]
-            : null,
-      ),
-      child: MouseRegion(
-        onEnter: (_) => setState(() => isHovered = true),
-        onExit: (_) => setState(() => isHovered = false),
-        child: GestureDetector(
-          onTapDown: (_) => setState(() => isTapped = true),
-          onTapUp: (_) => setState(() => isTapped = false),
-          onTapCancel: () => setState(() => isTapped = false),
-          child: TweenAnimationBuilder<double>(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOut,
-            tween: Tween<double>(
-              begin: 1.0,
-              end: isTapped ? 0.85 : (isHovered ? 0.85 : 1.0),
-            ),
-            builder: (context, scale, child) {
-              return Transform.scale(
-                scale: scale,
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    border: Border.all(color: Color(0xffD21642), width: 2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: FutureBuilder<ImageProvider>(
-                    future: loadCachedImage(widget.imageUrl),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        return _buildCircularImage(snapshot.data!);
-                      } else {
-                        return _buildErrorWidget();
-                      }
-                    },
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCircularImage(ImageProvider imageProvider) {
-    return ClipOval(
-      child: Container(
-        width: 74,
-        height: 74,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          image: DecorationImage(
-            image: imageProvider,
-            fit: BoxFit.cover,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildErrorWidget() {
-    return ClipOval(
-      child: Container(
-        width: 74,
-        height: 74,
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          image: DecorationImage(
-            image: AssetImage('assets/icons/logo.png'),
-            fit: BoxFit.fill,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildShimmer() {
-    return ClipOval(
-      child: Container(
-        width: 74,
-        height: 74,
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.grey,
-        ),
-      ).animate().fade(duration: 500.ms),
-    );
-  }
-}
-
-class _ScrollProgressIndicator extends StatelessWidget {
-  const _ScrollProgressIndicator({
-    required this.progress,
-  });
-
-  final double progress;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      child: Align(
-        alignment: Alignment.center,
-        child: SizedBox(
-          width: 250,
-          child: LinearProgressIndicator(
-            value: progress,
-            backgroundColor: Colors.grey.shade300,
-            color: Colors.red,
-            minHeight: 4,
-            borderRadius: BorderRadius.circular(5),
-          ),
+      padding: const EdgeInsets.only(left: 4, right: 4),
+      child: GestureDetector(
+        onTap: () {
+          try {
+            DashboardController.instance.reset();
+            final controller = Get.put(HomeController());
+            controller.searchProducts(category['name']);
+            controller.setSelectedCategory(ProductAttributeItems());
+          } catch (e) {
+            debugPrint('Error selecting subcategory: $e');
+          }
+        },
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Circular icon container
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: category['color'],
+                shape: BoxShape.circle,
+              ),
+              child: Center(child: _getIconWidget(category['icon'])),
+            ),
+            const SizedBox(height: 6),
+            // Category name
+            Text(
+              category['name'],
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
-}
 
-Widget _buildShimmer() {
-  return Shimmer.fromColors(
-    baseColor: Colors.grey.shade300,
-    highlightColor: Colors.grey.shade100,
-    child: ClipOval(
-      child: Container(
-        width: 74,
-        height: 74,
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-        ),
-      ),
-    ),
-  );
+  Widget _getIconWidget(dynamic icon) {
+    // Handle SimpleIcons (from simple_icons package)
+    if (icon is IconData && icon.fontFamily == 'SimpleIcons') {
+      return Icon(icon, size: 28, color: Colors.white);
+    }
+    // Handle FontAwesomeIcons
+    else if (icon is IconData) {
+      return FaIcon(icon, size: 24, color: Colors.white);
+    }
+    // Default Material icon
+    return Icon(icon, size: 28, color: Colors.white);
+  }
 }

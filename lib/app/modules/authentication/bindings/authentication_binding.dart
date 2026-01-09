@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 
-import '../controllers/authentication_controller.dart';
+import 'package:tjara/app/modules/authentication/controllers/authentication_controller.dart';
 
 class AuthenticationBinding extends Bindings {
   @override

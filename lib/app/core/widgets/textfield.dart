@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../utils/thems/theme.dart';
+import 'package:tjara/app/core/utils/thems/theme.dart';
 
 class CustomTextField extends StatelessWidget {
   final String label;

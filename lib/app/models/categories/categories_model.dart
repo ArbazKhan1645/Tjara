@@ -1,3 +1,5 @@
+import 'package:tjara/app/models/media_model/media_model.dart';
+
 class CategoryModel {
   List<ProductAttributeItems>? productAttributeItems;
 
@@ -20,6 +22,15 @@ class CategoryModel {
     }
     return data;
   }
+
+  CategoryModel copyWith({
+    List<ProductAttributeItems>? productAttributeItems,
+  }) {
+    return CategoryModel(
+      productAttributeItems:
+          productAttributeItems ?? this.productAttributeItems,
+    );
+  }
 }
 
 class ProductAttributeItems {
@@ -36,19 +47,20 @@ class ProductAttributeItems {
   Thumbnail? thumbnail;
   bool? haveSubCategories;
 
-  ProductAttributeItems(
-      {this.id,
-      this.attributeId,
-      this.name,
-      this.slug,
-      this.value,
-      this.postType,
-      this.parentId,
-      this.thumbnailId,
-      this.createdAt,
-      this.updatedAt,
-      this.thumbnail,
-      this.haveSubCategories});
+  ProductAttributeItems({
+    this.id,
+    this.attributeId,
+    this.name,
+    this.slug,
+    this.value,
+    this.postType,
+    this.parentId,
+    this.thumbnailId,
+    this.createdAt,
+    this.updatedAt,
+    this.thumbnail,
+    this.haveSubCategories,
+  });
 
   ProductAttributeItems.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -85,17 +97,54 @@ class ProductAttributeItems {
     data['have_sub_categories'] = haveSubCategories;
     return data;
   }
+
+  ProductAttributeItems copyWith({
+    String? id,
+    String? attributeId,
+    String? name,
+    String? slug,
+    Null value,
+    String? postType,
+    String? parentId,
+    String? thumbnailId,
+    String? createdAt,
+    String? updatedAt,
+    Thumbnail? thumbnail,
+    bool? haveSubCategories,
+  }) {
+    return ProductAttributeItems(
+      id: id ?? this.id,
+      attributeId: attributeId ?? this.attributeId,
+      name: name ?? this.name,
+      slug: slug ?? this.slug,
+      value: value ?? this.value,
+      postType: postType ?? this.postType,
+      parentId: parentId ?? this.parentId,
+      thumbnailId: thumbnailId ?? this.thumbnailId,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      thumbnail: thumbnail ?? this.thumbnail,
+      haveSubCategories: haveSubCategories ?? this.haveSubCategories,
+    );
+  }
+
+  @override
+  String toString() {
+    return name ?? '';
+  }
 }
 
 class Thumbnail {
   String? message;
-  Media? media;
+  MediaUniversalModel? media;
 
   Thumbnail({this.message, this.media});
 
   Thumbnail.fromJson(Map<String, dynamic> json) {
     message = json['message'];
-    media = json['media'] != null ? Media.fromJson(json['media']) : null;
+    media = json['media'] != null
+        ? MediaUniversalModel.fromJson(json['media'])
+        : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -106,45 +155,14 @@ class Thumbnail {
     }
     return data;
   }
-}
 
-class Media {
-  String? id;
-  String? url;
-  String? optimizedMediaUrl;
-  String? mediaType;
-  Null isUsed;
-  String? createdAt;
-  String? updatedAt;
-
-  Media(
-      {this.id,
-      this.url,
-      this.optimizedMediaUrl,
-      this.mediaType,
-      this.isUsed,
-      this.createdAt,
-      this.updatedAt});
-
-  Media.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    url = json['url'];
-    optimizedMediaUrl = json['optimized_media_url'];
-    mediaType = json['media_type'];
-    isUsed = json['is_used'];
-    createdAt = json['created_at'];
-    updatedAt = json['updated_at'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id;
-    data['url'] = url;
-    data['optimized_media_url'] = optimizedMediaUrl;
-    data['media_type'] = mediaType;
-    data['is_used'] = isUsed;
-    data['created_at'] = createdAt;
-    data['updated_at'] = updatedAt;
-    return data;
+  Thumbnail copyWith({
+    String? message,
+    MediaUniversalModel? media,
+  }) {
+    return Thumbnail(
+      message: message ?? this.message,
+      media: media ?? this.media,
+    );
   }
 }
