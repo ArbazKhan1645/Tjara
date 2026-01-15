@@ -125,16 +125,15 @@ class AuctionProductCard extends StatefulWidget {
 }
 
 class _AuctionProductCardState extends State<AuctionProductCard> {
-  String _timeText = '';
   bool _isExpired = false;
 
   @override
   void initState() {
     super.initState();
-    _calculateTime();
+    _checkAuctionStatus();
   }
 
-  void _calculateTime() {
+  void _checkAuctionStatus() {
     if (widget.product.auctionEndTime == null) {
       _isExpired = true;
       return;
@@ -153,28 +152,7 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
 
     final difference = endTimeLocal.difference(nowUtc) + offset;
 
-    if (difference <= Duration.zero) {
-      _isExpired = true;
-    } else {
-      _isExpired = false;
-      _timeText = _formatDuration(difference);
-    }
-  }
-
-  String _formatDuration(Duration d) {
-    final days = d.inDays;
-    final hours = d.inHours % 24;
-    final minutes = d.inMinutes % 60;
-
-    if (days > 0) {
-      return hours > 0 ? '${days}d ${hours}h' : '${days}day';
-    }
-
-    if (hours > 0) {
-      return minutes > 0 ? '${hours}h ${minutes}m' : '${hours}h';
-    }
-
-    return '${minutes}m';
+    _isExpired = difference <= Duration.zero;
   }
 
   @override
@@ -188,24 +166,130 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
           preventDuplicates: false,
         )?.then((val) async {
           setState(() {
-            _calculateTime();
+            _checkAuctionStatus();
           });
         });
       },
       child: Container(
         width: 160,
-
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(6),
+          border: Border.all(
+            color: _isExpired ? Colors.grey.shade300 : Colors.transparent,
+            width: 1,
+          ),
+          boxShadow:
+              _isExpired
+                  ? []
+                  : [
+                    BoxShadow(
+                      color: Colors.orange.withOpacity(0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              width: double.infinity,
-              height: 160,
-              child: ProductImage(product: widget.product),
+            Stack(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  height: 160,
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(6),
+                      topRight: Radius.circular(6),
+                    ),
+                    child: ColorFiltered(
+                      colorFilter:
+                          _isExpired
+                              ? ColorFilter.mode(
+                                Colors.grey.withOpacity(0.5),
+                                BlendMode.saturation,
+                              )
+                              : const ColorFilter.mode(
+                                Colors.transparent,
+                                BlendMode.multiply,
+                              ),
+                      child: ProductImage(product: widget.product),
+                    ),
+                  ),
+                ),
+                if (!_isExpired)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFF6B35), Color(0xFFFF8C42)],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.orange.withOpacity(0.4),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Text(
+                            'LIVE',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                if (_isExpired)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade700,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        'ENDED',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
             Padding(
               padding: const EdgeInsets.all(10),
@@ -216,49 +300,73 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
                     widget.product.name ?? '',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
+                      color: _isExpired ? Colors.grey.shade600 : Colors.black,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Container(
-                    height: 56, // Fixed height
+                    height: 46,
                     width: double.infinity,
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color:
+                      gradient:
                           _isExpired
-                              ? Colors.grey.shade200
-                              : Colors.orange.shade50,
+                              ? null
+                              : const LinearGradient(
+                                colors: [Color(0xFFFFF3E0), Color(0xFFFFE0B2)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                      color: _isExpired ? Colors.grey.shade200 : null,
                       borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color:
+                            _isExpired
+                                ? Colors.grey.shade300
+                                : Colors.orange.shade200,
+                        width: 1,
+                      ),
                     ),
                     child: Center(
                       child:
                           _isExpired
-                              ? const Text(
-                                'Auction Ended',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              )
-                              : Column(
+                              ? Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Text(
-                                    'Ends in',
+                                  Icon(
+                                    Icons.block,
+                                    size: 14,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Auction Ended',
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
+                                      color: Colors.grey.shade600,
                                     ),
                                   ),
-
+                                ],
+                              )
+                              : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.local_fire_department,
+                                    size: 16,
+                                    color: Colors.orange.shade700,
+                                  ),
+                                  const SizedBox(width: 4),
                                   Text(
-                                    _timeText,
-                                    style: const TextStyle(
-                                      fontSize: 16,
+                                    'Bidding Active',
+                                    style: TextStyle(
+                                      fontSize: 12,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.orange,
+                                      color: Colors.orange.shade800,
                                     ),
                                   ),
                                 ],
@@ -266,13 +374,39 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    '\$${price.toStringAsFixed(0)}',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.teal,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        '\$${price.toStringAsFixed(0)}',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color:
+                              _isExpired ? Colors.grey.shade500 : Colors.teal,
+                        ),
+                      ),
+                      if (!_isExpired) ...[
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade50,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'BID',
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green.shade700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),

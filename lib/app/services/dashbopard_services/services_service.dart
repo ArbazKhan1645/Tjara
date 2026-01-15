@@ -375,7 +375,7 @@ class ServicesService extends GetxService {
       await FileSaver.instance.saveFile(
         name: 'services_export_$timestamp',
         bytes: bytes,
-        ext: 'xlsx',
+
         mimeType: MimeType.microsoftExcel,
       );
 
@@ -434,7 +434,7 @@ class ServicesService extends GetxService {
       await FileSaver.instance.saveFile(
         name: 'services_export_$timestamp',
         bytes: bytes,
-        ext: 'csv',
+
         mimeType: MimeType.text,
       );
 

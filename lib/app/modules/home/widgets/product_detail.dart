@@ -362,6 +362,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     _isCartOperationInProgressNotifier.dispose();
     _showAppBarTitle.dispose();
     _currentImageIndex.dispose();
+    _timer?.cancel();
+    _timer = null;
 
     // Cancel flash deal timers
     _flashDealApiTimer?.cancel();
@@ -386,6 +388,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     try {
       _loadCachedProduct();
       await _fetchFreshDataWithFallback();
+      _initializeTimerofAuction();
     } catch (e) {
       debugPrint('Error loading product data: $e');
       if (!_isDisposed && _cachedProductNotifier.value == null) {
@@ -548,29 +551,26 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     if (auctionEndTime == null ||
         auctionEndTime.toString().isEmpty ||
         auctionEndTime.toString() == 'null') {
-      return false;
+      return true;
     }
 
-    try {
-      DateTime endTime;
+    DateTime? _endTime;
 
-      if (auctionEndTime is String) {
-        endTime = DateTime.parse(auctionEndTime);
-      } else if (auctionEndTime is DateTime) {
-        endTime = auctionEndTime;
-      } else {
-        endTime = DateTime.parse(auctionEndTime.toString());
-      }
+    _endTime = DateTime.tryParse(auctionEndTime)?.toLocal();
 
-      // 🔥 SAME LOGIC AS updateRemainingTime
-      final endTimeLocal = endTime.toLocal();
-      final nowUtc = DateTime.now().toUtc();
-      final offset = DateTime.now().timeZoneOffset;
+    if (_endTime == null) {
+      return true;
+    }
 
-      final adjustedNow = nowUtc.add(offset);
+    // 🔥 SAME APPROACH (UTC + offset)
+    final nowUtc = DateTime.now().toUtc();
+    final offset = DateTime.now().timeZoneOffset;
+    final difference = _endTime.difference(nowUtc) + offset;
 
-      return adjustedNow.isAfter(endTimeLocal);
-    } catch (e) {
+    if (difference <= Duration.zero) {
+      _remainingTime = Duration.zero;
+      return true;
+    } else {
       return false;
     }
   }
@@ -582,29 +582,26 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     if (auctionEndTime == null ||
         auctionEndTime.toString().isEmpty ||
         auctionEndTime.toString() == 'null') {
-      return false;
+      return true;
     }
 
-    try {
-      DateTime endTime;
+    DateTime? _endTime;
 
-      if (auctionEndTime is String) {
-        endTime = DateTime.parse(auctionEndTime);
-      } else if (auctionEndTime is DateTime) {
-        endTime = auctionEndTime;
-      } else {
-        endTime = DateTime.parse(auctionEndTime.toString());
-      }
+    _endTime = DateTime.tryParse(auctionEndTime)?.toLocal();
 
-      // 🔥 SAME LOGIC AS updateRemainingTime
-      final endTimeLocal = endTime.toLocal();
-      final nowUtc = DateTime.now().toUtc();
-      final offset = DateTime.now().timeZoneOffset;
+    if (_endTime == null) {
+      return true;
+    }
 
-      final adjustedNow = nowUtc.add(offset);
+    // 🔥 SAME APPROACH (UTC + offset)
+    final nowUtc = DateTime.now().toUtc();
+    final offset = DateTime.now().timeZoneOffset;
+    final difference = _endTime.difference(nowUtc) + offset;
 
-      return adjustedNow.isAfter(endTimeLocal);
-    } catch (e) {
+    if (difference <= Duration.zero) {
+      _remainingTime = Duration.zero;
+      return true;
+    } else {
       return false;
     }
   }
@@ -735,6 +732,82 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
       return count > 0 ? sum / count : 0.0;
     } catch (e) {
       return 0.0;
+    }
+  }
+
+  Timer? _timer;
+  DateTime? _endTime;
+  Duration _remainingTimeofAuction = Duration.zero;
+  bool _isExpired = false;
+
+  void _initializeTimerofAuction() {
+    try {
+      if (!_isAuctionProduct(_freshProductNotifier.value?.product)) {
+        return;
+      }
+
+      if (_freshProductNotifier.value?.product?.auctionEndTime == null) {
+        return;
+      }
+
+      if (_freshProductNotifier.value!.product!.auctionEndTime
+          .toString()
+          .isEmpty) {
+        return;
+      }
+
+      if (_freshProductNotifier.value!.product!.auctionEndTime.toString() ==
+          'null') {
+        return;
+      }
+
+      if (DateTime.tryParse(
+            _freshProductNotifier.value!.product!.auctionEndTime,
+          ) ==
+          null) {
+        return;
+      }
+      _endTime =
+          DateTime.parse(
+            _freshProductNotifier.value!.product!.auctionEndTime,
+          ).toLocal();
+      _updateRemainingTimeofAuction();
+      _startTimerofAuction();
+    } catch (_) {
+      _isExpired = true;
+    }
+  }
+
+  void _startTimerofAuction() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        _updateRemainingTimeofAuction();
+        setState(() {});
+      }
+    });
+  }
+
+  void _updateRemainingTimeofAuction() {
+    if (_endTime == null) {
+      _remainingTime = Duration.zero;
+      _isExpired = true;
+      return;
+    }
+
+    // 🔥 SAME APPROACH (UTC + offset)
+    final nowUtc = DateTime.now().toUtc();
+    final offset = DateTime.now().timeZoneOffset;
+    final difference = _endTime!.difference(nowUtc) + offset;
+
+    if (difference <= Duration.zero) {
+      _remainingTime = Duration.zero;
+      _isExpired = true;
+      _timer?.cancel();
+      _timer = null;
+    } else {
+      _remainingTime = difference;
+      _isExpired = false;
     }
   }
 
@@ -1796,22 +1869,29 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
   // ══════════════════════════════════════════════════════════════════════════
   Widget _buildBottomBar(SingleModelClass? product) {
     final bool isAuction =
-        _isAuctionProduct(product?.product) ||
-        _isAuctionProduct(widget.product);
+        product == null
+            ? _isAuctionProduct(widget.product)
+            : _isAuctionProduct(product.product);
+
     final bool isAuctionExpired =
-        _issinleAuctionExpired(product?.product) ||
-        _isAuctionExpired(widget.product);
+        product == null
+            ? _isAuctionExpired(widget.product)
+            : _issinleAuctionExpired(product.product);
+
     final bool isOutOfStock = product?.product?.stock == 0;
 
     String buttonText = 'Add to Cart';
     bool canPurchase = true;
 
-    if (product?.product?.productGroup == 'car') {
+    if (widget.product.productGroup == 'car') {
       if (isOutOfStock) {
         buttonText = 'Out of Stock';
         canPurchase = false;
       }
     } else if (isAuction && isAuctionExpired) {
+      buttonText = 'Auction Expired';
+      canPurchase = false;
+    } else if (_isExpired == true) {
       buttonText = 'Auction Expired';
       canPurchase = false;
     } else if (isAuction) {
@@ -1821,7 +1901,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
       canPurchase = false;
     }
 
-    if (product?.product?.productGroup == 'car') {
+    if (widget.product.productGroup == 'car') {
       return Positioned(
         bottom: 0,
         left: 0,
@@ -1985,7 +2065,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
       );
     }
 
-    if (isAuction && !isAuctionExpired) {
+    if (isAuction && !isAuctionExpired && (_isExpired == false)) {
       return Positioned(
         bottom: 0,
         left: 0,

@@ -726,7 +726,7 @@ class AdminUsersService extends GetxService {
       await FileSaver.instance.saveFile(
         name: 'users_export_$timestamp',
         bytes: bytes,
-        ext: 'xlsx',
+
         mimeType: MimeType.microsoftExcel,
       );
 
@@ -789,7 +789,7 @@ class AdminUsersService extends GetxService {
       await FileSaver.instance.saveFile(
         name: 'users_export_$timestamp',
         bytes: bytes,
-        ext: 'csv',
+
         mimeType: MimeType.text,
       );
 

@@ -1565,6 +1565,7 @@ class HomeController extends GetxController {
       final url = _buildFilteredUrl(index, 1);
       final result = await _repository
           .fetchData<ProductModel>(
+            forceRefresh: true,
             url: url,
             fromJson: (json) => ProductModel.fromJson(json),
           )

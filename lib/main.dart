@@ -18,7 +18,6 @@ Future<void> main() async {
   HttpOverrides.global = MyHttpOverrides();
   FlutterError.onError = (FlutterErrorDetails details) {
     final errorLine = extractLineNumber(details.stack);
-
     AppLogger.error('''
 ERROR: ${details.exception}
 LINE: $errorLine
