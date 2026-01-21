@@ -3,14 +3,19 @@ import 'package:get/get.dart';
 import 'package:tjara/app/core/locators/cache_images.dart';
 import 'package:tjara/app/models/products/products_model.dart';
 import 'package:tjara/app/modules/home/controllers/home_controller.dart';
+import 'package:tjara/app/modules/home/screens/flash_deal_detail_screen.dart';
 import 'package:tjara/app/modules/home/views/trust_badge.dart';
-import 'package:tjara/app/modules/home/widgets/product_detail.dart';
 import 'package:tjara/app/modules/product_detail_screen/views/product_detail_screen_view.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DealSectionsWidget extends StatelessWidget {
-  const DealSectionsWidget({super.key, this.onViewAllTap});
+  const DealSectionsWidget({
+    super.key,
+    this.onViewAllTap,
+    this.isEndedDeals = false,
+  });
   final VoidCallback? onViewAllTap;
+  final bool isEndedDeals;
 
   @override
   Widget build(BuildContext context) {
@@ -28,87 +33,108 @@ class DealSectionsWidget extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const TrustBadgesWidget(),
-            // Title
-            Padding(
-              padding: const EdgeInsets.only(
-                left: 12,
-                right: 12,
-                top: 0,
-                bottom: 12,
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // WhatsApp Icon (Start)
-                  GestureDetector(
-                    onTap: () {
-                      _openWhatsAppGroup();
-                    },
-                    child: Container(
-                      width: 40,
-                      padding: const EdgeInsets.all(6),
+            if (!isEndedDeals) const TrustBadgesWidget(),
+            if (!isEndedDeals)
+              // Title
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 12,
+                  right: 12,
+                  top: 0,
+                  bottom: 12,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // WhatsApp Icon (Start)
+                    GestureDetector(
+                      onTap: () {
+                        _openWhatsAppGroup();
+                      },
+                      child: Container(
+                        width: 40,
+                        padding: const EdgeInsets.all(6),
 
-                      child: Image.asset('assets/icons/whatsapp.png'),
-                    ),
-                  ),
-
-                  const SizedBox(width: 10),
-
-                  // Texts (Middle)
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Flash Deals',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          'انضم لمجموعتنا لتوصلك العروض اليومية',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // View All Button (End)
-                  TextButton(
-                    onPressed: onViewAllTap ?? () {},
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.teal,
-                      textStyle: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                        child: Image.asset('assets/icons/whatsapp.png'),
                       ),
                     ),
-                    child: const Text('View All'),
+
+                    const SizedBox(width: 10),
+
+                    // Texts (Middle)
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Flash Deals',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'انضم لمجموعتنا لتوصلك العروض اليومية',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // View All Button (End)
+                    TextButton(
+                      onPressed: onViewAllTap ?? () {},
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.teal,
+                        textStyle: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      child: const Text('View All'),
+                    ),
+                  ],
+                ),
+              )
+            else
+              const Padding(
+                padding: EdgeInsets.only(left: 12, bottom: 12),
+                child: Text(
+                  'Ended Deals',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
                   ),
-                ],
+                ),
               ),
-            ),
 
             // Products Row
-            Container(
+            SizedBox(
+              width: double.infinity,
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: List.generate(dealProducts.length, (index) {
+                    final bool isschedule =
+                        controller.superdealAvailable.value.product?.id ==
+                        dealProducts[index].id;
+                    if (isschedule && isEndedDeals) {
+                      return const SizedBox.shrink();
+                    }
                     return Padding(
                       padding: const EdgeInsets.only(left: 8),
                       child: _DealProductCard(
-                        isScheduledProduct:
-                            controller.superdealAvailable.value.product?.id ==
-                            dealProducts[index].id,
+                        isScheduledProduct: isschedule,
+
                         product: dealProducts[index],
                         index: index,
                       ),
@@ -149,20 +175,15 @@ class _DealProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        if (isScheduledProduct) {
-          Get.to(
-            () => ProductDetailScreen(
-              product: product,
-              activeFlashDealProductId: product.id ?? '',
-            ),
-            preventDuplicates: false,
-          );
-        } else {
+        if (!isScheduledProduct) {
           Get.to(
             () => ProductDetailScreenView(product: product),
             preventDuplicates: false,
           );
+          return;
         }
+
+        Get.to(() => const FlashDealDetailScreen(), preventDuplicates: false);
       },
       child: isScheduledProduct ? _buildScheduledCard() : _buildNormalCard(),
     );
@@ -239,29 +260,30 @@ class _DealProductCard extends StatelessWidget {
           ),
 
           /// BOTTOM DISCOUNT STRIP
-          Container(
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              color: Colors.teal,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(8),
-                bottomRight: Radius.circular(8),
+          if (discountPercent > 0)
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Colors.teal,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(8),
+                  bottomRight: Radius.circular(8),
+                ),
               ),
-            ),
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(3.0),
-                child: Text(
-                  discountPercent > 0 ? '$discountPercent% Off' : 'Coming Soon',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(3.0),
+                  child: Text(
+                    discountPercent > 0 ? '$discountPercent% Off' : '',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );

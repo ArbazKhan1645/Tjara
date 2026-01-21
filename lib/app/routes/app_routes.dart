@@ -33,6 +33,7 @@ abstract class Routes {
   static const ISOLATE_API_SERVICE = _Paths.ISOLATE_API_SERVICE;
   static const ADD_AUCTION_PRODUCT_ADMIN_VIEW =
       _Paths.ADD_AUCTION_PRODUCT_ADMIN_VIEW;
+  static const FLASH_DEAL_DETAIL = _Paths.FLASH_DEAL_DETAIL;
 }
 
 abstract class _Paths {
@@ -65,4 +66,5 @@ abstract class _Paths {
   static const ADMIN_CATEGORIES_VIEW = '/admin_categories_view';
   static const ADD_PRODUCT_ADMIN_VIEW = '/add_product_admin_view';
   static const ISOLATE_API_SERVICE = '/isolate-api-service';
+  static const FLASH_DEAL_DETAIL = '/flash-deal-detail';
 }

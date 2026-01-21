@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tjara/app/modules/contests/model/selected_contest_model.dart';
+import 'package:tjara/app/modules/contests/model/contest_model.dart';
+
 import 'package:tjara/app/services/dashbopard_services/contests_service.dart';
 
 // Contests Filters Widget

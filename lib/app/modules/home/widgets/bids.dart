@@ -109,22 +109,13 @@ class _BidderTableState extends State<BidderTable> {
     final winnerBid =
         sortedBids.where((e) => e.bidder?.id == widget.winnerID).firstOrNull;
 
-    return Container(
+    return SizedBox(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _auctionStatus(context, winnerBid),
           _topInfoRow(context, highestBid),
-          _reserveChip(
-            winnerBid == null
-                ? false
-                : widget.productBids.isReserveMet ??
-                    widget.productBids.bids
-                        ?.where((b) => b.hasMetReservedPrice == false)
-                        .isEmpty ??
-                    true,
-            highestBid,
-          ),
+          _reserveChip(widget.productBids.isReserveMet ?? false, highestBid),
           _biddersList(sortedBids, winnerBid),
         ],
       ),
@@ -301,11 +292,7 @@ class _BidderTableState extends State<BidderTable> {
             Icons.sell_outlined,
           ),
           const SizedBox(width: 8),
-          _infoChip(
-            "Total Bids",
-            "${widget.productBids.totalBids ?? 0}",
-            Icons.gavel,
-          ),
+          _infoChip("Highest Bid", "\$${highestBid.toString()}", Icons.gavel),
           const SizedBox(width: 8),
           _infoChip("Increment", "\$${widget.bidIncrement}", Icons.trending_up),
         ],
@@ -374,21 +361,6 @@ class _BidderTableState extends State<BidderTable> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          const Spacer(),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: met ? Colors.teal : Colors.red.shade400,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              '\$$highest',
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -406,14 +378,14 @@ class _BidderTableState extends State<BidderTable> {
     final remainingCount = bids.length - _initialVisibleCount;
 
     return Padding(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.only(left: 12, top: 12, right: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 4, bottom: 8),
             child: Text(
-              'Bidders',
+              'Total ${widget.productBids.totalBids ?? 0} Bidders',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -531,7 +503,7 @@ class _BidderTableState extends State<BidderTable> {
       duration: const Duration(milliseconds: 200),
       opacity: shouldFade ? 0.4 : 1.0,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
+        margin: const EdgeInsets.only(bottom: 2),
         decoration: BoxDecoration(
           color:
               isTopBidder

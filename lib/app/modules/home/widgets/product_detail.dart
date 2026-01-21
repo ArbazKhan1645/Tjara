@@ -284,6 +284,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
         _isFlashDealActive = false;
         _isFlashDealExpired = true;
       });
+
+      // Navigate back and change tab to "All" (index 0) when flash deal expires
+      if (widget.activeFlashDealProductId.isNotEmpty) {
+        Future.delayed(const Duration(milliseconds: 500), () async {
+          if (mounted && !_isDisposed) {
+            await _homeController.fetchDealsProducts();
+            Get.back();
+          }
+        });
+      }
     }
   }
 
@@ -297,6 +307,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
         _isFlashDealExpired = true;
         _currentFlashDealProductId = null;
       });
+
+      // Navigate back and change tab to "All" (index 0) when flash deal product changes
+      if (widget.activeFlashDealProductId.isNotEmpty) {
+        Future.delayed(const Duration(milliseconds: 500), () async {
+          if (mounted && !_isDisposed) {
+            await _homeController.fetchDealsProducts();
+            Get.back();
+          }
+        });
+      }
     }
   }
 
@@ -554,18 +574,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
       return true;
     }
 
-    DateTime? _endTime;
+    DateTime? endTime;
 
-    _endTime = DateTime.tryParse(auctionEndTime)?.toLocal();
+    endTime = DateTime.tryParse(auctionEndTime)?.toLocal();
 
-    if (_endTime == null) {
+    if (endTime == null) {
       return true;
     }
 
     // 🔥 SAME APPROACH (UTC + offset)
     final nowUtc = DateTime.now().toUtc();
     final offset = DateTime.now().timeZoneOffset;
-    final difference = _endTime.difference(nowUtc) + offset;
+    final difference = endTime.difference(nowUtc) + offset;
 
     if (difference <= Duration.zero) {
       _remainingTime = Duration.zero;
@@ -585,18 +605,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
       return true;
     }
 
-    DateTime? _endTime;
+    DateTime? endTime;
 
-    _endTime = DateTime.tryParse(auctionEndTime)?.toLocal();
+    endTime = DateTime.tryParse(auctionEndTime)?.toLocal();
 
-    if (_endTime == null) {
+    if (endTime == null) {
       return true;
     }
 
     // 🔥 SAME APPROACH (UTC + offset)
     final nowUtc = DateTime.now().toUtc();
     final offset = DateTime.now().timeZoneOffset;
-    final difference = _endTime.difference(nowUtc) + offset;
+    final difference = endTime.difference(nowUtc) + offset;
 
     if (difference <= Duration.zero) {
       _remainingTime = Duration.zero;
@@ -634,9 +654,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     // Empty string ko null banao
     _videoUrl = (videoUrlRaw?.isNotEmpty == true) ? videoUrlRaw : null;
 
-    final hasVideo = _videoUrl != null;
-
-    if (!hasVideo && _imageUrlsNotifier.value.isNotEmpty) {
+    // Always add the first image (thumbnail) if available (even when video exists)
+    if (_imageUrlsNotifier.value.isNotEmpty) {
       newUrls.add(_imageUrlsNotifier.value.first);
     }
 
@@ -656,10 +675,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
       }
     }
 
-    if (newUrls.isEmpty && !hasVideo) {
-      final thumbnailUrl = widget.product.thumbnail?.media?.optimizedMediaUrl;
-      if (thumbnailUrl?.isNotEmpty == true) {
-        newUrls.add(thumbnailUrl!);
+    // Fallback: if no images found yet, try to get from widget.product thumbnail
+    if (newUrls.isEmpty && _videoUrl == null) {
+      final thumbnailUrl =
+          widget.product.thumbnail?.media?.optimizedMediaUrl ??
+          widget.product.thumbnail?.media!.url?.toString().trim() ??
+          widget.product.thumbnail?.media!.optimizedMediaUrl
+              ?.toString()
+              .trim() ??
+          widget.product.thumbnail?.media?.cdnThumbnailUrl ??
+          widget.product.thumbnail?.media?.optimizedMediaCdnUrl ??
+          widget.product.thumbnail?.media?.cdnUrl ??
+          widget.product.thumbnail?.media?.localUrl ??
+          '';
+      if (thumbnailUrl.isNotEmpty == true) {
+        newUrls.add(thumbnailUrl);
       }
     }
 
@@ -737,7 +767,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
 
   Timer? _timer;
   DateTime? _endTime;
-  Duration _remainingTimeofAuction = Duration.zero;
+  final Duration _remainingTimeofAuction = Duration.zero;
   bool _isExpired = false;
 
   void _initializeTimerofAuction() {
@@ -993,12 +1023,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                   ),
                 ),
                 const SizedBox(width: 12),
-                _buildCircleButton(
-                  icon: Icons.share_outlined,
-                  onTap: () {},
-                  showBackground: !showTitle,
-                ),
-                const SizedBox(width: 8),
+
                 Obx(() {
                   final wishlistItems =
                       _wishlistController.wishlistResponse.wishlistItems;
@@ -1085,19 +1110,46 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                   if (product?.product?.bids == null) const SizedBox(height: 6),
 
                   // Product Name
-                  Text(
-                    widget.product.name ?? '',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: _textPrimary,
-                      height: 1.4,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          widget.product.name ?? '',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: _textPrimary,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+
+                      Builder(
+                        builder: (context) {
+                          if (widget.product.productGroup != 'car') {
+                            return Container();
+                          }
+                          final int? stock = int.tryParse(
+                            widget.product.stock?.toString() ?? '',
+                          );
+
+                          return Text(
+                            (stock != null && stock > 0) ? 'Available' : '',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: _primaryColor,
+                              height: 1.4,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 2),
-
-                  // Rating & Sold
-                  _buildRatingRow(),
+                  if (widget.product.productGroup != 'car')
+                    // Rating & Sold
+                    _buildRatingRow(),
 
                   // Description
                   if (product?.product?.description != null ||
@@ -1162,7 +1214,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
               ),
 
             // Quantity (for non-car, non-auction)
-            if (product?.product?.productGroup != 'car' &&
+            if (widget.product.productGroup != 'car' &&
                 !(_isAuctionProduct(product?.product) ||
                     _isAuctionProduct(widget.product)))
               Container(

@@ -9,6 +9,7 @@ import 'package:path/path.dart' as path;
 import 'package:intl/intl.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:tjara/app/core/widgets/admin_app_bar_actions.dart';
+import 'package:tjara/app/modules/contests/model/contest_model.dart';
 import 'package:tjara/app/modules/contests/model/selected_contest_model.dart';
 
 // Add your ContestModel and related classes here if not imported
@@ -426,7 +427,10 @@ class _QuizFormState extends State<QuizForm> {
         appBar: AppBar(
           backgroundColor: const Color(0xFFF97316),
           iconTheme: const IconThemeData(color: Colors.white),
-          title: const Text('Loading...', style: TextStyle(color: Colors.white)),
+          title: const Text(
+            'Loading...',
+            style: TextStyle(color: Colors.white),
+          ),
         ),
         body: Center(
           child: Column(
@@ -696,7 +700,9 @@ class _QuizFormState extends State<QuizForm> {
                                         focusNode: _descriptionFocus,
                                         decoration: InputDecoration(
                                           labelText: "Description",
-                                          prefixIcon: const Icon(Icons.description),
+                                          prefixIcon: const Icon(
+                                            Icons.description,
+                                          ),
                                           border: OutlineInputBorder(
                                             borderRadius: BorderRadius.circular(
                                               10,
@@ -717,7 +723,9 @@ class _QuizFormState extends State<QuizForm> {
                                         focusNode: _winnerIdFocus,
                                         decoration: InputDecoration(
                                           labelText: "Winner ID (Optional)",
-                                          prefixIcon: const Icon(Icons.emoji_events),
+                                          prefixIcon: const Icon(
+                                            Icons.emoji_events,
+                                          ),
                                           border: OutlineInputBorder(
                                             borderRadius: BorderRadius.circular(
                                               10,
@@ -878,7 +886,10 @@ class _QuizFormState extends State<QuizForm> {
                                                         color: Colors.black
                                                             .withOpacity(0.1),
                                                         blurRadius: 8,
-                                                        offset: const Offset(0, 2),
+                                                        offset: const Offset(
+                                                          0,
+                                                          2,
+                                                        ),
                                                       ),
                                                     ]
                                                     : null,
@@ -917,7 +928,9 @@ class _QuizFormState extends State<QuizForm> {
                                                                   .grey
                                                                   .shade400,
                                                         ),
-                                                        const SizedBox(height: 12),
+                                                        const SizedBox(
+                                                          height: 12,
+                                                        ),
                                                         Text(
                                                           isEditMode
                                                               ? 'Tap to change thumbnail'
@@ -932,7 +945,9 @@ class _QuizFormState extends State<QuizForm> {
                                                             fontSize: 16,
                                                           ),
                                                         ),
-                                                        const SizedBox(height: 4),
+                                                        const SizedBox(
+                                                          height: 4,
+                                                        ),
                                                         Text(
                                                           'Recommended size: 1200 × 630 pixels',
                                                           style: TextStyle(
@@ -1147,7 +1162,9 @@ class _QuizFormState extends State<QuizForm> {
                                             controller: controller.startTime,
                                             decoration: InputDecoration(
                                               labelText: "Start Date & Time",
-                                              prefixIcon: const Icon(Icons.event),
+                                              prefixIcon: const Icon(
+                                                Icons.event,
+                                              ),
                                               suffixIcon: const Icon(
                                                 Icons.arrow_drop_down,
                                               ),
@@ -1228,11 +1245,12 @@ class _QuizFormState extends State<QuizForm> {
                                               }
 
                                               try {
-                                                final DateTime start = DateFormat(
-                                                  'yyyy-MM-dd HH:mm',
-                                                ).parse(
-                                                  controller.startTime.text,
-                                                );
+                                                final DateTime start =
+                                                    DateFormat(
+                                                      'yyyy-MM-dd HH:mm',
+                                                    ).parse(
+                                                      controller.startTime.text,
+                                                    );
                                                 final DateTime end = DateFormat(
                                                   'yyyy-MM-dd HH:mm',
                                                 ).parse(value);
@@ -1327,7 +1345,9 @@ class _QuizFormState extends State<QuizForm> {
                                         label: const Text("Add Question"),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.white,
-                                          foregroundColor: const Color(0xFFF97316),
+                                          foregroundColor: const Color(
+                                            0xFFF97316,
+                                          ),
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 12,
                                             vertical: 8,
@@ -1438,7 +1458,9 @@ class _QuizFormState extends State<QuizForm> {
                                     decoration: InputDecoration(
                                       labelText:
                                           "Required Number of Correct Answers",
-                                      prefixIcon: const Icon(Icons.emoji_events),
+                                      prefixIcon: const Icon(
+                                        Icons.emoji_events,
+                                      ),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(10),
                                       ),
@@ -1452,7 +1474,9 @@ class _QuizFormState extends State<QuizForm> {
 
                                     decoration: InputDecoration(
                                       labelText: "Contest Prize",
-                                      prefixIcon: const Icon(Icons.emoji_events),
+                                      prefixIcon: const Icon(
+                                        Icons.emoji_events,
+                                      ),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(10),
                                       ),
@@ -1476,7 +1500,9 @@ class _QuizFormState extends State<QuizForm> {
                                   0xFF0D9488,
                                 ), // Teal color
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),

@@ -42,7 +42,7 @@ class CategoryViewBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       controller: scrollController,
-      child: Container(
+      child: SizedBox(
         child: Column(
           children: [
             Container(

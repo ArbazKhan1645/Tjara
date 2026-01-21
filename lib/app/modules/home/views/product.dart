@@ -188,13 +188,6 @@ class TemuProductCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white70,
           borderRadius: BorderRadius.circular(2),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 4,
-              offset: const Offset(0, 1),
-            ),
-          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

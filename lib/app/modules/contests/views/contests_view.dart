@@ -9,6 +9,7 @@ import 'package:tjara/app/modules/contests/controllers/contests_controller.dart'
 
 class ContestsView extends GetView<ContestController> {
   const ContestsView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return const ContestScreen();
@@ -22,10 +23,52 @@ class ContestScreen extends StatefulWidget {
   State<ContestScreen> createState() => _ContestScreenState();
 }
 
-class _ContestScreenState extends State<ContestScreen> {
+class _ContestScreenState extends State<ContestScreen>
+    with SingleTickerProviderStateMixin {
   final ContestController controller = Get.put(ContestController());
   final TextEditingController _searchController = TextEditingController();
   final RxString _searchQuery = ''.obs;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+
+  // Theme colors
+  static const Color primaryTeal = Color(0xFF008080);
+  static const Color accentTeal = Color(0xFF00A5A5);
+  static const Color lightTeal = Color(0xFF00C9C9);
+  static const Color darkTeal = Color(0xFF006666);
+  static const Color goldAccent = Color(0xFFFFD700);
+  static const Color orangeAccent = Color(0xFFFFA500);
+
+  // Helper method to get contest status
+  _ContestStatus _getContestStatus(dynamic contest) {
+    final startTime = contest.startTime;
+    final endTime = contest.endTime;
+
+    if (startTime == null || endTime == null) {
+      return _ContestStatus.active;
+    }
+
+    try {
+      final now = DateTime.now();
+      final start = DateTime.parse(startTime);
+      final end = DateTime.parse(endTime);
+
+      if (now.isBefore(start)) {
+        return _ContestStatus.upcoming;
+      } else if (now.isAfter(end)) {
+        return _ContestStatus.expired;
+      } else {
+        // Check if ending within 24 hours
+        final difference = end.difference(now);
+        if (difference.inHours < 24) {
+          return _ContestStatus.endingSoon;
+        }
+        return _ContestStatus.active;
+      }
+    } catch (e) {
+      return _ContestStatus.active;
+    }
+  }
 
   @override
   void initState() {
@@ -37,6 +80,18 @@ class _ContestScreenState extends State<ContestScreen> {
       ),
     );
 
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    );
+
+    _animationController.forward();
+
     _searchController.addListener(() {
       _searchQuery.value = _searchController.text;
     });
@@ -45,6 +100,7 @@ class _ContestScreenState extends State<ContestScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -58,45 +114,42 @@ class _ContestScreenState extends State<ContestScreen> {
     }).toList();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FC),
-      body: Obx(() {
-        if (controller.selectedModel.value != null) {
-          return ContestScreenSingle();
-        }
-
-        return CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            // Header
-            SliverToBoxAdapter(child: _buildHeader()),
-
-            // Content
-            _buildContent(),
-
-            // Bottom spacing
-            const SliverToBoxAdapter(child: SizedBox(height: 100)),
-          ],
-        );
-      }),
-    );
+  void _handleBackPress() {
+    if (controller.handleBackNavigation()) {
+      Get.back();
+    }
   }
 
-  // Container(
-  //   height: MediaQuery.of(context).size.height / 1.5,
-  //   decoration: BoxDecoration(
-  //     gradient: LinearGradient(
-  //       begin: Alignment.topCenter,
-  //       end: Alignment.bottomCenter,
-  //       colors: [
-  //         Color(0xFFfea52d), // top
-  //         Color(0xFFfea52d).withOpacity(0.10), // top
-  //       ],
-  //     ),
-  //   ),
-  // ),
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          _handleBackPress();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF0F4F4),
+        body: Obx(() {
+          if (controller.selectedModel.value != null) {
+            return ContestScreenSingle();
+          }
+
+          return FadeTransition(
+            opacity: _fadeAnimation,
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(child: _buildHeader()),
+                _buildContent(),
+                const SliverToBoxAdapter(child: SizedBox(height: 100)),
+              ],
+            ),
+          );
+        }),
+      ),
+    );
+  }
 
   Widget _buildHeader() {
     return Container(
@@ -118,67 +171,145 @@ class _ContestScreenState extends State<ContestScreen> {
       ),
       child: SafeArea(
         bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Back Button
-              Row(
+        child: Column(
+          children: [
+            // Top Bar
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Row(
                 children: [
-                  GestureDetector(
-                    onTap: () => Get.back(),
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.arrow_back_ios_new_rounded,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
+                  // Back Button with animation
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.0, end: 1.0),
+                    duration: const Duration(milliseconds: 500),
+                    builder: (context, value, child) {
+                      return Transform.scale(scale: value, child: child);
+                    },
+                    child: _buildBackButton(),
                   ),
-                  const SizedBox(width: 10),
-
-                  // Title
+                  const SizedBox(width: 16),
+                  // Title with slide animation
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Contests',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                            letterSpacing: -0.5,
+                    child: TweenAnimationBuilder<Offset>(
+                      tween: Tween(
+                        begin: const Offset(-0.5, 0),
+                        end: Offset.zero,
+                      ),
+                      duration: const Duration(milliseconds: 600),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, offset, child) {
+                        return FractionalTranslation(
+                          translation: offset,
+                          child: child,
+                        );
+                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Contests',
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: -0.5,
+                            ),
                           ),
-                        ),
-
-                        Text(
-                          'Win amazing prizes!',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.white.withOpacity(0.9),
-                            fontWeight: FontWeight.w400,
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: goldAccent.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: goldAccent.withOpacity(0.5),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.emoji_events_rounded,
+                                      size: 14,
+                                      color: goldAccent,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Win amazing prizes!',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: goldAccent,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ],
               ),
+            ),
 
-              const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
-              // Search Card
-              _buildSearchCard(),
+            // Search Card with animation
+            TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0.0, end: 1.0),
+              duration: const Duration(milliseconds: 700),
+              curve: Curves.easeOutBack,
+              builder: (context, value, child) {
+                return Transform.scale(
+                  scale: value,
+                  child: Opacity(opacity: value.clamp(0.0, 1.0), child: child),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: _buildSearchCard(),
+              ),
+            ),
 
-              const SizedBox(height: 24),
-            ],
+            const SizedBox(height: 20),
+
+            // Wave decoration
+            // ClipPath(
+            //   clipper: _WaveClipper(),
+            //   child: Container(height: 30, color: const Color(0xFFF0F4F4)),
+            // ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBackButton() {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: _handleBackPress,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+          ),
+          child: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+            size: 20,
           ),
         ),
       ),
@@ -187,15 +318,15 @@ class _ContestScreenState extends State<ContestScreen> {
 
   Widget _buildSearchCard() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: darkTeal.withOpacity(0.15),
+            blurRadius: 30,
+            offset: const Offset(0, 15),
           ),
         ],
       ),
@@ -204,45 +335,70 @@ class _ContestScreenState extends State<ContestScreen> {
           // Contest Count
           Obx(() {
             final count = filteredContests.length;
-            return RichText(
-              text: TextSpan(
-                text: 'Discover ',
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 15),
-                children: [
-                  TextSpan(
-                    text: '$count',
-                    style: const TextStyle(
-                      color: Color(0xFFFF8C00),
-                      fontWeight: FontWeight.w700,
-                      fontSize: 18,
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [primaryTeal, accentTeal],
                     ),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  TextSpan(
-                    text: ' active contests',
-                    style: TextStyle(color: Colors.grey.shade600),
+                  child: const Icon(
+                    Icons.celebration_rounded,
+                    color: Colors.white,
+                    size: 20,
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 12),
+                RichText(
+                  text: TextSpan(
+                    text: 'Discover ',
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: '$count',
+                        style: const TextStyle(
+                          color: primaryTeal,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 22,
+                        ),
+                      ),
+                      TextSpan(
+                        text: ' active contests',
+                        style: TextStyle(color: Colors.grey.shade600),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             );
           }),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
 
           // Search Field
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFFF5F6FA),
-              borderRadius: BorderRadius.circular(14),
+              color: const Color(0xFFF5F7F7),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: primaryTeal.withOpacity(0.1), width: 1),
             ),
             child: TextField(
               controller: _searchController,
-              style: const TextStyle(fontSize: 15),
+              style: const TextStyle(fontSize: 15, color: Colors.black87),
               decoration: InputDecoration(
                 hintText: 'Search contests...',
                 hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 15),
                 prefixIcon: Icon(
                   Icons.search_rounded,
-                  color: Colors.grey.shade400,
+                  color: primaryTeal.withOpacity(0.6),
                   size: 22,
                 ),
                 suffixIcon: Obx(() {
@@ -283,11 +439,12 @@ class _ContestScreenState extends State<ContestScreen> {
             return SliverFillRemaining(child: _buildEmptyState());
           }
           return SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
             sliver: SliverList(
-              delegate: SliverChildBuilderDelegate((context, index) {
-                return _buildContestCard(contests[index], index);
-              }, childCount: contests.length),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => _buildContestCard(contests[index], index),
+                childCount: contests.length,
+              ),
             ),
           );
 
@@ -295,9 +452,11 @@ class _ContestScreenState extends State<ContestScreen> {
           return SliverFillRemaining(child: _buildErrorState());
 
         default:
-          return const SliverFillRemaining(
+          return SliverFillRemaining(
             child: Center(
-              child: CircularProgressIndicator(color: Color(0xFFFF8C00)),
+              child: CircularProgressIndicator(
+                valueColor: const AlwaysStoppedAnimation<Color>(primaryTeal),
+              ),
             ),
           );
       }
@@ -307,32 +466,32 @@ class _ContestScreenState extends State<ContestScreen> {
   Widget _buildContestCard(contest, int index) {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
-      duration: Duration(milliseconds: 400 + (index * 80)),
-      curve: Curves.easeOut,
+      duration: Duration(milliseconds: 500 + (index * 100)),
+      curve: Curves.easeOutCubic,
       builder: (context, value, child) {
         return Transform.translate(
-          offset: Offset(0, 20 * (1 - value)),
+          offset: Offset(0, 30 * (1 - value)),
           child: Opacity(opacity: value, child: child),
         );
       },
       child: GestureDetector(
         onTap: () {
+          HapticFeedback.lightImpact();
           controller.setSelectedModel(contest);
           controller.fetchContest(
             controller.selectedModel.value?.id.toString() ?? '',
           );
-          controller.update();
         },
         child: Container(
-          margin: const EdgeInsets.only(bottom: 16),
+          margin: const EdgeInsets.only(bottom: 20),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 15,
-                offset: const Offset(0, 5),
+                color: primaryTeal.withOpacity(0.08),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
@@ -344,14 +503,14 @@ class _ContestScreenState extends State<ContestScreen> {
                 children: [
                   ClipRRect(
                     borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(20),
+                      top: Radius.circular(24),
                     ),
                     child:
                         contest.thumbnail?.media?.optimizedMediaUrl != null
                             ? CachedNetworkImage(
                               imageUrl:
                                   contest.thumbnail!.media!.optimizedMediaUrl!,
-                              height: 160,
+                              height: 180,
                               width: double.infinity,
                               fit: BoxFit.cover,
                               placeholder: (_, __) => _buildImagePlaceholder(),
@@ -362,23 +521,20 @@ class _ContestScreenState extends State<ContestScreen> {
                   ),
 
                   // Gradient Overlay
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
+                  Positioned.fill(
                     child: Container(
-                      height: 60,
                       decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(24),
+                        ),
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
                             Colors.transparent,
-                            Colors.black.withOpacity(0.4),
+                            Colors.black.withOpacity(0.6),
                           ],
-                        ),
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(20),
+                          stops: const [0.5, 1.0],
                         ),
                       ),
                     ),
@@ -386,48 +542,28 @@ class _ContestScreenState extends State<ContestScreen> {
 
                   // Status Badge
                   Positioned(
-                    top: 12,
-                    left: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.teal,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.circle, size: 8, color: Colors.white),
-                          SizedBox(width: 6),
-                          Text(
-                            'Active',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    top: 16,
+                    left: 16,
+                    child: _buildStatusBadge(_getContestStatus(contest)),
                   ),
 
                   // Views Badge
                   if (contest.meta?.views != null)
                     Positioned(
-                      top: 12,
-                      right: 12,
+                      top: 16,
+                      right: 16,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
+                          horizontal: 12,
+                          vertical: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(20),
+                          color: Colors.black.withOpacity(0.6),
+                          borderRadius: BorderRadius.circular(30),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.2),
+                            width: 1,
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -437,13 +573,13 @@ class _ContestScreenState extends State<ContestScreen> {
                               size: 14,
                               color: Colors.white,
                             ),
-                            const SizedBox(width: 4),
+                            const SizedBox(width: 6),
                             Text(
                               '${contest.meta!.views}',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
@@ -455,7 +591,7 @@ class _ContestScreenState extends State<ContestScreen> {
 
               // Content Section
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -463,31 +599,32 @@ class _ContestScreenState extends State<ContestScreen> {
                     Text(
                       contest.name ?? 'Unnamed Contest',
                       style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
                         color: Color(0xFF1A1A2E),
                         height: 1.2,
+                        letterSpacing: -0.5,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
 
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
 
                     // Shop Name
                     if (contest.shop?.shop?.name != null)
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(6),
+                            padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFFF3E0),
-                              borderRadius: BorderRadius.circular(8),
+                              color: primaryTeal.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Icon(
                               Icons.store_rounded,
-                              size: 14,
-                              color: Color(0xFFFF8C00),
+                              size: 16,
+                              color: primaryTeal,
                             ),
                           ),
                           const SizedBox(width: 10),
@@ -496,8 +633,8 @@ class _ContestScreenState extends State<ContestScreen> {
                               contest.shop!.shop!.name!,
                               style: TextStyle(
                                 color: Colors.grey.shade700,
-                                fontWeight: FontWeight.w500,
-                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -506,31 +643,42 @@ class _ContestScreenState extends State<ContestScreen> {
                         ],
                       ),
 
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
 
                     // Date Range
                     if (contest.startTime != null || contest.endTime != null)
                       Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF5F6FA),
-                          borderRadius: BorderRadius.circular(12),
+                          color: const Color(0xFFF5F7F7),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: primaryTeal.withOpacity(0.1),
+                            width: 1,
+                          ),
                         ),
                         child: Row(
                           children: [
-                            Icon(
-                              Icons.schedule_rounded,
-                              size: 18,
-                              color: Colors.grey.shade600,
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: primaryTeal.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.calendar_today_rounded,
+                                size: 16,
+                                color: primaryTeal,
+                              ),
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: Text(
                                 '${controller.getFormattedDate(contest.startTime)} - ${controller.getFormattedDate(contest.endTime)}',
                                 style: TextStyle(
                                   color: Colors.grey.shade700,
                                   fontSize: 13,
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
@@ -540,9 +688,9 @@ class _ContestScreenState extends State<ContestScreen> {
 
                     // Description
                     if (contest.description != null) ...[
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 14),
                       Container(
-                        constraints: const BoxConstraints(maxHeight: 60),
+                        constraints: const BoxConstraints(maxHeight: 50),
                         child: Html(
                           data: contest.description!,
                           style: {
@@ -561,36 +709,42 @@ class _ContestScreenState extends State<ContestScreen> {
 
                     // Prize Section
                     if (contest.meta?.contestPrizeDetails != null) ...[
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 16),
                       Container(
-                        padding: const EdgeInsets.all(14),
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              const Color(0xFFFFD700).withOpacity(0.15),
-                              const Color(0xFFFFA500).withOpacity(0.08),
+                              goldAccent.withOpacity(0.15),
+                              orangeAccent.withOpacity(0.08),
                             ],
                           ),
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: const Color(0xFFFFD700).withOpacity(0.3),
+                            color: goldAccent.withOpacity(0.3),
+                            width: 1.5,
                           ),
                         ),
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(8),
+                              padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFFD700).withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(10),
+                                gradient: LinearGradient(
+                                  colors: [
+                                    goldAccent.withOpacity(0.3),
+                                    orangeAccent.withOpacity(0.2),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Icon(
                                 Icons.emoji_events_rounded,
-                                color: Color(0xFFFF8C00),
-                                size: 20,
+                                color: orangeAccent,
+                                size: 22,
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: 14),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -600,16 +754,17 @@ class _ContestScreenState extends State<ContestScreen> {
                                     style: TextStyle(
                                       fontSize: 11,
                                       color: Colors.grey.shade600,
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: 0.5,
                                     ),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
                                     contest.meta!.contestPrizeDetails!,
                                     style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
+                                      fontWeight: FontWeight.w700,
                                       color: Color(0xFF1A1A2E),
-                                      fontSize: 14,
+                                      fontSize: 15,
                                     ),
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
@@ -622,37 +777,66 @@ class _ContestScreenState extends State<ContestScreen> {
                       ),
                     ],
 
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 18),
 
                     // Action Button
-                    SizedBox(
+                    Container(
                       width: double.infinity,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFFF8C00), Color(0xFFFFA500)],
-                          ),
-                          borderRadius: BorderRadius.circular(14),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [primaryTeal, accentTeal],
                         ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'View Details',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: primaryTeal.withOpacity(0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            controller.setSelectedModel(contest);
+                            controller.fetchContest(
+                              controller.selectedModel.value?.id.toString() ??
+                                  '',
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(16),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  'View Details',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.arrow_forward_rounded,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                ),
+                              ],
                             ),
-                            SizedBox(width: 8),
-                            Icon(
-                              Icons.arrow_forward_rounded,
-                              color: Colors.white,
-                              size: 18,
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
@@ -666,16 +850,120 @@ class _ContestScreenState extends State<ContestScreen> {
     );
   }
 
+  Widget _buildStatusBadge(_ContestStatus status) {
+    Color gradientStart;
+    Color gradientEnd;
+    String statusText;
+    IconData? statusIcon;
+
+    switch (status) {
+      case _ContestStatus.active:
+        gradientStart = primaryTeal;
+        gradientEnd = accentTeal;
+        statusText = 'Active';
+        statusIcon = null;
+        break;
+      case _ContestStatus.expired:
+        gradientStart = Colors.red.shade500;
+        gradientEnd = Colors.red.shade700;
+        statusText = 'Ended';
+        statusIcon = Icons.schedule_rounded;
+        break;
+      case _ContestStatus.upcoming:
+        gradientStart = Colors.blue.shade500;
+        gradientEnd = Colors.blue.shade700;
+        statusText = 'Upcoming';
+        statusIcon = Icons.upcoming_rounded;
+        break;
+      case _ContestStatus.endingSoon:
+        gradientStart = orangeAccent;
+        gradientEnd = Colors.orange.shade700;
+        statusText = 'Ending Soon';
+        statusIcon = Icons.timer_rounded;
+        break;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 8,
+      ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [gradientStart, gradientEnd],
+        ),
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: gradientStart.withOpacity(0.4),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (statusIcon != null) ...[
+            Icon(
+              statusIcon,
+              size: 14,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 6),
+          ] else ...[
+            Container(
+              width: 8,
+              height: 8,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 6),
+          ],
+          Text(
+            statusText,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildImagePlaceholder() {
     return Container(
-      height: 160,
+      height: 180,
       width: double.infinity,
-      color: const Color(0xFFF5F6FA),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [primaryTeal.withOpacity(0.1), accentTeal.withOpacity(0.05)],
+        ),
+      ),
       child: Center(
-        child: Icon(
-          Icons.emoji_events_rounded,
-          color: Colors.grey.shade300,
-          size: 48,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.emoji_events_rounded,
+              color: primaryTeal.withOpacity(0.3),
+              size: 48,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Contest',
+              style: TextStyle(
+                color: primaryTeal.withOpacity(0.4),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -683,19 +971,19 @@ class _ContestScreenState extends State<ContestScreen> {
 
   Widget _buildShimmerLoading() {
     return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) => Padding(
-            padding: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.only(bottom: 20),
             child: Shimmer.fromColors(
               baseColor: Colors.grey.shade200,
               highlightColor: Colors.grey.shade50,
               child: Container(
-                height: 340,
+                height: 380,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(24),
                 ),
               ),
             ),
@@ -708,40 +996,55 @@ class _ContestScreenState extends State<ContestScreen> {
 
   Widget _buildEmptyState() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: const BoxDecoration(
-              color: Color(0xFFFFF3E0),
-              shape: BoxShape.circle,
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0.0, end: 1.0),
+        duration: const Duration(milliseconds: 600),
+        builder: (context, value, child) {
+          return Transform.scale(
+            scale: value,
+            child: Opacity(opacity: value, child: child),
+          );
+        },
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(28),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    primaryTeal.withOpacity(0.15),
+                    accentTeal.withOpacity(0.1),
+                  ],
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.emoji_events_rounded,
+                size: 56,
+                color: primaryTeal,
+              ),
             ),
-            child: const Icon(
-              Icons.emoji_events_rounded,
-              size: 48,
-              color: Color(0xFFFF8C00),
+            const SizedBox(height: 24),
+            Text(
+              _searchQuery.value.isNotEmpty
+                  ? 'No contests found'
+                  : 'No active contests',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: Colors.grey.shade800,
+              ),
             ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            _searchQuery.value.isNotEmpty
-                ? 'No contests found'
-                : 'No active contests',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade800,
+            const SizedBox(height: 10),
+            Text(
+              _searchQuery.value.isNotEmpty
+                  ? 'Try a different search term'
+                  : 'Check back later for new contests',
+              style: TextStyle(fontSize: 15, color: Colors.grey.shade500),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _searchQuery.value.isNotEmpty
-                ? 'Try a different search term'
-                : 'Check back later for new contests',
-            style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -753,53 +1056,75 @@ class _ContestScreenState extends State<ContestScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline_rounded,
-              size: 48,
-              color: Colors.grey.shade400,
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.error_outline_rounded,
+                size: 56,
+                color: Colors.red.shade400,
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             Text(
               'Something went wrong',
               style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey.shade700,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: Colors.grey.shade800,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Text(
               controller.errorMessage.value,
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 20),
-            GestureDetector(
-              onTap: controller.retryFetch,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
+            const SizedBox(height: 28),
+            Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [primaryTeal, accentTeal],
                 ),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFF8C00), Color(0xFFFFA500)],
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: primaryTeal.withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
                   ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.refresh_rounded, color: Colors.white, size: 18),
-                    SizedBox(width: 8),
-                    Text(
-                      'Try Again',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: controller.retryFetch,
+                  borderRadius: BorderRadius.circular(16),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.refresh_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        SizedBox(width: 10),
+                        Text(
+                          'Try Again',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -808,4 +1133,46 @@ class _ContestScreenState extends State<ContestScreen> {
       ),
     );
   }
+}
+
+// Custom Wave Clipper
+class _WaveClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.lineTo(0, size.height - 20);
+
+    final firstControlPoint = Offset(size.width / 4, size.height);
+    final firstEndPoint = Offset(size.width / 2, size.height - 15);
+    path.quadraticBezierTo(
+      firstControlPoint.dx,
+      firstControlPoint.dy,
+      firstEndPoint.dx,
+      firstEndPoint.dy,
+    );
+
+    final secondControlPoint = Offset(size.width * 3 / 4, size.height - 30);
+    final secondEndPoint = Offset(size.width, size.height - 10);
+    path.quadraticBezierTo(
+      secondControlPoint.dx,
+      secondControlPoint.dy,
+      secondEndPoint.dx,
+      secondEndPoint.dy,
+    );
+
+    path.lineTo(size.width, 0);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
+
+// Enum for contest status
+enum _ContestStatus {
+  active,
+  expired,
+  upcoming,
+  endingSoon,
 }

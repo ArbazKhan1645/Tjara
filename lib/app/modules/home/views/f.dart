@@ -16,22 +16,135 @@ class AuctionProductsWidget extends StatefulWidget {
 }
 
 class _AuctionProductsWidgetState extends State<AuctionProductsWidget> {
-  List<ProductDatum> featuredProducts = [];
-  bool isLoading = true;
+  late AuctionProductsController controller;
 
   @override
   void initState() {
     super.initState();
-    _loadFeaturedProducts();
+    // Controller pehle se exist karta hai to use karo, nahi to banao
+    controller =
+        Get.isRegistered<AuctionProductsController>()
+            ? Get.find<AuctionProductsController>()
+            : Get.put(AuctionProductsController(), permanent: true);
+    controller.refreshs();
   }
 
-  Future<void> _loadFeaturedProducts() async {
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      if (controller.products.isEmpty && !controller.isLoading.value) {
+        return const SizedBox.shrink();
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF015c5d),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.gavel_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text(
+                      'Auction Products',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: widget.onViewAllTap,
+                    child: const Text(
+                      'View All',
+                      style: TextStyle(color: Colors.white, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 300,
+            child:
+                controller.isLoading.value && controller.products.isEmpty
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: controller.products.length,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      itemBuilder: (context, i) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: AuctionProductCard(
+                            key: ValueKey(controller.products[i].id),
+                            product: controller.products[i],
+                          ),
+                        );
+                      },
+                    ),
+          ),
+        ],
+      );
+    });
+  }
+}
+
+class AuctionProductsController extends GetxController {
+  final products = <ProductDatum>[].obs;
+  final isLoading = false.obs;
+  Timer? _expiryCheckTimer;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _loadProducts();
+    _startExpiryCheckTimer();
+  }
+
+  @override
+  void onClose() {
+    _expiryCheckTimer?.cancel();
+    super.onClose();
+  }
+
+  void _startExpiryCheckTimer() {
+    _expiryCheckTimer = Timer.periodic(const Duration(seconds: 60), (_) {
+      products.refresh();
+    });
+  }
+
+  Future<void> _loadProducts() async {
+    if (products.isEmpty) {
+      isLoading.value = true;
+    }
+
     try {
       const baseUrl = 'https://api.libanbuy.com/api/products';
-      const params =
-          '?with=thumbnail,shop&filterByColumns[filterJoin]=AND&per_page=12&page=1';
-      const url =
-          '$baseUrl$params&filterByColumns[columns][0][column]=product_type'
+      final cacheBuster = DateTime.now().millisecondsSinceEpoch;
+
+      final params =
+          '?with=thumbnail,shop'
+          '&filterByColumns[filterJoin]=AND'
+          '&per_page=12'
+          '&page=1'
+          '&cb=$cacheBuster';
+
+      final url =
+          '$baseUrl$params'
+          '&filterByColumns[columns][0][column]=product_type'
           '&filterByColumns[columns][0][value]=auction'
           '&filterByColumns[columns][0][operator]=%3D';
 
@@ -46,74 +159,16 @@ class _AuctionProductsWidgetState extends State<AuctionProductsWidget> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final model = ProductModel.fromJson(data);
-
-        setState(() {
-          featuredProducts = model.products?.data ?? [];
-          isLoading = false;
-        });
-      } else {
-        isLoading = false;
+        products.value = model.products?.data ?? [];
       }
     } catch (_) {
-      isLoading = false;
+      // Handle error
+    } finally {
+      isLoading.value = false;
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (featuredProducts.isEmpty) return const SizedBox();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFF015c5d),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.gavel_rounded, color: Colors.white, size: 20),
-                const SizedBox(width: 10),
-                const Expanded(
-                  child: Text(
-                    'Auction Products',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                TextButton(
-                  onPressed: widget.onViewAllTap,
-                  child: const Text(
-                    'View All',
-                    style: TextStyle(color: Colors.white, fontSize: 12),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: List.generate(
-              featuredProducts.length,
-              (i) => Padding(
-                padding: const EdgeInsets.only(left: 8),
-                child: AuctionProductCard(product: featuredProducts[i]),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+  void refreshs() => _loadProducts();
 }
 
 class AuctionProductCard extends StatefulWidget {
@@ -125,34 +180,76 @@ class AuctionProductCard extends StatefulWidget {
 }
 
 class _AuctionProductCardState extends State<AuctionProductCard> {
+  Timer? _countdownTimer;
+  Duration? _remainingTime;
   bool _isExpired = false;
 
   @override
   void initState() {
     super.initState();
-    _checkAuctionStatus();
+    _initializeAuctionTimer();
   }
 
-  void _checkAuctionStatus() {
+  @override
+  void dispose() {
+    _countdownTimer?.cancel();
+    super.dispose();
+  }
+
+  void _initializeAuctionTimer() {
     if (widget.product.auctionEndTime == null) {
       _isExpired = true;
       return;
     }
 
     final endTime = DateTime.tryParse(widget.product.auctionEndTime!);
-
     if (endTime == null) {
       _isExpired = true;
       return;
     }
 
     final endTimeLocal = endTime.toLocal();
-    final nowUtc = DateTime.now().toUtc();
-    final offset = DateTime.now().timeZoneOffset;
+    final now = DateTime.now();
+    _remainingTime = endTimeLocal.difference(now);
 
-    final difference = endTimeLocal.difference(nowUtc) + offset;
+    if (_remainingTime! <= Duration.zero) {
+      _isExpired = true;
+      return;
+    }
 
-    _isExpired = difference <= Duration.zero;
+    // Sirf agar auction active hai to timer start karo
+    _startCountdownTimer();
+  }
+
+  void _startCountdownTimer() {
+    _countdownTimer?.cancel();
+
+    // Har minute update karo (ya har 30 seconds agar chahiye)
+    _countdownTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (!mounted) {
+        _countdownTimer?.cancel();
+        return;
+      }
+
+      final endTime = DateTime.tryParse(widget.product.auctionEndTime!);
+      if (endTime == null) return;
+
+      final endTimeLocal = endTime.toLocal();
+      final now = DateTime.now();
+      final remaining = endTimeLocal.difference(now);
+
+      if (remaining <= Duration.zero) {
+        setState(() {
+          _isExpired = true;
+          _remainingTime = Duration.zero;
+        });
+        _countdownTimer?.cancel();
+      } else {
+        setState(() {
+          _remainingTime = remaining;
+        });
+      }
+    });
   }
 
   @override
@@ -164,10 +261,10 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
         Get.to(
           () => ProductDetailScreenView(product: widget.product),
           preventDuplicates: false,
-        )?.then((val) async {
-          setState(() {
-            _checkAuctionStatus();
-          });
+        )?.then((val) {
+          if (mounted) {
+            _initializeAuctionTimer();
+          }
         });
       },
       child: Container(
@@ -175,23 +272,10 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(
-            color: _isExpired ? Colors.grey.shade300 : Colors.transparent,
-            width: 1,
-          ),
-          boxShadow:
-              _isExpired
-                  ? []
-                  : [
-                    BoxShadow(
-                      color: Colors.orange.withOpacity(0.15),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Stack(
               children: [
@@ -218,83 +302,14 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
                     ),
                   ),
                 ),
-                if (!_isExpired)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFFF6B35), Color(0xFFFF8C42)],
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.orange.withOpacity(0.4),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          const Text(
-                            'LIVE',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                if (_isExpired)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade700,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Text(
-                        'ENDED',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                  ),
+                Positioned(top: 8, right: 8, child: _buildStatusBadge()),
               ],
             ),
             Padding(
               padding: const EdgeInsets.all(10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     widget.product.name ?? '',
@@ -307,72 +322,7 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Container(
-                    height: 46,
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      gradient:
-                          _isExpired
-                              ? null
-                              : const LinearGradient(
-                                colors: [Color(0xFFFFF3E0), Color(0xFFFFE0B2)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                      color: _isExpired ? Colors.grey.shade200 : null,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color:
-                            _isExpired
-                                ? Colors.grey.shade300
-                                : Colors.orange.shade200,
-                        width: 1,
-                      ),
-                    ),
-                    child: Center(
-                      child:
-                          _isExpired
-                              ? Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.block,
-                                    size: 14,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Auction Ended',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                                ],
-                              )
-                              : Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.local_fire_department,
-                                    size: 16,
-                                    color: Colors.orange.shade700,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Bidding Active',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.orange.shade800,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                    ),
-                  ),
+                  _buildBiddingStatus(),
                   const SizedBox(height: 8),
                   Row(
                     children: [
@@ -413,6 +363,129 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge() {
+    if (_isExpired) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade700,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Text(
+          'ENDED',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.5,
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFF6B35), Color(0xFFFF8C42)],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.orange.withOpacity(0.4),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 4),
+          const Text(
+            'LIVE',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBiddingStatus() {
+    return Container(
+      height: 46,
+      width: double.infinity,
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        gradient:
+            _isExpired
+                ? null
+                : const LinearGradient(
+                  colors: [Color(0xFFFFF3E0), Color(0xFFFFE0B2)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+        color: _isExpired ? Colors.grey.shade200 : null,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: _isExpired ? Colors.grey.shade300 : Colors.orange.shade200,
+          width: 1,
+        ),
+      ),
+      child: Center(
+        child:
+            _isExpired
+                ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.block, size: 14, color: Colors.grey.shade600),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Auction Ended',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                )
+                : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.local_fire_department,
+                      size: 16,
+                      color: Colors.orange.shade700,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Bidding Active',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange.shade800,
+                      ),
+                    ),
+                  ],
+                ),
       ),
     );
   }

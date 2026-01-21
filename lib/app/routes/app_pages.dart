@@ -44,6 +44,8 @@ import 'package:tjara/app/modules/tjara_jobs/bindings/tjara_jobs_binding.dart';
 import 'package:tjara/app/modules/tjara_jobs/views/tjara_jobs_view.dart';
 import 'package:tjara/app/modules/wishlist/bindings/wishlist_binding.dart';
 import 'package:tjara/app/modules/wishlist/views/wishlist_view.dart';
+import 'package:tjara/app/modules/home/screens/flash_deal_detail_screen.dart';
+import 'package:tjara/app/modules/home/bindings/flash_deal_binding.dart';
 
 // ignore_for_file: constant_identifier_names
 
@@ -180,6 +182,10 @@ class AppPages {
       page: () => const AddProductAdminView(),
       binding: AddProductAdminBinding(),
     ),
-
+    GetPage(
+      name: _Paths.FLASH_DEAL_DETAIL,
+      page: () => const FlashDealDetailScreen(),
+      binding: FlashDealBinding(),
+    ),
   ];
 }

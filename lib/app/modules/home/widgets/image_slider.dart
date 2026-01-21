@@ -11,6 +11,9 @@ class ImageSlider extends StatefulWidget {
   final PageController controller;
   final String? videoUrl;
   final VoidCallback? onVideoStateChanged;
+  /// Index position where video should appear in the slider.
+  /// Default is 0 (video first). Set to 1 to show thumbnail first, then video.
+  final int videoIndex;
 
   const ImageSlider({
     super.key,
@@ -18,6 +21,7 @@ class ImageSlider extends StatefulWidget {
     required this.videoUrl,
     required this.controller,
     this.onVideoStateChanged,
+    this.videoIndex = 0,
   });
 
   @override
@@ -102,7 +106,7 @@ class _ImageSliderState extends State<ImageSlider>
   }
 
   bool _shouldAutoPlay() {
-    final isVideoPage = _hasVideo && _selectedIndexNotifier.value == 0;
+    final isVideoPage = _hasVideo && _selectedIndexNotifier.value == widget.videoIndex;
     return isVideoPage &&
         _isVideoInitializedNotifier.value &&
         _isVisibleNotifier.value &&
@@ -332,8 +336,21 @@ class _ImageSliderState extends State<ImageSlider>
   }
 
   Widget _buildImageItem(int index) {
-    final imageIndex = _hasVideo ? index - 1 : index;
-    if (imageIndex >= widget.imageUrls.length ||
+    // Calculate image index based on video position
+    int imageIndex;
+    if (_hasVideo) {
+      if (index < widget.videoIndex) {
+        // Images before video position
+        imageIndex = index;
+      } else {
+        // Images after video position (subtract 1 for video slot)
+        imageIndex = index - 1;
+      }
+    } else {
+      imageIndex = index;
+    }
+
+    if (imageIndex < 0 || imageIndex >= widget.imageUrls.length ||
         widget.imageUrls[imageIndex].isEmpty) {
       return Container(
         margin: const EdgeInsets.all(8),
@@ -452,7 +469,7 @@ class _ImageSliderState extends State<ImageSlider>
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(_totalItems, (index) {
               final isActive = selectedIndex == index;
-              final isVideoIndex = _hasVideo && index == 0;
+              final isVideoIndex = _hasVideo && index == widget.videoIndex;
 
               if (isVideoIndex) {
                 return AnimatedContainer(
@@ -508,7 +525,7 @@ class _ImageSliderState extends State<ImageSlider>
                     return AnimatedSwitcher(
                       duration: const Duration(milliseconds: 200),
                       child:
-                          _hasVideo && index == 0
+                          _hasVideo && index == widget.videoIndex
                               ? Container(
                                 key: ValueKey('video_$index'),
                                 margin: const EdgeInsets.all(8),

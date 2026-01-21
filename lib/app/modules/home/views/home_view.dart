@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:tjara/app/core/widgets/appbar.dart';
 import 'package:tjara/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:tjara/app/modules/home/pages/homeview_body.dart';
+import 'package:tjara/app/modules/home/screens/flash_deal_detail_screen.dart';
 import 'package:tjara/app/modules/home/views/banner.dart';
 import 'package:tjara/app/modules/home/views/deal_section.dart';
 import 'package:tjara/app/modules/home/views/f.dart';
@@ -79,6 +80,14 @@ class _ParallaxTabViewState extends State<_ParallaxTabView>
 
     _tabController.addListener(_onTabControllerChange);
 
+    // Set callback for tab change from other screens (e.g., ProductDetailScreen)
+    widget.controller.onTabChangeCallback = (int index) {
+      if (mounted && index >= 0 && index == 5) {
+        _tabController.animateTo(index);
+        _handleTabChange(index);
+      }
+    };
+
     // Sticky threshold calculation
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -92,6 +101,8 @@ class _ParallaxTabViewState extends State<_ParallaxTabView>
 
   @override
   void dispose() {
+    // Clear tab change callback
+    widget.controller.onTabChangeCallback = null;
     _scrollControllers.forEach((_, controller) => controller.dispose());
     _tabController.removeListener(_onTabControllerChange);
     _tabController.dispose();
@@ -171,48 +182,52 @@ class _ParallaxTabViewState extends State<_ParallaxTabView>
         await Get.toNamed('/contests');
         if (mounted) _tabController.index = _currentTab;
         return;
+      } else if (index == 5) {
+        await Get.to(() => const FlashDealDetailScreen());
+        if (mounted) _tabController.index = _currentTab;
+        return;
+      } else {
+        // Current tab update
+        _currentTab = index;
+
+        // Lazy load scroll controller
+        _getOrCreateScrollController(index);
+
+        // Next frame mein updates (blocking prevent karne ke liye)
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+
+          // Controller state update
+          widget.controller.setSelectedIndexProducts(index);
+
+          if (index == 0) {
+            // widget.controller.startFilteredLoading();
+            // widget.controller.loadFilteredFirstPage(index);
+            // widget.controller.update(['product_grid']);
+          } else {
+            widget.controller.startFilteredLoading();
+            widget.controller.loadFilteredFirstPage(index);
+          }
+
+          // Scroll state reset/update
+          final scrollController = _scrollControllers[index];
+          if (scrollController != null && scrollController.hasClients) {
+            _onScroll(index);
+          } else {
+            _scrollOffset.value = 0.0;
+            _headerOpacity.value = 0.0;
+            _isTrustBadgeSticky.value = false;
+          }
+
+          // ⭐ Home controller ke scroll controller ko bhi reset
+          if (widget.controller.scrollController.hasClients) {
+            widget.controller.scrollController.jumpTo(0);
+          }
+        });
+
+        // Rebuild after state change
+        if (mounted) setState(() {});
       }
-
-      // Current tab update
-      _currentTab = index;
-
-      // Lazy load scroll controller
-      _getOrCreateScrollController(index);
-
-      // Next frame mein updates (blocking prevent karne ke liye)
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-
-        // Controller state update
-        widget.controller.setSelectedIndexProducts(index);
-
-        if (index == 0) {
-          // widget.controller.startFilteredLoading();
-          widget.controller.loadFilteredFirstPage(index);
-          widget.controller.update(['product_grid']);
-        } else {
-          widget.controller.startFilteredLoading();
-          widget.controller.loadFilteredFirstPage(index);
-        }
-
-        // Scroll state reset/update
-        final scrollController = _scrollControllers[index];
-        if (scrollController != null && scrollController.hasClients) {
-          _onScroll(index);
-        } else {
-          _scrollOffset.value = 0.0;
-          _headerOpacity.value = 0.0;
-          _isTrustBadgeSticky.value = false;
-        }
-
-        // ⭐ Home controller ke scroll controller ko bhi reset
-        if (widget.controller.scrollController.hasClients) {
-          widget.controller.scrollController.jumpTo(0);
-        }
-      });
-
-      // Rebuild after state change
-      if (mounted) setState(() {});
     } finally {
       _isHandlingTabChange = false;
     }
@@ -347,7 +362,7 @@ class _ParallaxTabViewState extends State<_ParallaxTabView>
     final scrollController = _getOrCreateScrollController(index);
 
     if (index == 0) {
-      return _buildAllTabContent(scrollController);
+      return _buildAllTabContent(scrollController, index);
     } else {
       return _buildOtherTabContent(scrollController);
     }
@@ -355,7 +370,7 @@ class _ParallaxTabViewState extends State<_ParallaxTabView>
 
   var dashbaordController = Get.find<DashboardController>();
 
-  Widget _buildAllTabContent(ScrollController scrollController) {
+  Widget _buildAllTabContent(ScrollController scrollController, int index) {
     return SingleChildScrollView(
       controller: scrollController,
       physics: const AlwaysScrollableScrollPhysics(),
@@ -364,7 +379,7 @@ class _ParallaxTabViewState extends State<_ParallaxTabView>
         children: [
           const SizedBox(height: 10),
           const PromotionBannerWidget(
-            key: Key('Banner_image_optimized_section_home'),
+            key: Key('Banner_image_optimized_section_home_}'),
           ),
 
           // FeatureBadgesWidget(),
@@ -381,11 +396,13 @@ class _ParallaxTabViewState extends State<_ParallaxTabView>
               children: [
                 DealSectionsWidget(
                   onViewAllTap: () {
-                    _tabController.animateTo(5);
+                    Get.to(() => const FlashDealDetailScreen());
+                    // _tabController.animateTo(5);
                   },
                 ),
                 const SizedBox(height: 10),
                 AuctionProductsWidget(
+                  key: ValueKey(_tabController.index == 0 ? '0' : '1'),
                   onViewAllTap: () {
                     _tabController.animateTo(4);
                   },
@@ -436,7 +453,13 @@ class _ParallaxTabViewState extends State<_ParallaxTabView>
               children: [
                 const TrustBadgesWidget(),
                 CategorySection(isCarSection: _currentTab == 3),
-                if (_currentTab == 5) ...[
+                if (_currentTab == 5 &&
+                    widget
+                            .controller
+                            .superdealAvailable
+                            .value
+                            .currentDealProductId ==
+                        null) ...[
                   const SizedBox(height: 10),
                   const Text.rich(
                     TextSpan(

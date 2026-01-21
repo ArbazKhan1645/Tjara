@@ -34,6 +34,7 @@ dependencies:
   badges: ^3.1.2
   cached_network_image: ^3.4.1
   color_parser: ^0.0.3
+  confetti: ^0.8.0
   connectivity_plus: ^7.0.0
   country_code_picker: ^3.2.0
   csv: ^6.0.0
@@ -88,6 +89,7 @@ dependencies:
   shimmer: ^3.0.0
   simple_icons: ^14.6.1
   smooth_page_indicator: ^2.0.1
+  timeago: ^3.7.1
   url_launcher: ^6.3.2
   video_player: ^2.10.1
   visibility_detector: ^0.4.0+2

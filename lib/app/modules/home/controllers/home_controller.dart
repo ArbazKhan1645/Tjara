@@ -628,6 +628,15 @@ class HomeController extends GetxController {
     selectedIndexProducts.value = index;
   }
 
+  // Callback for TabController - set from home_view.dart
+  void Function(int index)? onTabChangeCallback;
+
+  // Called when flash deal expires from ProductDetailScreen
+  void navigateToTabOnFlashDealExpiry(int tabIndex) {
+    selectedIndexProducts.value = tabIndex;
+    onTabChangeCallback?.call(tabIndex);
+  }
+
   // Retry method for Super Deals
   Future<void> retryDealsProducts() async {
     print('🔄 Retrying Super Deals fetch...');
@@ -1515,6 +1524,7 @@ class HomeController extends GetxController {
         final result = await _repository
             .fetchData<ProductModel>(
               url: filterUrl,
+              forceRefresh: true,
               fromJson: (json) => ProductModel.fromJson(json),
             )
             .timeout(apiTimeout);
@@ -1546,11 +1556,10 @@ class HomeController extends GetxController {
       case 2: // Featured
         return '$baseUrl$commonParams&filterByColumns[columns][0][column]=is_featured&filterByColumns[columns][0][value]=1&filterByColumns[columns][0][operator]=%3D&filterByColumns[columns][1][column]=status&filterByColumns[columns][1][operator]=%3D&filterByColumns[columns][1][value]=active';
       case 3: // Cars
+
         return '$baseUrl$commonParams&filterByColumns[columns][0][column]=product_group&filterByColumns[columns][0][value]=car&filterByColumns[columns][0][operator]=%3D&filterByColumns[columns][1][column]=status&filterByColumns[columns][1][operator]=%3D&filterByColumns[columns][1][value]=active';
       case 4: // Hot Auctions
         return '$baseUrl$commonParams&filterByColumns[columns][0][column]=product_type&filterByColumns[columns][0][value]=auction&filterByColumns[columns][0][operator]=%3D';
-      case 5: // Hot Auctions
-        return 'https://api.libanbuy.com/api/products?request_for=LIGHTNING_DEALS_SECTION&with=thumbnail,shop&includeFlashDeals=true&filterByColumns[filterJoin]=AND&filterByColumns[columns][0][column]=is_deal&filterByColumns[columns][0][value]=1&filterByColumns[columns][0][operator]=%3D&filterByColumns[columns][1][column]=status&filterByColumns[columns][1][operator]=%3D&filterByColumns[columns][1][value]=active&filterByMetaFields[filterJoin]=AND&filterByMetaFields[fields][0][key]=sold&filterByMetaFields[fields][0][operator]=%3E&filterByMetaFields[fields][0][value]=0&orderBy=super_deals_products_sort_order&per_page=12&page=$pageNumber';
 
       default:
         return '$baseUrl?page=$pageNumber&per_page=14';
