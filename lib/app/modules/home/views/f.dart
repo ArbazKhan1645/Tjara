@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:shimmer/shimmer.dart';
 import 'package:tjara/app/models/products/products_model.dart';
 import 'package:tjara/app/modules/home/views/product.dart';
 import 'package:tjara/app/modules/product_detail_screen/views/product_detail_screen_view.dart';
@@ -80,7 +81,17 @@ class _AuctionProductsWidgetState extends State<AuctionProductsWidget> {
             height: 300,
             child:
                 controller.isLoading.value && controller.products.isEmpty
-                    ? const Center(child: CircularProgressIndicator())
+                    ? ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: 4,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      itemBuilder: (context, i) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: _buildShimmerCard(),
+                        );
+                      },
+                    )
                     : ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: controller.products.length,
@@ -99,6 +110,72 @@ class _AuctionProductsWidgetState extends State<AuctionProductsWidget> {
         ],
       );
     });
+  }
+
+  Widget _buildShimmerCard() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade300,
+      highlightColor: Colors.grey.shade100,
+      child: Container(
+        width: 160,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: double.infinity,
+              height: 160,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(6),
+                  topRight: Radius.circular(6),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 120,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    height: 46,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: 80,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

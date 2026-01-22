@@ -58,7 +58,7 @@ class MyApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         FlutterQuillLocalizations.delegate,
       ],
-      title: 'TJARA',
+      title: 'Tjara',
       builder: (context, widget) {
         return MediaQuery.withClampedTextScaling(
           minScaleFactor: 1.0,

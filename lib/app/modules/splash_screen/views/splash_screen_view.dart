@@ -46,7 +46,7 @@ class _SplashbodyState extends State<Splashbody> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      body: Center(child: Image.asset(AppAssets.logo, width: 100)),
+      body: Center(child: Image.asset(AppAssets.logo, height: 200)),
     );
   }
 }

@@ -39,7 +39,7 @@
         android:required="false" />
 
     <application
-        android:label="tjara"
+        android:label="Tjara"
         android:usesCleartextTraffic="true"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
