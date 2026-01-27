@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:html/parser.dart' as html_parser;
 
 import 'package:tjara/app/models/posts/posts_model.dart';
 import 'package:tjara/app/modules/dashboard/controllers/dashboard_controller.dart';
@@ -82,7 +84,7 @@ class BlogListScreen extends StatelessWidget {
           icon: Icon(Icons.arrow_back, color: Colors.grey[800]),
           onPressed: () {
             // Navigate back to More view (index 4 in dashboard)
-            DashboardController.instance.changeIndex(2);
+            DashboardController.instance.changeIndex(0);
           },
         ),
         title: Text(
@@ -158,7 +160,7 @@ class BlogListScreen extends StatelessWidget {
           onRefresh: controller.refreshBlogs,
           color: Colors.pink[700],
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 70),
+            padding: const EdgeInsets.only(bottom: 0),
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: controller.blogs.length,
@@ -224,17 +226,30 @@ class BlogCard extends StatelessWidget {
               const SizedBox(height: 12),
 
               // Blog Description/Preview
-              if (blog.description.isNotEmpty)
-                Text(
-                  blog.description,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                    height: 1.4,
-                  ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
+              Builder(
+                builder: (con) {
+                  if (blog.description.isNotEmpty) {
+                    String cleanDescription = cleanBlogDescription(
+                      blog.description,
+                    );
+                    return Html(
+                      data: cleanDescription,
+                      style: {
+                        "body": Style(
+                          margin: Margins.zero,
+                          padding: HtmlPaddings.zero,
+                          fontSize: FontSize(10),
+                          maxLines: 2,
+                          color: Colors.grey.shade700,
+                          lineHeight: const LineHeight(1),
+                        ),
+                      },
+                    );
+                  } else {
+                    return const SizedBox.shrink();
+                  }
+                },
+              ),
 
               const SizedBox(height: 16),
 
@@ -300,6 +315,24 @@ class BlogCard extends StatelessWidget {
   }
 }
 
+String cleanBlogDescription(String htmlDescription) {
+  final document = html_parser.parse(htmlDescription);
+
+  // Pehla heading (h1–h6) remove kar do
+  document.querySelectorAll('h1, h2, h3, h4, h5, h6').firstOrNull?.remove();
+
+  // Agar heading paragraph ke andar bold me ho to usko bhi handle
+  final firstP = document.querySelector('p');
+  if (firstP != null) {
+    final bold = firstP.querySelector('strong, b');
+    if (bold != null && bold.text.trim().length > 20) {
+      bold.remove();
+    }
+  }
+
+  return document.body?.innerHtml.trim() ?? '';
+}
+
 // Blog Detail Screen
 class BlogDetailScreen extends StatelessWidget {
   const BlogDetailScreen({super.key});
@@ -342,7 +375,7 @@ class BlogDetailScreen extends StatelessWidget {
           children: [
             // Custom App Bar
             Container(
-              height: 120,
+              height: 70,
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
@@ -377,8 +410,8 @@ class BlogDetailScreen extends StatelessWidget {
                                 size: 24,
                               ),
                               onPressed: () {
-                                // Navigate back to more view (index 4 in dashboard)
-                                DashboardController.instance.changeIndex(4);
+                                Get.back();
+                                controller.selectedBlog.value = null;
                               },
                               tooltip: 'Back to More',
                             ),
@@ -503,53 +536,56 @@ class BlogDetailScreen extends StatelessWidget {
 
                     const SizedBox(height: 24),
 
-                    // Blog Content
-                    if (blog.description.isNotEmpty)
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey[200]!),
-                        ),
-                        child: Text(
-                          blog.description,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[700],
-                            height: 1.6,
-                          ),
-                        ),
-                      )
-                    else
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(40),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey[200]!),
-                        ),
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.description_outlined,
-                              size: 48,
-                              color: Colors.grey[400],
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No content available for this blog post',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey[500],
+                    Builder(
+                      builder: (con) {
+                        if (blog.description.isNotEmpty) {
+                          String cleanDescription = cleanBlogDescription(
+                            blog.description,
+                          );
+                          return Html(
+                            data: cleanDescription,
+                            style: {
+                              "body": Style(
+                                margin: Margins.zero,
+                                padding: HtmlPaddings.zero,
+                                fontSize: FontSize(10),
+
+                                color: Colors.grey.shade700,
+                                lineHeight: const LineHeight(1),
                               ),
-                              textAlign: TextAlign.center,
+                            },
+                          );
+                        } else {
+                          return Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(40),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey[200]!),
                             ),
-                          ],
-                        ),
-                      ),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.description_outlined,
+                                  size: 48,
+                                  color: Colors.grey[400],
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No content available for this blog post',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[500],
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                      },
+                    ),
 
                     const SizedBox(height: 40),
 
@@ -558,7 +594,9 @@ class BlogDetailScreen extends StatelessWidget {
                       child: ElevatedButton.icon(
                         onPressed: () {
                           // Navigate back to more view (index 4 in dashboard)
-                          DashboardController.instance.changeIndex(4);
+
+                          Get.back();
+                          controller.selectedBlog.value = null;
                         },
                         icon: const Icon(Icons.arrow_back, size: 18),
                         label: const Text('Back to More'),

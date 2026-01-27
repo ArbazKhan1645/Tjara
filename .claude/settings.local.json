@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(flutter pub get:*)",
-      "Bash(dart run:*)"
+      "Bash(dart run:*)",
+      "Bash(flutter analyze:*)"
     ]
   }
 }

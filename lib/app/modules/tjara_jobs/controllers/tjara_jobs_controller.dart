@@ -14,6 +14,10 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 import 'package:tjara/app/services/auth/auth_service.dart';
+import 'package:tjara/app/services/others/others_service.dart';
+import 'package:tjara/app/models/others/country_model.dart';
+import 'package:tjara/app/models/others/state_model.dart';
+import 'package:tjara/app/models/others/cities_model.dart' as location;
 
 class TjaraJobsController extends GetxController {
   final JobApiService _apiService = JobApiService();
@@ -130,7 +134,22 @@ class TjaraJobsController extends GetxController {
   RxBool isLoadingApplying = false.obs;
   RxString errorMessage = ''.obs;
 
-  // Countries, states and cities data
+  // Countries, states and cities data (typed)
+  RxList<Countries> countriesList = <Countries>[].obs;
+  RxList<States> statesList = <States>[].obs;
+  RxList<location.City> citiesList = <location.City>[].obs;
+
+  // Selected location objects
+  Rxn<Countries> selectedCountry = Rxn<Countries>();
+  Rxn<States> selectedState = Rxn<States>();
+  Rxn<location.City> selectedCity = Rxn<location.City>();
+
+  // Loading states for location dropdowns
+  RxBool isLoadingCountries = false.obs;
+  RxBool isLoadingStates = false.obs;
+  RxBool isLoadingCities = false.obs;
+
+  // Legacy Map-based lists (for backward compatibility)
   RxList<Map<String, dynamic>> countries = <Map<String, dynamic>>[].obs;
   RxList<Map<String, dynamic>> states = <Map<String, dynamic>>[].obs;
   RxList<Map<String, dynamic>> cities = <Map<String, dynamic>>[].obs;
@@ -207,7 +226,20 @@ class TjaraJobsController extends GetxController {
     errorMessage.value = '';
 
     try {
-      // Create multipart request
+      // Step 1: Upload CV file first
+      String? cvMediaId;
+      if (cvFile.value != null) {
+        debugPrint('Uploading CV file...');
+        cvMediaId = await uploadMedia([cvFile.value!], directory: 'cv');
+        if (cvMediaId == null) {
+          errorMessage.value = 'Failed to upload CV. Please try again.';
+          isLoadingApplying.value = false;
+          return;
+        }
+        debugPrint('CV uploaded successfully. Media ID: $cvMediaId');
+      }
+
+      // Step 2: Create multipart request for application
       final request = http.MultipartRequest(
         'POST',
         Uri.parse(
@@ -229,19 +261,16 @@ class TjaraJobsController extends GetxController {
         'last_name': lastNameController.text,
         'email': emailController.text,
         'phone': phoneController.text,
-        // 'user-id': '61f75d53-fbdd-41d5-a262-2f5214936b20',
         'linkedin': linkedinController.text,
         'sourceOfLanding': sourceOfLandingController.text,
         'cover_letter': coverLetterController.text,
         'date_of_birth': DateFormat('yyyy-MM-dd').format(dateOfBirth.value!),
         'street_address': streetAddressController.text,
         'zipcode': zipCodeController.text,
-        // 'country_id': countryId.value.toString(),
-        'country_id': '80a46cda-16d9-4f81-86d6-c50c4909cac6',
-        'state_id': 'e58e7a19-d9f6-4750-aadb-7ad3fcb1c5ad',
-        // 'state_id': stateId.value.toString(),
-        // 'city_id': cityId.value.toString(),
-        'cv': '4ed7e1e9-739f-49b4-913c-bb977ea8273f',
+        'country_id': countryId.value ?? '',
+        'state_id': stateId.value ?? '',
+        'city_id': cityId.value ?? '',
+        'cv': cvMediaId ?? '',
         'startDate':
             startDate.value != null
                 ? DateFormat('yyyy-MM-dd').format(startDate.value!)
@@ -253,13 +282,6 @@ class TjaraJobsController extends GetxController {
         'employmentStatus': employmentStatus.value.toString(),
       });
 
-      // // // Add file
-      // request.files.add(await http.MultipartFile.fromPath(
-      //   'cv[]',
-      //   cvFile.value!.path,
-      //   filename: cvFileName.value,
-      // ));
-
       // Send request
       final response = await request.send();
 
@@ -270,23 +292,66 @@ class TjaraJobsController extends GetxController {
           'Application submitted successfully',
           backgroundColor: Colors.green,
           colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
         );
         clearForm();
       } else {
-        // final responseBody = await response.stream.bytesToString();
-        // errorMessage.value = 'Failed to submit application: $responseBody';
-        Get.back();
+        // Parse error response
+        final responseBody = await response.stream.bytesToString();
+        String errorMsg = 'Failed to submit application';
+
+        try {
+          final jsonResponse = jsonDecode(responseBody);
+          if (jsonResponse['message'] != null) {
+            errorMsg = jsonResponse['message'].toString();
+          } else if (jsonResponse['error'] != null) {
+            errorMsg = jsonResponse['error'].toString();
+          } else if (jsonResponse['errors'] != null) {
+            final errors = jsonResponse['errors'];
+            if (errors is Map) {
+              final errorList = <String>[];
+              errors.forEach((key, value) {
+                if (value is List) {
+                  errorList.add('$key: ${value.join(', ')}');
+                } else {
+                  errorList.add('$key: $value');
+                }
+              });
+              errorMsg = errorList.join('\n');
+            }
+          }
+        } catch (_) {
+          // If response is not JSON, use the raw response
+          if (responseBody.isNotEmpty) {
+            errorMsg = responseBody;
+          }
+        }
+
+        errorMessage.value = errorMsg;
+        debugPrint('Submit application failed. Status: ${response.statusCode}, Body: $responseBody');
+
         Get.snackbar(
-          'Success',
-          'Application submitted successfully',
-          backgroundColor: Colors.green,
+          'Submission Failed',
+          errorMsg,
+          backgroundColor: Colors.red,
           colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 4),
         );
-        clearForm();
       }
     } catch (e) {
-      errorMessage.value = 'An unexpected error occurred: ${e.toString()}';
-      print('Error submitting application: $e');
+      const errorMsg = 'An unexpected error occurred. Please try again.';
+      errorMessage.value = errorMsg;
+      debugPrint('Error submitting application: $e');
+
+      Get.snackbar(
+        'Error',
+        errorMsg,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 4),
+      );
     } finally {
       isLoadingApplying.value = false;
     }
@@ -346,12 +411,106 @@ class TjaraJobsController extends GetxController {
     countryId.value = null;
     stateId.value = null;
     cityId.value = null;
+    selectedCountry.value = null;
+    selectedState.value = null;
+    selectedCity.value = null;
 
     cvFile.value = null;
     cvFileName.value = '';
   }
 
-  Future<void> uploadMedia(
+  // ═══════════════════════════════════════════════════════════════════════════
+  // LOCATION DATA LOADING METHODS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  Future<void> loadCountries() async {
+    try {
+      isLoadingCountries.value = true;
+
+      // Check cache first
+      if (CountryService.instance.countryList.isNotEmpty) {
+        countriesList.value = CountryService.instance.countryList;
+      } else {
+        await CountryService.instance.fetchCountries();
+        countriesList.value = CountryService.instance.countryList;
+      }
+    } catch (e) {
+      debugPrint('Error loading countries: $e');
+    } finally {
+      isLoadingCountries.value = false;
+    }
+  }
+
+  Future<void> onCountryChanged(Countries? country) async {
+    if (country == null) return;
+
+    selectedCountry.value = country;
+    countryId.value = country.id.toString();
+
+    // Clear state and city
+    selectedState.value = null;
+    selectedCity.value = null;
+    stateId.value = null;
+    cityId.value = null;
+    statesList.clear();
+    citiesList.clear();
+
+    // Load states for selected country
+    await loadStates(country.id.toString());
+  }
+
+  Future<void> loadStates(String countryId) async {
+    try {
+      isLoadingStates.value = true;
+      statesList.clear();
+
+      await CountryService.instance.fetchStates(countryId);
+      statesList.value = CountryService.instance.stateList;
+    } catch (e) {
+      debugPrint('Error loading states: $e');
+    } finally {
+      isLoadingStates.value = false;
+    }
+  }
+
+  Future<void> onStateChanged(States? state) async {
+    if (state == null) return;
+
+    selectedState.value = state;
+    stateId.value = state.id.toString();
+
+    // Clear city
+    selectedCity.value = null;
+    cityId.value = null;
+    citiesList.clear();
+
+    // Load cities for selected state
+    await loadCities(state.id.toString());
+  }
+
+  Future<void> loadCities(String stateId) async {
+    try {
+      isLoadingCities.value = true;
+      citiesList.clear();
+
+      await CountryService.instance.fetchCities(stateId);
+      citiesList.value = CountryService.instance.cityList;
+    } catch (e) {
+      debugPrint('Error loading cities: $e');
+    } finally {
+      isLoadingCities.value = false;
+    }
+  }
+
+  void onCityChanged(location.City? city) {
+    if (city == null) return;
+
+    selectedCity.value = city;
+    cityId.value = city.id.toString();
+  }
+
+  /// Uploads media file and returns the media ID on success, null on failure
+  Future<String?> uploadMedia(
     List<File> files, {
     String? directory,
     int? width,
@@ -399,24 +558,39 @@ class TjaraJobsController extends GetxController {
     if (response.statusCode == 302 || response.statusCode == 301) {
       final redirectUrl = response.headers['location'];
       if (redirectUrl != null) {
-        await uploadMedia(
+        return await uploadMedia(
           files,
           directory: directory,
           width: width,
           height: height,
         );
-        return;
       }
     }
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 200 || response.statusCode == 201) {
       final responseBody = await response.stream.bytesToString();
       final jsonData = jsonDecode(responseBody);
-      print('Media uploaded successfully: $jsonData');
+      debugPrint('Media uploaded successfully: $jsonData');
+
+      // Extract media ID from response
+      // Response format: {"data": [{"id": "uuid-here", ...}]} or {"data": {"id": "uuid-here", ...}}
+      if (jsonData['data'] != null) {
+        if (jsonData['data'] is List && (jsonData['data'] as List).isNotEmpty) {
+          return jsonData['data'][0]['id']?.toString();
+        } else if (jsonData['data'] is Map) {
+          return jsonData['data']['id']?.toString();
+        }
+      }
+      // Try direct id field
+      if (jsonData['id'] != null) {
+        return jsonData['id'].toString();
+      }
+      return null;
     } else {
-      print(
+      debugPrint(
         'Failed to upload media. Status code: ${response.statusCode} Response body: ${await response.stream.bytesToString()}',
       );
+      return null;
     }
   }
 }

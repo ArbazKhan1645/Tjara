@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/core/utils/helpers/alerts.dart';
+import 'package:tjara/app/core/widgets/searchable_dropdown.dart';
 import 'package:tjara/app/models/cart/cart_model.dart';
 import 'package:tjara/app/models/others/country_model.dart';
 import 'package:tjara/app/models/others/state_model.dart';
@@ -244,100 +245,6 @@ class _FormScreenState extends State<FormScreen> {
             contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           ),
           validator: validator,
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
-
-  Widget buildSimpleDropdown<T>({
-    required String label,
-    required String hint,
-    required List<T> items,
-    required T? value,
-    required Function(T?) onChanged,
-    required String Function(T) getDisplayText,
-    String? Function(T?)? validator,
-    bool isLoading = false,
-    String? errorMessage,
-    VoidCallback? onRetry,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w400,
-            color: Colors.grey.shade800,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child:
-              isLoading
-                  ? const SizedBox(
-                    height: 48,
-                    child: Center(
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ),
-                  )
-                  : errorMessage != null
-                  ? Container(
-                    height: 48,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.error, color: Colors.red, size: 18),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            errorMessage,
-                            style: const TextStyle(color: Colors.red, fontSize: 12),
-                          ),
-                        ),
-                        if (onRetry != null)
-                          TextButton(onPressed: onRetry, child: const Text('Retry')),
-                      ],
-                    ),
-                  )
-                  : DropdownButtonFormField<T>(
-                    initialValue: value,
-                    decoration: InputDecoration(
-                      hintText: hint,
-                      hintStyle: TextStyle(color: Colors.grey.shade500),
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 12,
-                      ),
-                    ),
-                    items:
-                        items.map((T item) {
-                          return DropdownMenuItem<T>(
-                            value: item,
-                            child: Text(getDisplayText(item)),
-                          );
-                        }).toList(),
-                    onChanged: items.isEmpty ? null : onChanged,
-                    validator: validator,
-                    isExpanded: true,
-                    icon: Icon(
-                      Icons.keyboard_arrow_down,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
         ),
         const SizedBox(height: 16),
       ],
@@ -597,32 +504,29 @@ class _FormScreenState extends State<FormScreen> {
                         // Zip Code
                         buildSimpleTextField("Zip Code", _zipCodeController),
 
-                        // Country Dropdown
+                        // Country Dropdown (Searchable)
                         Obx(
-                          () => buildSimpleDropdown<Countries>(
+                          () => SearchableDropdown<Countries>(
                             label: 'Country',
                             hint: 'Select Country',
+                            searchHint: 'Search country...',
                             items: controller.countries,
                             value: controller.selectedCountry.value,
                             onChanged: controller.onCountryChanged,
                             getDisplayText:
                                 (country) => country.name ?? 'Unknown',
-                            validator:
-                                (value) =>
-                                    value == null
-                                        ? 'Please select a country'
-                                        : null,
                             isLoading: controller.isLoadingCountries.value,
                             errorMessage: controller.countryError.value,
                             onRetry: controller.retryLoadCountries,
                           ),
                         ),
 
-                        // Region/State Dropdown
+                        // Region/State Dropdown (Searchable)
                         Obx(
-                          () => buildSimpleDropdown<States>(
+                          () => SearchableDropdown<States>(
                             label: 'Region/State',
                             hint: 'Select State',
+                            searchHint: 'Search state...',
                             items: controller.states,
                             value: controller.selectedState.value,
                             onChanged: controller.onStateChanged,
@@ -630,14 +534,16 @@ class _FormScreenState extends State<FormScreen> {
                             isLoading: controller.isLoadingStates.value,
                             errorMessage: controller.stateError.value,
                             onRetry: controller.retryLoadStates,
+                            enabled: controller.selectedCountry.value != null,
                           ),
                         ),
 
-                        // City Dropdown
+                        // City Dropdown (Searchable)
                         Obx(
-                          () => buildSimpleDropdown<City>(
+                          () => SearchableDropdown<City>(
                             label: 'City',
                             hint: 'Select City',
+                            searchHint: 'Search city...',
                             items: controller.cities,
                             value: controller.selectedCity.value,
                             onChanged: controller.onCityChanged,
@@ -645,6 +551,7 @@ class _FormScreenState extends State<FormScreen> {
                             isLoading: controller.isLoadingCities.value,
                             errorMessage: controller.cityError.value,
                             onRetry: controller.retryLoadCities,
+                            enabled: controller.selectedState.value != null,
                           ),
                         ),
                       ],

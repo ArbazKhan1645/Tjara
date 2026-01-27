@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:tjara/app/models/jobs/jobs_model.dart';
+import 'package:tjara/app/models/jobs/jobs_model.dart' hide State;
+import 'package:tjara/app/models/others/country_model.dart';
+import 'package:tjara/app/models/others/state_model.dart';
+import 'package:tjara/app/models/others/cities_model.dart' as location;
 import 'package:tjara/app/modules/tjara_jobs/controllers/tjara_jobs_controller.dart';
 import 'package:tjara/app/modules/tjara_jobs/views/tjara_jobs_view.dart';
 import 'package:tjara/app/core/utils/thems/theme.dart';
+import 'package:tjara/app/core/widgets/searchable_dropdown.dart';
 
-class JobApplicationScreen extends StatelessWidget {
+class JobApplicationScreen extends StatefulWidget {
   final String jobId;
   final Job job;
 
@@ -17,9 +21,22 @@ class JobApplicationScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final TjaraJobsController controller = Get.find<TjaraJobsController>();
+  State<JobApplicationScreen> createState() => _JobApplicationScreenState();
+}
 
+class _JobApplicationScreenState extends State<JobApplicationScreen> {
+  late final TjaraJobsController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.find<TjaraJobsController>();
+    // Load countries when screen opens
+    controller.loadCountries();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -376,162 +393,49 @@ class JobApplicationScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
 
-                    // Country
-                    DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: 'Country',
-                        labelStyle: defaultTextStyle.copyWith(
-                          color: Colors.grey.shade600,
-                          fontSize: 14,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF0D9488),
-                            width: 2,
-                          ),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
-                        hintText: 'Select Country',
-                        hintStyle: defaultTextStyle.copyWith(
-                          color: Colors.grey.shade400,
-                          fontSize: 14,
-                        ),
+                    // Country (Searchable)
+                    Obx(
+                      () => SearchableDropdown<Countries>(
+                        label: 'Country',
+                        hint: 'Select Country',
+                        searchHint: 'Search country...',
+                        items: controller.countriesList,
+                        value: controller.selectedCountry.value,
+                        onChanged: controller.onCountryChanged,
+                        getDisplayText: (country) => country.name ?? 'Unknown',
+                        isLoading: controller.isLoadingCountries.value,
                       ),
-                      initialValue: controller.countryId.value,
-                      items:
-                          controller.countries.map((country) {
-                            return DropdownMenuItem<String>(
-                              value: country['id'].toString(),
-                              child: Text(
-                                country['name'],
-                                style: defaultTextStyle,
-                              ),
-                            );
-                          }).toList(),
-                      onChanged: (value) {
-                        controller.countryId.value = value;
-                        if (value != null) {
-                          controller.stateId.value = null;
-                          controller.cityId.value = null;
-                        }
-                      },
                     ),
-                    const SizedBox(height: 16),
 
-                    // State
-                    DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: 'State',
-                        labelStyle: defaultTextStyle.copyWith(
-                          color: Colors.grey.shade600,
-                          fontSize: 14,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF0D9488),
-                            width: 2,
-                          ),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
-                        hintText: 'Select State',
-                        hintStyle: defaultTextStyle.copyWith(
-                          color: Colors.grey.shade400,
-                          fontSize: 14,
-                        ),
+                    // State (Searchable)
+                    Obx(
+                      () => SearchableDropdown<States>(
+                        label: 'State',
+                        hint: 'Select State',
+                        searchHint: 'Search state...',
+                        items: controller.statesList,
+                        value: controller.selectedState.value,
+                        onChanged: controller.onStateChanged,
+                        getDisplayText: (state) => state.name ?? 'Unknown',
+                        isLoading: controller.isLoadingStates.value,
+                        enabled: controller.selectedCountry.value != null,
                       ),
-                      initialValue: controller.stateId.value,
-                      items:
-                          controller.states.map((state) {
-                            return DropdownMenuItem<String>(
-                              value: state['id'].toString(),
-                              child: Text(
-                                state['name'],
-                                style: defaultTextStyle,
-                              ),
-                            );
-                          }).toList(),
-                      onChanged: (value) {
-                        controller.stateId.value = value;
-                        if (value != null) {
-                          controller.cityId.value = null;
-                        }
-                      },
                     ),
-                    const SizedBox(height: 16),
 
-                    // City
-                    DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: 'City',
-                        labelStyle: defaultTextStyle.copyWith(
-                          color: Colors.grey.shade600,
-                          fontSize: 14,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF0D9488),
-                            width: 2,
-                          ),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
-                        hintText: 'Select City',
-                        hintStyle: defaultTextStyle.copyWith(
-                          color: Colors.grey.shade400,
-                          fontSize: 14,
-                        ),
+                    // City (Searchable)
+                    Obx(
+                      () => SearchableDropdown<location.City>(
+                        label: 'City',
+                        hint: 'Select City',
+                        searchHint: 'Search city...',
+                        items: controller.citiesList,
+                        value: controller.selectedCity.value,
+                        onChanged: controller.onCityChanged,
+                        getDisplayText: (city) => city.name ?? 'Unknown',
+                        isLoading: controller.isLoadingCities.value,
+                        enabled: controller.selectedState.value != null,
                       ),
-                      initialValue: controller.cityId.value,
-                      items:
-                          controller.cities.map((city) {
-                            return DropdownMenuItem<String>(
-                              value: city['id'].toString(),
-                              child: Text(
-                                city['name'],
-                                style: defaultTextStyle,
-                              ),
-                            );
-                          }).toList(),
-                      onChanged: (value) {
-                        controller.cityId.value = value;
-                      },
                     ),
-                    const SizedBox(height: 16),
 
                     // Zip Code
                     TextFormField(
@@ -916,7 +820,7 @@ class JobApplicationScreen extends StatelessWidget {
                       onPressed:
                           controller.isLoadingApplying.value
                               ? null
-                              : () => controller.submitApplication(jobId),
+                              : () => controller.submitApplication(widget.jobId),
                       color: const Color(0xFFfda730),
                       minWidth: double.infinity,
                       height: 56,
@@ -957,7 +861,7 @@ class JobApplicationScreen extends StatelessWidget {
 
   Widget _buildJobHeader() {
     final imageUrl =
-        job.thumbnail.media?.optimizedMediaUrl ?? job.thumbnail.media?.url;
+        widget.job.thumbnail.media?.optimizedMediaUrl ?? widget.job.thumbnail.media?.url;
 
     return Container(
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
@@ -977,7 +881,7 @@ class JobApplicationScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        job.title,
+                        widget.job.title,
                         style: defaultTextStyle.copyWith(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -988,7 +892,7 @@ class JobApplicationScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${job.country.name}, ${job.city.name}',
+                        '${widget.job.country.name}, ${widget.job.city.name}',
                         style: defaultTextStyle.copyWith(
                           color: Colors.grey.shade600,
                           fontSize: 14,
@@ -1013,7 +917,7 @@ class JobApplicationScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    '${job.country.currencyCode}${job.salary} ',
+                    '${widget.job.country.currencyCode}${widget.job.salary} ',
                     style: defaultTextStyle.copyWith(
                       color: Colors.black87,
                       fontSize: 14,

@@ -475,12 +475,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     }
   }
 
-  Future<void> _addToCart() async {
+  Future<void> _addToCart({SingleModelClass? product}) async {
     if (_isCartOperationInProgressNotifier.value || _isNavigating) return;
 
     final LoginResponse? currentUser = AuthService.instance.authCustomer;
     if (currentUser?.user == null) {
       _showLoginDialog();
+      return;
+    }
+
+    // Check if variation is required but not selected
+    if (_isVariationRequired(product)) {
+      _showVariationRequiredMessage();
       return;
     }
 
@@ -1862,6 +1868,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
 
   bool _isLoading = false;
 
+  // Check if variation selection is required but not selected
+  bool _isVariationRequired(SingleModelClass? product) {
+    return product?.product?.variation != null && selectedVariationId == null;
+  }
+
+  void _showVariationRequiredMessage() {
+    NotificationHelper.showError(
+      context,
+      'Selection Required',
+      'Please select product options before proceeding',
+    );
+  }
+
   // Place Bid Method
   Future<void> placeBid() async {
     final LoginResponse? currentUser = AuthService.instance.authCustomer;
@@ -1935,6 +1954,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     final LoginResponse? currentUser = AuthService.instance.authCustomer;
     if (currentUser?.user == null) {
       _showLoginDialog();
+      return;
+    }
+
+    // Check if variation is required but not selected
+    if (_isVariationRequired(product)) {
+      _showVariationRequiredMessage();
       return;
     }
 
@@ -2444,7 +2469,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                         isDealEnded
                             ? null
                             : canPurchase && !isLoading
-                            ? _addToCart
+                            ? () => _addToCart(product: product)
                             : null,
                     child: Container(
                       height: 48,
@@ -2497,56 +2522,58 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                 },
               ),
             ),
-            const SizedBox(width: 8),
-            // Buy Now Button
-            Expanded(
-              child: ValueListenableBuilder<bool>(
-                valueListenable: _isCartOperationInProgressNotifier,
-                builder: (context, isLoading, child) {
-                  return GestureDetector(
-                    onTap:
-                        canBuyNow && !isLoading
-                            ? () => _openQuickBuySheet(product)
-                            : null,
-                    child: Container(
-                      height: 48,
-                      decoration: BoxDecoration(
-                        gradient:
-                            canBuyNow
-                                ? const LinearGradient(
-                                  colors: [
-                                    Color(0xFFfda730),
-                                    Color(0xFFf59320),
-                                  ],
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                )
-                                : null,
-                        color: canBuyNow ? null : Colors.grey.shade400,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Center(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.flash_on, color: Colors.white, size: 18),
-                            SizedBox(width: 6),
-                            Text(
-                              'Buy Now',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
+            // Buy Now Button - only show when canPurchase is true
+            if (canPurchase) ...[
+              const SizedBox(width: 8),
+              Expanded(
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: _isCartOperationInProgressNotifier,
+                  builder: (context, isLoading, child) {
+                    return GestureDetector(
+                      onTap:
+                          canBuyNow && !isLoading
+                              ? () => _openQuickBuySheet(product)
+                              : null,
+                      child: Container(
+                        height: 48,
+                        decoration: BoxDecoration(
+                          gradient:
+                              canBuyNow
+                                  ? const LinearGradient(
+                                    colors: [
+                                      Color(0xFFfda730),
+                                      Color(0xFFf59320),
+                                    ],
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                  )
+                                  : null,
+                          color: canBuyNow ? null : Colors.grey.shade400,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.flash_on, color: Colors.white, size: 18),
+                              SizedBox(width: 6),
+                              Text(
+                                'Buy Now',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),
