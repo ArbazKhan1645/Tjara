@@ -382,10 +382,11 @@ class BannerListScreen extends StatelessWidget {
                                           ),
                                           borderSide: BorderSide.none,
                                         ),
-                                        contentPadding: const EdgeInsets.symmetric(
-                                          vertical: 12,
-                                          horizontal: 16,
-                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              vertical: 12,
+                                              horizontal: 16,
+                                            ),
                                       ),
                                       onChanged: (value) {
                                         controller.searchQuery.value = value;
@@ -549,9 +550,13 @@ class BannerListScreen extends StatelessWidget {
                                       columns: [
                                         const DataColumn(label: Text('Image')),
                                         const DataColumn(label: Text('Title')),
-                                        const DataColumn(label: Text('Published At')),
+                                        const DataColumn(
+                                          label: Text('Published At'),
+                                        ),
                                         const DataColumn(label: Text('Status')),
-                                        const DataColumn(label: Text('Actions')),
+                                        const DataColumn(
+                                          label: Text('Actions'),
+                                        ),
                                       ],
                                       rows:
                                           controller.filteredBanners.map((
@@ -1415,13 +1420,18 @@ class BannerFormScreen extends StatelessWidget {
                                                 child: OutlinedButton.icon(
                                                   onPressed:
                                                       controller.pickImage,
-                                                  icon: const Icon(Icons.refresh),
-                                                  label: const Text('Change Image'),
+                                                  icon: const Icon(
+                                                    Icons.refresh,
+                                                  ),
+                                                  label: const Text(
+                                                    'Change Image',
+                                                  ),
                                                   style:
                                                       OutlinedButton.styleFrom(
-                                                        foregroundColor: const Color(
-                                                          0xFFF97316,
-                                                        ),
+                                                        foregroundColor:
+                                                            const Color(
+                                                              0xFFF97316,
+                                                            ),
                                                         side: const BorderSide(
                                                           color: Color(
                                                             0xFFF97316,
@@ -1435,7 +1445,9 @@ class BannerFormScreen extends StatelessWidget {
                                                 child: OutlinedButton.icon(
                                                   onPressed:
                                                       controller.removeImage,
-                                                  icon: const Icon(Icons.delete),
+                                                  icon: const Icon(
+                                                    Icons.delete,
+                                                  ),
                                                   label: const Text('Remove'),
                                                   style:
                                                       OutlinedButton.styleFrom(
@@ -1606,17 +1618,24 @@ class BannerFormScreen extends StatelessWidget {
                                                     onPressed:
                                                         controller
                                                             .pickImageMobile,
-                                                    icon: const Icon(Icons.refresh),
-                                                    label: const Text('Change Image'),
+                                                    icon: const Icon(
+                                                      Icons.refresh,
+                                                    ),
+                                                    label: const Text(
+                                                      'Change Image',
+                                                    ),
                                                     style:
                                                         OutlinedButton.styleFrom(
                                                           foregroundColor:
-                                                              const Color(0xFFF97316),
-                                                          side: const BorderSide(
-                                                            color: Color(
-                                                              0xFFF97316,
-                                                            ),
-                                                          ),
+                                                              const Color(
+                                                                0xFFF97316,
+                                                              ),
+                                                          side:
+                                                              const BorderSide(
+                                                                color: Color(
+                                                                  0xFFF97316,
+                                                                ),
+                                                              ),
                                                         ),
                                                   ),
                                                 ),
@@ -1808,7 +1827,9 @@ class BannerFormScreen extends StatelessWidget {
                                               width: 2,
                                             ),
                                           ),
-                                          contentPadding: const EdgeInsets.all(16),
+                                          contentPadding: const EdgeInsets.all(
+                                            16,
+                                          ),
                                         ),
                                         items:
                                             controller.categories.map((
@@ -1959,7 +1980,8 @@ class BannerFormScreen extends StatelessWidget {
                                             color: Colors.grey[300]!,
                                           ),
                                         ),
-                                        focusedBorder: const OutlineInputBorder(),
+                                        focusedBorder:
+                                            const OutlineInputBorder(),
                                       ),
                                     ),
                                   ),
@@ -1995,7 +2017,8 @@ class BannerFormScreen extends StatelessWidget {
                                             color: Colors.grey[300]!,
                                           ),
                                         ),
-                                        focusedBorder: const OutlineInputBorder(),
+                                        focusedBorder:
+                                            const OutlineInputBorder(),
                                       ),
                                     ),
                                   ),
@@ -2037,7 +2060,8 @@ class BannerFormScreen extends StatelessWidget {
                                                 color: Color(0xFF4CAF50),
                                               ),
                                             ),
-                                            contentPadding: const EdgeInsets.all(16),
+                                            contentPadding:
+                                                const EdgeInsets.all(16),
                                           ),
                                           validator: (value) {
                                             return null;
@@ -2081,7 +2105,8 @@ class BannerFormScreen extends StatelessWidget {
                                                 color: Color(0xFF4CAF50),
                                               ),
                                             ),
-                                            contentPadding: const EdgeInsets.all(16),
+                                            contentPadding:
+                                                const EdgeInsets.all(16),
                                           ),
                                           validator: (value) {
                                             return null;

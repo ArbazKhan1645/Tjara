@@ -459,7 +459,10 @@ class _AttributesManageState extends State<AttributesManage> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Theme.of(context).primaryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -486,7 +489,11 @@ class _AttributesManageState extends State<AttributesManage> {
                 ),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    color: Colors.red,
+                    size: 20,
+                  ),
                   onPressed: () => removeItemFromList(variantData.item),
                 ),
               ],
@@ -679,7 +686,10 @@ class _AttributesManageState extends State<AttributesManage> {
             initialValue: value == '0' || value == '0.0' ? '' : value,
             decoration: InputDecoration(
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
               prefixIcon:
                   prefixIcon != null
                       ? Icon(prefixIcon, size: 16, color: Colors.grey[600])

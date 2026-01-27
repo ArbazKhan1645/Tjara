@@ -149,9 +149,7 @@ class AdminJobsList extends StatelessWidget {
                               const DataCell(
                                 Text(
                                   '0', // You can replace this with actual proposals count
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                                  style: TextStyle(fontWeight: FontWeight.w500),
                                 ),
                               ),
                               // Country cell
@@ -217,7 +215,8 @@ class AdminJobsList extends StatelessWidget {
                                         );
                                         controller.resetForm();
 
-                                        final AdminJobsService adminProductsService =
+                                        final AdminJobsService
+                                        adminProductsService =
                                             Get.find<AdminJobsService>();
                                         adminProductsService.fetchProducts(
                                           loaderType: true,

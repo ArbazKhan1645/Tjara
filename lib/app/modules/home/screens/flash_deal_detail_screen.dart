@@ -1641,17 +1641,22 @@ class _FlashDealDetailScreenState extends State<FlashDealDetailScreen>
                   const SizedBox(height: 10),
                   _buildPriceSection(),
                   const SizedBox(height: 6),
-                  Text(
-                    _currentProduct?.name ?? '',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: _textPrimary,
-                      height: 1.4,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        _currentProduct?.name ?? '',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: _textPrimary,
+                          height: 1.4,
+                        ),
+                      ),
+                      const Spacer(),
+
+                      _buildRatingRow(),
+                    ],
                   ),
-                  const SizedBox(height: 2),
-                  _buildRatingRow(),
 
                   if (product?.product?.description != null ||
                       _currentProduct?.description != null)
@@ -1759,7 +1764,7 @@ class _FlashDealDetailScreenState extends State<FlashDealDetailScreen>
                   const Padding(
                     padding: EdgeInsets.only(top: 12, left: 12),
                     child: Text(
-                      'You May Also Like',
+                      'Ended Deals',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -1769,6 +1774,7 @@ class _FlashDealDetailScreenState extends State<FlashDealDetailScreen>
                   ),
                   const SizedBox(height: 12),
                   RelatedProductGrid(
+                    isdealsection: true,
                     search:
                         product?.product?.name ?? _currentProduct?.name ?? '',
                   ),
@@ -1950,30 +1956,29 @@ class _FlashDealDetailScreenState extends State<FlashDealDetailScreen>
 
     return Row(
       children: [
-        ...List.generate(5, (index) {
-          return const Icon(
-            Icons.star_border,
-            size: 16,
-            color: Color(0xFFFFB800),
-          );
-        }),
-        const SizedBox(width: 4),
-        const Text(
-          '0.0',
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: _textPrimary,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Container(width: 1, height: 12, color: Colors.grey.shade300),
-        const SizedBox(width: 12),
-        Text(
-          '$soldQuantity sold',
-          style: const TextStyle(fontSize: 13, color: _textSecondary),
-        ),
-        const Spacer(),
+        // ...List.generate(5, (index) {
+        //   return const Icon(
+        //     Icons.star_border,
+        //     size: 16,
+        //     color: Color(0xFFFFB800),
+        //   );
+        // }),
+        // const SizedBox(width: 4),
+        // const Text(
+        //   '0.0',
+        //   style: TextStyle(
+        //     fontSize: 13,
+        //     fontWeight: FontWeight.w600,
+        //     color: _textPrimary,
+        //   ),
+        // ),
+        // const SizedBox(width: 12),
+        // Container(width: 1, height: 12, color: Colors.grey.shade300),
+        // const SizedBox(width: 12),
+        // Text(
+        //   '$soldQuantity sold',
+        //   style: const TextStyle(fontSize: 13, color: _textSecondary),
+        // ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(

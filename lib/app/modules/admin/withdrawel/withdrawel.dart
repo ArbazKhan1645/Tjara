@@ -652,7 +652,10 @@ class UserWithdrawalsScreen extends StatelessWidget {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Color(0xFFF97316), width: 2),
+                  borderSide: const BorderSide(
+                    color: Color(0xFFF97316),
+                    width: 2,
+                  ),
                 ),
               ),
               keyboardType: TextInputType.number,
@@ -725,7 +728,10 @@ class UserWithdrawalsScreen extends StatelessWidget {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFFF97316), width: 2),
+                borderSide: const BorderSide(
+                  color: Color(0xFFF97316),
+                  width: 2,
+                ),
               ),
             ),
             onChanged: controller.updateSearchQuery,

@@ -514,7 +514,9 @@ class NotificationFormScreen extends StatelessWidget {
                                               width: 2,
                                             ),
                                           ),
-                                          contentPadding: const EdgeInsets.all(16),
+                                          contentPadding: const EdgeInsets.all(
+                                            16,
+                                          ),
                                         ),
                                         validator: (value) {
                                           if (value != null &&

@@ -30,6 +30,7 @@ import 'package:tjara/app/models/products/single_product_model.dart';
 import 'package:tjara/app/modules/my_cart/controllers/my_cart_controller.dart';
 import 'package:tjara/app/modules/home/controllers/home_controller.dart';
 import 'package:tjara/app/modules/dashboard/controllers/dashboard_controller.dart';
+import 'package:tjara/app/modules/home/screens/quick_buy_checkout_sheet.dart';
 import 'package:html_unescape/html_unescape.dart';
 
 class ProductDetailScreen extends StatefulWidget {
@@ -1712,8 +1713,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
   // STORE CARD
   // ══════════════════════════════════════════════════════════════════════════
   Widget _buildStoreCard(SingleModelClass? product) {
-    final shop = widget.product.shop?.shop;
-    final thumbUrl = shop?.thumbnail?.message?.cdnUrl;
+    final shop = product?.product?.shop?.shop;
+
+    final thumbUrl =
+        shop?.thumbnail?.media?.cdnThumbnailUrl ??
+        shop?.thumbnail?.media?.optimizedMediaCdnUrl ??
+        shop?.thumbnail?.media?.cdnUrl ??
+        shop?.thumbnail?.media?.url ??
+        shop?.thumbnail?.media?.localUrl ??
+        shop?.thumbnail?.media?.optimizedMediaUrl ??
+        null;
 
     return GestureDetector(
       onTap: () {
@@ -1914,6 +1923,61 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
         duration: const Duration(seconds: 3),
       ),
     );
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // QUICK BUY CHECKOUT
+  // ══════════════════════════════════════════════════════════════════════════
+  Future<void> _openQuickBuySheet(SingleModelClass? product) async {
+    if (_isDisposed) return;
+
+    // Check if user is logged in
+    final LoginResponse? currentUser = AuthService.instance.authCustomer;
+    if (currentUser?.user == null) {
+      _showLoginDialog();
+      return;
+    }
+
+    final int quantity = int.tryParse(_quantityController?.text ?? '1') ?? 1;
+    final double price =
+        selectedVariationPrice != null
+            ? (double.tryParse(selectedVariationPrice!) ??
+                (widget.product.price?.toDouble() ?? 0.0))
+            : ((widget.product.salePrice != null &&
+                    widget.product.salePrice! > 0)
+                ? widget.product.salePrice!.toDouble()
+                : (widget.product.price?.toDouble() ?? 0.0));
+
+    final double? shippingFee = double.tryParse(
+      widget.product.meta?.shipping_fees ?? '0',
+    );
+
+    // Get thumbnail URL
+    String? thumbnailUrl;
+    if (_imageUrlsNotifier.value.isNotEmpty) {
+      thumbnailUrl = _imageUrlsNotifier.value.first;
+    } else {
+      thumbnailUrl =
+          widget.product.thumbnail?.media?.optimizedMediaUrl ??
+          widget.product.thumbnail?.media?.url;
+    }
+
+    final result = await showQuickBuyCheckoutSheet(
+      context: context,
+      productId: widget.product.id!,
+      shopId: widget.product.shopId ?? '',
+      productName: widget.product.name ?? 'Product',
+      productImageUrl: thumbnailUrl,
+      price: price,
+      shippingFee: shippingFee,
+      quantity: quantity,
+      variationId: selectedVariationId,
+    );
+
+    if (result == true && mounted) {
+      // Order was placed successfully - refresh data
+      _loadProductData();
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -2312,6 +2376,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
       );
     }
 
+    // Check if buy now should be enabled (same conditions as add to cart)
+    final bool isDealEnded =
+        widget.product.isDeal == 1 &&
+        widget.product.saleStartTime == null &&
+        widget.product.saleEndTime == null &&
+        !_isFlashDealActive;
+
+    final bool canBuyNow = canPurchase && !isDealEnded;
+
     return Positioned(
       bottom: 0,
       left: 0,
@@ -2360,7 +2433,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             // Add to Cart Button
             Expanded(
               child: ValueListenableBuilder<bool>(
@@ -2368,10 +2441,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                 builder: (context, isLoading, child) {
                   return GestureDetector(
                     onTap:
-                        (widget.product.isDeal == 1 &&
-                                widget.product.saleStartTime == null &&
-                                widget.product.saleEndTime == null &&
-                                !_isFlashDealActive)
+                        isDealEnded
                             ? null
                             : canPurchase && !isLoading
                             ? _addToCart
@@ -2379,30 +2449,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                     child: Container(
                       height: 48,
                       decoration: BoxDecoration(
-                        gradient:
-                            (widget.product.isDeal == 1 &&
-                                    widget.product.saleStartTime == null &&
-                                    widget.product.saleEndTime == null &&
-                                    !_isFlashDealActive)
-                                ? null
-                                : canPurchase
-                                ? const LinearGradient(
-                                  colors: [
-                                    Color(0xFFfda730),
-                                    Color(0xFFfda730),
-                                  ],
-                                )
-                                : null,
                         color:
-                            (widget.product.isDeal == 1 &&
-                                    widget.product.saleStartTime == null &&
-                                    widget.product.saleEndTime == null &&
-                                    !_isFlashDealActive)
+                            isDealEnded
                                 ? Colors.grey.shade400
                                 : canPurchase
-                                ? null
+                                ? _primaryColor
                                 : Colors.grey.shade400,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: Center(
                         child:
@@ -2417,14 +2470,77 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                                     ),
                                   ),
                                 )
-                                : Text(
-                                  buttonText,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.shopping_cart_outlined,
+                                      color: Colors.white,
+                                      size: 18,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      buttonText == 'Add to Cart'
+                                          ? 'Cart'
+                                          : buttonText,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
                                 ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Buy Now Button
+            Expanded(
+              child: ValueListenableBuilder<bool>(
+                valueListenable: _isCartOperationInProgressNotifier,
+                builder: (context, isLoading, child) {
+                  return GestureDetector(
+                    onTap:
+                        canBuyNow && !isLoading
+                            ? () => _openQuickBuySheet(product)
+                            : null,
+                    child: Container(
+                      height: 48,
+                      decoration: BoxDecoration(
+                        gradient:
+                            canBuyNow
+                                ? const LinearGradient(
+                                  colors: [
+                                    Color(0xFFfda730),
+                                    Color(0xFFf59320),
+                                  ],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                )
+                                : null,
+                        color: canBuyNow ? null : Colors.grey.shade400,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.flash_on, color: Colors.white, size: 18),
+                            SizedBox(width: 6),
+                            Text(
+                              'Buy Now',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );

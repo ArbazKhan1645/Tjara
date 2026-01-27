@@ -316,7 +316,10 @@ class _CategorySearchDialogState extends State<_CategorySearchDialog> {
                 controller: _searchController,
                 decoration: InputDecoration(
                   hintText: 'Search categories...',
-                  prefixIcon: const Icon(Icons.search, color: Color(0xFFF97316)),
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    color: Color(0xFFF97316),
+                  ),
                   suffixIcon:
                       _searchController.text.isNotEmpty
                           ? IconButton(
@@ -411,7 +414,9 @@ class _CategorySearchDialogState extends State<_CategorySearchDialog> {
                               decoration: BoxDecoration(
                                 color:
                                     isSelected
-                                        ? const Color(0xFFF97316).withOpacity(0.1)
+                                        ? const Color(
+                                          0xFFF97316,
+                                        ).withOpacity(0.1)
                                         : Colors.transparent,
                                 border: Border(
                                   bottom: BorderSide(

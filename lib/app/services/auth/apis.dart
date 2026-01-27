@@ -315,15 +315,25 @@ class CategoryApiService {
     int perPage = 14,
   }) async {
     final String url =
-        'https://api.libanbuy.com/api/products?with=thumbnail,shop'
-        '&filterJoin=OR&orderBy=created_at&order=desc'
+        'https://api.libanbuy.com/api/products?include_analytics=true'
+        '&with=thumbnail,shop,variations,rating'
+        '&filterJoin=OR'
+        '&orderBy=created_at&order=desc'
         '&search=$search&page=$page&per_page=$perPage'
+        // Filter Join AND
         '&filterByColumns[filterJoin]=AND'
-        '&filterByColumns[columns][0][column]=shop_id'
-        '&filterByColumns[columns][0][value]=$shopId'
-        '&filterByColumns[columns][0][operator]=%3D';
-
-    _printFull("➡️ Shop Products URL: $url");
+        // Price Filter
+        '&filterByColumns[columns][0][column]=price'
+        '&filterByColumns[columns][0][value]=10000000000'
+        '&filterByColumns[columns][0][operator]=%3C%3D'
+        // Shop ID Filter
+        '&filterByColumns[columns][1][column]=shop_id'
+        '&filterByColumns[columns][1][value]=$shopId'
+        '&filterByColumns[columns][1][operator]=%3D'
+        // Status Filter
+        '&filterByColumns[columns][2][column]=status'
+        '&filterByColumns[columns][2][value]=active'
+        '&filterByColumns[columns][2][operator]=%3D';
 
     try {
       final response = await http.get(

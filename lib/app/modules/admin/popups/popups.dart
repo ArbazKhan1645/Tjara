@@ -379,7 +379,9 @@ class PopupListView extends GetView<PopupController> {
 
                               // Filter buttons
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
                                 child: Row(
                                   children: [
                                     _buildFilterButton(
@@ -560,9 +562,10 @@ class PopupListView extends GetView<PopupController> {
                                                 popup,
                                               ) {
                                                 return Container(
-                                                  padding: const EdgeInsets.symmetric(
-                                                    vertical: 12,
-                                                  ),
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        vertical: 12,
+                                                      ),
                                                   decoration: BoxDecoration(
                                                     border: Border(
                                                       bottom: BorderSide(
@@ -676,9 +679,10 @@ class PopupListView extends GetView<PopupController> {
                                                           child: Text(
                                                             popup.name ??
                                                                 'Unnamed',
-                                                            style: const TextStyle(
-                                                              fontSize: 14,
-                                                            ),
+                                                            style:
+                                                                const TextStyle(
+                                                                  fontSize: 14,
+                                                                ),
                                                             overflow:
                                                                 TextOverflow
                                                                     .ellipsis,
@@ -827,16 +831,19 @@ class PopupListView extends GetView<PopupController> {
                                                                 builder: (
                                                                   context,
                                                                 ) {
-                                                                  final int views =
+                                                                  final int
+                                                                  views =
                                                                       popup
                                                                           .views ??
                                                                       0;
-                                                                  final int clicks =
+                                                                  final int
+                                                                  clicks =
                                                                       popup
                                                                           .clicks ??
                                                                       0;
 
-                                                                  final double ctr =
+                                                                  final double
+                                                                  ctr =
                                                                       views > 0
                                                                           ? (clicks /
                                                                                   views) *
@@ -1839,7 +1846,9 @@ class AddPopupView extends StatelessWidget {
                                   Container(
                                     padding: const EdgeInsets.all(16),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFF97316).withOpacity(0.1),
+                                      color: const Color(
+                                        0xFFF97316,
+                                      ).withOpacity(0.1),
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(
@@ -2307,7 +2316,9 @@ class AddPopupView extends StatelessWidget {
                   'Product Price',
                   controller.productPriceController,
                   'Enter product price',
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   prefixText: '\$ ',
                   validator: (value) {
                     if (value != null && value.isNotEmpty) {

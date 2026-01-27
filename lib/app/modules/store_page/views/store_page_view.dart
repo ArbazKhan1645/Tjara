@@ -30,15 +30,7 @@ class StorePageViewBody extends StatelessWidget {
     final con = Get.find<StorePageController>();
     return CommonBaseBodyScreen(
       scrollController: con.scrollController,
-      screens: [
-        Container(
-          height: MediaQuery.of(context).padding.top,
-          color: const Color(0xFFfda730),
-        ),
-        const CustomAppBar(showActions: false),
-        const StorePageSectionForm(),
-        const SizedBox(height: 150),
-      ],
+      screens: [const StorePageSectionForm(), const SizedBox(height: 150)],
     );
   }
 }

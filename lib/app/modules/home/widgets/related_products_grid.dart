@@ -13,9 +13,11 @@ class RelatedProductGrid extends StatefulWidget {
     super.key,
     this.search = '',
     this.isshownfromcategories = false,
+    this.isdealsection = false,
   });
   final String search;
   final isshownfromcategories;
+  final isdealsection;
 
   @override
   State<RelatedProductGrid> createState() => _RelatedProductGridState();
@@ -39,12 +41,12 @@ class _RelatedProductGridState extends State<RelatedProductGrid> {
   }
 
   Future<List<ProductDatum>> _fetchRelatedProducts() async {
-    print(widget.search);
     try {
       final controller = Get.find<HomeController>();
       final result = await controller.searchRelatedProducts(
         widget.search,
         isCategoryUUID: widget.isshownfromcategories,
+        isDealsection: widget.isdealsection,
       );
       final products = result.products?.data ?? [];
 

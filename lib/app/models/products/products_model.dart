@@ -33,9 +33,14 @@ class Products {
                   ? num.tryParse(json!['current_page'])
                   : null),
       data:
-          json?['data'] != null
+          (json?['data'] is List)
               ? List<ProductDatum>.from(
-                json!['data'].map((x) => ProductDatum.fromJson(x)),
+                (json!['data'] as List).map(
+                  (x) =>
+                      (x is Map<String, dynamic>)
+                          ? ProductDatum.fromJson(x)
+                          : ProductDatum(),
+                ),
               )
               : null,
     );
@@ -182,15 +187,27 @@ class ProductDatum {
               ? DateTime.parse(json!['updated_at'])
               : null,
       thumbnail:
-          json?['thumbnail'] != null
+          (json?['thumbnail'] is Map<String, dynamic>)
               ? Thumbnail.fromJson(json!['thumbnail'])
               : null,
       // rating:
       //     json?['rating'] != null ? List<dynamic>.from(json!['rating']) : null,
-      shop: json?['shop'] != null ? DatumShop.fromJson(json!['shop']) : null,
-      brands: json?['brands'] != null ? Brands.fromJson(json!['brands']) : null,
-      video: json?['video'] != null ? Video.fromJson(json!['video']) : null,
-      meta: json?['meta'] != null ? DatumMeta.fromJson(json!['meta']) : null,
+      shop:
+          (json?['shop'] is Map<String, dynamic>)
+              ? DatumShop.fromJson(json!['shop'])
+              : null,
+      brands:
+          (json?['brands'] is Map<String, dynamic>)
+              ? Brands.fromJson(json!['brands'])
+              : null,
+      video:
+          (json?['video'] is Map<String, dynamic>)
+              ? Video.fromJson(json!['video'])
+              : null,
+      meta:
+          (json?['meta'] is Map<String, dynamic>)
+              ? DatumMeta.fromJson(json!['meta'])
+              : null,
       isDiscountProduct: json?['is_discount_product'],
     );
   }
@@ -335,7 +352,10 @@ class DatumShop {
 
   factory DatumShop.fromJson(Map<String, dynamic>? json) {
     return DatumShop(
-      shop: json?['shop'] != null ? ShopShop.fromJson(json!['shop']) : null,
+      shop:
+          (json?['shop'] is Map<String, dynamic>)
+              ? ShopShop.fromJson(json!['shop'])
+              : null,
     );
   }
 
@@ -433,15 +453,15 @@ class ShopShop {
               ? DateTime.parse(json!['updated_at'])
               : null,
       banner:
-          json?['banner'] != null
+          (json?['banner'] is Map<String, dynamic>)
               ? BannerModel.fromJson(json!['banner'])
               : null,
       thumbnail:
-          json?['thumbnail'] != null
+          (json?['thumbnail'] is Map<String, dynamic>)
               ? Video.fromJson(json!['thumbnail'])
               : null,
       membership:
-          json?['membership'] != null
+          (json?['membership'] is Map<String, dynamic>)
               ? Video.fromJson(json!['membership'])
               : null,
       meta:
@@ -487,14 +507,14 @@ class Video {
   }
 
   factory Video.fromJson(Map<String, dynamic> json) {
-    if (json['media'] is String) {
+    if (json['media'] is String || json['media'] is List) {
       return Video(message: MediaUniversalModel());
     }
     return Video(
       message:
-          json['media'] == null
-              ? MediaUniversalModel()
-              : MediaUniversalModel.fromJson(json["media"]),
+          (json['media'] is Map<String, dynamic>)
+              ? MediaUniversalModel.fromJson(json["media"])
+              : MediaUniversalModel(),
     );
   }
 
@@ -512,7 +532,12 @@ class BannerModel {
   BannerModel({required this.media});
 
   factory BannerModel.fromJson(Map<String, dynamic> json) {
-    return BannerModel(media: MediaUniversalModel.fromJson(json['media']));
+    return BannerModel(
+      media:
+          (json['media'] is Map<String, dynamic>)
+              ? MediaUniversalModel.fromJson(json['media'])
+              : MediaUniversalModel(),
+    );
   }
 
   Map<String, dynamic> toJson() {
@@ -528,7 +553,7 @@ class Thumbnail {
   factory Thumbnail.fromJson(Map<String, dynamic>? json) {
     return Thumbnail(
       media:
-          json?['media'] != null
+          (json?['media'] is Map<String, dynamic>)
               ? MediaUniversalModel.fromJson(json!['media'])
               : null,
     );

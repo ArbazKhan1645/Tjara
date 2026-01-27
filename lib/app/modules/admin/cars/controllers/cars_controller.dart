@@ -490,7 +490,10 @@ class CarsController extends GetxController {
     if (totalItems.value == 0) return "0 to 0";
 
     final int start = ((currentPage.value - 1) * itemsPerPage) + 1;
-    final int end = (currentPage.value * itemsPerPage).clamp(1, totalItems.value);
+    final int end = (currentPage.value * itemsPerPage).clamp(
+      1,
+      totalItems.value,
+    );
 
     return "$start to $end";
   }

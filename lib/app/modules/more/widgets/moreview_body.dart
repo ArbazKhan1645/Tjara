@@ -9,6 +9,7 @@ import 'package:tjara/app/models/users_model.dart/customer_models.dart';
 import 'package:tjara/app/modules/authentication/dialogs/contact_us.dart';
 import 'package:tjara/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:tjara/app/modules/my_cart/controllers/my_cart_controller.dart';
+import 'package:tjara/app/modules/surveys/view/survey_view.dart';
 import 'package:tjara/app/modules/wishlist/controllers/wishlist_service.dart';
 import 'package:tjara/app/routes/app_pages.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
@@ -543,7 +544,11 @@ class _AboutSection extends StatelessWidget {
                   ),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.info_outline, color: Colors.white, size: 20),
+                child: const Icon(
+                  Icons.info_outline,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 12),
               const Text(
@@ -710,6 +715,13 @@ class _LinksSection extends StatelessWidget {
             icon: Icons.article_outlined,
             label: 'Blogs',
             onTap: () => DashboardController.instance.changeIndex(8),
+          ),
+          _LinkItem(
+            icon: Icons.supervised_user_circle,
+            label: 'Surveys',
+            onTap: () {
+              Get.to(() => const SurveysScreen());
+            },
           ),
           _LinkItem(
             icon: Icons.store_outlined,

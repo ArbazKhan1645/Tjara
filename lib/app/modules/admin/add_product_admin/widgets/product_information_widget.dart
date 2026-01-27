@@ -83,7 +83,9 @@ class ProductInformationWidget extends StatelessWidget {
                     ),
                     Text(
                       "Enter the unique name of your ${controller.selectedProductgroup.value.isEmpty ? "Product" : controller.selectedProductgroup.value}. Make it descriptive and easy to remember for customers.",
-                      style: const TextStyle(color: AppColors.adminGreyColorText),
+                      style: const TextStyle(
+                        color: AppColors.adminGreyColorText,
+                      ),
                     ),
                     const SizedBox(height: 10),
                     SimpleTextFormFieldWidget(
@@ -654,7 +656,10 @@ class _CategorySearchDialogState extends State<_CategorySearchDialog> {
                 controller: _searchController,
                 decoration: InputDecoration(
                   hintText: 'Search ${widget.title.toLowerCase()}...',
-                  prefixIcon: const Icon(Icons.search, color: Color(0xFFF97316)),
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    color: Color(0xFFF97316),
+                  ),
                   suffixIcon:
                       _searchController.text.isNotEmpty
                           ? IconButton(
@@ -749,7 +754,9 @@ class _CategorySearchDialogState extends State<_CategorySearchDialog> {
                               decoration: BoxDecoration(
                                 color:
                                     isSelected
-                                        ? const Color(0xFFF97316).withOpacity(0.1)
+                                        ? const Color(
+                                          0xFFF97316,
+                                        ).withOpacity(0.1)
                                         : Colors.transparent,
                                 border: Border(
                                   bottom: BorderSide(

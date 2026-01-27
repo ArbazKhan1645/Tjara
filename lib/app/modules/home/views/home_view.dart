@@ -311,7 +311,7 @@ class _ParallaxTabViewState extends State<_ParallaxTabView>
                             builder: (context, offset, _) {
                               return CustomAppBar(
                                 showWhitebackground: offset > 10,
-                                showActions: false,
+                                showActions: true,
                               );
                             },
                           ),

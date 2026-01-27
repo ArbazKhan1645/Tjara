@@ -711,7 +711,9 @@ class CategoryManagementScreen extends StatelessWidget {
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: Colors.grey[600],
                                     side: BorderSide(color: Colors.grey[300]!),
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 14,
+                                    ),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8),
                                     ),

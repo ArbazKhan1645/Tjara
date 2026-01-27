@@ -500,10 +500,11 @@ class ProductAttributesScreen extends StatelessWidget {
                                             color: Color(0xFF4CAF50),
                                           ),
                                         ),
-                                        contentPadding: const EdgeInsets.symmetric(
-                                          horizontal: 16,
-                                          vertical: 16,
-                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                              vertical: 16,
+                                            ),
                                       ),
                                     ),
                                     const SizedBox(height: 20),
@@ -534,7 +535,9 @@ class ProductAttributesScreen extends StatelessWidget {
                                                     }
                                                   },
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color(0xFF0D9488),
+                                            backgroundColor: const Color(
+                                              0xFF0D9488,
+                                            ),
                                             foregroundColor: Colors.white,
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
@@ -657,9 +660,7 @@ class ProductAttributesScreen extends StatelessWidget {
                                     Expanded(
                                       flex: 3,
                                       child: Padding(
-                                        padding: EdgeInsets.only(
-                                          left: 20,
-                                        ),
+                                        padding: EdgeInsets.only(left: 20),
                                         child: Text(
                                           'Item',
                                           style: TextStyle(
@@ -709,7 +710,9 @@ class ProductAttributesScreen extends StatelessWidget {
 
                               // Attributes List
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
                                 child: Obx(() {
                                   if (controller.isLoading.value &&
                                       controller.attributes.isEmpty) {
@@ -777,9 +780,10 @@ class ProductAttributesScreen extends StatelessWidget {
                                                       );
                                                     },
                                             child: Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                vertical: 12,
-                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 12,
+                                                  ),
                                               decoration: BoxDecoration(
                                                 color:
                                                     isTemporary
@@ -819,12 +823,16 @@ class ProductAttributesScreen extends StatelessWidget {
                                                                   )
                                                                   .toUpperCase() ??
                                                               '',
-                                                          style: const TextStyle(
-                                                            color: Colors.white,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            fontSize: 14,
-                                                          ),
+                                                          style:
+                                                              const TextStyle(
+                                                                color:
+                                                                    Colors
+                                                                        .white,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                fontSize: 14,
+                                                              ),
                                                         ),
                                                       ),
                                                     ),

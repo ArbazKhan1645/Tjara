@@ -256,10 +256,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           ),
                         ),
                         SizedBox(width: 4),
-                        Text(
-                          ' | ',
-                          style: TextStyle(color: Color(0xff0a8700)),
-                        ),
+                        Text(' | ', style: TextStyle(color: Color(0xff0a8700))),
                         Text(
                           'Price adjustment within 30 days',
                           style: TextStyle(

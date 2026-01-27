@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:iconsax/iconsax.dart';
 import 'dart:convert';
 import 'package:tjara/app/models/notifications/notification_model.dart';
 import 'package:tjara/app/models/users_model.dart/customer_models.dart';
@@ -110,7 +111,7 @@ class _NotificationIconButtonState extends State<NotificationIconButton> {
       alignment: Alignment.center,
       children: [
         IconButton(
-          icon: Icon(Icons.notifications_outlined, color: widget.color),
+          icon: Icon(Iconsax.notification, color: widget.color, size: 22),
           onPressed: () {
             _showNotificationDialog(context);
           },

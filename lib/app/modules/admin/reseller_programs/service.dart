@@ -72,7 +72,7 @@ class ResellerService {
     try {
       final response = await http.get(
         Uri.parse(
-          'https://api.tjara.com/api/reseller-programs/$resellerProgramId/referrels?with=member_status,orders',
+          'https://api.libanbuy.com/api/reseller-programs/$resellerProgramId/referrels?with=member_status,orders',
         ),
         headers: {
           'Content-Type': 'application/json',

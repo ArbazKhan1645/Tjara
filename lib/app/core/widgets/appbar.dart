@@ -2,7 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:iconsax/iconsax.dart';
+import 'package:tjara/app/core/widgets/overlay.dart';
 import 'package:tjara/app/models/categories/categories_model.dart';
+import 'package:tjara/app/models/chat_messages/insert_chat.dart';
 
 import 'package:tjara/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:tjara/app/modules/home/controllers/home_controller.dart';
@@ -75,13 +78,25 @@ class _CustomAppBarState extends State<CustomAppBar>
     }
   }
 
+  // Theme colors based on background
+  Color get _backgroundColor =>
+      widget.showWhitebackground ? Colors.white : const Color(0xFFfda730);
+
+  Color get _iconColor =>
+      widget.showWhitebackground ? const Color(0xFF333333) : Colors.white;
+
+  Color get _iconBgColor =>
+      widget.showWhitebackground
+          ? Colors.grey.shade100
+          : Colors.white.withOpacity(0.2);
+
+  Color get _badgeColor =>
+      widget.showWhitebackground ? const Color(0xFFfda730) : Colors.red;
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      color:
-          widget.showWhitebackground != true
-              ? const Color(0xFFfda730)
-              : Colors.white,
+      color: _backgroundColor,
       height: widget.preferredSize.height,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
@@ -94,7 +109,7 @@ class _CustomAppBarState extends State<CustomAppBar>
 
           // Action Icons
           if (widget.showActions && AuthService.instance.islogin) ...[
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             _buildActionIcons(),
           ],
         ],
@@ -132,21 +147,26 @@ class _CustomAppBarState extends State<CustomAppBar>
               decoration: InputDecoration(
                 prefixIcon: Obx(() {
                   if (_appBarController._searchText.value.isNotEmpty) {
-                    // ← yeh change karo
                     return IconButton(
                       onPressed: () {
                         _appBarController.clearSearch();
                       },
                       icon: Icon(
-                        Icons.clear,
+                        Iconsax.close_circle,
                         color: Colors.grey[500],
-                        size: 15,
+                        size: 18,
                       ),
                     );
                   }
-                  return Icon(Icons.search, color: Colors.grey[500], size: 15);
+                  return Icon(
+                    Iconsax.search_normal_1,
+                    color: Colors.grey[500],
+                    size: 18,
+                  );
                 }),
-                contentPadding: const EdgeInsets.all(11),
+                contentPadding: EdgeInsets.only(
+                  top: widget.showWhitebackground ? 7 : 10,
+                ),
                 enabledBorder: InputBorder.none,
                 focusedBorder: InputBorder.none,
                 suffixIcon: Container(
@@ -157,7 +177,6 @@ class _CustomAppBarState extends State<CustomAppBar>
                       topRight: Radius.circular(14),
                       bottomRight: Radius.circular(14),
                     ),
-
                     color: Color.fromARGB(255, 251, 148, 30),
                   ),
                   child: IconButton(
@@ -167,9 +186,9 @@ class _CustomAppBarState extends State<CustomAppBar>
                       }
                     },
                     icon: const Icon(
-                      Icons.search,
+                      Iconsax.search_normal_1,
                       color: Colors.white,
-                      size: 15,
+                      size: 16,
                     ),
                     padding: EdgeInsets.zero,
                   ),
@@ -194,7 +213,7 @@ class _CustomAppBarState extends State<CustomAppBar>
         _buildIconButton(
           icon: Icons.notifications_outlined,
           onTap: () {},
-          child: const NotificationIconButton(color: Colors.white),
+          child: NotificationIconButton(color: _iconColor),
         ),
         const SizedBox(width: 8),
         _buildMessagesIcon(),
@@ -210,13 +229,17 @@ class _CustomAppBarState extends State<CustomAppBar>
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 36,
-        height: 36,
+        width: 38,
+        height: 38,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.2),
+          color: _iconBgColor,
           shape: BoxShape.circle,
+          border:
+              widget.showWhitebackground
+                  ? Border.all(color: Colors.grey.shade200, width: 1)
+                  : null,
         ),
-        child: child ?? Icon(icon, color: Colors.white, size: 20),
+        child: child ?? Icon(icon, color: _iconColor, size: 20),
       ),
     );
   }
@@ -232,17 +255,17 @@ class _CustomAppBarState extends State<CustomAppBar>
   Widget _buildMessagesIcon() {
     if (!_isServiceInitialized) {
       return Container(
-        width: 36,
-        height: 36,
+        width: 38,
+        height: 38,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.2),
+          color: _iconBgColor,
           shape: BoxShape.circle,
+          border:
+              widget.showWhitebackground
+                  ? Border.all(color: Colors.grey.shade200, width: 1)
+                  : null,
         ),
-        child: const Icon(
-          Icons.chat_bubble_outline,
-          size: 20,
-          color: Colors.white,
-        ),
+        child: Icon(Iconsax.message, size: 20, color: _iconColor),
       );
     }
 
@@ -251,35 +274,234 @@ class _CustomAppBarState extends State<CustomAppBar>
       final chatDataList = productChats.data ?? [];
       final messageCount = chatDataList.length;
 
-      return GestureDetector(
-        onTap: () {
-          // Navigate to messages
-        },
+      return OverlayMenu(
+        menuWidth: 280,
+        children:
+            (closeOverlay) => [
+              const SizedBox(height: 10),
+              Obx(
+                () => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Messages',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      IconButton(
+                        icon:
+                            productChatsService.isLoading.value
+                                ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                                : Icon(
+                                  Iconsax.refresh,
+                                  size: 18,
+                                  color: Colors.grey.shade600,
+                                ),
+                        onPressed:
+                            productChatsService.isLoading.value
+                                ? null
+                                : () async {
+                                  await productChatsService.refreshData();
+                                },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Divider(color: Colors.grey.shade200),
+              Obx(() {
+                final currentProductChats =
+                    productChatsService.productChats.value;
+                final currentChatDataList = currentProductChats.data ?? [];
+
+                if (productChatsService.isLoading.value &&
+                    currentChatDataList.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Center(
+                      child: Column(
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 8),
+                          Text('Loading messages...'),
+                        ],
+                      ),
+                    ),
+                  );
+                } else if (productChatsService.hasError.value &&
+                    currentChatDataList.isEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        Icon(Iconsax.warning_2, color: Colors.red, size: 32),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Error loading messages',
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        ElevatedButton(
+                          onPressed: () async {
+                            await productChatsService.refreshData();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red.shade600,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
+                } else if (currentChatDataList.isNotEmpty) {
+                  return Container(
+                    constraints: const BoxConstraints(maxHeight: 220),
+                    child: ListView.builder(
+                      padding: EdgeInsets.zero,
+                      shrinkWrap: true,
+                      physics: const ClampingScrollPhysics(),
+                      itemCount: currentChatDataList.take(20).length,
+                      itemBuilder: (context, index) {
+                        final messages = currentChatDataList[index];
+                        final firstName = messages.user?.firstName ?? 'Unknown';
+                        final lastName = messages.user?.lastName ?? '';
+                        final lastMessage =
+                            messages.lastMessage ?? 'No message';
+
+                        return ListTile(
+                          onTap: () {
+                            closeOverlay();
+                            startChatWithProduct(
+                              messages.productId.toString(),
+                              context,
+                              productChats: messages,
+                              uid: messages.id.toString(),
+                            );
+                          },
+                          dense: true,
+                          leading: CircleAvatar(
+                            radius: 18,
+                            backgroundColor: const Color(
+                              0xFFfda730,
+                            ).withOpacity(0.15),
+                            child: Text(
+                              firstName.isNotEmpty
+                                  ? firstName[0].toUpperCase()
+                                  : 'U',
+                              style: const TextStyle(
+                                color: Color(0xFFfda730),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          title: Text(
+                            '$firstName $lastName'.trim().isNotEmpty
+                                ? '$firstName $lastName'.trim()
+                                : 'Unknown User',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            lastMessage,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 12,
+                            ),
+                          ),
+                          trailing:
+                              messages.createdAt != null
+                                  ? Text(
+                                    _formatDate(messages.createdAt!),
+                                    style: TextStyle(
+                                      color: Colors.grey.shade500,
+                                      fontSize: 10,
+                                    ),
+                                  )
+                                  : null,
+                        );
+                      },
+                    ),
+                  );
+                } else {
+                  return Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Iconsax.message,
+                          color: Colors.grey.shade400,
+                          size: 36,
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'No Messages',
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Start a conversation to see messages here',
+                          style: TextStyle(
+                            color: Colors.grey.shade500,
+                            fontSize: 12,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              }),
+              const SizedBox(height: 10),
+            ],
         child: Container(
-          width: 36,
-          height: 36,
+          width: 38,
+          height: 38,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
+            color: _iconBgColor,
             shape: BoxShape.circle,
+            border:
+                widget.showWhitebackground
+                    ? Border.all(color: Colors.grey.shade200, width: 1)
+                    : null,
           ),
           child: Stack(
             alignment: Alignment.center,
             children: [
-              const Icon(
-                Icons.chat_bubble_outline,
-                size: 20,
-                color: Colors.white,
-              ),
+              Icon(Iconsax.message, size: 20, color: _iconColor),
               if (messageCount > 0)
                 Positioned(
-                  top: 4,
-                  right: 4,
+                  top: 5,
+                  right: 5,
                   child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: _badgeColor,
                       shape: BoxShape.circle,
+                      border: Border.all(color: _backgroundColor, width: 1.5),
                     ),
                   ),
                 ),
@@ -288,6 +510,26 @@ class _CustomAppBarState extends State<CustomAppBar>
         ),
       );
     });
+  }
+
+  String _formatDate(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      final now = DateTime.now();
+      final difference = now.difference(date);
+
+      if (difference.inDays > 0) {
+        return '${difference.inDays}d';
+      } else if (difference.inHours > 0) {
+        return '${difference.inHours}h';
+      } else if (difference.inMinutes > 0) {
+        return '${difference.inMinutes}m';
+      } else {
+        return 'now';
+      }
+    } catch (e) {
+      return '';
+    }
   }
 }
 

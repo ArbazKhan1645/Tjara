@@ -1,4 +1,4 @@
-// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: library_private_types_in_public_api, deprecated_member_use
 
 import 'dart:async';
 
@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:get/get.dart';
+import 'package:tjara/app/modules/home/widgets/customer_service.dart';
 import 'package:tjara/app/modules/store_page/controllers/store_page_controller.dart';
 import 'package:tjara/app/modules/store_page/pages/products_grid.dart';
 
@@ -69,19 +70,16 @@ class _StorePageSectionFormState extends State<StorePageSectionForm> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // ✨ Premium Store Header
-        _StoreHeader(shopController: shopController),
-
-        const SizedBox(height: 16),
-
-        // ✨ Search Bar
-        _SearchBar(
-          controller: shopController.searchController,
-          onChanged: _onSearchChanged,
-          onSubmitted: _onSearchSubmitted,
+        // ✨ Premium Store Header with integrated search
+        _StoreHeader(
+          shopController: shopController,
+          searchController: shopController.searchController,
+          onSearchChanged: _onSearchChanged,
+          onSearchSubmitted: _onSearchSubmitted,
+          showSearch: _selectedIndex == 0,
         ),
 
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
 
         // ✨ Tab Buttons
         _TabButtons(
@@ -101,218 +99,362 @@ class _StorePageSectionFormState extends State<StorePageSectionForm> {
 }
 
 // ========================================
-// ✨ Premium Store Header
+// ✨ Premium Store Header - Modern Design
 // ========================================
 class _StoreHeader extends StatelessWidget {
   final StorePageController shopController;
+  final TextEditingController searchController;
+  final ValueChanged<String> onSearchChanged;
+  final VoidCallback onSearchSubmitted;
+  final bool showSearch;
 
-  const _StoreHeader({required this.shopController});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(color: Color(0xFFfda730)),
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          // Store Avatar with gradient border
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 3),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(28),
-              child: CachedNetworkImage(
-                imageUrl:
-                    shopController
-                        .currentSHop
-                        ?.thumbnail
-                        ?.message
-                        ?.optimizedMediaUrl ??
-                    '',
-                fit: BoxFit.cover,
-                placeholder:
-                    (context, url) => Container(
-                      color: Colors.grey.shade300,
-                      child: Center(
-                        child: Icon(
-                          Icons.store,
-                          color: Colors.grey.shade600,
-                          size: 28,
-                        ),
-                      ),
-                    ),
-                errorWidget:
-                    (context, url, error) => Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Color(0xFF00897B), Color(0xFF004D40)],
-                        ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          shopController.currentSHop!.name!
-                              .toString()
-                              .substring(0, 1)
-                              .toUpperCase(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 22,
-                          ),
-                        ),
-                      ),
-                    ),
-              ),
-            ),
-          ),
-
-          const SizedBox(width: 14),
-
-          // Store Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  shopController.currentSHop?.name ?? 'Tjara Store',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 17,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(Icons.star, color: Colors.amber, size: 14),
-                    const SizedBox(width: 4),
-                    Text(
-                      '95% Positive',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '•',
-                      style: TextStyle(color: Colors.white.withOpacity(0.7)),
-                    ),
-                    const SizedBox(width: 8),
-                    Icon(
-                      Icons.people_outline,
-                      color: Colors.white.withOpacity(0.9),
-                      size: 14,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '9.2k Followers',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // SizedBox(width: 12),
-
-          // // Follow Button
-          // Container(
-          //   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          //   decoration: BoxDecoration(
-          //     color: Colors.white,
-          //     borderRadius: BorderRadius.circular(20),
-          //     boxShadow: [
-          //       BoxShadow(
-          //         color: Colors.black.withOpacity(0.1),
-          //         blurRadius: 8,
-          //         offset: Offset(0, 2),
-          //       ),
-          //     ],
-          //   ),
-          //   child: Row(
-          //     mainAxisSize: MainAxisSize.min,
-          //     children: [
-          //       Icon(Icons.add, color: Color(0xFFfea52d), size: 18),
-          //       SizedBox(width: 4),
-          //       Text(
-          //         'Follow',
-          //         style: TextStyle(
-          //           color: Color(0xFFfea52d),
-          //           fontWeight: FontWeight.bold,
-          //           fontSize: 14,
-          //         ),
-          //       ),
-          //     ],
-          //   ),
-          // ),
-        ],
-      ),
-    );
-  }
-}
-
-// ========================================
-// ✨ Premium Search Bar
-// ========================================
-class _SearchBar extends StatelessWidget {
-  final TextEditingController controller;
-  final ValueChanged<String> onChanged;
-  final VoidCallback onSubmitted;
-
-  const _SearchBar({
-    required this.controller,
-    required this.onChanged,
-    required this.onSubmitted,
+  const _StoreHeader({
+    required this.shopController,
+    required this.searchController,
+    required this.onSearchChanged,
+    required this.onSearchSubmitted,
+    required this.showSearch,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.grey.shade300),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+    final shop = shopController.currentSHop;
+    final statusBarHeight = MediaQuery.of(context).padding.top;
+
+    final bannerUrl =
+        shop?.banner?.media?.cdnThumbnailUrl ??
+        shop?.banner?.media?.optimizedMediaCdnUrl ??
+        shop?.banner?.media?.cdnUrl ??
+        shop?.banner?.media?.url ??
+        shop?.banner?.media?.localUrl ??
+        shop?.banner?.media?.optimizedMediaUrl ??
+        '';
+
+    final thumbUrl =
+        shop?.thumbnail?.media?.cdnThumbnailUrl ??
+        shop?.thumbnail?.media?.optimizedMediaCdnUrl ??
+        shop?.thumbnail?.media?.cdnUrl ??
+        shop?.thumbnail?.media?.url ??
+        shop?.thumbnail?.media?.localUrl ??
+        shop?.thumbnail?.media?.optimizedMediaUrl ??
+        '';
+
+    final bool hasBanner = bannerUrl.isNotEmpty;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient:
+            hasBanner
+                ? null
+                : const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFFfda730), Color(0xFFf97316)],
+                ),
+        image:
+            hasBanner
+                ? DecorationImage(
+                  image: NetworkImage(bannerUrl),
+                  fit: BoxFit.cover,
+                  colorFilter: ColorFilter.mode(
+                    Colors.black.withOpacity(0.3),
+                    BlendMode.darken,
+                  ),
+                )
+                : null,
+      ),
+      child: Column(
+        children: [
+          // Top Bar with back button and contact
+          Padding(
+            padding: EdgeInsets.only(
+              top: statusBarHeight + 8,
+              left: 12,
+              right: 12,
+              bottom: 12,
             ),
-          ],
+            child: Row(
+              children: [
+                // Back Button
+                GestureDetector(
+                  onTap: () => Get.back(),
+                  child: Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.3),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back_ios_new,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                // WhatsApp Contact Button
+                GestureDetector(
+                  onTap: () {
+                    CustomerService.openWhatsApp(
+                      phoneNumber: shop?.meta?.phone ?? '',
+                      whatsapp: shop?.meta?.whatsapp ?? '',
+                      whatsappCode: shop?.meta?.whatsappAreaCode,
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.teal,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.chat, size: 16, color: Colors.white),
+                        SizedBox(width: 6),
+                        Text(
+                          'Contact',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Store Info Section
+          Padding(
+            padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: hasBanner ? 16 : 8,
+              bottom: 16,
+            ),
+            child: Row(
+              children: [
+                // Store Avatar
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                    border: Border.all(color: Colors.white, width: 3),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(30),
+                    child:
+                        thumbUrl.isNotEmpty
+                            ? CachedNetworkImage(
+                              imageUrl: thumbUrl,
+                              fit: BoxFit.cover,
+                              placeholder:
+                                  (context, url) => _buildPlaceholder(),
+                              errorWidget:
+                                  (context, url, error) =>
+                                      _buildInitialAvatar(),
+                            )
+                            : _buildInitialAvatar(),
+                  ),
+                ),
+
+                const SizedBox(width: 14),
+
+                // Store Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        shop?.name ?? 'Tjara Store',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black26,
+                              blurRadius: 4,
+                              offset: Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.star,
+                                  color: Colors.amber,
+                                  size: 13,
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  '95%',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.95),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.people_outline,
+                                  color: Colors.white.withOpacity(0.95),
+                                  size: 13,
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  '9.2k',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.95),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Integrated Search Bar (only show when on Products tab)
+          if (showSearch)
+            Padding(
+              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: TextField(
+                  controller: searchController,
+                  onChanged: onSearchChanged,
+                  onSubmitted: (_) => onSearchSubmitted(),
+                  textInputAction: TextInputAction.search,
+                  style: const TextStyle(fontSize: 14),
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: Colors.grey.shade500,
+                      size: 20,
+                    ),
+                    hintText: 'Search products in this store...',
+                    hintStyle: TextStyle(
+                      color: Colors.grey.shade400,
+                      fontSize: 14,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    suffixIcon:
+                        searchController.text.isNotEmpty
+                            ? GestureDetector(
+                              onTap: () {
+                                searchController.clear();
+                                onSearchChanged('');
+                              },
+                              child: Icon(
+                                Icons.close,
+                                color: Colors.grey.shade400,
+                                size: 18,
+                              ),
+                            )
+                            : null,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder() {
+    return Container(
+      color: Colors.grey.shade200,
+      child: Center(
+        child: Icon(Icons.store, color: Colors.grey.shade400, size: 28),
+      ),
+    );
+  }
+
+  Widget _buildInitialAvatar() {
+    final name = shopController.currentSHop?.name ?? 'S';
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF00897B), Color(0xFF004D40)],
         ),
-        child: TextField(
-          controller: controller,
-          onChanged: onChanged,
-          onSubmitted: (_) => onSubmitted(),
-          textInputAction: TextInputAction.search,
-          decoration: InputDecoration(
-            prefixIcon: const Icon(Icons.search, color: Color(0xFFfea52d), size: 22),
-            hintText: 'Search in store...',
-            hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 15),
-            border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+      child: Center(
+        child: Text(
+          name.isNotEmpty ? name.substring(0, 1).toUpperCase() : 'S',
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
           ),
         ),
       ),
@@ -446,7 +588,11 @@ class ShopDescriptionWidget extends StatelessWidget {
                         ),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.store, color: Colors.white, size: 24),
+                      child: const Icon(
+                        Icons.store,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -467,10 +613,9 @@ class ShopDescriptionWidget extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // Description
-                if (shopController.currentSHop?.description?.isNotEmpty ??
-                    false)
+                if (shopController.currentSHop?.description.isNotEmpty ?? false)
                   Html(
-                    data: shopController.currentSHop!.description!,
+                    data: shopController.currentSHop!.description,
                     style: {
                       "body": Style(
                         margin: Margins.zero,
@@ -607,7 +752,10 @@ class _ReviewsSection extends StatelessWidget {
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFfea52d).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
@@ -790,7 +938,10 @@ class _ReviewCard extends StatelessWidget {
               ),
               // Rating Badge
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.amber.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(8),
@@ -848,7 +999,11 @@ class _ReviewCard extends StatelessWidget {
           // Review Text
           Text(
             review,
-            style: const TextStyle(fontSize: 14, color: Colors.black87, height: 1.5),
+            style: const TextStyle(
+              fontSize: 14,
+              color: Colors.black87,
+              height: 1.5,
+            ),
           ),
 
           const SizedBox(height: 14),

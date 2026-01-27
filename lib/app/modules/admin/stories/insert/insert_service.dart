@@ -398,7 +398,9 @@ class _InsertStoryScreenState extends State<InsertStoryScreen> {
                 children: [
                   Container(
                     height: MediaQuery.of(context).size.height * 0.4,
-                    decoration: const BoxDecoration(gradient: expandedStackGradient),
+                    decoration: const BoxDecoration(
+                      gradient: expandedStackGradient,
+                    ),
                   ),
                   // Content
                   SingleChildScrollView(
@@ -536,7 +538,11 @@ class _InsertStoryScreenState extends State<InsertStoryScreen> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 20),
+                const Icon(
+                  Icons.keyboard_arrow_down,
+                  color: Colors.white,
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   title,

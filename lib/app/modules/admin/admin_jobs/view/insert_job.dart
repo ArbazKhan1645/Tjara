@@ -441,7 +441,10 @@ class _InsertJobScreenState extends State<InsertJobScreen> {
                 const SizedBox(width: 4),
                 Text(
                   title,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
@@ -619,10 +622,11 @@ class _InsertJobScreenState extends State<InsertJobScreen> {
                                             ),
                                             borderSide: BorderSide.none,
                                           ),
-                                          contentPadding: const EdgeInsets.symmetric(
-                                            horizontal: 16,
-                                            vertical: 12,
-                                          ),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                horizontal: 16,
+                                                vertical: 12,
+                                              ),
                                         ),
                                         onChanged:
                                             (v) => controller.title.value = v,
@@ -1005,10 +1009,11 @@ class _InsertJobScreenState extends State<InsertJobScreen> {
                                             ),
                                             borderSide: BorderSide.none,
                                           ),
-                                          contentPadding: const EdgeInsets.symmetric(
-                                            horizontal: 16,
-                                            vertical: 12,
-                                          ),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                horizontal: 16,
+                                                vertical: 12,
+                                              ),
                                         ),
                                         maxLines: 6,
                                         onChanged:
@@ -1063,10 +1068,11 @@ class _InsertJobScreenState extends State<InsertJobScreen> {
                                             ),
                                             borderSide: BorderSide.none,
                                           ),
-                                          contentPadding: const EdgeInsets.symmetric(
-                                            horizontal: 16,
-                                            vertical: 12,
-                                          ),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                horizontal: 16,
+                                                vertical: 12,
+                                              ),
                                         ),
                                         keyboardType: TextInputType.number,
                                         inputFormatters: [

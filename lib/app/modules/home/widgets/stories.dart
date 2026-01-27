@@ -387,7 +387,9 @@ class _VideoFeedDialogState extends State<VideoFeedDialog> {
                                     children: [
                                       Text(
                                         widget.posts[index].name,
-                                        style: const TextStyle(color: Colors.white),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
                                       ),
                                       Text(
                                         widget.posts[index].shop?.shop?.name ??

@@ -350,7 +350,9 @@ class _ServiceAttributesScreenState extends State<ServiceAttributesScreen> {
                 children: [
                   Container(
                     height: MediaQuery.of(context).size.height * 0.4,
-                    decoration: const BoxDecoration(gradient: expandedStackGradient),
+                    decoration: const BoxDecoration(
+                      gradient: expandedStackGradient,
+                    ),
                   ),
                   SingleChildScrollView(
                     child: Column(
@@ -601,7 +603,9 @@ class _ServiceAttributesScreenState extends State<ServiceAttributesScreen> {
                         child: ElevatedButton(
                           onPressed: _submitAttribute,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0D9488), // Teal color
+                            backgroundColor: const Color(
+                              0xFF0D9488,
+                            ), // Teal color
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(

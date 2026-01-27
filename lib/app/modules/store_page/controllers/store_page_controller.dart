@@ -6,8 +6,9 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:tjara/app/core/locators/cache_images.dart';
 import 'package:tjara/app/models/categories/categories_model.dart';
-import 'package:tjara/app/models/products/products_model.dart';
+import 'package:tjara/app/models/products/products_model.dart' hide ShopShop;
 import 'package:tjara/app/services/auth/apis.dart';
+import 'package:tjara/app/models/products/single_product_model.dart';
 
 class StorePageController extends GetxController {
   ProductAttributeItems? selectedCategory;
@@ -62,9 +63,32 @@ class StorePageController extends GetxController {
     super.onClose();
   }
 
-  ShopShop? currentSHop = ShopShop();
+  ShopShop? currentSHop = ShopShop(
+    id: '',
+    prevId: null,
+    userId: '',
+    membershipId: null,
+    membershipStartDate: null,
+    membershipEndDate: null,
+    slug: '',
+    name: '',
+    thumbnailId: null,
+    bannerImageId: null,
+    stripeAccountId: null,
+    balance: 0,
+    description: '',
+    isVerified: 0,
+    isFeatured: 0,
+    status: '',
+    createdAt: null,
+    updatedAt: null,
+    banner: null,
+    thumbnail: null,
+    membership: null,
+    meta: null,
+  );
 
-  initState(String shopid) {
+  void initState(String shopid) {
     fetchInitialProducts(shopid);
   }
 

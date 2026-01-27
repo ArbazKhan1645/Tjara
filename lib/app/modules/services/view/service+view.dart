@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:tjara/app/modules/services/controller/service_controller.dart';
+import 'package:tjara/app/modules/services/model/sevices_model.dart'
+    show ServiceData;
 
 class ServicesScreen extends StatefulWidget {
   const ServicesScreen({super.key});
@@ -109,8 +111,8 @@ class _ServicesScreenState extends State<ServicesScreen>
               // Animated Header
               SliverToBoxAdapter(child: _buildAnimatedHeader()),
 
-              // Category Chips
-              // SliverToBoxAdapter(child: _buildCategoryChips()),
+              // Filter Bar
+              SliverToBoxAdapter(child: _buildFilterBar()),
 
               // Services Content
               _buildServicesContent(),
@@ -446,6 +448,141 @@ class _ServicesScreenState extends State<ServicesScreen>
     );
   }
 
+  Widget _buildFilterBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+      child: Row(
+        children: [
+          // Results count
+          Obx(() {
+            return Text(
+              '${controller.filteredServices.length} Services',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade700,
+              ),
+            );
+          }),
+          const Spacer(),
+          // Filter button
+          Obx(() {
+            final hasFilters = controller.isFiltersApplied.value;
+            return GestureDetector(
+              onTap: () => controller.showFilterBottomSheet(),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: hasFilters ? const Color(0xFFFF8C00) : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color:
+                        hasFilters
+                            ? const Color(0xFFFF8C00)
+                            : Colors.grey.shade300,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.tune_rounded,
+                      size: 18,
+                      color: hasFilters ? Colors.white : Colors.grey.shade700,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Filter',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: hasFilters ? Colors.white : Colors.grey.shade700,
+                      ),
+                    ),
+                    if (hasFilters) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.check,
+                          size: 10,
+                          color: Color(0xFFFF8C00),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          }),
+          const SizedBox(width: 10),
+          // Sort button
+          // Obx(() {
+          //   final hasSort = controller.sortBy.value.isNotEmpty;
+          //   return GestureDetector(
+          //     onTap: () => controller.showFilterBottomSheet(),
+          //     child: Container(
+          //       padding: const EdgeInsets.symmetric(
+          //         horizontal: 14,
+          //         vertical: 10,
+          //       ),
+          //       decoration: BoxDecoration(
+          //         color: hasSort ? const Color(0xFFFF8C00) : Colors.white,
+          //         borderRadius: BorderRadius.circular(12),
+          //         border: Border.all(
+          //           color: hasSort
+          //               ? const Color(0xFFFF8C00)
+          //               : Colors.grey.shade300,
+          //         ),
+          //         boxShadow: [
+          //           BoxShadow(
+          //             color: Colors.black.withOpacity(0.04),
+          //             blurRadius: 8,
+          //             offset: const Offset(0, 2),
+          //           ),
+          //         ],
+          //       ),
+          //       child: Row(
+          //         mainAxisSize: MainAxisSize.min,
+          //         children: [
+          //           Icon(
+          //             Icons.sort_rounded,
+          //             size: 18,
+          //             color: hasSort ? Colors.white : Colors.grey.shade700,
+          //           ),
+          //           const SizedBox(width: 6),
+          //           Text(
+          //             'Sort',
+          //             style: TextStyle(
+          //               fontSize: 14,
+          //               fontWeight: FontWeight.w600,
+          //               color: hasSort ? Colors.white : Colors.grey.shade700,
+          //             ),
+          //           ),
+          //         ],
+          //       ),
+          //     ),
+          //   );
+          // }),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCategoryChips() {
     return Container(
       margin: const EdgeInsets.only(top: 8),
@@ -535,8 +672,8 @@ class _ServicesScreenState extends State<ServicesScreen>
       return SliverGrid(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          crossAxisSpacing: 6,
-          mainAxisSpacing: 6,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
           childAspectRatio: 0.7,
         ),
         delegate: SliverChildBuilderDelegate((context, index) {
@@ -547,7 +684,7 @@ class _ServicesScreenState extends State<ServicesScreen>
     });
   }
 
-  Widget _buildPremiumServiceCard(service, int index) {
+  Widget _buildPremiumServiceCard(ServiceData service, int index) {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
       duration: Duration(milliseconds: 400 + (index * 100)),
@@ -558,222 +695,192 @@ class _ServicesScreenState extends State<ServicesScreen>
           child: Opacity(opacity: value, child: child),
         );
       },
-      child: GestureDetector(
-        onTap: () => controller.showServiceDetails(service),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.06),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-                spreadRadius: 0,
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image with Overlay
-              Expanded(
-                flex: 4,
-                child: Stack(
-                  children: [
-                    // Image
-                    ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: GestureDetector(
+          onTap: () => controller.showServiceDetails(service),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                  spreadRadius: 0,
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Image with Overlay
+                Expanded(
+                  flex: 4,
+                  child: Stack(
+                    children: [
+                      // Image
+                      ClipRRect(
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(12),
+                        ),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child:
+                              service.thumbnail?.media?.url != null
+                                  ? Image.network(
+                                    service.thumbnail!.media!.url!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            _buildPlaceholderImage(),
+                                  )
+                                  : _buildPlaceholderImage(),
+                        ),
                       ),
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: double.infinity,
-                        child:
-                            service.thumbnail?.media?.url != null
-                                ? Image.network(
-                                  service.thumbnail!.media!.url!,
-                                  fit: BoxFit.cover,
-                                  errorBuilder:
-                                      (context, error, stackTrace) =>
-                                          _buildPlaceholderImage(),
-                                )
-                                : _buildPlaceholderImage(),
-                      ),
-                    ),
 
-                    // Gradient Overlay
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        height: 60,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withOpacity(0.3),
+                      // Gradient Overlay
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          height: 60,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                Colors.black.withOpacity(0.3),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Rating Badge
+                      Positioned(
+                        top: 12,
+                        right: 12,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 8,
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.star_rounded,
+                                color: Color(0xFFFFB800),
+                                size: 14,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '4.9',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.grey.shade800,
+                                ),
+                              ),
                             ],
                           ),
                         ),
                       ),
-                    ),
-
-                    // Rating Badge
-                    Positioned(
-                      top: 12,
-                      right: 12,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 8,
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.star_rounded,
-                              color: Color(0xFFFFB800),
-                              size: 14,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '4.9',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.grey.shade800,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // Favorite Button
-                    Positioned(
-                      top: 12,
-                      left: 12,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 8,
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          Icons.favorite_border_rounded,
-                          color: Colors.grey.shade600,
-                          size: 18,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Content
-              Expanded(
-                flex: 4,
-                child: Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Title
-                      Text(
-                        service.name ?? 'Service',
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF1A1A2E),
-                          height: 1.2,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-
-                      const SizedBox(height: 6),
-
-                      // Description
-                      Expanded(
-                        child: Text(
-                          service.description ?? 'Professional service',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade500,
-                            height: 1.4,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-
-                      // Price Row
-                      Row(
-                        children: [
-                          // Price Tag
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFFF8C00), Color(0xFFFFA500)],
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              '\$${service.price ?? '0'}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-
-                          const Spacer(),
-
-                          // Arrow Button
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF5F6FA),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(
-                              Icons.arrow_forward_rounded,
-                              size: 16,
-                              color: Color(0xFFFF8C00),
-                            ),
-                          ),
-                        ],
-                      ),
                     ],
                   ),
                 ),
-              ),
-            ],
+
+                // Content
+                Expanded(
+                  flex: 4,
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Title
+                        Text(
+                          service.name ?? 'Service',
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1A1A2E),
+                            height: 1.2,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+
+                        const SizedBox(height: 6),
+
+                        // Description
+                        Expanded(
+                          child: Text(
+                            "${service.state?.name ?? ''}, ${service.country?.name ?? ''}",
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey.shade500,
+                              height: 1.4,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+
+                        // Inquire Now Button
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFFF8C00), Color(0xFFFFA500)],
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.support_agent,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                              SizedBox(width: 6),
+                              Text(
+                                'Inquire Now',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -340,7 +340,10 @@ class LoginScreenNew extends StatelessWidget {
                     Container(
                       decoration: BoxDecoration(
                         color: const Color(0xFFE5F3ED),
-                        border: Border.all(color: const Color(0xFFCAEDDE), width: 2),
+                        border: Border.all(
+                          color: const Color(0xFFCAEDDE),
+                          width: 2,
+                        ),
                         borderRadius: BorderRadius.circular(27),
                       ),
                       child: TextField(
@@ -433,7 +436,9 @@ class LoginScreenNew extends StatelessWidget {
                         ),
                         child:
                             authController.isLoading.value
-                                ? const CircularProgressIndicator(color: Colors.white)
+                                ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
                                 : const Text(
                                   'Login',
                                   style: TextStyle(

@@ -771,7 +771,9 @@ class ResellerListPage extends StatelessWidget {
                               const SizedBox(height: 16),
                               ElevatedButton.icon(
                                 onPressed:
-                                    () => Get.to(() => const AddEditResellerPage()),
+                                    () => Get.to(
+                                      () => const AddEditResellerPage(),
+                                    ),
                                 icon: const Icon(Icons.add),
                                 label: const Text('Add Reseller Level'),
                                 style: ElevatedButton.styleFrom(
@@ -921,7 +923,8 @@ class ResellerListPage extends StatelessWidget {
                                               switch (value) {
                                                 case 'edit':
                                                   Get.to(
-                                                    () => const AddEditResellerPage(),
+                                                    () =>
+                                                        const AddEditResellerPage(),
                                                     arguments: plan,
                                                   );
                                                   break;
@@ -1482,7 +1485,9 @@ class ImagePickerWidget extends StatelessWidget {
                         right: 4,
                         child: GestureDetector(
                           onTap: () {
-                            final List<File> newList = List.from(selectedImages);
+                            final List<File> newList = List.from(
+                              selectedImages,
+                            );
                             newList.removeAt(index);
                             onImagesSelected(newList);
                           },

@@ -267,7 +267,10 @@ class _SendEmailScreenState extends State<SendEmailScreen> {
                 children: [
                   // From field
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(color: Colors.grey[300]!),
@@ -291,7 +294,10 @@ class _SendEmailScreenState extends State<SendEmailScreen> {
 
                   // To field
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(color: Colors.grey[300]!),
@@ -332,7 +338,10 @@ class _SendEmailScreenState extends State<SendEmailScreen> {
 
                   // Subject field
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(color: Colors.grey[300]!),
@@ -405,7 +414,9 @@ class _SendEmailScreenState extends State<SendEmailScreen> {
                       ),
                       child:
                           _isLoading
-                              ? const CircularProgressIndicator(color: Colors.white)
+                              ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
                               : const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -799,7 +810,10 @@ class _AllEmailsScreenState extends State<AllEmailsScreen> {
                 onPressed: _currentPage > 1 ? _goToFirstPage : null,
                 icon: const Icon(Icons.first_page),
                 tooltip: 'First Page',
-                color: _currentPage > 1 ? const Color(0xFFE91E63) : Colors.grey[400],
+                color:
+                    _currentPage > 1
+                        ? const Color(0xFFE91E63)
+                        : Colors.grey[400],
               ),
 
               // Previous page button
@@ -807,7 +821,10 @@ class _AllEmailsScreenState extends State<AllEmailsScreen> {
                 onPressed: _currentPage > 1 ? _goToPreviousPage : null,
                 icon: const Icon(Icons.chevron_left),
                 tooltip: 'Previous Page',
-                color: _currentPage > 1 ? const Color(0xFFE91E63) : Colors.grey[400],
+                color:
+                    _currentPage > 1
+                        ? const Color(0xFFE91E63)
+                        : Colors.grey[400],
               ),
 
               // Page numbers (show current page and nearby pages)
@@ -883,7 +900,8 @@ class _AllEmailsScreenState extends State<AllEmailsScreen> {
             color: isCurrentPage ? const Color(0xFFE91E63) : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: isCurrentPage ? const Color(0xFFE91E63) : Colors.grey[300]!,
+              color:
+                  isCurrentPage ? const Color(0xFFE91E63) : Colors.grey[300]!,
             ),
           ),
           child: Text(

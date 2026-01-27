@@ -412,7 +412,9 @@ class _InsertServiceScreenState extends State<InsertServiceScreen> {
                 children: [
                   Container(
                     height: MediaQuery.of(context).size.height * 0.4,
-                    decoration: const BoxDecoration(gradient: expandedStackGradient),
+                    decoration: const BoxDecoration(
+                      gradient: expandedStackGradient,
+                    ),
                   ),
                   // Content
                   Padding(
@@ -458,7 +460,9 @@ class _InsertServiceScreenState extends State<InsertServiceScreen> {
                                       horizontal: 12,
                                       vertical: 4,
                                     ),
-                                    margin: const EdgeInsets.symmetric(vertical: 6),
+                                    margin: const EdgeInsets.symmetric(
+                                      vertical: 6,
+                                    ),
                                     decoration: BoxDecoration(
                                       border: Border.all(
                                         color: const Color(0xffEAEAEA),
@@ -515,7 +519,9 @@ class _InsertServiceScreenState extends State<InsertServiceScreen> {
                                       horizontal: 12,
                                       vertical: 4,
                                     ),
-                                    margin: const EdgeInsets.symmetric(vertical: 6),
+                                    margin: const EdgeInsets.symmetric(
+                                      vertical: 6,
+                                    ),
                                     decoration: BoxDecoration(
                                       border: Border.all(
                                         color: const Color(0xffEAEAEA),
@@ -579,7 +585,9 @@ class _InsertServiceScreenState extends State<InsertServiceScreen> {
                                         horizontal: 12,
                                         vertical: 4,
                                       ),
-                                      margin: const EdgeInsets.symmetric(vertical: 6),
+                                      margin: const EdgeInsets.symmetric(
+                                        vertical: 6,
+                                      ),
                                       decoration: BoxDecoration(
                                         border: Border.all(
                                           color: const Color(0xffEAEAEA),

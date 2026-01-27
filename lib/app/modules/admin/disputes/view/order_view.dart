@@ -402,7 +402,9 @@ class _DisputesOrderoverState extends State<DisputesOrderover> {
                               onPressed: () {
                                 Navigator.of(context).pop();
                               },
-                              icon: const Icon(Icons.arrow_circle_left_outlined),
+                              icon: const Icon(
+                                Icons.arrow_circle_left_outlined,
+                              ),
                             ),
                           ],
                         ),
@@ -777,9 +779,10 @@ class _DisputesOrderoverState extends State<DisputesOrderover> {
                                                     ? Alignment.centerRight
                                                     : Alignment.centerLeft,
                                             child: Container(
-                                              margin: const EdgeInsets.symmetric(
-                                                vertical: 4,
-                                              ),
+                                              margin:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 4,
+                                                  ),
                                               padding: const EdgeInsets.all(12),
                                               constraints: BoxConstraints(
                                                 maxWidth:
@@ -864,10 +867,11 @@ class _DisputesOrderoverState extends State<DisputesOrderover> {
                                               20,
                                             ),
                                           ),
-                                          contentPadding: const EdgeInsets.symmetric(
-                                            horizontal: 16,
-                                            vertical: 10,
-                                          ),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                horizontal: 16,
+                                                vertical: 10,
+                                              ),
                                         ),
                                         maxLines: null,
                                         onSubmitted: (_) => _sendMessage(),

@@ -129,8 +129,10 @@ class _StoriesItemCardState extends State<StoriesItemCard>
                           imageUrl: imageUrl,
                           fit: BoxFit.cover,
                           errorWidget:
-                              (context, url, error) =>
-                                  const Icon(Icons.image_not_supported, size: 20),
+                              (context, url, error) => const Icon(
+                                Icons.image_not_supported,
+                                size: 20,
+                              ),
                         )
                         : const Icon(Icons.image, size: 20, color: Colors.grey),
               ),

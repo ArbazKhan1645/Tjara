@@ -1,15 +1,14 @@
 class ServicesResponse {
-  ServicesResponse({
-    this.services,
-  });
+  ServicesResponse({this.services});
 
   final Services? services;
 
   factory ServicesResponse.fromJson(Map<String, dynamic> json) {
     return ServicesResponse(
-      services: json['services'] == null
-          ? null
-          : Services.fromJson(json['services'] as Map<String, dynamic>),
+      services:
+          json['services'] == null
+              ? null
+              : Services.fromJson(json['services'] as Map<String, dynamic>),
     );
   }
 }
@@ -48,13 +47,14 @@ class Services {
   factory Services.fromJson(Map<String, dynamic> json) {
     return Services(
       currentPage: json['current_page'] as int?,
-      data: json['data'] == null
-          ? null
-          : List<ServiceData>.from(
-              (json['data'] as List).map(
-                (x) => ServiceData.fromJson(x as Map<String, dynamic>),
+      data:
+          json['data'] == null
+              ? null
+              : List<ServiceData>.from(
+                (json['data'] as List).map(
+                  (x) => ServiceData.fromJson(x as Map<String, dynamic>),
+                ),
               ),
-            ),
       firstPageUrl: json['first_page_url'] as String?,
       from: json['from'] as int?,
       lastPage: json['last_page'] as int?,
@@ -144,21 +144,24 @@ class ServiceData {
       status: json['status'] as String?,
       createdAt: json['created_at'] as String?,
       updatedAt: json['updated_at'] as String?,
-      thumbnail: json['thumbnail'] == null
-          ? null
-          : Thumbnail.fromJson(json['thumbnail'] as Map<String, dynamic>),
+      thumbnail:
+          json['thumbnail'] == null
+              ? null
+              : Thumbnail.fromJson(json['thumbnail'] as Map<String, dynamic>),
       // // shop: json['shop'] == null
       // //     ? null
       // //     : ShopWrapper.fromJson(json['shop'] as Map<String, dynamic>),
       // categories: json['categories'] == null
       //     ? null
       //     : Categories.fromJson(json['categories'] as Map<String, dynamic>),
-      // country: json['country'] == null
-      //     ? null
-      //     : Country.fromJson(json['country'] as Map<String, dynamic>),
-      // state: json['state'] == null
-      //     ? null
-      //     : State.fromJson(json['state'] as Map<String, dynamic>),
+      country:
+          json['country'] == null
+              ? null
+              : Country.fromJson(json['country'] as Map<String, dynamic>),
+      state:
+          json['state'] == null
+              ? null
+              : State.fromJson(json['state'] as Map<String, dynamic>),
       // city: json['city'] == null
       //     ? null
       //     : City.fromJson(json['city'] as Map<String, dynamic>),
@@ -173,17 +176,16 @@ class ServiceData {
 }
 
 class Thumbnail {
-  Thumbnail({
-    this.media,
-  });
+  Thumbnail({this.media});
 
   final Media? media;
 
   factory Thumbnail.fromJson(Map<String, dynamic> json) {
     return Thumbnail(
-      media: json['media'] == null
-          ? null
-          : Media.fromJson(json['media'] as Map<String, dynamic>),
+      media:
+          json['media'] == null
+              ? null
+              : Media.fromJson(json['media'] as Map<String, dynamic>),
     );
   }
 }
@@ -248,17 +250,16 @@ class Media {
 }
 
 class ShopWrapper {
-  ShopWrapper({
-    this.shop,
-  });
+  ShopWrapper({this.shop});
 
   final Shop? shop;
 
   factory ShopWrapper.fromJson(Map<String, dynamic> json) {
     return ShopWrapper(
-      shop: json['shop'] == null
-          ? null
-          : Shop.fromJson(json['shop'] as Map<String, dynamic>),
+      shop:
+          json['shop'] == null
+              ? null
+              : Shop.fromJson(json['shop'] as Map<String, dynamic>),
     );
   }
 }
@@ -332,52 +333,54 @@ class Shop {
       status: json['status'] as String?,
       createdAt: json['created_at'] as String?,
       updatedAt: json['updated_at'] as String?,
-      banner: json['banner'] == null
-          ? null
-          : Banner.fromJson(json['banner'] as Map<String, dynamic>),
-      thumbnail: json['thumbnail'] == null
-          ? null
-          : Thumbnail.fromJson(json['thumbnail'] as Map<String, dynamic>),
+      banner:
+          json['banner'] == null
+              ? null
+              : Banner.fromJson(json['banner'] as Map<String, dynamic>),
+      thumbnail:
+          json['thumbnail'] == null
+              ? null
+              : Thumbnail.fromJson(json['thumbnail'] as Map<String, dynamic>),
       membership: json['membership'], // Can be Map or String
-      meta: json['meta'] == null
-          ? null
-          : ShopMeta.fromJson(json['meta'] as Map<String, dynamic>),
+      meta:
+          json['meta'] == null
+              ? null
+              : ShopMeta.fromJson(json['meta'] as Map<String, dynamic>),
     );
   }
 }
 
 class Banner {
-  Banner({
-    this.media,
-  });
+  Banner({this.media});
 
   final Media? media;
 
   factory Banner.fromJson(Map<String, dynamic> json) {
     return Banner(
-      media: json['media'] == null
-          ? null
-          : Media.fromJson(json['media'] as Map<String, dynamic>),
+      media:
+          json['media'] == null
+              ? null
+              : Media.fromJson(json['media'] as Map<String, dynamic>),
     );
   }
 }
 
 class Categories {
-  Categories({
-    this.serviceAttributeItems,
-  });
+  Categories({this.serviceAttributeItems});
 
   final List<ServiceAttributeItem>? serviceAttributeItems;
 
   factory Categories.fromJson(Map<String, dynamic> json) {
     return Categories(
-      serviceAttributeItems: json['service_attribute_items'] == null
-          ? null
-          : List<ServiceAttributeItem>.from(
-              (json['service_attribute_items'] as List).map(
-                (x) => ServiceAttributeItem.fromJson(x as Map<String, dynamic>),
+      serviceAttributeItems:
+          json['service_attribute_items'] == null
+              ? null
+              : List<ServiceAttributeItem>.from(
+                (json['service_attribute_items'] as List).map(
+                  (x) =>
+                      ServiceAttributeItem.fromJson(x as Map<String, dynamic>),
+                ),
               ),
-            ),
     );
   }
 }
@@ -409,27 +412,29 @@ class ServiceAttributeItem {
       attributeItemId: json['attribute_item_id'] as String?,
       createdAt: json['created_at'] as String?,
       updatedAt: json['updated_at'] as String?,
-      attributeItem: json['attribute_item'] == null
-          ? null
-          : AttributeItemWrapper.fromJson(
-              json['attribute_item'] as Map<String, dynamic>),
+      attributeItem:
+          json['attribute_item'] == null
+              ? null
+              : AttributeItemWrapper.fromJson(
+                json['attribute_item'] as Map<String, dynamic>,
+              ),
     );
   }
 }
 
 class AttributeItemWrapper {
-  AttributeItemWrapper({
-    this.serviceAttributeItem,
-  });
+  AttributeItemWrapper({this.serviceAttributeItem});
 
   final ServiceAttributeItemData? serviceAttributeItem;
 
   factory AttributeItemWrapper.fromJson(Map<String, dynamic> json) {
     return AttributeItemWrapper(
-      serviceAttributeItem: json['service_attribute_item'] == null
-          ? null
-          : ServiceAttributeItemData.fromJson(
-              json['service_attribute_item'] as Map<String, dynamic>),
+      serviceAttributeItem:
+          json['service_attribute_item'] == null
+              ? null
+              : ServiceAttributeItemData.fromJson(
+                json['service_attribute_item'] as Map<String, dynamic>,
+              ),
     );
   }
 }
@@ -472,9 +477,10 @@ class ServiceAttributeItemData {
       thumbnailId: json['thumbnail_id'] as String?,
       createdAt: json['created_at'] as String?,
       updatedAt: json['updated_at'] as String?,
-      thumbnail: json['thumbnail'] == null
-          ? null
-          : Thumbnail.fromJson(json['thumbnail'] as Map<String, dynamic>),
+      thumbnail:
+          json['thumbnail'] == null
+              ? null
+              : Thumbnail.fromJson(json['thumbnail'] as Map<String, dynamic>),
       parent: json['parent'],
     );
   }
@@ -542,13 +548,7 @@ class State {
 }
 
 class City {
-  City({
-    this.id,
-    this.stateId,
-    this.name,
-    this.createdAt,
-    this.updatedAt,
-  });
+  City({this.id, this.stateId, this.name, this.createdAt, this.updatedAt});
 
   final String? id;
   final String? stateId;
@@ -568,19 +568,13 @@ class City {
 }
 
 class Meta {
-  Meta({
-    this.videoId,
-    this.gallery,
-  });
+  Meta({this.videoId, this.gallery});
 
   final dynamic videoId;
   final dynamic gallery; // Can be String or null
 
   factory Meta.fromJson(Map<String, dynamic> json) {
-    return Meta(
-      videoId: json['video_id'],
-      gallery: json['gallery'],
-    );
+    return Meta(videoId: json['video_id'], gallery: json['gallery']);
   }
 }
 
@@ -620,11 +614,7 @@ class ShopMeta {
 }
 
 class Link {
-  Link({
-    this.url,
-    this.label,
-    this.active,
-  });
+  Link({this.url, this.label, this.active});
 
   final String? url;
   final String? label;

@@ -321,7 +321,9 @@ class FAQListScreen extends StatelessWidget {
 
                               // FAQ Section Header
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
                                 child: Row(
                                   children: [
                                     Text(
@@ -339,7 +341,9 @@ class FAQListScreen extends StatelessWidget {
 
                               // DataTable with horizontal scroll
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
                                 child: Obx(() {
                                   if (controller.isLoading.value) {
                                     return const SizedBox(
@@ -411,10 +415,18 @@ class FAQListScreen extends StatelessWidget {
                                             color: Colors.grey[700],
                                           ),
                                           columns: [
-                                            const DataColumn(label: Text('S.No')),
-                                            const DataColumn(label: Text('Question')),
-                                            const DataColumn(label: Text('Answer')),
-                                            const DataColumn(label: Text('Actions')),
+                                            const DataColumn(
+                                              label: Text('S.No'),
+                                            ),
+                                            const DataColumn(
+                                              label: Text('Question'),
+                                            ),
+                                            const DataColumn(
+                                              label: Text('Answer'),
+                                            ),
+                                            const DataColumn(
+                                              label: Text('Actions'),
+                                            ),
                                           ],
                                           rows:
                                               controller.filteredFAQs.asMap().entries.map((
@@ -980,7 +992,9 @@ class FAQFormScreen extends StatelessWidget {
                                                 faq != null
                                                     ? 'Updating...'
                                                     : 'Saving...',
-                                                style: const TextStyle(fontSize: 16),
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                ),
                                               ),
                                             ],
                                           )

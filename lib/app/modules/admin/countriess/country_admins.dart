@@ -286,10 +286,11 @@ class CountryPage extends StatelessWidget {
                                               width: 2,
                                             ),
                                           ),
-                                          contentPadding: const EdgeInsets.symmetric(
-                                            horizontal: 16,
-                                            vertical: 16,
-                                          ),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                horizontal: 16,
+                                                vertical: 16,
+                                              ),
                                         ),
                                         validator:
                                             (value) =>
@@ -449,7 +450,9 @@ class CountryPage extends StatelessWidget {
                                 return ListView.builder(
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
-                                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
                                   itemCount:
                                       controller.filteredCountries.length,
                                   itemBuilder: (context, index) {
@@ -495,7 +498,9 @@ class CountryPage extends StatelessWidget {
                                             ),
                                           ),
                                         Container(
-                                          margin: const EdgeInsets.only(bottom: 8),
+                                          margin: const EdgeInsets.only(
+                                            bottom: 8,
+                                          ),
                                           child: Row(
                                             children: [
                                               // Country flag circle
