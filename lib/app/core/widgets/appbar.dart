@@ -7,8 +7,8 @@ import 'package:tjara/app/core/widgets/overlay.dart';
 import 'package:tjara/app/models/categories/categories_model.dart';
 import 'package:tjara/app/models/chat_messages/insert_chat.dart';
 
-import 'package:tjara/app/modules/dashboard/controllers/dashboard_controller.dart';
-import 'package:tjara/app/modules/home/controllers/home_controller.dart';
+import 'package:tjara/app/modules/modules_customer/customer_dashboard/controllers/dashboard_controller.dart';
+import 'package:tjara/app/modules/modules_customer/app_home/controllers/home_controller.dart';
 
 import 'package:tjara/app/services/auth/auth_service.dart';
 import 'package:tjara/app/services/chat_messages/chat_messages_service.dart';

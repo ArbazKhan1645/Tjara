@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 
-import 'package:tjara/app/modules/contests/model/contest_model.dart';
-import 'package:tjara/app/modules/contests/model/fd.dart';
+import 'package:tjara/app/modules/modules_customer/tjara_contests/model/contest_model.dart';
+import 'package:tjara/app/modules/modules_customer/tjara_contests/model/fd.dart';
 
 import 'package:tjara/app/services/auth/auth_service.dart';
 import 'package:http/http.dart' as http;

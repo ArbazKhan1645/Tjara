@@ -12,7 +12,7 @@ abstract class Routes {
   static const DASHBOARD = _Paths.DASHBOARD;
   static const ShoppingCartScreen = _Paths.ShoppingCartScreen;
   static const CHECKOUT = _Paths.CHECKOUT;
-  static const BLOG = _Paths.BLOG;
+
   static const STORE_PAGE = _Paths.STORE_PAGE;
   static const PRODUCT_DETAIL_SCREEN = _Paths.PRODUCT_DETAIL_SCREEN;
 
@@ -48,7 +48,7 @@ abstract class _Paths {
   static const DASHBOARD = '/dashboard';
   static const ShoppingCartScreen = '/ShoppingCartScreen';
   static const CHECKOUT = '/checkout';
-  static const BLOG = '/blog';
+
   static const STORE_PAGE = '/store-page';
   static const PRODUCT_DETAIL_SCREEN = '/product-detail-screen';
 

@@ -3,7 +3,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:tjara/app/models/products/products_model.dart';
 
-import 'package:tjara/app/modules/home/widgets/products_grid.dart';
+import 'package:tjara/app/modules/modules_customer/app_home/widgets/home_products_grid.dart';
 
 class CommonProductGrid extends StatefulWidget {
   final List<ProductDatum> products; // Pass products directly as a parameter
@@ -35,7 +35,8 @@ class _CommonProductGridState extends State<CommonProductGrid>
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         child: MasonryGridView.count(
           key: PageStorageKey<String>(
-              'productGridKeycommon_${widget.products.length}'),
+            'productGridKeycommon_${widget.products.length}',
+          ),
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           crossAxisCount: 2,

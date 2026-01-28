@@ -5,8 +5,6 @@ import 'package:tjara/app/modules/authentication/controllers/authentication_cont
 class AuthenticationBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<AuthenticationController>(
-      () => AuthenticationController(),
-    );
+    Get.lazyPut<AuthenticationController>(() => AuthenticationController());
   }
 }

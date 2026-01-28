@@ -11,7 +11,7 @@ import 'package:logger/logger.dart';
 import 'package:tjara/app/core/dialogs/loading_dialog.dart';
 import 'package:tjara/app/core/utils/helpers/alerts.dart';
 
-import 'package:tjara/app/modules/services/model/sevices_model.dart';
+import 'package:tjara/app/modules/modules_customer/tjara_services/model/sevices_model.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
 import 'package:http/http.dart' as http;
 

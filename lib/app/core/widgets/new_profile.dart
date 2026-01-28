@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tjara/app/core/utils/helpers/alerts.dart';
-import 'package:tjara/app/modules/admin/profile/profile.dart';
-import 'package:tjara/app/modules/dashboard/controllers/dashboard_controller.dart';
-import 'package:tjara/app/modules/my_cart/controllers/my_cart_controller.dart';
-import 'package:tjara/app/modules/wishlist/controllers/wishlist_service.dart';
+import 'package:tjara/app/modules/modules_admin/admin/profile/profile.dart';
+import 'package:tjara/app/modules/modules_customer/customer_dashboard/controllers/dashboard_controller.dart';
+import 'package:tjara/app/modules/modules_customer/customer_cart/controllers/my_cart_controller.dart';
+import 'package:tjara/app/modules/modules_customer/user_wishlist/service/wishlist_service.dart';
 import 'package:tjara/app/routes/app_pages.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
 import 'package:tjara/app/services/dashbopard_services/balance_service.dart';
@@ -107,7 +107,11 @@ class UserMenuDialog extends StatelessWidget {
                         color: Color(0xFFF97316),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.close, color: Colors.white, size: 20),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
                   ),
                 ],
@@ -395,8 +399,11 @@ class _SwitchAccountDialogState extends State<SwitchAccountDialog> {
                   'assets/images/logo.png',
                   fit: BoxFit.contain,
                   errorBuilder:
-                      (context, error, stackTrace) =>
-                          const Icon(Icons.store, color: Color(0xFFF97316), size: 24),
+                      (context, error, stackTrace) => const Icon(
+                        Icons.store,
+                        color: Color(0xFFF97316),
+                        size: 24,
+                      ),
                 ),
               ),
             ),
@@ -431,10 +438,14 @@ class _SwitchAccountDialogState extends State<SwitchAccountDialog> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isSelected ? const Color(0xFFF97316) : Colors.grey.shade400,
+                  color:
+                      isSelected
+                          ? const Color(0xFFF97316)
+                          : Colors.grey.shade400,
                   width: 2,
                 ),
-                color: isSelected ? const Color(0xFFF97316) : Colors.transparent,
+                color:
+                    isSelected ? const Color(0xFFF97316) : Colors.transparent,
               ),
               child:
                   isSelected

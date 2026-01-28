@@ -14,11 +14,11 @@ import 'package:tjara/app/models/categories/categories_model.dart';
 import 'package:tjara/app/models/products/products_model.dart';
 import 'package:tjara/app/modules/authentication/dialogs/contact_us.dart';
 import 'package:tjara/app/modules/authentication/dialogs/login.dart';
-import 'package:tjara/app/modules/dashboard/controllers/dashboard_controller.dart';
-import 'package:tjara/app/modules/home/controllers/home_controller.dart';
-import 'package:tjara/app/modules/my_cart/controllers/my_cart_controller.dart';
-import 'package:tjara/app/modules/product_detail_screen/views/product_detail_screen_view.dart';
-import 'package:tjara/app/modules/wishlist/controllers/wishlist_service.dart';
+import 'package:tjara/app/modules/modules_customer/customer_dashboard/controllers/dashboard_controller.dart';
+import 'package:tjara/app/modules/modules_customer/app_home/controllers/home_controller.dart';
+import 'package:tjara/app/modules/modules_customer/customer_cart/controllers/my_cart_controller.dart';
+import 'package:tjara/app/modules/modules_customer/product_detail_screen/views/product_detail_screen_view.dart';
+import 'package:tjara/app/modules/modules_customer/user_wishlist/service/wishlist_service.dart';
 import 'package:tjara/app/routes/app_pages.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
 

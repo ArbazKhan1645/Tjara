@@ -5,8 +5,6 @@ import 'package:tjara/app/modules/splash_screen/controllers/splash_screen_contro
 class SplashScreenBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<SplashScreenController>(
-      () => SplashScreenController(),
-    );
+    Get.lazyPut<SplashScreenController>(() => SplashScreenController());
   }
 }

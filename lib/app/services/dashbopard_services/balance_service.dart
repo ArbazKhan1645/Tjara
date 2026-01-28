@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
 import 'package:tjara/app/models/products/products_model.dart';
 import 'package:tjara/app/models/resseller_programs_my/model.dart';
-import 'package:tjara/app/modules/admin/myshop/service.dart';
-import 'package:tjara/app/modules/admin/reseller_programs/service.dart';
+import 'package:tjara/app/modules/modules_admin/admin/myshop/service.dart';
+import 'package:tjara/app/modules/modules_admin/admin/reseller_programs/service.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
 
 class BalanceService extends GetxService {

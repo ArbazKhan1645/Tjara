@@ -1,51 +1,46 @@
 import 'package:get/get.dart';
-import 'package:tjara/app/modules/admin/add_product_auction_admin/bindings/add_product_auction_admin_binding.dart';
-import 'package:tjara/app/modules/admin/add_product_auction_admin/views/add_product_auction_admin_view.dart';
-
-import 'package:tjara/app/modules/admin/add_product_admin/bindings/add_product_admin_binding.dart';
-import 'package:tjara/app/modules/admin/add_product_admin/views/add_product_admin_view.dart';
-import 'package:tjara/app/modules/admin/categories_admin/bindings/categories_admin_binding.dart';
-import 'package:tjara/app/modules/admin/categories_admin/views/categories_admin_view.dart';
-import 'package:tjara/app/modules/admin/dashboard_admin/bindings/dashboard_admin_binding.dart';
-import 'package:tjara/app/modules/admin/dashboard_admin/views/dashboard_admin_view.dart';
-import 'package:tjara/app/modules/admin/products_admin/bindings/products_admin_binding.dart';
-import 'package:tjara/app/modules/admin/products_admin/views/products_admin_view.dart';
+import 'package:tjara/app/modules/modules_admin/admin/add_product_auction_admin/bindings/add_product_auction_admin_binding.dart';
+import 'package:tjara/app/modules/modules_admin/admin/add_product_auction_admin/views/add_product_auction_admin_view.dart';
+import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/bindings/add_product_admin_binding.dart';
+import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/views/add_product_admin_view.dart';
+import 'package:tjara/app/modules/modules_admin/admin/categories_admin/bindings/categories_admin_binding.dart';
+import 'package:tjara/app/modules/modules_admin/admin/categories_admin/views/categories_admin_view.dart';
+import 'package:tjara/app/modules/modules_admin/admin/dashboard_admin/bindings/dashboard_admin_binding.dart';
+import 'package:tjara/app/modules/modules_admin/admin/dashboard_admin/views/dashboard_admin_view.dart';
+import 'package:tjara/app/modules/modules_admin/admin/products_admin/bindings/products_admin_binding.dart';
+import 'package:tjara/app/modules/modules_admin/admin/products_admin/views/products_admin_view.dart';
 import 'package:tjara/app/modules/authentication/bindings/authentication_binding.dart';
 import 'package:tjara/app/modules/authentication/views/authentication_view.dart';
-import 'package:tjara/app/modules/blog/bindings/blog_binding.dart';
-import 'package:tjara/app/modules/blog/views/blog_view.dart';
-import 'package:tjara/app/modules/categories/bindings/categories_binding.dart';
-import 'package:tjara/app/modules/categories/views/categories_view.dart';
-import 'package:tjara/app/modules/checkout/bindings/checkout_binding.dart';
-import 'package:tjara/app/modules/checkout/views/checkout_view.dart';
-import 'package:tjara/app/modules/contests/bindings/contests_binding.dart';
-import 'package:tjara/app/modules/contests/views/contests_view.dart';
-import 'package:tjara/app/modules/dashboard/bindings/dashboard_binding.dart';
-import 'package:tjara/app/modules/dashboard/views/dashboard_view.dart';
-import 'package:tjara/app/modules/home/bindings/home_binding.dart';
-import 'package:tjara/app/modules/home/views/home_view.dart';
-import 'package:tjara/app/modules/home/widgets/shopping_cart.dart';
-import 'package:tjara/app/modules/more/bindings/more_binding.dart';
-import 'package:tjara/app/modules/more/views/more_view.dart';
-import 'package:tjara/app/modules/my_account/bindings/my_account_binding.dart';
-import 'package:tjara/app/modules/my_account/views/my_account_view.dart';
-import 'package:tjara/app/modules/my_cart/bindings/my_cart_binding.dart';
-import 'package:tjara/app/modules/my_cart/views/my_cart_view.dart';
-import 'package:tjara/app/modules/orders_dashboard/bindings/orders_dashboard_binding.dart';
-import 'package:tjara/app/modules/orders_dashboard/views/orders_dashboard_view.dart';
-import 'package:tjara/app/modules/product_detail_screen/bindings/product_detail_screen_binding.dart';
-import 'package:tjara/app/modules/product_detail_screen/views/product_detail_screen_view.dart';
-import 'package:tjara/app/modules/services/view/service+view.dart';
+import 'package:tjara/app/modules/modules_customer/order_checkout/bindings/checkout_binding.dart';
+import 'package:tjara/app/modules/modules_customer/order_checkout/views/checkout_view.dart';
+import 'package:tjara/app/modules/modules_customer/tjara_contests/bindings/contests_binding.dart';
+import 'package:tjara/app/modules/modules_customer/tjara_contests/views/contests_view.dart';
+import 'package:tjara/app/modules/modules_customer/customer_dashboard/bindings/dashboard_binding.dart';
+import 'package:tjara/app/modules/modules_customer/customer_dashboard/views/dashboard_view.dart';
+import 'package:tjara/app/modules/modules_customer/app_home/bindings/home_binding.dart';
+import 'package:tjara/app/modules/modules_customer/app_home/views/home_view.dart';
+import 'package:tjara/app/modules/modules_customer/customer_cart/screens/shopping_cart.dart';
+import 'package:tjara/app/modules/modules_customer/dashboard_more/bindings/more_binding.dart';
+import 'package:tjara/app/modules/modules_customer/dashboard_more/views/more_view.dart';
+import 'package:tjara/app/modules/modules_customer/my_account/bindings/my_account_binding.dart';
+import 'package:tjara/app/modules/modules_customer/my_account/views/my_account_view.dart';
+import 'package:tjara/app/modules/modules_customer/customer_cart/bindings/my_cart_binding.dart';
+import 'package:tjara/app/modules/modules_customer/customer_cart/views/my_cart_view.dart';
+import 'package:tjara/app/modules/modules_customer/orders_dashboard/bindings/orders_dashboard_binding.dart';
+import 'package:tjara/app/modules/modules_customer/orders_dashboard/views/orders_dashboard_view.dart';
+import 'package:tjara/app/modules/modules_customer/product_detail_screen/bindings/product_detail_screen_binding.dart';
+import 'package:tjara/app/modules/modules_customer/product_detail_screen/views/product_detail_screen_view.dart';
+import 'package:tjara/app/modules/modules_customer/tjara_services/view/service+view.dart';
 import 'package:tjara/app/modules/splash_screen/bindings/splash_screen_binding.dart';
 import 'package:tjara/app/modules/splash_screen/views/splash_screen_view.dart';
-import 'package:tjara/app/modules/store_page/bindings/store_page_binding.dart';
-import 'package:tjara/app/modules/store_page/views/store_page_view.dart';
-import 'package:tjara/app/modules/tjara_jobs/bindings/tjara_jobs_binding.dart';
-import 'package:tjara/app/modules/tjara_jobs/views/tjara_jobs_view.dart';
-import 'package:tjara/app/modules/wishlist/bindings/wishlist_binding.dart';
-import 'package:tjara/app/modules/wishlist/views/wishlist_view.dart';
-import 'package:tjara/app/modules/home/screens/flash_deal_detail_screen.dart';
-import 'package:tjara/app/modules/home/bindings/flash_deal_binding.dart';
+import 'package:tjara/app/modules/modules_customer/store_page/bindings/store_page_binding.dart';
+import 'package:tjara/app/modules/modules_customer/store_page/views/store_page_view.dart';
+import 'package:tjara/app/modules/modules_customer/tjara_jobs/bindings/tjara_jobs_binding.dart';
+import 'package:tjara/app/modules/modules_customer/tjara_jobs/views/tjara_jobs_view.dart';
+import 'package:tjara/app/modules/modules_customer/user_wishlist/bindings/wishlist_binding.dart';
+import 'package:tjara/app/modules/modules_customer/user_wishlist/views/wishlist_view.dart';
+import 'package:tjara/app/modules/modules_customer/product_detail_screen/screens/flash_deal_detail_screen.dart';
+import 'package:tjara/app/modules/modules_customer/app_home/bindings/flash_deal_binding.dart';
 
 // ignore_for_file: constant_identifier_names
 
@@ -69,11 +64,7 @@ class AppPages {
         ),
       ],
     ),
-    GetPage(
-      name: _Paths.CATEGORIES,
-      page: () => const CategoriesView(),
-      binding: CategoriesBinding(),
-    ),
+
     GetPage(name: _Paths.SERVICES, page: () => const ServicesScreen()),
     GetPage(
       name: _Paths.MY_ACCOUNT,
@@ -104,11 +95,7 @@ class AppPages {
       page: () => const CheckoutView(),
       binding: CheckoutBinding(),
     ),
-    GetPage(
-      name: _Paths.BLOG,
-      page: () => const BlogView(),
-      binding: BlogBinding(),
-    ),
+
     GetPage(
       name: _Paths.STORE_PAGE,
       page: () => const StorePageView(),

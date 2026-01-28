@@ -3,7 +3,7 @@ import 'package:get/instance_manager.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:tjara/app/modules/home/controllers/home_controller.dart';
+import 'package:tjara/app/modules/modules_customer/app_home/controllers/home_controller.dart';
 
 class LikeButton extends StatefulWidget {
   final String postId;

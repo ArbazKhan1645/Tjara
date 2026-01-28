@@ -207,7 +207,9 @@ class _LoginUiState extends State<LoginUi> {
                                                     value ?? false;
                                               });
                                             },
-                                            activeColor: const Color(0xFFfea52d),
+                                            activeColor: const Color(
+                                              0xFFfea52d,
+                                            ),
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
                                                   BorderRadius.circular(4),

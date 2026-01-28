@@ -50,7 +50,10 @@ class SignupScreen extends StatelessWidget {
                     child: Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back, color: Colors.white),
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
+                          ),
                           onPressed: () => Get.back(),
                         ),
                         const Spacer(),
@@ -295,9 +298,10 @@ class SignupScreen extends StatelessWidget {
                                           fontSize: 14,
                                         ),
                                         border: InputBorder.none,
-                                        contentPadding: const EdgeInsets.symmetric(
-                                          vertical: 16,
-                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              vertical: 16,
+                                            ),
                                       ),
                                     ),
                                   ),
@@ -393,7 +397,9 @@ class SignupScreen extends StatelessWidget {
                                 onTap: authController.togglePromos,
                                 borderRadius: BorderRadius.circular(8),
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 8,
+                                  ),
                                   child: Row(
                                     children: [
                                       Container(
