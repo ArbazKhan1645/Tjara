@@ -296,6 +296,8 @@ class _DealProductCard extends StatelessWidget {
     final salePrice = product.salePrice;
     final originalPrice = product.price ?? product.maxPrice ?? 0;
     final hasDiscount = salePrice != null && salePrice != 0;
+    final isSoldOut = (product.stock ?? 0) <= 0;
+    const isDealExpired = true;
 
     int discountPercent = 0;
     if (hasDiscount && originalPrice > 0) {
@@ -313,23 +315,69 @@ class _DealProductCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// IMAGE
-          Container(
+          /// IMAGE WITH OVERLAY
+          SizedBox(
             width: 120,
             height: 90,
-            decoration: const BoxDecoration(
-              color: Color(0xFFffedd5),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(8),
-                topRight: Radius.circular(8),
-              ),
-            ),
-            child: ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(8),
-                topRight: Radius.circular(8),
-              ),
-              child: _buildProductImage(),
+            child: Stack(
+              children: [
+                Container(
+                  width: 120,
+                  height: 90,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFffedd5),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(8),
+                      topRight: Radius.circular(8),
+                    ),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(8),
+                      topRight: Radius.circular(8),
+                    ),
+                    child: _buildProductImage(),
+                  ),
+                ),
+                // Sold Out / Expired Overlay
+                if (isDealExpired)
+                  Positioned(
+                    top: 5,
+                    left: 5,
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(8),
+                        topRight: Radius.circular(8),
+                      ),
+                      child: Container(
+                        color: Colors.black.withValues(alpha: 0.5),
+                        child: Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color:
+                                  isDealExpired
+                                      ? Colors.red.shade600
+                                      : Colors.grey.shade700,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              isDealExpired ? 'Expired' : 'Sold Out',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
 
@@ -341,10 +389,10 @@ class _DealProductCard extends StatelessWidget {
                 /// PRODUCT NAME
                 Text(
                   product.name ?? '',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: Colors.black87,
+                    color: isSoldOut ? Colors.grey : Colors.black87,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -357,10 +405,10 @@ class _DealProductCard extends StatelessWidget {
                   children: [
                     Text(
                       '\$${hasDiscount ? salePrice.toStringAsFixed(0) : originalPrice.toStringAsFixed(0)}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: Colors.teal,
+                        color: isSoldOut ? Colors.grey : Colors.teal,
                       ),
                     ),
                     const SizedBox(width: 6),
@@ -379,25 +427,60 @@ class _DealProductCard extends StatelessWidget {
                 const SizedBox(height: 4),
 
                 /// DISCOUNT BADGE
-                if (hasDiscount && discountPercent > 0)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFA726),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      '$discountPercent% OFF',
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
+                // if (hasDiscount && discountPercent > 0)
+                Builder(
+                  builder: (context) {
+                    if (isSoldOut) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color:
+                              !isSoldOut
+                                  ? Colors.teal
+                                  : const Color(0xFFFFA726),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'Sold out',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      );
+                    }
+
+                    if (discountPercent > 0) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color:
+                              !isSoldOut
+                                  ? Colors.teal
+                                  : const Color(0xFFFFA726),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          '$discountPercent% OFF',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      );
+                    }
+
+                    return Container();
+                  },
+                ),
               ],
             ),
           ),

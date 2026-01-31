@@ -2,7 +2,7 @@ import 'package:elegant_notification/elegant_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-showmessageofalert(String text) {
+void showmessageofalert(String text) {
   if (Get.isSnackbarOpen) return;
   Get.snackbar('Message', text, snackPosition: SnackPosition.BOTTOM);
 }

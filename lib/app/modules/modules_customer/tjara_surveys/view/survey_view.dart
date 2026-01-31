@@ -276,7 +276,7 @@ class _SurveysScreenState extends State<SurveysScreen>
       children: [
         Row(
           children: [
-            Icon(icon, color: Color(0xFFFF8C00), size: 18),
+            Icon(icon, color: const Color(0xFFFF8C00), size: 18),
             const SizedBox(width: 6),
             Text(
               value,
@@ -643,7 +643,7 @@ class _SurveysScreenState extends State<SurveysScreen>
               icon: const Icon(Icons.refresh),
               label: const Text('Try Again'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFFFF8C00),
+                backgroundColor: const Color(0xFFFF8C00),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
@@ -670,7 +670,7 @@ class _SurveysScreenState extends State<SurveysScreen>
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Color(0xFFFF8C00).withOpacity(0.1),
+                color: const Color(0xFFFF8C00).withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(

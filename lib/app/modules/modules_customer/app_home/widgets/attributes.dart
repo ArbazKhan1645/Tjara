@@ -3,7 +3,7 @@ import 'package:tjara/app/models/products/variation.dart';
 
 class ProductVariationDisplay extends StatefulWidget {
   final ProductVariationShop variation;
-  final Function(Map<String, Map<String, dynamic>>, String?)
+  final Function(Map<String, Map<String, dynamic>>, String?, String?)
   onAttributesSelected;
 
   const ProductVariationDisplay({
@@ -21,6 +21,7 @@ class _ProductVariationDisplayState extends State<ProductVariationDisplay> {
   // Updated to store name, id, and price for each attribute
   Map<String, Map<String, dynamic>> selectedAttributes = {};
   String? selectedVariationId;
+  String? selectedVariationThumbnailUrl;
 
   @override
   void initState() {
@@ -195,12 +196,14 @@ class _ProductVariationDisplayState extends State<ProductVariationDisplay> {
       if (isMatch) {
         debugPrint('Matching variation found: $variation');
         selectedVariationId = variation.id.toString();
+        selectedVariationThumbnailUrl = variation.thumbnailUrl;
         return variation;
       }
     }
 
     debugPrint('No matching variation found');
     selectedVariationId = null;
+    selectedVariationThumbnailUrl = null;
     return null;
   }
 
@@ -220,9 +223,9 @@ class _ProductVariationDisplayState extends State<ProductVariationDisplay> {
               Text(
                 '\$${matchingVariation?.price?.toStringAsFixed(2) ?? widget.variation.shop!.first.price!.toStringAsFixed(2)}',
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.pink,
+                  color: Colors.teal,
                 ),
               ),
               Text(
@@ -272,6 +275,7 @@ class _ProductVariationDisplayState extends State<ProductVariationDisplay> {
                                 widget.onAttributesSelected(
                                   selectedAttributes,
                                   selectedVariationId,
+                                  selectedVariationThumbnailUrl,
                                 );
                               },
                               child: CircleAvatar(
@@ -282,9 +286,16 @@ class _ProductVariationDisplayState extends State<ProductVariationDisplay> {
                                   backgroundColor: _getColorFromString(value),
                                   child:
                                       isSelected
-                                          ? const Icon(
-                                            Icons.check,
-                                            color: Colors.white,
+                                          ? Builder(
+                                            builder: (context) {
+                                              return Icon(
+                                                Icons.check,
+                                                color:
+                                                    value == 'White'
+                                                        ? Colors.black
+                                                        : Colors.white,
+                                              );
+                                            },
                                           )
                                           : null,
                                 ),
@@ -301,6 +312,7 @@ class _ProductVariationDisplayState extends State<ProductVariationDisplay> {
                                 widget.onAttributesSelected(
                                   selectedAttributes,
                                   selectedVariationId,
+                                  selectedVariationThumbnailUrl,
                                 );
                               },
                               child: IntrinsicWidth(
@@ -350,7 +362,7 @@ Color _getColorFromString(String colorName) {
     'black': Colors.black,
     'white': Colors.white,
     'yellow': Colors.yellow,
-    'pink': Colors.pink,
+    'pink': const Color(0xffff7ae2),
     'purple': Colors.purple,
     'orange': Colors.orange,
     'brown': Colors.brown,

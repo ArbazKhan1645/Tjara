@@ -27,7 +27,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   late OrdersDashboardController controller;
   late OrderService _orderService;
 
-  changeIndex(int index) {
+  void changeIndex(int index) {
     setState(() {
       _selectedIndex = index;
     });

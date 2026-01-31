@@ -435,7 +435,7 @@ class _StoriesItemCardState extends State<StoriesItemCard>
     }
   }
 
-  playStory() async {
+  Future<void> playStory() async {
     final response = await http.put(
       Uri.parse(
         'https://api.libanbuy.com/api/posts/${widget.product.id}/update',
@@ -471,7 +471,7 @@ class _StoriesItemCardState extends State<StoriesItemCard>
     }
   }
 
-  pauseStory() async {
+  Future<void> pauseStory() async {
     final response = await http.put(
       Uri.parse(
         'https://api.libanbuy.com/api/posts/${widget.product.id}/update',

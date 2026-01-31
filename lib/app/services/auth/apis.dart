@@ -161,7 +161,7 @@ class AuthenticationApiService {
     }
   }
 
-  static registerUser({
+  static Future<bool> registerUser({
     required String firstName,
     required String lastName,
     required String email,
@@ -216,6 +216,7 @@ class AuthenticationApiService {
         );
         print('Error Response: ${response.statusCode}');
         print('Error Response: ${response.body}');
+        return false;
       }
     } catch (e) {
       NotificationHelper.showError(
@@ -224,6 +225,7 @@ class AuthenticationApiService {
         'Error Occurred',
       );
       print('Exception: ${e.toString()}');
+      return false;
     }
   }
 }

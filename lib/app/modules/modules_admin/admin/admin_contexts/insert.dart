@@ -10,7 +10,6 @@ import 'package:intl/intl.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:tjara/app/core/widgets/admin_app_bar_actions.dart';
 import 'package:tjara/app/modules/modules_customer/tjara_contests/model/contest_model.dart';
-import 'package:tjara/app/modules/modules_customer/tjara_contests/model/selected_contest_model.dart';
 
 // Add your ContestModel and related classes here if not imported
 // import 'package:your_app/models/contest_model.dart';

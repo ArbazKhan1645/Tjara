@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:get/get.dart';
@@ -188,6 +189,15 @@ class BlogCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get thumbnail URL with null-coalescing
+    final thumbnailUrl =
+        blog.thumbnail?.media?.cdnThumbnailUrl ??
+        blog.thumbnail?.media?.optimizedMediaCdnUrl ??
+        blog.thumbnail?.media?.cdnUrl ??
+        blog.thumbnail?.media?.optimizedMediaUrl ??
+        blog.thumbnail?.media?.url ??
+        blog.thumbnail?.media?.localUrl;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -205,110 +215,148 @@ class BlogCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Blog Title
-              Text(
-                blog.name,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
-                  height: 1.3,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Blog Thumbnail Image
+            if (thumbnailUrl != null && thumbnailUrl.isNotEmpty)
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(12),
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-
-              const SizedBox(height: 12),
-
-              // Blog Description/Preview
-              Builder(
-                builder: (con) {
-                  if (blog.description.isNotEmpty) {
-                    String cleanDescription = cleanBlogDescription(
-                      blog.description,
-                    );
-                    return Html(
-                      data: cleanDescription,
-                      style: {
-                        "body": Style(
-                          margin: Margins.zero,
-                          padding: HtmlPaddings.zero,
-                          fontSize: FontSize(10),
-                          maxLines: 2,
-                          color: Colors.grey.shade700,
-                          lineHeight: const LineHeight(1),
-                        ),
-                      },
-                    );
-                  } else {
-                    return const SizedBox.shrink();
-                  }
-                },
-              ),
-
-              const SizedBox(height: 16),
-
-              // Blog Footer
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Blog Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF97316),
-
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFFF97316)),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.article, size: 14, color: Colors.white),
-                        SizedBox(width: 4),
-                        Text(
-                          'Blog',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Read More Button
-                  Row(
-                    children: [
-                      const Text(
-                        'Read More',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFFF97316),
-                          fontWeight: FontWeight.w500,
+                child: CachedNetworkImage(
+                  imageUrl: thumbnailUrl,
+                  height: 180,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  placeholder:
+                      (context, url) => Container(
+                        height: 180,
+                        color: Colors.grey[200],
+                        child: const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         ),
                       ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        Icons.arrow_forward_ios,
-                        size: 12,
-                        color: Colors.pink[700],
+                  errorWidget:
+                      (context, url, error) => Container(
+                        height: 180,
+                        color: Colors.grey[200],
+                        child: Icon(
+                          Icons.image_not_supported_outlined,
+                          size: 40,
+                          color: Colors.grey[400],
+                        ),
+                      ),
+                ),
+              ),
+
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Blog Title
+                  Text(
+                    blog.name,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[800],
+                      height: 1.3,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Blog Description/Preview
+                  Builder(
+                    builder: (con) {
+                      if (blog.description.isNotEmpty) {
+                        final String cleanDescription = cleanBlogDescription(
+                          blog.description,
+                        );
+                        return Html(
+                          data: cleanDescription,
+                          style: {
+                            "body": Style(
+                              margin: Margins.zero,
+                              padding: HtmlPaddings.zero,
+                              fontSize: FontSize(10),
+                              maxLines: 2,
+                              color: Colors.grey.shade700,
+                              lineHeight: const LineHeight(1),
+                            ),
+                          },
+                        );
+                      } else {
+                        return const SizedBox.shrink();
+                      }
+                    },
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Blog Footer
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Blog Badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF97316),
+
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFFF97316)),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.article, size: 14, color: Colors.white),
+                            SizedBox(width: 4),
+                            Text(
+                              'Blog',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Read More Button
+                      Row(
+                        children: [
+                          const Text(
+                            'Read More',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFFF97316),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.arrow_forward_ios,
+                            size: 12,
+                            color: Colors.pink[700],
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -443,6 +491,56 @@ class BlogDetailScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Blog Thumbnail Image
+                    Builder(
+                      builder: (context) {
+                        final detailThumbnailUrl =
+                            blog.thumbnail?.media?.cdnThumbnailUrl ??
+                            blog.thumbnail?.media?.optimizedMediaCdnUrl ??
+                            blog.thumbnail?.media?.cdnUrl ??
+                            blog.thumbnail?.media?.optimizedMediaUrl ??
+                            blog.thumbnail?.media?.url ??
+                            blog.thumbnail?.media?.localUrl;
+
+                        if (detailThumbnailUrl != null &&
+                            detailThumbnailUrl.isNotEmpty) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 20),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: CachedNetworkImage(
+                                imageUrl: detailThumbnailUrl,
+                                height: 220,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                placeholder:
+                                    (context, url) => Container(
+                                      height: 220,
+                                      color: Colors.grey[200],
+                                      child: const Center(
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    ),
+                                errorWidget:
+                                    (context, url, error) => Container(
+                                      height: 220,
+                                      color: Colors.grey[200],
+                                      child: Icon(
+                                        Icons.image_not_supported_outlined,
+                                        size: 50,
+                                        color: Colors.grey[400],
+                                      ),
+                                    ),
+                              ),
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+
                     // Blog Title
                     Text(
                       blog.name,
@@ -539,7 +637,7 @@ class BlogDetailScreen extends StatelessWidget {
                     Builder(
                       builder: (con) {
                         if (blog.description.isNotEmpty) {
-                          String cleanDescription = cleanBlogDescription(
+                          final String cleanDescription = cleanBlogDescription(
                             blog.description,
                           );
                           return Html(

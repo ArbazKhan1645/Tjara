@@ -146,7 +146,7 @@ class _WebsiteOptionsScreenState extends State<WebsiteOptionsScreen> {
     }
   }
 
-  fetchWeb() async {
+  Future<void> fetchWeb() async {
     final WebsiteOptionsService optionsService =
         Get.find<WebsiteOptionsService>();
 

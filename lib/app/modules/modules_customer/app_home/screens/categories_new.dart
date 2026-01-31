@@ -198,7 +198,7 @@ class _CategoryItem extends StatelessWidget {
 
   void _handleCategoryTap() async {
     final controller = Get.find<HomeController>();
-    await controller.setSelectedCategory(
+    controller.setSelectedCategory(
       category['model'] ?? ProductAttributeItems(),
     );
     controller.fetchCategoryProductsa(category["id"].toString());

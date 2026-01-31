@@ -25,6 +25,7 @@ class ProductVariationShop {
 class ProductVariation {
   final String? id;
   final String? productId;
+  final String? thumbnailId;
   final double? price;
   final double? salePrice;
   final int? stock;
@@ -33,10 +34,12 @@ class ProductVariation {
   final String? createdAt;
   final String? updatedAt;
   final VariationAttributes? attributes;
+  final VariationThumbnail? thumbnail;
 
   ProductVariation({
     this.id,
     this.productId,
+    this.thumbnailId,
     this.price,
     this.salePrice,
     this.stock,
@@ -45,12 +48,25 @@ class ProductVariation {
     this.createdAt,
     this.updatedAt,
     this.attributes,
+    this.thumbnail,
   });
+
+  /// Returns the best available thumbnail URL for this variation
+  String? get thumbnailUrl {
+    final media = thumbnail?.media;
+    if (media == null) return null;
+    return media.cdnThumbnailUrl ??
+        media.optimizedMediaCdnUrl ??
+        media.cdnUrl ??
+        media.optimizedMediaUrl ??
+        media.url;
+  }
 
   factory ProductVariation.fromJson(Map<String, dynamic> json) {
     return ProductVariation(
       id: json['id'],
       productId: json['product_id'],
+      thumbnailId: json['thumbnail_id'],
       price: json['price']?.toDouble(),
       salePrice: json['sale_price']?.toDouble(),
       stock: json['stock'],
@@ -61,6 +77,9 @@ class ProductVariation {
       attributes: json['attributes'] != null
           ? VariationAttributes.fromJson(json['attributes'])
           : null,
+      thumbnail: json['thumbnail'] != null
+          ? VariationThumbnail.fromJson(json['thumbnail'])
+          : null,
     );
   }
 
@@ -68,6 +87,7 @@ class ProductVariation {
     return {
       'id': id,
       'product_id': productId,
+      'thumbnail_id': thumbnailId,
       'price': price,
       'sale_price': salePrice,
       'stock': stock,
@@ -76,6 +96,7 @@ class ProductVariation {
       'created_at': createdAt,
       'updated_at': updatedAt,
       'attributes': attributes?.toJson(),
+      'thumbnail': thumbnail?.toJson(),
     };
   }
 }
@@ -233,6 +254,82 @@ class AttributeItem {
       'slug': slug,
       'value': value,
       'post_type': postType,
+      'created_at': createdAt,
+      'updated_at': updatedAt,
+    };
+  }
+}
+
+class VariationThumbnail {
+  final VariationMedia? media;
+
+  VariationThumbnail({this.media});
+
+  factory VariationThumbnail.fromJson(Map<String, dynamic> json) {
+    return VariationThumbnail(
+      media: json['media'] != null && json['media'] is Map
+          ? VariationMedia.fromJson(json['media'])
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'media': media?.toJson(),
+    };
+  }
+}
+
+class VariationMedia {
+  final String? id;
+  final String? url;
+  final String? optimizedMediaUrl;
+  final String? mediaType;
+  final String? cdnUrl;
+  final String? optimizedMediaCdnUrl;
+  final String? cdnThumbnailUrl;
+  final String? cdnStoragePath;
+  final String? createdAt;
+  final String? updatedAt;
+
+  VariationMedia({
+    this.id,
+    this.url,
+    this.optimizedMediaUrl,
+    this.mediaType,
+    this.cdnUrl,
+    this.optimizedMediaCdnUrl,
+    this.cdnThumbnailUrl,
+    this.cdnStoragePath,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory VariationMedia.fromJson(Map<String, dynamic> json) {
+    return VariationMedia(
+      id: json['id'],
+      url: json['url'],
+      optimizedMediaUrl: json['optimized_media_url'],
+      mediaType: json['media_type'],
+      cdnUrl: json['cdn_url'],
+      optimizedMediaCdnUrl: json['optimized_media_cdn_url'],
+      cdnThumbnailUrl: json['cdn_thumbnail_url'],
+      cdnStoragePath: json['cdn_storage_path'],
+      createdAt: json['created_at'],
+      updatedAt: json['updated_at'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'url': url,
+      'optimized_media_url': optimizedMediaUrl,
+      'media_type': mediaType,
+      'cdn_url': cdnUrl,
+      'optimized_media_cdn_url': optimizedMediaCdnUrl,
+      'cdn_thumbnail_url': cdnThumbnailUrl,
+      'cdn_storage_path': cdnStoragePath,
       'created_at': createdAt,
       'updated_at': updatedAt,
     };

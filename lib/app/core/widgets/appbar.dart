@@ -344,7 +344,7 @@ class _CustomAppBarState extends State<CustomAppBar>
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       children: [
-                        Icon(Iconsax.warning_2, color: Colors.red, size: 32),
+                        const Icon(Iconsax.warning_2, color: Colors.red, size: 32),
                         const SizedBox(height: 8),
                         const Text(
                           'Error loading messages',

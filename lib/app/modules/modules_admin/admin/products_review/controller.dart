@@ -192,17 +192,17 @@ class ProductReviewController extends GetxController {
     }
   }
 
-  clearSearch() {
+  void clearSearch() {
     searchController.clear();
     _searchQuery.value = '';
     _filterReviews();
   }
 
-  getRatingColor() {
+  MaterialColor getRatingColor() {
     return Colors.amber;
   }
 
-  getRatingStars(int rating) {
+  String getRatingStars(int rating) {
     String stars = '';
     for (int i = 0; i < rating; i++) {
       stars += '⭐';
@@ -210,11 +210,11 @@ class ProductReviewController extends GetxController {
     return stars;
   }
 
-  getFormattedDate(String date) {
+  String getFormattedDate(String date) {
     return DateFormat('d MMMM, y').format(DateTime.parse(date));
   }
 
-  showDeleteConfirmation(ReviewData review) {
+  void showDeleteConfirmation(ReviewData review) {
     Get.dialog(
       AlertDialog(
         title: const Text('Delete Review'),

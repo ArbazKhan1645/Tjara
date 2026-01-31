@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tjara/app/modules/modules_admin/admin/products_admin/widgets/products_view_widget.dart';
 import 'package:tjara/app/modules/modules_customer/tjara_contests/model/contest_model.dart';
-import 'package:tjara/app/modules/modules_customer/tjara_contests/model/selected_contest_model.dart';
 
 class ContestsItemCard extends StatelessWidget {
   final ContestModel product;

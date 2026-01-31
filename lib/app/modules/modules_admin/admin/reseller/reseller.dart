@@ -139,7 +139,7 @@ class ResellerService {
     }
   }
 
-  static createMembershipPlan(MembershipPlan plan, String? thumbnailId) async {
+  static Future<void> createMembershipPlan(MembershipPlan plan, String? thumbnailId) async {
     final url = Uri.parse('$baseUrl/membership-plans/insert');
 
     try {
@@ -185,7 +185,7 @@ class ResellerService {
     }
   }
 
-  static updateMembershipPlan(
+  static Future<void> updateMembershipPlan(
     String id,
     MembershipPlan plan,
     String? thumbnailId,

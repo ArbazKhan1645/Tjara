@@ -231,7 +231,7 @@ class _ContestScreenState extends State<ContestScreen>
                                     width: 1,
                                   ),
                                 ),
-                                child: Row(
+                                child: const Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(
@@ -239,7 +239,7 @@ class _ContestScreenState extends State<ContestScreen>
                                       size: 14,
                                       color: goldAccent,
                                     ),
-                                    const SizedBox(width: 4),
+                                    SizedBox(width: 4),
                                     Text(
                                       'Win amazing prizes!',
                                       style: TextStyle(
@@ -452,10 +452,10 @@ class _ContestScreenState extends State<ContestScreen>
           return SliverFillRemaining(child: _buildErrorState());
 
         default:
-          return SliverFillRemaining(
+          return const SliverFillRemaining(
             child: Center(
               child: CircularProgressIndicator(
-                valueColor: const AlwaysStoppedAnimation<Color>(primaryTeal),
+                valueColor: AlwaysStoppedAnimation<Color>(primaryTeal),
               ),
             ),
           );
@@ -665,7 +665,7 @@ class _ContestScreenState extends State<ContestScreen>
                                 color: primaryTeal.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              child: Icon(
+                              child: const Icon(
                                 Icons.calendar_today_rounded,
                                 size: 16,
                                 color: primaryTeal,

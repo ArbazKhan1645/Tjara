@@ -250,9 +250,9 @@ class TemuProductCard extends StatelessWidget {
                 color: const Color(0xFFEF4444),
                 borderRadius: BorderRadius.circular(3),
               ),
-              child: Text(
-                '-${_calculateDiscount()}%',
-                style: const TextStyle(
+              child: const Text(
+                'Sale',
+                style: TextStyle(
                   color: Colors.white,
                   fontSize: 8,
                   fontWeight: FontWeight.bold,
@@ -374,16 +374,28 @@ class TemuProductCard extends StatelessWidget {
         // Price
         Expanded(child: _buildPriceDisplay()),
 
-        const SizedBox(width: 2),
-
-        // Sold count with fire icon
-        _buildSoldCount(),
-
-        const SizedBox(width: 2),
-
-        if (!isshownfromcategories)
+        if (product.stock == 0)
+          const Text(
+            'Sold Out',
+            style: TextStyle(
+              color: Colors.orange,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+            ),
+          )
+        else if (!isshownfromcategories)
           // Cart button (black shopping cart)
-          _AddToCartButton(product: product),
+          Row(
+            children: [
+              const SizedBox(width: 2),
+
+              // Sold count with fire icon
+              _buildSoldCount(),
+
+              const SizedBox(width: 2),
+              _AddToCartButton(product: product),
+            ],
+          ),
       ],
     );
   }

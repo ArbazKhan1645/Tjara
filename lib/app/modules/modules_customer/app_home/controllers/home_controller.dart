@@ -25,7 +25,7 @@ class HomeController extends GetxController {
   final ImageProvider cachedShoeImage = const AssetImage(
     'assets/images/—Pngtree—sports shoes_15910407.png',
   );
-  preCacheImage() {
+  void preCacheImage() {
     if (Get.context == null) return;
     precacheImage(cachedShoeImage, Get.context!);
   }
@@ -769,7 +769,7 @@ class HomeController extends GetxController {
     }
   }
 
-  initializeCategoryList() {
+  void initializeCategoryList() {
     try {
       final filteredCategories = categories.value.productAttributeItems?.where(
         (e) => e.name != null,
@@ -796,15 +796,15 @@ class HomeController extends GetxController {
     update();
   }
 
-  initializedcategories() async {
+  Future<void> initializedcategories() async {
     try {
-      await initializeCategoryList();
+      initializeCategoryList();
     } catch (e) {
       print('Error in initializedcategories: $e');
     }
   }
 
-  setSelectedCategory(ProductAttributeItems val) {
+  void setSelectedCategory(ProductAttributeItems val) {
     selectedCategory = val;
     update();
   }

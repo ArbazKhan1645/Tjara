@@ -326,35 +326,33 @@ class DeviceActivationController extends GetxController {
         invitedBy: registrationData['referralCode'],
       );
 
-      if (result != null) {
-        if (registrationData['shop_name'].toString() != 'null' &&
-            registrationData['shop_name'].toString() != '') {
-          await http.post(
-            Uri.parse('https://api.libanbuy.com/api/shops/insert'),
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-              "X-Request-From": "Application",
-            },
-            body: {'first_name': registrationData['shop_name']},
-          );
-        }
-
-        _clearForm();
-
-        if (referralCodeController.text.trim().isNotEmpty) {
-          _showSuccess(
-            'Registration successful with referral! Please check your email for verification.',
-          );
-        } else {
-          _showSuccess(
-            'Registration successful! Please check your email for verification.',
-          );
-        }
-
-        // Navigate back or to login
-        Get.back();
+      if (registrationData['shop_name'].toString() != 'null' &&
+          registrationData['shop_name'].toString() != '') {
+        await http.post(
+          Uri.parse('https://api.libanbuy.com/api/shops/insert'),
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-Request-From": "Application",
+          },
+          body: {'first_name': registrationData['shop_name']},
+        );
       }
-    } on SocketException catch (e) {
+
+      _clearForm();
+
+      if (referralCodeController.text.trim().isNotEmpty) {
+        _showSuccess(
+          'Registration successful with referral! Please check your email for verification.',
+        );
+      } else {
+        _showSuccess(
+          'Registration successful! Please check your email for verification.',
+        );
+      }
+
+      // Navigate back or to login
+      Get.back();
+        } on SocketException catch (e) {
       print('Network error during registration: $e');
       _showError(
         'Network error. Please check your internet connection and try again.',
@@ -882,10 +880,6 @@ class DeviceActivationController extends GetxController {
       role: role ?? 'customer',
       invitedBy: referralCode?.trim(),
     );
-
-    if (registerRes == null) {
-      throw 'Registration failed';
-    }
 
     /// 🔹 STEP 4: AUTO LOGIN AFTER SIGNUP
     final finalLogin = await AuthenticationApiService.loginUser(

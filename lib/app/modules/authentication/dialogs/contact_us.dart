@@ -256,7 +256,7 @@ class _ContactFormDialogState extends State<ContactFormDialog> {
   }
 }
 
-showContactDialog(
+Future<Future<Object?>> showContactDialog(
   BuildContext context,
   Widget widget, {
   bool barrierDismissible = true,

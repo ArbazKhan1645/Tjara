@@ -101,6 +101,7 @@ class _FlashDealDetailScreenState extends State<FlashDealDetailScreen>
 
   String? selectedVariationPrice;
   String? selectedVariationId;
+  int? _selectedVariationStock;
   String? _videoUrl;
   String? _imageSliderKey;
 
@@ -562,6 +563,7 @@ class _FlashDealDetailScreenState extends State<FlashDealDetailScreen>
       newUrls.add(_imageUrlsNotifier.value.first);
     }
 
+    // Add gallery images
     for (var item in gallery) {
       if (item.media?.url != null || item.media?.optimizedMediaUrl != null) {
         final url =
@@ -578,9 +580,50 @@ class _FlashDealDetailScreenState extends State<FlashDealDetailScreen>
       }
     }
 
+    // Add all variation thumbnails
+    final variations = product.product?.variation?.shop;
+    if (variations != null) {
+      for (var variation in variations) {
+        final variationThumbUrl = variation.thumbnailUrl;
+        if (variationThumbUrl != null &&
+            variationThumbUrl.isNotEmpty &&
+            !newUrls.contains(variationThumbUrl)) {
+          newUrls.add(variationThumbUrl);
+        }
+      }
+    }
+
     if (newUrls.isNotEmpty &&
         _imageUrlsNotifier.value.toString() != newUrls.toString()) {
       _imageUrlsNotifier.value = newUrls;
+    }
+  }
+
+  /// Scrolls the image slider to show the variation thumbnail
+  void _updateImageSliderWithVariationThumbnail(String thumbnailUrl) {
+    if (thumbnailUrl.isEmpty) return;
+
+    final currentUrls = _imageUrlsNotifier.value;
+
+    // Find the index of the thumbnail in the list
+    int targetIndex = currentUrls.indexOf(thumbnailUrl);
+
+    // If video exists, account for video being at index 0
+    if (_videoUrl != null && _videoUrl!.isNotEmpty) {
+      targetIndex = targetIndex + 1; // Shift by 1 because video is at index 0
+    }
+
+    if (targetIndex >= 0) {
+      // Scroll to the variation thumbnail
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_pageController != null && _pageController!.hasClients && mounted) {
+          _pageController!.animateToPage(
+            targetIndex,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
     }
   }
 
@@ -1702,7 +1745,7 @@ class _FlashDealDetailScreenState extends State<FlashDealDetailScreen>
                   padding: const EdgeInsets.all(16),
                   child: ProductVariationDisplay(
                     variation: product!.product!.variation!,
-                    onAttributesSelected: (attributesData, variationId) {
+                    onAttributesSelected: (attributesData, variationId, thumbnailUrl) {
                       if (variationId == null) return;
                       selectedVariationId = variationId;
                       if (attributesData.isNotEmpty) {
@@ -1711,6 +1754,27 @@ class _FlashDealDetailScreenState extends State<FlashDealDetailScreen>
                           selectedVariationPrice =
                               attributesData[firstKey]!["price"].toString();
                         }
+                      }
+                      // Update image slider with variation thumbnail
+                      if (thumbnailUrl != null && thumbnailUrl.isNotEmpty) {
+                        _updateImageSliderWithVariationThumbnail(thumbnailUrl);
+                      }
+                      // Find selected variation and update stock
+                      final variations = product.product!.variation!.shop;
+                      if (variations != null) {
+                        final selectedVariation = variations.firstWhere(
+                          (v) => v.id == variationId,
+                          orElse: () => variations.first,
+                        );
+                        setState(() {
+                          _selectedVariationStock = selectedVariation.stock;
+                          // Reset quantity if it exceeds variation stock
+                          final currentQty = int.tryParse(_quantityController?.text ?? '1') ?? 1;
+                          final maxStock = _selectedVariationStock ?? (_currentProduct?.stock ?? 999).toInt();
+                          if (currentQty > maxStock) {
+                            _quantityController?.text = maxStock.toString();
+                          }
+                        });
                       }
                     },
                   ),
@@ -1735,7 +1799,7 @@ class _FlashDealDetailScreenState extends State<FlashDealDetailScreen>
                     const Spacer(),
                     QuantitySelector(
                       controller: _quantityController!,
-                      maxQuantity: (_currentProduct?.stock ?? 999).toInt(),
+                      maxQuantity: _selectedVariationStock ?? (_currentProduct?.stock ?? 999).toInt(),
                       minQuantity: 1,
                       onQuantityChanged: (quantity) {},
                     ),

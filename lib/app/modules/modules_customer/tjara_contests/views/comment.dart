@@ -97,9 +97,9 @@ class _CommentsSectionState extends State<CommentsSection> {
               ),
             ),
             const SizedBox(width: 12),
-            Text(
+            const Text(
               'Comments',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
                 color: Color(0xFF1A1A2E),
@@ -156,7 +156,7 @@ class _CommentsSectionState extends State<CommentsSection> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.reply_rounded, size: 18, color: primaryTeal),
+                      const Icon(Icons.reply_rounded, size: 18, color: primaryTeal),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
@@ -176,7 +176,7 @@ class _CommentsSectionState extends State<CommentsSection> {
                             color: primaryTeal.withAlpha(26),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(
+                          child: const Icon(
                             Icons.close_rounded,
                             size: 16,
                             color: primaryTeal,
@@ -450,11 +450,11 @@ class _CommentCard extends StatelessWidget {
                 color: primaryTeal.withAlpha(20),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Row(
+              child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.reply_rounded, size: 16, color: primaryTeal),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   Text(
                     'Reply',
                     style: TextStyle(

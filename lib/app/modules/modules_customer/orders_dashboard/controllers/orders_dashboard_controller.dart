@@ -18,7 +18,7 @@ class OrdersDashboardController extends GetxController {
   }
 
   RxBool isShowndisputescreen = false.obs;
-  setisSHowndispute(bool val) {
+  void setisSHowndispute(bool val) {
     isShowndisputescreen.value = val;
     update();
   }

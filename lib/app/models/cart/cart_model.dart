@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:tjara/app/models/media_model/media_model.dart';
 import 'package:tjara/app/models/products/single_product_model.dart';
 import 'package:tjara/app/models/products/variation.dart';
@@ -13,6 +15,14 @@ class CartModel {
   ResellerProgress? resellerProgress;
   List<String?>? discountMessages;
 
+  // New fields from API
+  List<ResellerTier> resellerTiers;
+  int currentTier;
+  NextTierInfo? nextTier;
+  double totalCartValue;
+  double totalDiscount;
+  double totalBonus;
+
   CartModel({
     required this.cartItems,
     this.cartTotal,
@@ -23,9 +33,42 @@ class CartModel {
     this.grandTotal,
     this.resellerProgress,
     this.discountMessages,
+    this.resellerTiers = const [],
+    this.currentTier = 1,
+    this.nextTier,
+    this.totalCartValue = 0.0,
+    this.totalDiscount = 0.0,
+    this.totalBonus = 0.0,
   });
 
   factory CartModel.fromJson(Map<String, dynamic> json) {
+    // Parse resellerProgress object which contains levels, currentLevel, nextLevel
+    final resellerProgressData = json['resellerProgress'] as Map<String, dynamic>?;
+
+    // Parse levels array from resellerProgress
+    List<ResellerTier> parsedTiers = [];
+    if (resellerProgressData != null && resellerProgressData['levels'] != null) {
+      parsedTiers = (resellerProgressData['levels'] as List)
+          .map((item) => ResellerTier.fromJson(item))
+          .toList();
+    }
+
+    // Parse currentLevel from resellerProgress
+    int parsedCurrentTier = 1;
+    if (resellerProgressData != null && resellerProgressData['currentLevel'] != null) {
+      parsedCurrentTier = resellerProgressData['currentLevel']['level'] ?? 1;
+    }
+
+    // Parse nextLevel from resellerProgress
+    NextTierInfo? parsedNextTier;
+    if (resellerProgressData != null && resellerProgressData['nextLevel'] != null) {
+      parsedNextTier = NextTierInfo.fromJson(
+        resellerProgressData['nextLevel'],
+        amountToNextLevel: resellerProgressData['amountToNextLevel'],
+        progressValue: resellerProgressData['progress'],
+      );
+    }
+
     return CartModel(
       cartItems:
           (json['cartItems'] as List?)
@@ -56,14 +99,126 @@ class CartModel {
           json['grandTotal'] != null
               ? double.tryParse(json['grandTotal'].toString()) ?? 0.0
               : 0.0,
-      resellerProgress: ResellerProgress.fromJson(
-        json['resellerProgress'] ?? {},
-      ),
+      resellerProgress: json['resellerProgress'] != null
+          ? ResellerProgress.fromJson(json['resellerProgress'])
+          : null,
       discountMessages:
           (json['discountMessages'] as List?)
               ?.map((e) => e?.toString())
               .toList() ??
           [],
+      // Use parsed values from resellerProgress
+      resellerTiers: parsedTiers,
+      currentTier: parsedCurrentTier,
+      nextTier: parsedNextTier,
+      totalCartValue:
+          json['totalCartValue'] != null
+              ? double.tryParse(json['totalCartValue'].toString()) ?? 0.0
+              : 0.0,
+      totalDiscount:
+          json['totalDiscount'] != null
+              ? double.tryParse(json['totalDiscount'].toString()) ?? 0.0
+              : 0.0,
+      totalBonus:
+          json['totalBonus'] != null
+              ? double.tryParse(json['totalBonus'].toString()) ?? 0.0
+              : 0.0,
+    );
+  }
+}
+
+// Reseller Tier from API resellerProgress.levels array
+class ResellerTier {
+  int tier;
+  double minPurchase;
+  double discountRate;
+  double bonusAmount;
+
+  ResellerTier({
+    required this.tier,
+    required this.minPurchase,
+    required this.discountRate,
+    required this.bonusAmount,
+  });
+
+  factory ResellerTier.fromJson(Map<String, dynamic> json) {
+    return ResellerTier(
+      // API uses "level" not "tier"
+      tier: json['level'] ?? 1,
+      // API uses "minSpent" not "minPurchase"
+      minPurchase:
+          json['minSpent'] != null
+              ? double.tryParse(json['minSpent'].toString()) ?? 0.0
+              : 0.0,
+      // API uses "discount" not "discountRate"
+      discountRate:
+          json['discount'] != null
+              ? double.tryParse(json['discount'].toString()) ?? 0.0
+              : 0.0,
+      // API uses "bonus" not "bonusAmount"
+      bonusAmount:
+          json['bonus'] != null
+              ? double.tryParse(json['bonus'].toString()) ?? 0.0
+              : 0.0,
+    );
+  }
+}
+
+// Next tier info from API resellerProgress.nextLevel
+class NextTierInfo {
+  int tier;
+  double minPurchase;
+  double discountRate;
+  double bonusAmount;
+  double amountNeeded;
+  String message;
+  double progress; // Progress percentage from API (e.g., 27.7)
+
+  NextTierInfo({
+    required this.tier,
+    required this.minPurchase,
+    required this.discountRate,
+    required this.bonusAmount,
+    required this.amountNeeded,
+    required this.message,
+    required this.progress,
+  });
+
+  factory NextTierInfo.fromJson(
+    Map<String, dynamic> json, {
+    dynamic amountToNextLevel,
+    dynamic progressValue,
+  }) {
+    final tier = json['level'] ?? 1;
+    final discount = json['discount'] != null
+        ? double.tryParse(json['discount'].toString()) ?? 0.0
+        : 0.0;
+    final bonus = json['bonus'] != null
+        ? double.tryParse(json['bonus'].toString()) ?? 0.0
+        : 0.0;
+    final minSpent = json['minSpent'] != null
+        ? double.tryParse(json['minSpent'].toString()) ?? 0.0
+        : 0.0;
+    final amountNeeded = amountToNextLevel != null
+        ? double.tryParse(amountToNextLevel.toString()) ?? 0.0
+        : 0.0;
+    final progress = progressValue != null
+        ? double.tryParse(progressValue.toString()) ?? 0.0
+        : 0.0;
+
+    // Generate message like web: "Add $50.98 more to reach Level 3 and enjoy 17% discount plus $7 bonus!"
+    final message = amountNeeded > 0
+        ? 'Add \$${amountNeeded.toStringAsFixed(2)} more to reach Level $tier and enjoy ${discount.toStringAsFixed(0)}% discount plus \$${bonus.toStringAsFixed(0)} bonus!'
+        : '';
+
+    return NextTierInfo(
+      tier: tier,
+      minPurchase: minSpent,
+      discountRate: discount,
+      bonusAmount: bonus,
+      amountNeeded: amountNeeded,
+      message: message,
+      progress: progress,
     );
   }
 }
@@ -87,6 +242,9 @@ class CartItem {
   String? firstOrderDiscountMessage;
   String freeShippingNotice;
   LebanonTechDiscount? lebanonTechDiscount;
+  List<DiscountBreakdown> discountBreakdown;
+  double firstOrderDiscount;
+  double firstOrderDiscountPercentage;
 
   CartItem({
     required this.shop,
@@ -107,7 +265,48 @@ class CartItem {
     required this.freeShipping,
     required this.freeShippingNotice,
     this.lebanonTechDiscount,
+    required this.discountBreakdown,
+    required this.firstOrderDiscount,
+    required this.firstOrderDiscountPercentage,
   });
+
+  // Calculate shop final total after discounts
+  double get shopFinalTotal {
+    return shopTotal - shopDiscount;
+  }
+
+  // Get estimated delivery date based on shipping time
+  String getEstimatedDelivery() {
+    if (items.isEmpty) return 'No items available';
+
+    // Find max shipping time from items
+    int maxDays = 0;
+    for (var item in items) {
+      final shippingTo = int.tryParse(item.meta.shippingTimeTo) ?? 0;
+      if (shippingTo > maxDays) {
+        maxDays = shippingTo;
+      }
+    }
+
+    if (maxDays == 0) return 'No items available';
+
+    final deliveryDate = DateTime.now().add(Duration(days: maxDays));
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
+    return '${months[deliveryDate.month - 1]} ${deliveryDate.day}';
+  }
 
   factory CartItem.fromJson(Map<String, dynamic> json) {
     return CartItem(
@@ -156,6 +355,51 @@ class CartItem {
           json['lebanonTechDiscount'] != null
               ? LebanonTechDiscount.fromJson(json['lebanonTechDiscount'])
               : null,
+      discountBreakdown:
+          (json['discountBreakdown'] as List?)
+              ?.map((item) => DiscountBreakdown.fromJson(item))
+              .toList() ??
+          [],
+      firstOrderDiscount:
+          json['firstOrderDiscount'] != null
+              ? double.tryParse(json['firstOrderDiscount'].toString()) ?? 0.0
+              : 0.0,
+      firstOrderDiscountPercentage:
+          json['firstOrderDiscountPercentage'] != null
+              ? double.tryParse(json['firstOrderDiscountPercentage'].toString()) ?? 0.0
+              : 0.0,
+    );
+  }
+}
+
+class DiscountBreakdown {
+  String type;
+  String name;
+  double amount;
+  double percentage;
+  String message;
+
+  DiscountBreakdown({
+    required this.type,
+    required this.name,
+    required this.amount,
+    required this.percentage,
+    required this.message,
+  });
+
+  factory DiscountBreakdown.fromJson(Map<String, dynamic> json) {
+    return DiscountBreakdown(
+      type: json['type'] ?? '',
+      name: json['name'] ?? '',
+      amount:
+          json['amount'] != null
+              ? double.tryParse(json['amount'].toString()) ?? 0.0
+              : 0.0,
+      percentage:
+          json['percentage'] != null
+              ? double.tryParse(json['percentage'].toString()) ?? 0.0
+              : 0.0,
+      message: json['message'] ?? '',
     );
   }
 }
@@ -455,10 +699,14 @@ class Item {
   ItemMeta meta;
   Thumbnail thumbnail;
   ProductVariationShop? productVariation;
+  CartItemVariation? cartVariation;
   double? originalPrice;
   double? displayDiscountedPrice;
   double? displayItemDiscount;
   double? displayDiscountPerUnit;
+  double? itemTotal;
+  double? itemDiscount;
+  double? discountedPrice;
 
   Item({
     required this.id,
@@ -477,7 +725,49 @@ class Item {
     this.displayDiscountedPrice,
     this.displayItemDiscount,
     this.displayDiscountPerUnit,
+    this.cartVariation,
+    this.itemTotal,
+    this.itemDiscount,
+    this.discountedPrice,
   });
+
+  // Get variation attribute display strings like "Colors: Pink"
+  List<String> getAttributeDisplayStrings() {
+    final List<String> attributes = [];
+    if (cartVariation?.productVariation?.attributes?.attributeItems != null) {
+      for (var attrItem
+          in cartVariation!.productVariation!.attributes!.attributeItems!) {
+        final attrName = attrItem.attribute?.name ?? '';
+        final itemName = attrItem.attributeItem?.name ?? '';
+        if (attrName.isNotEmpty && itemName.isNotEmpty) {
+          attributes.add('$attrName: $itemName');
+        }
+      }
+    }
+    return attributes;
+  }
+
+  // Get variation thumbnail URL if available, otherwise use product thumbnail
+  String? getDisplayThumbnailUrl() {
+    // First try to get variation thumbnail
+    final variationMedia = cartVariation?.productVariation?.thumbnail?.media;
+    if (variationMedia != null) {
+      return variationMedia.optimizedMediaUrl ?? variationMedia.url;
+    }
+    // Fallback to product thumbnail
+    return thumbnail.media?.optimizedMediaUrl ?? thumbnail.media?.url;
+  }
+
+  // Get the effective price (discounted if available)
+  double getEffectivePrice() {
+    return discountedPrice ?? displayDiscountedPrice ?? price;
+  }
+
+  // Check if item has discount
+  bool get hasDiscount {
+    return (discountedPrice != null && discountedPrice! < price) ||
+        (displayDiscountedPrice != null && displayDiscountedPrice! < price);
+  }
 
   factory Item.fromJson(Map<String, dynamic> json) {
     return Item(
@@ -512,6 +802,210 @@ class Item {
           json['display_discount_per_unit'] != null
               ? double.tryParse(json['display_discount_per_unit'].toString())
               : null,
+      cartVariation:
+          json['product_variation'] != null
+              ? CartItemVariation.fromJson(json['product_variation'])
+              : null,
+      itemTotal:
+          json['item_total'] != null
+              ? double.tryParse(json['item_total'].toString())
+              : null,
+      itemDiscount:
+          json['item_discount'] != null
+              ? double.tryParse(json['item_discount'].toString())
+              : null,
+      discountedPrice:
+          json['discounted_price'] != null
+              ? double.tryParse(json['discounted_price'].toString())
+              : null,
+    );
+  }
+}
+
+// Cart item variation - different structure from product variations list
+class CartItemVariation {
+  CartVariationDetails? productVariation;
+
+  CartItemVariation({this.productVariation});
+
+  factory CartItemVariation.fromJson(Map<String, dynamic> json) {
+    return CartItemVariation(
+      productVariation:
+          json['product_variation'] != null
+              ? CartVariationDetails.fromJson(json['product_variation'])
+              : null,
+    );
+  }
+}
+
+class CartVariationDetails {
+  String? id;
+  String? productId;
+  String? thumbnailId;
+  double? price;
+  double? salePrice;
+  int? stock;
+  CartVariationAttributes? attributes;
+  CartVariationThumbnail? thumbnail;
+
+  CartVariationDetails({
+    this.id,
+    this.productId,
+    this.thumbnailId,
+    this.price,
+    this.salePrice,
+    this.stock,
+    this.attributes,
+    this.thumbnail,
+  });
+
+  factory CartVariationDetails.fromJson(Map<String, dynamic> json) {
+    return CartVariationDetails(
+      id: json['id'],
+      productId: json['product_id'],
+      thumbnailId: json['thumbnail_id'],
+      price:
+          json['price'] != null
+              ? double.tryParse(json['price'].toString())
+              : null,
+      salePrice:
+          json['sale_price'] != null
+              ? double.tryParse(json['sale_price'].toString())
+              : null,
+      stock: json['stock'],
+      attributes:
+          json['attributes'] != null
+              ? CartVariationAttributes.fromJson(json['attributes'])
+              : null,
+      thumbnail:
+          json['thumbnail'] != null
+              ? CartVariationThumbnail.fromJson(json['thumbnail'])
+              : null,
+    );
+  }
+}
+
+class CartVariationAttributes {
+  List<CartVariationAttributeItem>? attributeItems;
+
+  CartVariationAttributes({this.attributeItems});
+
+  factory CartVariationAttributes.fromJson(Map<String, dynamic> json) {
+    return CartVariationAttributes(
+      attributeItems:
+          json['product_variation_attribute_items'] != null
+              ? (json['product_variation_attribute_items'] as List)
+                  .map((x) => CartVariationAttributeItem.fromJson(x))
+                  .toList()
+              : null,
+    );
+  }
+}
+
+class CartVariationAttributeItem {
+  String? id;
+  String? variationId;
+  String? attributeId;
+  String? attributeItemId;
+  CartAttribute? attribute;
+  CartAttributeItem? attributeItem;
+
+  CartVariationAttributeItem({
+    this.id,
+    this.variationId,
+    this.attributeId,
+    this.attributeItemId,
+    this.attribute,
+    this.attributeItem,
+  });
+
+  factory CartVariationAttributeItem.fromJson(Map<String, dynamic> json) {
+    return CartVariationAttributeItem(
+      id: json['id'],
+      variationId: json['variation_id'],
+      attributeId: json['attribute_id'],
+      attributeItemId: json['attribute_item_id'],
+      attribute:
+          json['attribute'] != null
+              ? CartAttribute.fromJson(json['attribute'])
+              : null,
+      attributeItem:
+          json['attribute_item'] != null
+              ? CartAttributeItem.fromJson(json['attribute_item'])
+              : null,
+    );
+  }
+}
+
+class CartAttribute {
+  String? id;
+  String? name;
+  String? slug;
+
+  CartAttribute({this.id, this.name, this.slug});
+
+  factory CartAttribute.fromJson(Map<String, dynamic> json) {
+    return CartAttribute(
+      id: json['id'],
+      name: json['name'],
+      slug: json['slug'],
+    );
+  }
+}
+
+class CartAttributeItem {
+  String? id;
+  String? attributeId;
+  String? name;
+  String? slug;
+  String? value;
+
+  CartAttributeItem({
+    this.id,
+    this.attributeId,
+    this.name,
+    this.slug,
+    this.value,
+  });
+
+  factory CartAttributeItem.fromJson(Map<String, dynamic> json) {
+    return CartAttributeItem(
+      id: json['id'],
+      attributeId: json['attribute_id'],
+      name: json['name'],
+      slug: json['slug'],
+      value: json['value'],
+    );
+  }
+}
+
+class CartVariationThumbnail {
+  CartVariationMedia? media;
+
+  CartVariationThumbnail({this.media});
+
+  factory CartVariationThumbnail.fromJson(Map<String, dynamic> json) {
+    return CartVariationThumbnail(
+      media:
+          json['media'] != null && json['media'] is Map
+              ? CartVariationMedia.fromJson(json['media'])
+              : null,
+    );
+  }
+}
+
+class CartVariationMedia {
+  String? id;
+  String? url;
+  String? optimizedMediaUrl;
+
+  CartVariationMedia({this.id, this.url, this.optimizedMediaUrl});
+
+  factory CartVariationMedia.fromJson(Map<String, dynamic> json) {
+    return CartVariationMedia(
+      id: json['id'],
+      url: json['url'],
+      optimizedMediaUrl: json['optimized_media_url'],
     );
   }
 }

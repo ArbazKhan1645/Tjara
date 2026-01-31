@@ -19,6 +19,8 @@ class OrderService {
     required String successUrl,
     required String cancelUrl,
     double walletCheckoutAmount = 0.0,
+    String? couponCode,
+    String? couponUsageId,
   }) async {
     try {
       // Validate required fields
@@ -73,15 +75,27 @@ class OrderService {
         orderData["wallet_checkout_amount"] = walletCheckoutAmount;
       }
 
+      // Add coupon code if provided
+      if (couponCode != null && couponCode.isNotEmpty) {
+        orderData["coupon_code"] = couponCode;
+      }
+
+      // Add coupon usage id if provided
+      if (couponUsageId != null && couponUsageId.isNotEmpty) {
+        orderData["coupon_usage_id"] = couponUsageId;
+      }
+
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {
           "Content-Type": "application/json",
           'user-id': userId,
-          'X-Request-From': 'Application',
+          'X-Request-From': 'Website',
         },
         body: jsonEncode(orderData),
       );
+
+      print(response.statusCode);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = jsonDecode(response.body);

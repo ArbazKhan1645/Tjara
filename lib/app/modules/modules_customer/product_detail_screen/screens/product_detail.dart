@@ -86,6 +86,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
 
   String? selectedVariationPrice;
   String? selectedVariationId;
+  int? _selectedVariationStock;
   bool _isDisposed = false;
   final bool _isNavigating = false;
 
@@ -667,6 +668,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
       newUrls.add(_imageUrlsNotifier.value.first);
     }
 
+    // Add gallery images
     for (var item in gallery) {
       if (item.media?.url != null || item.media?.optimizedMediaUrl != null) {
         final url =
@@ -679,6 +681,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
             '';
         if (url.isNotEmpty && !newUrls.contains(url)) {
           newUrls.add(url);
+        }
+      }
+    }
+
+    // Add all variation thumbnails
+    final variations = product.product?.variation?.shop;
+    if (variations != null) {
+      for (var variation in variations) {
+        final variationThumbUrl = variation.thumbnailUrl;
+        if (variationThumbUrl != null &&
+            variationThumbUrl.isNotEmpty &&
+            !newUrls.contains(variationThumbUrl)) {
+          newUrls.add(variationThumbUrl);
         }
       }
     }
@@ -705,6 +720,38 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
         !newUrls.every((url) => _imageUrlsNotifier.value.contains(url))) {
       _imageUrlsNotifier.value = newUrls;
     }
+  }
+
+  /// Scrolls the image slider to show the variation thumbnail
+  void _updateImageSliderWithVariationThumbnail(String thumbnailUrl) {
+    if (thumbnailUrl.isEmpty) return;
+
+    final currentUrls = _imageUrlsNotifier.value;
+
+    // Find the index of the thumbnail in the image list
+    final int imageIndex = currentUrls.indexOf(thumbnailUrl);
+    if (imageIndex < 0) return;
+
+    // Calculate the actual slider index accounting for video position
+    // For deal products: video is at index 1, for regular products: video is at index 0
+    final hasVideo = _videoUrl != null && _videoUrl!.isNotEmpty;
+    final videoIndex = widget.product.isDeal == 1 ? 1 : 0;
+    final targetIndex =
+        hasVideo && imageIndex >= videoIndex
+            ? imageIndex +
+                1 // Shift by 1 to account for video slot
+            : imageIndex;
+
+    // Scroll to the variation thumbnail
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_pageController != null && _pageController!.hasClients && mounted) {
+        _pageController!.animateToPage(
+          targetIndex,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
   }
 
   void _precacheImages(List<String> imageUrls) {
@@ -1206,7 +1253,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                   padding: const EdgeInsets.all(16),
                   child: ProductVariationDisplay(
                     variation: product!.product!.variation!,
-                    onAttributesSelected: (attributesData, variationId) {
+                    onAttributesSelected: (
+                      attributesData,
+                      variationId,
+                      thumbnailUrl,
+                    ) {
                       if (variationId == null) return;
                       selectedVariationId = variationId;
                       if (attributesData.isNotEmpty) {
@@ -1215,6 +1266,27 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                           selectedVariationPrice =
                               attributesData[firstKey]!["price"].toString();
                         }
+                      }
+                      // Update image slider with variation thumbnail
+                      if (thumbnailUrl != null && thumbnailUrl.isNotEmpty) {
+                        _updateImageSliderWithVariationThumbnail(thumbnailUrl);
+                      }
+                      // Find selected variation and update stock
+                      final variations = product.product!.variation!.shop;
+                      if (variations != null) {
+                        final selectedVariation = variations.firstWhere(
+                          (v) => v.id == variationId,
+                          orElse: () => variations.first,
+                        );
+                        setState(() {
+                          _selectedVariationStock = selectedVariation.stock;
+                          // Reset quantity if it exceeds variation stock
+                          final currentQty = int.tryParse(_quantityController?.text ?? '1') ?? 1;
+                          final maxStock = _selectedVariationStock ?? (widget.product.stock ?? 999).toInt();
+                          if (currentQty > maxStock) {
+                            _quantityController?.text = maxStock.toString();
+                          }
+                        });
                       }
                     },
                   ),
@@ -1242,7 +1314,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                     const Spacer(),
                     QuantitySelector(
                       controller: _quantityController!,
-                      maxQuantity: (widget.product.stock ?? 999).toInt(),
+                      maxQuantity: _selectedVariationStock ?? (widget.product.stock ?? 999).toInt(),
                       minQuantity: 1,
                       onQuantityChanged: (quantity) {},
                     ),
@@ -1272,11 +1344,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.only(top: 12, left: 12),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12, left: 12),
                     child: Text(
-                      'You May Also Like',
-                      style: TextStyle(
+                      widget.product.isDeal.toString() != '1'
+                          ? 'You May Also Like'
+                          : 'Ended Deals',
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: _textPrimary,
@@ -1323,6 +1397,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                 imageUrls: imageUrls,
                 controller: _pageController!,
                 onVideoStateChanged: () {},
+                // For deal products: featured image first (index 0), video second (index 1)
+                // For regular products: video first (index 0)
+                videoIndex: widget.product.isDeal == 1 ? 1 : 0,
               ),
             ),
             // Image Counter
@@ -1434,9 +1511,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
         widget.product.maxPrice != null &&
         widget.product.minPrice != 0 &&
         widget.product.maxPrice != 0) {
-      return Text(
-        '\$${widget.product.minPrice!.toStringAsFixed(2)} - \$${widget.product.maxPrice!.toStringAsFixed(2)}',
-        style: const TextStyle(
+      return const Text(
+        '',
+        // '\$${widget.product.maxPrice!.toStringAsFixed(2)}',
+        style: TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.bold,
           color: _primaryColor,
@@ -1729,8 +1807,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
         shop?.thumbnail?.media?.cdnUrl ??
         shop?.thumbnail?.media?.url ??
         shop?.thumbnail?.media?.localUrl ??
-        shop?.thumbnail?.media?.optimizedMediaUrl ??
-        null;
+        shop?.thumbnail?.media?.optimizedMediaUrl;
 
     return GestureDetector(
       onTap: () {
@@ -1778,7 +1855,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    shop?.name ?? 'Store',
+                    shop?.name ?? widget.product.shop?.shop?.name ?? '',
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -2468,7 +2545,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                   border: Border.all(color: Colors.grey.shade300),
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: Icon(Iconsax.message, color: _textSecondary, size: 22),
+                child: const Icon(
+                  Iconsax.message,
+                  color: _textSecondary,
+                  size: 22,
+                ),
               ),
             ),
             const SizedBox(width: 4),

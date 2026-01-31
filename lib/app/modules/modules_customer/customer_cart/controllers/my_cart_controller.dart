@@ -44,7 +44,7 @@ class CartService extends GetxService {
     return this;
   }
 
-  initcall() async {
+  Future<void> initcall() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final LoginResponse? usercurrent = AuthService.instance.authCustomer;
     if (usercurrent?.user?.id == null) {
@@ -78,7 +78,7 @@ class CartService extends GetxService {
       print("🛒 [CART] Fetching cart for userId: $userId");
 
       final url = Uri.parse(
-        'https://api.libanbuy.com/api/cart?_t=${DateTime.now().millisecondsSinceEpoch}',
+        'https://api.libanbuy.com/api/cart?_t=${DateTime.now().millisecondsSinceEpoch}&page=cart',
       );
 
       final headers = {
@@ -171,7 +171,7 @@ class CartService extends GetxService {
     }
   }
 
-  Future<void> deleteCart(cartId, BuildContext context) async {
+  Future<void> deleteCart(String cartId, BuildContext context) async {
     try {
       final LoginResponse? usercurrent = AuthService.instance.authCustomer;
       if (usercurrent?.user?.id == null) {
@@ -207,7 +207,11 @@ class CartService extends GetxService {
     }
   }
 
-  Future<void> updatecar(cartId, int quantity, BuildContext context) async {
+  Future<void> updatecar(
+    String cartId,
+    int quantity,
+    BuildContext context,
+  ) async {
     try {
       final LoginResponse? usercurrent = AuthService.instance.authCustomer;
       if (usercurrent?.user?.id == null) {

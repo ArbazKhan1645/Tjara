@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tjara/app/core/widgets/appbar.dart';
 import 'package:tjara/app/core/widgets/base.dart';
 import 'package:tjara/app/modules/modules_customer/store_page/controllers/store_page_controller.dart';
 import 'package:tjara/app/modules/modules_customer/store_page/pages/section.dart';

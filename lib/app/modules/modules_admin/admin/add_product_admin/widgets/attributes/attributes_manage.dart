@@ -89,7 +89,7 @@ class _AttributesManageState extends State<AttributesManage> {
     }
   }
 
-  onInit() async {
+  Future<void> onInit() async {
     try {
       setState(() {
         isLoadingAttributes = true;
@@ -109,7 +109,7 @@ class _AttributesManageState extends State<AttributesManage> {
     }
   }
 
-  fetchAttributesItems(ProductAttributes attr) async {
+  Future<void> fetchAttributesItems(ProductAttributes attr) async {
     try {
       setState(() {
         isLoadingAttributeItems = true;
@@ -131,7 +131,7 @@ class _AttributesManageState extends State<AttributesManage> {
     }
   }
 
-  addItemToList(ProductAttributeItems item) {
+  void addItemToList(ProductAttributeItems item) {
     if (!selectedItems.contains(item)) {
       selectedItems.add(item);
 
@@ -150,7 +150,7 @@ class _AttributesManageState extends State<AttributesManage> {
     }
   }
 
-  removeItemFromList(ProductAttributeItems item) {
+  void removeItemFromList(ProductAttributeItems item) {
     selectedItems.remove(item);
     variantController.variants.removeWhere(
       (variant) => variant.item.id == item.id,

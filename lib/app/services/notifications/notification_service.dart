@@ -85,7 +85,7 @@ class NotificationService extends GetxService {
     return this;
   }
 
-  initCall() async {
+  Future<void> initCall() async {
     final LoginResponse? userCurrent = AuthService.instance.authCustomer;
     if (userCurrent?.user?.id == null) {
       _notificationStreamController.add([]);
