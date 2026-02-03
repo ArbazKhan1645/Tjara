@@ -66,6 +66,7 @@ class AdminDisputesService extends GetxService {
 
   Future<void> _initializeService() async {
     try {
+      print('Failed to initialize disputes service1');
       await loadDisputes();
       _setupSearchListener();
     } catch (e) {
@@ -100,13 +101,13 @@ class AdminDisputesService extends GetxService {
 
       final response = await _fetchDisputesFromApi(userId: userId);
 
-      // if (response != null) {
-      //   disputesResponse.value = response;
-      //   disputes.assignAll(response.disputes?.data ?? []);
-      //   totalItems.value = response.disputes?.total ?? 0;
-      //   totalPages.value = ((totalItems.value / perPage.value).ceil());
-      //   _filterDisputes();
-      // }
+      if (response != null) {
+        disputesResponse.value = response;
+        disputes.assignAll(response.disputes?.data ?? []);
+        totalItems.value = response.disputes?.total ?? 0;
+        totalPages.value = ((totalItems.value / perPage.value).ceil());
+        _filterDisputes();
+      }
     } catch (e) {
       _handleError('Failed to load disputes', e);
     } finally {

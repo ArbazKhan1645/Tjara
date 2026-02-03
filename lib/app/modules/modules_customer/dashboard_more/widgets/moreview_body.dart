@@ -11,6 +11,12 @@ import 'package:tjara/app/modules/modules_customer/customer_dashboard/controller
 import 'package:tjara/app/modules/modules_customer/customer_cart/controllers/my_cart_controller.dart';
 import 'package:tjara/app/modules/modules_customer/tjara_surveys/view/survey_view.dart';
 import 'package:tjara/app/modules/modules_customer/user_wishlist/service/wishlist_service.dart';
+import 'package:tjara/app/modules/web_settings/analytics_reporting/analytics_reporting_screen.dart';
+import 'package:tjara/app/modules/web_settings/api_throttle/api_throttle_screen.dart';
+import 'package:tjara/app/modules/web_settings/inventory_reporting/inventory_reporting_screen.dart';
+import 'package:tjara/app/modules/web_settings/log_monitor/log_monitor_screen.dart';
+import 'package:tjara/app/modules/web_settings/roles_management/roles_management_screen.dart';
+import 'package:tjara/app/modules/web_settings/web_settings_dashboard/web_settings_dashboard_screen.dart';
 import 'package:tjara/app/routes/app_pages.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
 import 'package:tjara/app/services/dashbopard_services/balance_service.dart';
@@ -711,6 +717,13 @@ class _LinksSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
+          _LinkItem(
+            icon: Icons.article_outlined,
+            label: 'Admin Web Settings',
+            onTap: () {
+              Get.to(() => const WebSettingsDashboardScreen());
+            },
+          ),
           _LinkItem(
             icon: Icons.article_outlined,
             label: 'Blogs',

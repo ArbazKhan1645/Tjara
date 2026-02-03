@@ -86,6 +86,7 @@ class _DisputesOrderoverState extends State<DisputesOrderover> {
     'open',
     'cancelled',
     'resolved',
+    'pending',
     'completed',
   ];
   bool _isStatusChanged = false;
@@ -98,8 +99,6 @@ class _DisputesOrderoverState extends State<DisputesOrderover> {
   @override
   void initState() {
     super.initState();
-    print(widget.order.status?.toLowerCase());
-
     _selectedStatus =
         widget.order.status != null ? widget.order.status?.toLowerCase() : '';
   }

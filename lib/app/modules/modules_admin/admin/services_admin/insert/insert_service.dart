@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 import 'package:tjara/app/core/widgets/admin_app_bar_actions.dart';
+import 'package:tjara/app/core/widgets/searchable_dropdown.dart';
 import 'package:tjara/app/models/others/cities_model.dart' show City;
 import 'package:tjara/app/models/others/country_model.dart';
 import 'package:tjara/app/models/others/state_model.dart';
@@ -31,6 +32,11 @@ class _InsertServiceScreenState extends State<InsertServiceScreen> {
 
   // Check if it's edit mode
   bool get isEditMode => widget.serviceData != null;
+
+  // Loading states for location dropdowns
+  bool _isLoadingCountries = true;
+  bool _isLoadingStates = false;
+  bool _isLoadingCities = false;
 
   Future<void> _fetchAttributes() async {
     setState(() {
@@ -152,14 +158,80 @@ class _InsertServiceScreenState extends State<InsertServiceScreen> {
   bool _serviceInfoExpanded = true;
   bool _uploadServiceExpanded = true;
   bool _serviceDetailsExpanded = true;
+  bool _serviceManagementExpanded = true;
+
+  // Service status toggle
+  bool _isServiceActive = true;
 
   // Loading state
   bool _isLoading = false;
 
   @override
   void initState() {
-    _fetchAttributes();
     super.initState();
+    _fetchAttributes();
+    _loadCountries();
+  }
+
+  Future<void> _loadCountries() async {
+    setState(() {
+      _isLoadingCountries = true;
+    });
+    try {
+      if (CountryService.instance.countryList.isEmpty) {
+        await CountryService.instance.fetchCountries();
+      }
+    } catch (e) {
+      _showErrorSnackbar('Failed to load countries: $e');
+    } finally {
+      setState(() {
+        _isLoadingCountries = false;
+      });
+    }
+  }
+
+  Future<void> _onCountryChanged(Countries? country) async {
+    if (country == null) return;
+
+    setState(() {
+      _selectedCountry = country;
+      _selectedState = null;
+      _selectedCity = null;
+      CountryService.instance.stateList.clear();
+      CountryService.instance.cityList.clear();
+      _isLoadingStates = true;
+    });
+
+    try {
+      await CountryService.instance.fetchStates(country.id.toString());
+    } catch (e) {
+      _showErrorSnackbar('Failed to load states: $e');
+    } finally {
+      setState(() {
+        _isLoadingStates = false;
+      });
+    }
+  }
+
+  Future<void> _onStateChanged(States? state) async {
+    if (state == null) return;
+
+    setState(() {
+      _selectedState = state;
+      _selectedCity = null;
+      CountryService.instance.cityList.clear();
+      _isLoadingCities = true;
+    });
+
+    try {
+      await CountryService.instance.fetchCities(state.id.toString());
+    } catch (e) {
+      _showErrorSnackbar('Failed to load cities: $e');
+    } finally {
+      setState(() {
+        _isLoadingCities = false;
+      });
+    }
   }
 
   @override
@@ -293,6 +365,16 @@ class _InsertServiceScreenState extends State<InsertServiceScreen> {
       if (_selectedState != null) {
         body['state_id'] = _selectedState!.id ?? '';
       }
+
+      if (_selectedCity != null) {
+        body['city_id'] = _selectedCity!.id.toString();
+      }
+
+      // Service status - ready for future use
+      // ignore: unused_local_variable
+      final bool serviceStatus = _isServiceActive;
+      // TODO: Uncomment when API supports status
+      // body['status'] = _isServiceActive ? 'active' : 'inactive';
 
       // Add gallery images if any
       if (galleryIds.isNotEmpty) {
@@ -510,138 +592,52 @@ class _InsertServiceScreenState extends State<InsertServiceScreen> {
                               ),
 
                               const SizedBox(height: 24),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text('Countries'),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 4,
-                                    ),
-                                    margin: const EdgeInsets.symmetric(
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: const Color(0xffEAEAEA),
-                                      ),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: DropdownButtonFormField<Countries>(
-                                      initialValue:
-                                          _selectedCountry, // Set initial value for edit mode
-                                      decoration: const InputDecoration(
-                                        labelText: 'Select Country',
-                                        border: InputBorder.none,
-                                        enabledBorder: InputBorder.none,
-                                        focusedBorder: InputBorder.none,
-                                      ),
-                                      items:
-                                          CountryService.instance.countryList
-                                              .map((Countries value) {
-                                                return DropdownMenuItem<
-                                                  Countries
-                                                >(
-                                                  value: value,
-                                                  child: Text(
-                                                    value.name.toString(),
-                                                  ),
-                                                );
-                                              })
-                                              .toList(),
-                                      onChanged: (newValue) {
-                                        setState(() {
-                                          _selectedCountry = newValue;
-                                          _selectedCity = null;
-                                          _selectedState = null;
-                                          CountryService.instance.stateList
-                                              .clear();
-                                          CountryService.instance.fetchStates(
-                                            newValue!.id.toString(),
-                                          );
-                                        });
-                                      },
-                                      validator:
-                                          (value) =>
-                                              value == null
-                                                  ? 'Please select a country'
-                                                  : null,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                ],
+                              // Country Dropdown
+                              SearchableDropdown<Countries>(
+                                label: 'Country',
+                                hint: 'Select Country',
+                                searchHint: 'Search country...',
+                                items:
+                                    CountryService.instance.countryList
+                                        .toList(),
+                                value: _selectedCountry,
+                                onChanged: _onCountryChanged,
+                                getDisplayText:
+                                    (country) => country.name ?? 'Unknown',
+                                isLoading: _isLoadingCountries,
                               ),
                               // State Dropdown
-                              Obx(() {
-                                final List<States> states =
-                                    CountryService.instance.stateList;
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('States'),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 4,
-                                      ),
-                                      margin: const EdgeInsets.symmetric(
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                          color: const Color(0xffEAEAEA),
-                                        ),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: DropdownButtonFormField<States>(
-                                        initialValue:
-                                            _selectedState, // Set initial value for edit mode
-                                        decoration: const InputDecoration(
-                                          labelText: 'Select a State',
-                                          border: InputBorder.none,
-                                          enabledBorder: InputBorder.none,
-                                          focusedBorder: InputBorder.none,
-                                        ),
-                                        items:
-                                            states.map((States value) {
-                                              return DropdownMenuItem<States>(
-                                                value: value,
-                                                child: Text(
-                                                  value.name.toString(),
-                                                ),
-                                              );
-                                            }).toList(),
-                                        onChanged: (newValue) {
-                                          setState(() {
-                                            _selectedState = newValue;
-                                          });
-                                        },
-                                        validator:
-                                            (value) =>
-                                                value == null
-                                                    ? 'Please select a state'
-                                                    : null,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                  ],
-                                );
-                              }),
+                              SearchableDropdown<States>(
+                                label: 'State/Region',
+                                hint: 'Select State',
+                                searchHint: 'Search state...',
+                                items:
+                                    CountryService.instance.stateList.toList(),
+                                value: _selectedState,
+                                onChanged: _onStateChanged,
+                                getDisplayText:
+                                    (state) => state.name ?? 'Unknown',
+                                isLoading: _isLoadingStates,
+                                enabled: _selectedCountry != null,
+                              ),
 
-                              const SizedBox(height: 24),
-                              // _buildDropdown(
-                              //   label: 'City',
-                              //   value: _selectedCity,
-                              //   items: [],
-                              //   hintText: 'Select a city',
-                              //   helperText: 'Add city here.',
-                              //   onChanged: (value) {
-                              //     setState(() {
-                              //       _selectedCity = value;
-                              //     });
-                              //   },
-                              // ),
+                              // City Dropdown
+                              SearchableDropdown<City>(
+                                label: 'City',
+                                hint: 'Select City',
+                                searchHint: 'Search city...',
+                                items:
+                                    CountryService.instance.cityList.toList(),
+                                value: _selectedCity,
+                                onChanged: (city) {
+                                  setState(() {
+                                    _selectedCity = city;
+                                  });
+                                },
+                                getDisplayText: (city) => city.name,
+                                isLoading: _isLoadingCities,
+                                enabled: _selectedState != null,
+                              ),
                             ],
 
                             const SizedBox(height: 24),
@@ -737,6 +733,24 @@ class _InsertServiceScreenState extends State<InsertServiceScreen> {
                                     'Enter the sale price if your service is on discount.',
                               ),
                               const SizedBox(height: 24),
+                            ],
+
+                            const SizedBox(height: 24),
+
+                            // Service Management Section
+                            _buildSectionHeader(
+                              'Service Management',
+                              isExpanded: _serviceManagementExpanded,
+                              onTap: () {
+                                setState(() {
+                                  _serviceManagementExpanded =
+                                      !_serviceManagementExpanded;
+                                });
+                              },
+                            ),
+                            if (_serviceManagementExpanded) ...[
+                              const SizedBox(height: 16),
+                              _buildStatusToggle(),
                             ],
 
                             const SizedBox(height: 32),
@@ -930,6 +944,149 @@ class _InsertServiceScreenState extends State<InsertServiceScreen> {
                   : null,
         ),
       ],
+    );
+  }
+
+  Widget _buildStatusToggle() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xffEAEAEA)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Service Status',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Choose the status that best reflects the availability of this service for customers.',
+            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isServiceActive = true;
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color:
+                          _isServiceActive
+                              ? const Color(0xFF22C55E).withValues(alpha: 0.1)
+                              : Colors.grey[100],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color:
+                            _isServiceActive
+                                ? const Color(0xFF22C55E)
+                                : Colors.grey[300]!,
+                        width: _isServiceActive ? 2 : 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.check_circle,
+                          size: 20,
+                          color:
+                              _isServiceActive
+                                  ? const Color(0xFF22C55E)
+                                  : Colors.grey[400],
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Active',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color:
+                                _isServiceActive
+                                    ? const Color(0xFF22C55E)
+                                    : Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isServiceActive = false;
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color:
+                          !_isServiceActive
+                              ? const Color(0xFFEF4444).withValues(alpha: 0.1)
+                              : Colors.grey[100],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color:
+                            !_isServiceActive
+                                ? const Color(0xFFEF4444)
+                                : Colors.grey[300]!,
+                        width: !_isServiceActive ? 2 : 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.cancel,
+                          size: 20,
+                          color:
+                              !_isServiceActive
+                                  ? const Color(0xFFEF4444)
+                                  : Colors.grey[400],
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Inactive',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color:
+                                !_isServiceActive
+                                    ? const Color(0xFFEF4444)
+                                    : Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
