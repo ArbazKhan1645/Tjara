@@ -6,6 +6,7 @@ class FlashDealProduct {
   final String? price;
   final String? salePrice;
   final String? status;
+  final String? is_deal;
 
   FlashDealProduct({
     required this.id,
@@ -14,6 +15,7 @@ class FlashDealProduct {
     this.price,
     this.salePrice,
     this.status,
+    required this.is_deal,
   });
 
   factory FlashDealProduct.fromJson(Map<String, dynamic> json) {
@@ -24,6 +26,7 @@ class FlashDealProduct {
 
     return FlashDealProduct(
       id: json['id'] ?? '',
+      is_deal: json['is_deal'].toString(),
       name: json['name'] ?? '',
       image: thumbnailUrl ?? json['image'],
       price: json['price']?.toString(),
@@ -103,25 +106,38 @@ class FlashDealSettings {
   factory FlashDealSettings.fromJson(Map<String, dynamic> options) {
     return FlashDealSettings(
       flashDealsEnabled: options['flash_deals_enabled'] == '1',
-      activeTimeValue: options['flash_deals_active_time_value']?.toString() ?? '1',
-      activeTimeUnit: options['flash_deals_active_time_unit']?.toString() ?? 'minutes',
-      intervalTimeValue: options['flash_deals_interval_time_value']?.toString() ?? '30',
-      intervalTimeUnit: options['flash_deals_interval_time_unit']?.toString() ?? 'seconds',
-      schedulingMode: options['flash_deals_scheduling_mode']?.toString() ?? 'live',
+      activeTimeValue:
+          options['flash_deals_active_time_value']?.toString() ?? '1',
+      activeTimeUnit:
+          options['flash_deals_active_time_unit']?.toString() ?? 'minutes',
+      intervalTimeValue:
+          options['flash_deals_interval_time_value']?.toString() ?? '30',
+      intervalTimeUnit:
+          options['flash_deals_interval_time_unit']?.toString() ?? 'seconds',
+      schedulingMode:
+          options['flash_deals_scheduling_mode']?.toString() ?? 'live',
       startTime: options['flash_deals_start_time']?.toString(),
       timeLimitHours: options['flash_deals_time_limit_hours']?.toString(),
-      purchaseLimitEnabled: options['flash_deals_purchase_limit_enabled'] == '1',
-      purchaseLimitPerStore: options['flash_deals_purchase_limit_per_store']?.toString(),
+      purchaseLimitEnabled:
+          options['flash_deals_purchase_limit_enabled'] == '1',
+      purchaseLimitPerStore:
+          options['flash_deals_purchase_limit_per_store']?.toString(),
       lockDuration: options['flash_deal_lock_duration']?.toString(),
-      flashDealsProductsSortOrder: options['flash_deals_products_sort_order']?.toString() ?? '',
-      skippedDealsProductsSortOrder: options['skipped_deals_products_sort_order']?.toString() ?? '',
-      expiredDealsProductsSortOrder: options['expired_deals_products_sort_order']?.toString() ?? '',
-      soldDealsProductsSortOrder: options['sold_deals_products_sort_order']?.toString() ?? '',
+      flashDealsProductsSortOrder:
+          options['flash_deals_products_sort_order']?.toString() ?? '',
+      skippedDealsProductsSortOrder:
+          options['skipped_deals_products_sort_order']?.toString() ?? '',
+      expiredDealsProductsSortOrder:
+          options['expired_deals_products_sort_order']?.toString() ?? '',
+      soldDealsProductsSortOrder:
+          options['sold_deals_products_sort_order']?.toString() ?? '',
       currentDealProductId: options['current_deal_product_id']?.toString(),
       currentDealStartTime: options['current_deal_start_time']?.toString(),
       currentDealEndTime: options['current_deal_end_time']?.toString(),
-      noDealsHeadline: options['no_flash_deals_found_content_headline']?.toString(),
-      noDealsDescription: options['no_flash_deals_found_content_description']?.toString(),
+      noDealsHeadline:
+          options['no_flash_deals_found_content_headline']?.toString(),
+      noDealsDescription:
+          options['no_flash_deals_found_content_description']?.toString(),
       noDealsDir: options['no_flash_deals_found_content_dir']?.toString(),
       groupIconClicks: options['flash_deals_group_icon_clicks']?.toString(),
     );
@@ -129,8 +145,10 @@ class FlashDealSettings {
 
   /// Get list of product IDs from sort order string
   List<String> get activeProductIds => _parseIds(flashDealsProductsSortOrder);
-  List<String> get skippedProductIds => _parseIds(skippedDealsProductsSortOrder);
-  List<String> get expiredProductIds => _parseIds(expiredDealsProductsSortOrder);
+  List<String> get skippedProductIds =>
+      _parseIds(skippedDealsProductsSortOrder);
+  List<String> get expiredProductIds =>
+      _parseIds(expiredDealsProductsSortOrder);
   List<String> get soldProductIds => _parseIds(soldDealsProductsSortOrder);
 
   List<String> _parseIds(String sortOrder) {
@@ -174,10 +192,7 @@ class SettingsResponse {
   final Map<String, dynamic> options;
   final String? provider;
 
-  SettingsResponse({
-    required this.options,
-    this.provider,
-  });
+  SettingsResponse({required this.options, this.provider});
 
   factory SettingsResponse.fromJson(Map<String, dynamic> json) {
     return SettingsResponse(
@@ -186,7 +201,8 @@ class SettingsResponse {
     );
   }
 
-  FlashDealSettings get flashDealSettings => FlashDealSettings.fromJson(options);
+  FlashDealSettings get flashDealSettings =>
+      FlashDealSettings.fromJson(options);
 }
 
 /// Products Response for search
@@ -210,7 +226,8 @@ class FlashDealProductsPagination {
 
   factory FlashDealProductsPagination.fromJson(Map<String, dynamic> json) {
     return FlashDealProductsPagination(
-      data: (json['data'] as List<dynamic>?)
+      data:
+          (json['data'] as List<dynamic>?)
               ?.map((item) => FlashDealProduct.fromJson(item))
               .toList() ??
           [],

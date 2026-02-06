@@ -37,7 +37,8 @@ class AddProductAdminController extends GetxController {
   static const String _insertApiUrl =
       'https://api.libanbuy.com/api/products/insert';
   static const String _updateApiUrl = 'https://api.libanbuy.com/api/products';
-  static const String _shopId = '0000c539-9857-3456-bc53-2bbdc1474f1a';
+  static final String _shopId =
+      AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '';
   static const String _requestFromHeader = 'Dashboard';
 
   // Observable variables
@@ -88,6 +89,22 @@ class AddProductAdminController extends GetxController {
   String? thumbnailUrl;
   String? videoUrl;
   List<String> galleryUrls = [];
+
+  // Media Upload State Tracking
+  final RxBool isThumbnailUploading = false.obs;
+  final RxBool isVideoUploading = false.obs;
+  final RxList<bool> galleryUploadingStates = <bool>[].obs;
+
+  // Cancel tokens for uploads (using index tracking)
+  bool _thumbnailUploadCancelled = false;
+  bool _videoUploadCancelled = false;
+  final List<bool> _galleryUploadCancelled = [];
+
+  /// Check if any media is currently uploading
+  bool get isAnyMediaUploading =>
+      isThumbnailUploading.value ||
+      isVideoUploading.value ||
+      galleryUploadingStates.any((uploading) => uploading);
 
   // Repository
 
@@ -437,14 +454,26 @@ class AddProductAdminController extends GetxController {
         videoFile = file;
         videoUrl = null;
         videoId = null;
+        _videoUploadCancelled = false;
+        isVideoUploading.value = true;
         update();
 
         final List<String> mediaIds = await _uploadMedia([file]);
+
+        // Check if cancelled during upload
+        if (_videoUploadCancelled) {
+          isVideoUploading.value = false;
+          return;
+        }
+
         if (mediaIds.isNotEmpty) {
           videoId = mediaIds.first;
         }
+        isVideoUploading.value = false;
+        update();
       }
     } catch (e) {
+      isVideoUploading.value = false;
       _showErrorSnackbar('Video Selection Error', e.toString());
     }
   }
@@ -463,21 +492,63 @@ class AddProductAdminController extends GetxController {
         final File finalFile = croppedFile ?? originalFile;
 
         if (isGallery) {
+          final int galleryIndex = galleryFiles.length;
           galleryFiles.add(finalFile);
-          _uploadMedia([finalFile]).then((mediaIds) {
-            if (mediaIds.isNotEmpty) {
-              galleryIds.addAll(mediaIds);
-            }
-          });
+          galleryUploadingStates.add(true);
+          _galleryUploadCancelled.add(false);
+          update();
+
+          _uploadMedia([finalFile])
+              .then((mediaIds) {
+                // Check if cancelled
+                if (galleryIndex < _galleryUploadCancelled.length &&
+                    _galleryUploadCancelled[galleryIndex]) {
+                  if (galleryIndex < galleryUploadingStates.length) {
+                    galleryUploadingStates[galleryIndex] = false;
+                  }
+                  return;
+                }
+
+                if (mediaIds.isNotEmpty) {
+                  galleryIds.add(mediaIds.first);
+                }
+                if (galleryIndex < galleryUploadingStates.length) {
+                  galleryUploadingStates[galleryIndex] = false;
+                }
+                update();
+              })
+              .catchError((e) {
+                if (galleryIndex < galleryUploadingStates.length) {
+                  galleryUploadingStates[galleryIndex] = false;
+                }
+                update();
+              });
         } else {
           thumbnailFile = finalFile;
           thumbnailUrl = null;
           thumbnailId = null;
-          _uploadMedia([finalFile]).then((mediaIds) {
-            if (mediaIds.isNotEmpty) {
-              thumbnailId = mediaIds.first;
-            }
-          });
+          _thumbnailUploadCancelled = false;
+          isThumbnailUploading.value = true;
+          update();
+
+          _uploadMedia([finalFile])
+              .then((mediaIds) {
+                // Check if cancelled
+                if (_thumbnailUploadCancelled) {
+                  isThumbnailUploading.value = false;
+                  return;
+                }
+
+                if (mediaIds.isNotEmpty) {
+                  thumbnailId = mediaIds.first;
+                }
+                isThumbnailUploading.value = false;
+                update();
+              })
+              .catchError((e) {
+                isThumbnailUploading.value = false;
+                update();
+              });
         }
         update();
       }
@@ -500,21 +571,63 @@ class AddProductAdminController extends GetxController {
         final File finalFile = croppedFile ?? originalFile;
 
         if (isGallery) {
+          final int galleryIndex = galleryFiles.length;
           galleryFiles.add(finalFile);
-          _uploadMedia([finalFile]).then((mediaIds) {
-            if (mediaIds.isNotEmpty) {
-              galleryIds.addAll(mediaIds);
-            }
-          });
+          galleryUploadingStates.add(true);
+          _galleryUploadCancelled.add(false);
+          update();
+
+          _uploadMedia([finalFile])
+              .then((mediaIds) {
+                // Check if cancelled
+                if (galleryIndex < _galleryUploadCancelled.length &&
+                    _galleryUploadCancelled[galleryIndex]) {
+                  if (galleryIndex < galleryUploadingStates.length) {
+                    galleryUploadingStates[galleryIndex] = false;
+                  }
+                  return;
+                }
+
+                if (mediaIds.isNotEmpty) {
+                  galleryIds.add(mediaIds.first);
+                }
+                if (galleryIndex < galleryUploadingStates.length) {
+                  galleryUploadingStates[galleryIndex] = false;
+                }
+                update();
+              })
+              .catchError((e) {
+                if (galleryIndex < galleryUploadingStates.length) {
+                  galleryUploadingStates[galleryIndex] = false;
+                }
+                update();
+              });
         } else {
           thumbnailFile = finalFile;
           thumbnailUrl = null;
           thumbnailId = null;
-          _uploadMedia([finalFile]).then((mediaIds) {
-            if (mediaIds.isNotEmpty) {
-              thumbnailId = mediaIds.first;
-            }
-          });
+          _thumbnailUploadCancelled = false;
+          isThumbnailUploading.value = true;
+          update();
+
+          _uploadMedia([finalFile])
+              .then((mediaIds) {
+                // Check if cancelled
+                if (_thumbnailUploadCancelled) {
+                  isThumbnailUploading.value = false;
+                  return;
+                }
+
+                if (mediaIds.isNotEmpty) {
+                  thumbnailId = mediaIds.first;
+                }
+                isThumbnailUploading.value = false;
+                update();
+              })
+              .catchError((e) {
+                isThumbnailUploading.value = false;
+                update();
+              });
         }
         update();
       }
@@ -560,6 +673,16 @@ class AddProductAdminController extends GetxController {
           galleryIds.removeAt(index);
         }
       } else if (!isUrl && index < galleryFiles.length) {
+        // Cancel upload if in progress
+        if (index < _galleryUploadCancelled.length) {
+          _galleryUploadCancelled[index] = true;
+        }
+        if (index < galleryUploadingStates.length) {
+          galleryUploadingStates.removeAt(index);
+        }
+        if (index < _galleryUploadCancelled.length) {
+          _galleryUploadCancelled.removeAt(index);
+        }
         galleryFiles.removeAt(index);
         if (index < galleryIds.length) {
           galleryIds.removeAt(index);
@@ -572,6 +695,9 @@ class AddProductAdminController extends GetxController {
   }
 
   void removeThumbnail() {
+    // Cancel upload if in progress
+    _thumbnailUploadCancelled = true;
+    isThumbnailUploading.value = false;
     thumbnailFile = null;
     thumbnailUrl = null;
     thumbnailId = null;
@@ -579,6 +705,9 @@ class AddProductAdminController extends GetxController {
   }
 
   void removeVideo() {
+    // Cancel upload if in progress
+    _videoUploadCancelled = true;
+    isVideoUploading.value = false;
     videoFile = null;
     videoUrl = null;
     videoId = null;
@@ -612,6 +741,15 @@ class AddProductAdminController extends GetxController {
     Map<String, dynamic>? meta,
   }) async {
     if (isLoading.value) return false;
+
+    // Check if any media is still uploading
+    if (isAnyMediaUploading) {
+      _showWarningSnackbar(
+        'Upload in Progress',
+        'Please wait for media uploads to complete before saving.',
+      );
+      return false;
+    }
 
     isLoading.value = true;
 
@@ -733,8 +871,20 @@ class AddProductAdminController extends GetxController {
       if (salePrice != null) {
         request.fields['sale_price'] = salePrice.toString();
       }
+      // Video ID
       if ((videoId ?? '').isNotEmpty) {
         request.fields['video_id'] = videoId.toString();
+      }
+
+      // Gallery IDs (array format)
+      if (galleryIds != null && galleryIds.isNotEmpty) {
+        for (var i = 0; i < galleryIds.length; i++) {
+          request.fields['gallery[$i]'] = galleryIds[i];
+        }
+      } else if (this.galleryIds.isNotEmpty) {
+        for (var i = 0; i < this.galleryIds.length; i++) {
+          request.fields['gallery[$i]'] = this.galleryIds[i];
+        }
       }
 
       if (mainattributeId.isNotEmpty) {
@@ -798,7 +948,8 @@ class AddProductAdminController extends GetxController {
       request.headers['Content-Type'] =
           'multipart/form-data; boundary=----WebKitFormBoundaryloiQQIBhpOS9GzyB';
       request.headers['x-request-from'] = 'Dashboard';
-      request.headers['shop-id'] = '0000c539-9857-3456-bc53-2bbdc1474f1a';
+      request.headers['shop-id'] =
+          AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '';
 
       // Send the request
       final response = await request.send();
@@ -874,8 +1025,11 @@ class AddProductAdminController extends GetxController {
         requestBody['thumbnail_id'] = thumbnailId;
       }
 
+      // Video ID
       if (videoId != null && videoId.isNotEmpty) {
         requestBody['video_id'] = videoId;
+      } else if (this.videoId != null && this.videoId!.isNotEmpty) {
+        requestBody['video_id'] = this.videoId;
       }
 
       if (mainattributeId.isNotEmpty) {
@@ -902,6 +1056,8 @@ class AddProductAdminController extends GetxController {
       // Add gallery as array (note: "gallery" not "gallery_ids")
       if (galleryIds != null && galleryIds.isNotEmpty) {
         requestBody['gallery'] = galleryIds;
+      } else if (this.galleryIds.isNotEmpty) {
+        requestBody['gallery'] = this.galleryIds;
       }
 
       // Add tag IDs if provided

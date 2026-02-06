@@ -18,6 +18,9 @@ class FlashDealController extends GetxController {
   final RxBool isSaving = false.obs;
   final RxString error = ''.obs;
 
+  // Flag to track if form fields have been initialized (prevents auto-update after first load)
+  bool _isFormFieldsInitialized = false;
+
   // Settings
   final Rxn<FlashDealSettings> settings = Rxn<FlashDealSettings>();
 
@@ -173,38 +176,47 @@ class FlashDealController extends GetxController {
   }
 
   void _updateFormFromSettings(FlashDealSettings s) {
+    // Always update these reactive values (for display purposes)
     flashDealsEnabled.value = s.flashDealsEnabled;
-    activeTimeValue.value = s.activeTimeValue;
-    activeTimeUnit.value = s.activeTimeUnit;
-    intervalTimeValue.value = s.intervalTimeValue;
-    intervalTimeUnit.value = s.intervalTimeUnit;
-    schedulingMode.value = s.schedulingMode;
-    timeLimitHours.value = s.timeLimitHours ?? '24';
     purchaseLimitEnabled.value = s.purchaseLimitEnabled;
-    purchaseLimitPerStore.value = s.purchaseLimitPerStore ?? '2';
-    lockDuration.value = s.lockDuration ?? '5';
 
-    // Parse start time
-    if (s.startTime != null && s.startTime!.isNotEmpty) {
-      try {
-        scheduledStartTime.value = DateTime.parse(s.startTime!);
-      } catch (e) {
-        scheduledStartTime.value = null;
-      }
-    }
-
-    // Update controllers
-    activeTimeController.text = s.activeTimeValue;
-    intervalTimeController.text = s.intervalTimeValue;
-    timeLimitController.text = s.timeLimitHours ?? '24';
-    purchaseLimitController.text = s.purchaseLimitPerStore ?? '2';
-    lockDurationController.text = s.lockDuration ?? '5';
-
-    // Update product IDs
+    // Update product IDs (always keep in sync)
     activeProductIds.value = s.activeProductIds;
     skippedProductIds.value = s.skippedProductIds;
     expiredProductIds.value = s.expiredProductIds;
     soldProductIds.value = s.soldProductIds;
+
+    // Only initialize text field values on first load
+    // This prevents overwriting user input when API refreshes
+    if (!_isFormFieldsInitialized) {
+      activeTimeValue.value = s.activeTimeValue;
+      activeTimeUnit.value = s.activeTimeUnit;
+      intervalTimeValue.value = s.intervalTimeValue;
+      intervalTimeUnit.value = s.intervalTimeUnit;
+      schedulingMode.value = s.schedulingMode;
+      timeLimitHours.value = s.timeLimitHours ?? '24';
+      purchaseLimitPerStore.value = s.purchaseLimitPerStore ?? '2';
+      lockDuration.value = s.lockDuration ?? '5';
+
+      // Parse start time
+      if (s.startTime != null && s.startTime!.isNotEmpty) {
+        try {
+          scheduledStartTime.value = DateTime.parse(s.startTime!);
+        } catch (e) {
+          scheduledStartTime.value = null;
+        }
+      }
+
+      // Update text controllers only on first init
+      activeTimeController.text = s.activeTimeValue;
+      intervalTimeController.text = s.intervalTimeValue;
+      timeLimitController.text = s.timeLimitHours ?? '24';
+      purchaseLimitController.text = s.purchaseLimitPerStore ?? '2';
+      lockDurationController.text = s.lockDuration ?? '5';
+
+      // Mark as initialized so future API refreshes won't overwrite user input
+      _isFormFieldsInitialized = true;
+    }
   }
 
   Future<void> _loadProductsFromSettings(FlashDealSettings s) async {
@@ -238,7 +250,11 @@ class FlashDealController extends GetxController {
         } catch (e) {
           // Add placeholder if product not found
           products.add(
-            FlashDealProduct(id: id, name: 'Product #${id.substring(0, 8)}...'),
+            FlashDealProduct(
+              id: id,
+              name: 'Product #${id.substring(0, 8)}...',
+              is_deal: '1',
+            ),
           );
         }
       }
@@ -255,6 +271,7 @@ class FlashDealController extends GetxController {
   // Update active time
   void updateActiveTimeValue(String value) {
     activeTimeValue.value = value;
+    update();
   }
 
   void updateActiveTimeUnit(String value) {
@@ -280,8 +297,8 @@ class FlashDealController extends GetxController {
 
   // Update scheduled start time
   void updateScheduledStartTime(DateTime dateTime) {
-    // Validate future time
-    if (dateTime.isBefore(DateTime.now())) {
+    // Validate future time - compare in UTC to avoid timezone issues
+    if (dateTime.toUtc().isBefore(DateTime.now().toUtc())) {
       AdminSnackbar.warning(
         'Invalid Time',
         'Please select a future date and time',
@@ -508,8 +525,9 @@ class FlashDealController extends GetxController {
         return;
       }
 
+      // Compare in UTC to avoid timezone issues
       if (schedulingMode.value == 'schedule' &&
-          scheduledStartTime.value!.isBefore(DateTime.now())) {
+          scheduledStartTime.value!.toUtc().isBefore(DateTime.now().toUtc())) {
         AdminSnackbar.warning(
           'Validation Error',
           'Start time must be in the future',
@@ -612,16 +630,16 @@ class FlashDealController extends GetxController {
   }
 
   // Helper getters
+  // Helper getters - use reactive values so Obx rebuilds properly
   String get durationDisplay {
-    final value =
-        activeTimeController.text.isEmpty ? '0' : activeTimeController.text;
+    final value = activeTimeValue.value.isEmpty ? '0' : activeTimeValue.value;
     final seconds = _calculateSeconds(value, activeTimeUnit.value);
     return 'Total Duration: $value ${activeTimeUnit.value} ($seconds seconds)';
   }
 
   String get intervalDisplay {
     final value =
-        intervalTimeController.text.isEmpty ? '0' : intervalTimeController.text;
+        intervalTimeValue.value.isEmpty ? '0' : intervalTimeValue.value;
     final seconds = _calculateSeconds(value, intervalTimeUnit.value);
     return 'Interval Duration: $value ${intervalTimeUnit.value} ($seconds seconds)';
   }
@@ -633,9 +651,13 @@ class FlashDealController extends GetxController {
     if (scheduledStartTime.value == null) {
       return 'Current Setting: Not set';
     }
-    final local = scheduledStartTime.value!.toLocal();
-    final utc = scheduledStartTime.value!.toUtc();
-    return 'Scheduled for ${_formatDateTime(local)}\nUTC Time: ${utc.toIso8601String()}\nLocal Time: ${_formatDateTime(local)}';
+    // Get the stored value
+    final storedTime = scheduledStartTime.value!;
+    // Convert to local and UTC properly
+    final localTime = storedTime.isUtc ? storedTime.toLocal() : storedTime;
+    final utcTime = storedTime.isUtc ? storedTime : storedTime.toUtc();
+
+    return 'Local Time: ${_formatDateTime(localTime)}\nUTC Time: ${_formatDateTime(utcTime)}';
   }
 
   String _formatDateTime(DateTime dt) {
@@ -644,8 +666,7 @@ class FlashDealController extends GetxController {
     final year = dt.year;
     final hour = dt.hour.toString().padLeft(2, '0');
     final minute = dt.minute.toString().padLeft(2, '0');
-    final second = dt.second.toString().padLeft(2, '0');
-    return '$day/$month/$year, $hour:$minute:$second';
+    return '$day/$month/$year, $hour:$minute';
   }
 
   // Check if product is being processed

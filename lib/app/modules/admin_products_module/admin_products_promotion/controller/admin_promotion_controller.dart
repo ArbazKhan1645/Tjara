@@ -47,6 +47,11 @@ class AdminPromotionController extends GetxController {
   final RxBool isSearchingCategories = false.obs;
   final RxBool isApplying = false.obs;
 
+  // Selected products of store
+  final RxList<String> selectedStoreProductIds = <String>[].obs;
+  final RxBool isLoadingStoreProducts = false.obs;
+  final RxBool storeProductsFetched = false.obs;
+
   // Search controllers
   final shopSearchController = TextEditingController();
   final categorySearchController = TextEditingController();
@@ -75,11 +80,7 @@ class AdminPromotionController extends GetxController {
   }
 
   Future<void> _initializeData() async {
-    await Future.wait([
-      fetchPromotions(),
-      _initShops(),
-      _initCategories(),
-    ]);
+    await Future.wait([fetchPromotions(), _initShops(), _initCategories()]);
   }
 
   @override
@@ -176,6 +177,40 @@ class AdminPromotionController extends GetxController {
   void selectShop(Shop shop) {
     selectedShop.value = shop;
     shopSearchController.text = shop.name;
+    // Reset store products when shop changes
+    selectedStoreProductIds.clear();
+    storeProductsFetched.value = false;
+    // If selected_products option is active, fetch products
+    if (applyToOption.value == 'selected_products') {
+      fetchStoreProducts(shop.id);
+    }
+  }
+
+  // Fetch products for selected store
+  Future<void> fetchStoreProducts(String shopId) async {
+    isLoadingStoreProducts.value = true;
+    storeProductsFetched.value = false;
+    try {
+      final productIds = await _apiService.fetchStoreProducts(shopId: shopId);
+      selectedStoreProductIds.value = productIds;
+      storeProductsFetched.value = true;
+    } catch (e) {
+      selectedStoreProductIds.clear();
+      storeProductsFetched.value = true;
+    } finally {
+      isLoadingStoreProducts.value = false;
+    }
+  }
+
+  // Called when applyToOption changes to 'selected_products'
+  void onApplyToOptionChanged(String value) {
+    applyToOption.value = value;
+    if (value == 'selected_products' && selectedShop.value != null) {
+      fetchStoreProducts(selectedShop.value!.id);
+    } else if (value != 'selected_products') {
+      selectedStoreProductIds.clear();
+      storeProductsFetched.value = false;
+    }
   }
 
   // Select category
@@ -356,6 +391,17 @@ class AdminPromotionController extends GetxController {
       CustomSnackbar.showError(context, 'Please select a category');
       return false;
     }
+    // Validation for selected_products option
+    if (applyToOption.value == 'selected_products') {
+      if (isLoadingStoreProducts.value) {
+        CustomSnackbar.showError(context, 'Please wait, loading products...');
+        return false;
+      }
+      if (selectedStoreProductIds.isEmpty) {
+        CustomSnackbar.showError(context, 'No products found for this store');
+        return false;
+      }
+    }
 
     isApplying.value = true;
     try {
@@ -363,9 +409,14 @@ class AdminPromotionController extends GetxController {
         promotionIds: selectedPromotionIds.toList(),
         applyTo: applyToOption.value,
         shopId: selectedShop.value!.id,
-        categoryId: applyToOption.value == 'selected_category'
-            ? selectedCategory.value?.id
-            : null,
+        categoryId:
+            applyToOption.value == 'selected_category'
+                ? selectedCategory.value?.id
+                : null,
+        productIds:
+            applyToOption.value == 'selected_products'
+                ? selectedStoreProductIds.toList()
+                : null,
       );
 
       // Clear selections and refresh
@@ -403,6 +454,10 @@ class AdminPromotionController extends GetxController {
     applyToOption.value = 'shop';
     shopSearchController.clear();
     categorySearchController.clear();
+    // Clear store products state
+    selectedStoreProductIds.clear();
+    storeProductsFetched.value = false;
+    isLoadingStoreProducts.value = false;
   }
 
   String _formatDateTime(DateTime dateTime) {
@@ -410,7 +465,20 @@ class AdminPromotionController extends GetxController {
   }
 
   String formatDate(DateTime date) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 

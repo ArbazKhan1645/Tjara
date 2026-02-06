@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:tjara/app/modules/admin_products_module/admin_products_promotion/model/promotion_model.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_products_promotion/model/shop_model.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_products_promotion/model/category_model.dart';
+import 'package:tjara/app/services/auth/auth_service.dart';
 
 class PromotionApiException implements Exception {
   final String message;
@@ -224,22 +225,98 @@ class PromotionApiService {
     }
   }
 
+  // Fetch products of a specific store (for "Selected Products of Store" option)
+  Future<List<String>> fetchStoreProducts({
+    required String shopId,
+    int perPage = 10,
+  }) async {
+    try {
+      final uri = Uri.parse('$baseUrl/products').replace(
+        queryParameters: {
+          'with': 'thumbnail,shop,variations',
+          'include_analytics': 'true',
+          'start_date': '2000-01-01 00:00:01',
+          'end_date': '2100-01-01 00:00:01',
+          'filterJoin': 'OR',
+          'search': '',
+          'search_by_id': '',
+          'sku': '',
+          'orderBy': 'created_at',
+          'order': 'desc',
+          'page': '1',
+          'per_page': perPage.toString(),
+          'filterByColumns[filterJoin]': 'AND',
+          'filterByColumns[columns][0][column]': 'product_group',
+          'filterByColumns[columns][0][value]': 'car',
+          'filterByColumns[columns][0][operator]': '!=',
+          'filterByColumns[columns][1][column]': 'product_type',
+          'filterByColumns[columns][1][value]': 'auction',
+          'filterByColumns[columns][1][operator]': '!=',
+          'filterByColumns[columns][2][column]': 'shop_id',
+          'filterByColumns[columns][2][value]': shopId,
+          'filterByColumns[columns][2][operator]': '=',
+        },
+      );
+
+      final response = await http.get(uri, headers: _headers).timeout(timeout);
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        final List<String> productIds = [];
+
+        if (jsonData['products'] != null &&
+            jsonData['products']['data'] != null) {
+          final List<dynamic> products = jsonData['products']['data'];
+          for (var product in products) {
+            if (product['id'] != null) {
+              productIds.add(product['id'].toString());
+            }
+          }
+        }
+
+        return productIds;
+      } else {
+        throw PromotionApiException(
+          _getErrorMessage(response),
+          statusCode: response.statusCode,
+        );
+      }
+    } on SocketException {
+      throw PromotionApiException('No Internet connection');
+    } on TimeoutException {
+      throw PromotionApiException('Connection timeout');
+    } catch (e) {
+      if (e is PromotionApiException) rethrow;
+      throw PromotionApiException(
+        'Failed to fetch store products: ${e.toString()}',
+      );
+    }
+  }
+
   // Apply promotions to products
   Future<bool> applyPromotions({
     required List<String> promotionIds,
     required String applyTo,
     required String shopId,
     String? categoryId,
+    List<String>? productIds,
   }) async {
     try {
       final Map<String, dynamic> payload = {
         'promotion_ids': promotionIds,
-        'apply_to': applyTo,
+        'apply_to': applyTo == 'selected_products' ? "selected" : applyTo,
         'shop_id': shopId,
       };
 
       if (categoryId != null && applyTo == 'selected_category') {
         payload['category_id'] = categoryId;
+      }
+
+      // Add product_ids for selected_products option
+      if (productIds != null &&
+          productIds.isNotEmpty &&
+          applyTo == 'selected_products') {
+        payload['product_ids'] = productIds;
       }
 
       final response = await http
@@ -249,12 +326,15 @@ class PromotionApiService {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
               'X-Request-From': 'Dashboard',
-              'user-id': '121d6d13-a26f-49ff-8786-a3b203dc3068',
-              'shop-id': '0000c539-9857-3456-bc53-2bbdc1474f1a',
+              'user-id': AuthService.instance.authCustomer?.user?.id ?? '',
+              'shop-id':
+                  AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
             },
             body: json.encode(payload),
           )
           .timeout(timeout);
+
+      print(response.body);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;

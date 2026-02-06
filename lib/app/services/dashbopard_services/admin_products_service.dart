@@ -125,7 +125,8 @@ class AdminProductsService extends GetxService {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
           'X-Request-From': 'Dashboard',
-          'shop-id': '0000c539-9857-3456-bc53-2bbdc1474f1a',
+          'shop-id':
+              AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
           'user-id': AuthService.instance.authCustomer!.user!.id.toString(),
         },
       );
@@ -292,6 +293,14 @@ class AdminProductsService extends GetxService {
     queryParams['filterByColumns[columns][$columnIndex][value]'] = 'auction';
     queryParams['filterByColumns[columns][$columnIndex][operator]'] = '!=';
     columnIndex++;
+
+    if ((AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '')
+        .isNotEmpty) {
+      queryParams['filterByColumns[columns][$columnIndex][column]'] = 'shop_id';
+      queryParams['filterByColumns[columns][$columnIndex][value]'] = 'car';
+      queryParams['filterByColumns[columns][$columnIndex][operator]'] = '=';
+      columnIndex++;
+    }
 
     // 4. Add created_at date range filter if provided
     if (startDate.value != null && endDate.value != null) {

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:tjara/app/modules/admin_products_module/admin_flash_deals/model/flash_deal_model.dart';
 
@@ -204,7 +205,9 @@ class FlashDealApiService {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         final productsResponse = FlashDealProductsResponse.fromJson(jsonData);
-        return productsResponse.products.data;
+        return productsResponse.products.data
+            .where((e) => e.is_deal == '1')
+            .toList();
       } else {
         throw FlashDealApiException(
           _getErrorMessage(response),
@@ -260,7 +263,9 @@ class FlashDealApiService {
         products.add(product);
       } catch (e) {
         // Continue with other products if one fails
-        products.add(FlashDealProduct(id: id, name: 'Product #$id'));
+        products.add(
+          FlashDealProduct(id: id, name: 'Product #$id', is_deal: '1'),
+        );
       }
     }
     return products;

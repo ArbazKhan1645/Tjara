@@ -211,7 +211,10 @@ class AddAdminProductWidget extends StatelessWidget {
 
     // Show loading
     AdminFullScreenLoader.show(
-      message: controller.isEditMode.value ? 'Updating product...' : 'Saving product...',
+      message:
+          controller.isEditMode.value
+              ? 'Updating product...'
+              : 'Saving product...',
     );
 
     try {
@@ -347,13 +350,8 @@ class AddAdminProductWidget extends StatelessWidget {
     );
   }
 
-  void _handleSaveResult(bool success, bool isEditMode) {
+  void _handleSaveResult(bool success, bool isEditMode) async {
     if (success) {
-      AdminSnackbar.success(
-        'Success',
-        isEditMode ? 'Product updated successfully' : 'Product added successfully',
-      );
-
       // Prefer explicit return route if provided by caller
       final args = Get.arguments;
       final String? returnToRoute =
@@ -362,7 +360,7 @@ class AddAdminProductWidget extends StatelessWidget {
               : null;
 
       // Delay navigation slightly to show snackbar
-      Future.delayed(const Duration(milliseconds: 500), () {
+      await Future.delayed(const Duration(milliseconds: 500), () {
         if (returnToRoute != null && returnToRoute.isNotEmpty) {
           Get.offNamed(returnToRoute);
         } else {
@@ -383,6 +381,12 @@ class AddAdminProductWidget extends StatelessWidget {
           }
         }
       });
+      AdminSnackbar.success(
+        'Success',
+        isEditMode
+            ? 'Product updated successfully'
+            : 'Product added successfully',
+      );
     }
   }
 }

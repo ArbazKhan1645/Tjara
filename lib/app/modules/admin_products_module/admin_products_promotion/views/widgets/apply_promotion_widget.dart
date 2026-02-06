@@ -221,7 +221,7 @@ class ApplyPromotionWidget extends StatelessWidget {
               icon: Icons.inventory_2_outlined,
               value: 'shop',
               groupValue: controller.applyToOption.value,
-              onChanged: (value) => controller.applyToOption.value = value!,
+              onChanged: (value) => controller.onApplyToOptionChanged(value!),
             ),
             const SizedBox(height: 12),
             _buildRadioOption(
@@ -230,10 +230,137 @@ class ApplyPromotionWidget extends StatelessWidget {
               icon: Icons.category_outlined,
               value: 'selected_category',
               groupValue: controller.applyToOption.value,
-              onChanged: (value) => controller.applyToOption.value = value!,
+              onChanged: (value) => controller.onApplyToOptionChanged(value!),
             ),
+            const SizedBox(height: 12),
+            _buildSelectedProductsOption(),
           ],
         ));
+  }
+
+  Widget _buildSelectedProductsOption() {
+    return Obx(() {
+      final isSelected = controller.applyToOption.value == 'selected_products';
+      final isLoading = controller.isLoadingStoreProducts.value;
+      final productCount = controller.selectedStoreProductIds.length;
+      final hasProducts = productCount > 0;
+      final shopSelected = controller.selectedShop.value != null;
+      final fetched = controller.storeProductsFetched.value;
+
+      return InkWell(
+        onTap: () => controller.onApplyToOptionChanged('selected_products'),
+        borderRadius: BorderRadius.circular(12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isSelected ? lightTeal : Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? primaryTeal : Colors.grey.shade200,
+              width: isSelected ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: isSelected ? primaryTeal : Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.checklist_rounded,
+                  color: isSelected ? Colors.white : Colors.grey.shade600,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Selected Products of Store',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: isSelected ? darkTeal : Colors.grey.shade800,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        if (isLoading)
+                          const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: primaryTeal,
+                            ),
+                          )
+                        else if (isSelected && shopSelected && fetched)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: hasProducts
+                                  ? primaryTeal.withValues(alpha: 0.1)
+                                  : Colors.red.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              hasProducts ? '$productCount' : '0',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: hasProducts
+                                    ? primaryTeal
+                                    : Colors.red.shade700,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      isSelected && shopSelected && fetched && !hasProducts
+                          ? 'No products found for this store'
+                          : 'Apply to top 10 products of the selected store',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isSelected && fetched && !hasProducts
+                            ? Colors.red.shade600
+                            : Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  color: isSelected ? primaryTeal : Colors.transparent,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected ? primaryTeal : Colors.grey.shade400,
+                    width: 2,
+                  ),
+                ),
+                child: isSelected
+                    ? const Icon(Icons.check_rounded, color: Colors.white, size: 14)
+                    : null,
+              ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 
   Widget _buildRadioOption({
@@ -703,10 +830,21 @@ class ApplyPromotionWidget extends StatelessWidget {
 
   Widget _buildApplyButton(BuildContext context) {
     return Obx(() {
-      final canApply = controller.selectedShop.value != null &&
-          controller.selectedPromotionIds.isNotEmpty &&
-          (controller.applyToOption.value != 'selected_category' ||
-              controller.selectedCategory.value != null);
+      // Base validation
+      bool canApply = controller.selectedShop.value != null &&
+          controller.selectedPromotionIds.isNotEmpty;
+
+      // Category validation
+      if (controller.applyToOption.value == 'selected_category') {
+        canApply = canApply && controller.selectedCategory.value != null;
+      }
+
+      // Selected products validation
+      if (controller.applyToOption.value == 'selected_products') {
+        canApply = canApply &&
+            !controller.isLoadingStoreProducts.value &&
+            controller.selectedStoreProductIds.isNotEmpty;
+      }
 
       return Container(
         decoration: BoxDecoration(

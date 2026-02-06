@@ -105,10 +105,9 @@ class AuthenticationApiService {
         body: {'email': email, 'password': password},
       );
 
-      print('resbonse body : ${response.body}');
-
       if (response.statusCode == 200) {
         final LoginResponse login = parseLoginResponse(response.body);
+
         return login;
       } else {
         return response.body;

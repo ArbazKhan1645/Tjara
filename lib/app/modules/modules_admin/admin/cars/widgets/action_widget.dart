@@ -1,7 +1,3 @@
-// ==================================================
-// FILE 1: cars_table_widget.dart (action_widget.dart)
-// ==================================================
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -9,24 +5,483 @@ import 'package:intl/intl.dart';
 import 'package:tjara/app/models/admin_products_model.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/controllers/add_product_admin_controller.dart';
 import 'package:tjara/app/modules/modules_admin/admin/cars/controllers/cars_controller.dart';
+import 'package:tjara/app/modules/modules_admin/admin/cars/widgets/cars_admin_theme.dart';
 import 'package:tjara/app/modules/modules_admin/admin/products_admin/widgets/actions_buttons.dart';
 import 'package:tjara/app/modules/modules_admin/admin/products_admin/widgets/service.dart';
 import 'package:tjara/app/routes/app_pages.dart';
 
-class CustomIconBar extends StatelessWidget {
-  final AdminProducts product;
+/// Cars Table Widget - Displays car listings in an elegant table format
+class CarsTableWidget extends GetView<CarsController> {
+  const CarsTableWidget({super.key});
 
-  CustomIconBar({super.key, required this.product});
-
-  final CarsController controller = Get.put(CarsController());
+  static const double _tableWidth = 1250.0;
+  static const Map<String, double> _columnWidths = {
+    'id': 100,
+    'image': 80,
+    'name': 180,
+    'shop': 150,
+    'price': 100,
+    'sold': 80,
+    'published': 140,
+    'status': 100,
+    'actions': 280,
+  };
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 200, // Fixed width to match column allocation
+      width: _tableWidth,
+      child: Column(
+        children: [
+          const _CarsTableHeader(columnWidths: _columnWidths),
+          const SizedBox(height: CarsAdminTheme.spacingSm),
+          Obx(() {
+            if (controller.products.isEmpty) {
+              return const _CarsEmptyTableState();
+            }
+            return Column(
+              children: controller.products.asMap().entries.map((entry) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: CarsAdminTheme.spacingXs),
+                  child: _CarsDataRow(
+                    product: entry.value,
+                    index: entry.key,
+                    columnWidths: _columnWidths,
+                  ),
+                );
+              }).toList(),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  static double getColumnWidth(String column) => _columnWidths[column] ?? 100.0;
+  static double getTableWidth() => _tableWidth;
+}
+
+/// Table Header Widget
+class _CarsTableHeader extends StatelessWidget {
+  final Map<String, double> columnWidths;
+
+  const _CarsTableHeader({required this.columnWidths});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 52,
+      decoration: CarsAdminTheme.tableHeaderDecoration,
+      padding: const EdgeInsets.symmetric(horizontal: CarsAdminTheme.spacingLg),
+      child: Row(
+        children: [
+          _HeaderCell(title: 'ID', width: columnWidths['id']!),
+          _HeaderCell(title: 'Image', width: columnWidths['image']!),
+          _HeaderCell(title: 'Car Name', width: columnWidths['name']!),
+          _HeaderCell(title: 'Shop', width: columnWidths['shop']!),
+          _HeaderCell(title: 'Price', width: columnWidths['price']!),
+          _HeaderCell(title: 'Sold', width: columnWidths['sold']!),
+          _HeaderCell(title: 'Published', width: columnWidths['published']!),
+          _HeaderCell(title: 'Status', width: columnWidths['status']!),
+          _HeaderCell(title: 'Actions', width: columnWidths['actions']!),
+        ],
+      ),
+    );
+  }
+}
+
+/// Header Cell Widget
+class _HeaderCell extends StatelessWidget {
+  final String title;
+  final double width;
+
+  const _HeaderCell({required this.title, required this.width});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: width,
+      child: Text(
+        title.toUpperCase(),
+        style: CarsAdminTheme.labelMedium.copyWith(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.5,
+          color: CarsAdminTheme.textOnPrimary,
+        ),
+        overflow: TextOverflow.ellipsis,
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
+}
+
+/// Data Row Widget
+class _CarsDataRow extends StatelessWidget {
+  final AdminProducts product;
+  final int index;
+  final Map<String, double> columnWidths;
+
+  const _CarsDataRow({
+    required this.product,
+    required this.index,
+    required this.columnWidths,
+  });
+
+  // Safe getters
+  String get _productId => product.meta?.productId ?? '---';
+  String get _productName => product.name ?? 'Unknown Car';
+  String get _shopName => product.shop?.shop?.name ?? '---';
+  String get _price => '\$${product.price ?? 0}';
+  bool get _isSold => product.meta?.sold == '1';
+  String get _status => product.status ?? 'unknown';
+  String? get _thumbnailUrl => product.thumbnail?.media?.url;
+  String get _createdAt => product.createdAt?.toString() ?? '';
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 72,
+      padding: const EdgeInsets.symmetric(horizontal: CarsAdminTheme.spacingLg),
+      decoration: BoxDecoration(
+        color: index % 2 == 0 ? CarsAdminTheme.surface : CarsAdminTheme.surfaceSecondary,
+        borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
+        border: Border.all(color: CarsAdminTheme.borderLight),
+      ),
+      child: Row(
+        children: [
+          // ID
+          _DataCell(
+            width: columnWidths['id']!,
+            child: Text(
+              _productId,
+              style: CarsAdminTheme.bodyMedium.copyWith(
+                fontWeight: FontWeight.w600,
+                color: CarsAdminTheme.accent,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          // Image
+          _DataCell(
+            width: columnWidths['image']!,
+            child: _CarImage(thumbnailUrl: _thumbnailUrl),
+          ),
+          // Car Name
+          _DataCell(
+            width: columnWidths['name']!,
+            child: Text(
+              _productName,
+              style: CarsAdminTheme.bodyLarge.copyWith(fontWeight: FontWeight.w500),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          // Shop
+          _DataCell(
+            width: columnWidths['shop']!,
+            child: Text(
+              _shopName,
+              style: CarsAdminTheme.bodyMedium,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          // Price
+          _DataCell(
+            width: columnWidths['price']!,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: CarsAdminTheme.spacingSm,
+                vertical: CarsAdminTheme.spacingXs,
+              ),
+              decoration: BoxDecoration(
+                color: CarsAdminTheme.secondaryLight,
+                borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
+              ),
+              child: Text(
+                _price,
+                style: CarsAdminTheme.bodyMedium.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: CarsAdminTheme.secondary,
+                ),
+              ),
+            ),
+          ),
+          // Sold
+          _DataCell(
+            width: columnWidths['sold']!,
+            child: _SoldBadge(isSold: _isSold),
+          ),
+          // Published
+          _DataCell(
+            width: columnWidths['published']!,
+            child: _DateBadge(dateString: _createdAt),
+          ),
+          // Status
+          _DataCell(
+            width: columnWidths['status']!,
+            child: _StatusBadge(status: _status),
+          ),
+          // Actions
+          _DataCell(
+            width: columnWidths['actions']!,
+            child: _CarActionButtons(product: product),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Data Cell Wrapper
+class _DataCell extends StatelessWidget {
+  final double width;
+  final Widget child;
+
+  const _DataCell({required this.width, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: width,
+      child: Center(child: child),
+    );
+  }
+}
+
+/// Car Image Widget
+class _CarImage extends StatelessWidget {
+  final String? thumbnailUrl;
+
+  const _CarImage({this.thumbnailUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
+        color: CarsAdminTheme.surfaceSecondary,
+        border: Border.all(color: CarsAdminTheme.border),
+        boxShadow: CarsAdminTheme.shadowSm,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm - 1),
+        child: thumbnailUrl != null
+            ? CachedNetworkImage(
+                imageUrl: thumbnailUrl!,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => _buildPlaceholder(),
+                errorWidget: (context, url, error) => _buildErrorWidget(),
+              )
+            : _buildPlaceholder(),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder() {
+    return Container(
+      color: CarsAdminTheme.surfaceSecondary,
+      child: const Icon(
+        Icons.directions_car_outlined,
+        color: CarsAdminTheme.textTertiary,
+        size: 24,
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget() {
+    return Container(
+      color: CarsAdminTheme.errorLight,
+      child: const Icon(
+        Icons.broken_image_outlined,
+        color: CarsAdminTheme.error,
+        size: 20,
+      ),
+    );
+  }
+}
+
+/// Sold Badge Widget
+class _SoldBadge extends StatelessWidget {
+  final bool isSold;
+
+  const _SoldBadge({required this.isSold});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: CarsAdminTheme.spacingSm,
+        vertical: CarsAdminTheme.spacingXs,
+      ),
+      decoration: BoxDecoration(
+        color: isSold ? CarsAdminTheme.successLight : CarsAdminTheme.surfaceSecondary,
+        borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
+        border: Border.all(
+          color: isSold ? CarsAdminTheme.success : CarsAdminTheme.border,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isSold ? Icons.check_circle : Icons.remove_circle_outline,
+            size: 14,
+            color: isSold ? CarsAdminTheme.success : CarsAdminTheme.textTertiary,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            isSold ? 'Yes' : 'No',
+            style: CarsAdminTheme.bodySmall.copyWith(
+              fontWeight: FontWeight.w600,
+              color: isSold ? CarsAdminTheme.success : CarsAdminTheme.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Date Badge Widget
+class _DateBadge extends StatelessWidget {
+  final String dateString;
+
+  const _DateBadge({required this.dateString});
+
+  String _formatDate() {
+    try {
+      final DateTime dateTime = DateTime.parse(dateString);
+      return DateFormat('MMM d, y').format(dateTime);
+    } catch (e) {
+      return '---';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: CarsAdminTheme.spacingSm,
+        vertical: CarsAdminTheme.spacingXs,
+      ),
+      decoration: BoxDecoration(
+        color: CarsAdminTheme.surfaceSecondary,
+        borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.calendar_today_outlined,
+            size: 12,
+            color: CarsAdminTheme.textTertiary,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            _formatDate(),
+            style: CarsAdminTheme.bodySmall.copyWith(
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Status Badge Widget
+class _StatusBadge extends StatelessWidget {
+  final String status;
+
+  const _StatusBadge({required this.status});
+
+  Color get _backgroundColor {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return CarsAdminTheme.successLight;
+      case 'inactive':
+        return CarsAdminTheme.warningLight;
+      case 'pending':
+        return CarsAdminTheme.infoLight;
+      default:
+        return CarsAdminTheme.surfaceSecondary;
+    }
+  }
+
+  Color get _textColor {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return CarsAdminTheme.success;
+      case 'inactive':
+        return CarsAdminTheme.warning;
+      case 'pending':
+        return CarsAdminTheme.info;
+      default:
+        return CarsAdminTheme.textSecondary;
+    }
+  }
+
+  IconData get _icon {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return Icons.check_circle;
+      case 'inactive':
+        return Icons.pause_circle;
+      case 'pending':
+        return Icons.schedule;
+      default:
+        return Icons.help_outline;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: CarsAdminTheme.spacingSm,
+        vertical: CarsAdminTheme.spacingXs,
+      ),
+      decoration: BoxDecoration(
+        color: _backgroundColor,
+        borderRadius: BorderRadius.circular(CarsAdminTheme.radiusXl),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(_icon, size: 14, color: _textColor),
+          const SizedBox(width: 4),
+          Text(
+            status.capitalizeFirst ?? status,
+            style: CarsAdminTheme.bodySmall.copyWith(
+              fontWeight: FontWeight.w600,
+              color: _textColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Car Action Buttons Widget
+class _CarActionButtons extends StatelessWidget {
+  final AdminProducts product;
+
+  const _CarActionButtons({required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = Get.find<CarsController>();
+
+    return SizedBox(
+      width: 260,
       child: ProductActionButtons(
         productId: product.id ?? '',
-        productName: product.name ?? 'Product Name',
+        productName: product.name ?? 'Car',
         productSku: product.slug ?? 'N/A',
         isActive: product.status == 'active',
         isFeatured: product.isFeatured == 1,
@@ -48,17 +503,10 @@ class CustomIconBar extends StatelessWidget {
           );
 
           if (response.success) {
-            Get.snackbar(
-              'Success',
-              response.message,
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.green,
-              colorText: Colors.white,
-              duration: const Duration(seconds: 3),
-            );
+            _showSuccessMessage(response.message);
             controller.getCarsData();
           } else {
-            _showErrorMessage(response);
+            _showErrorMessage(response.message);
           }
         },
         onFeaturedChanged: () async {
@@ -69,17 +517,10 @@ class CustomIconBar extends StatelessWidget {
           );
 
           if (response.success) {
-            Get.snackbar(
-              'Success',
-              response.message,
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.green,
-              colorText: Colors.white,
-              duration: const Duration(seconds: 3),
-            );
+            _showSuccessMessage(response.message);
             controller.getCarsData();
           } else {
-            _showErrorMessage(response);
+            _showErrorMessage(response.message);
           }
         },
         onDealChanged: () async {
@@ -90,17 +531,10 @@ class CustomIconBar extends StatelessWidget {
           );
 
           if (response.success) {
-            Get.snackbar(
-              'Success',
-              response.message,
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.green,
-              colorText: Colors.white,
-              duration: const Duration(seconds: 3),
-            );
+            _showSuccessMessage(response.message);
             controller.getCarsData();
           } else {
-            _showErrorMessage(response);
+            _showErrorMessage(response.message);
           }
         },
         onEdit: () {
@@ -118,544 +552,390 @@ class CustomIconBar extends StatelessWidget {
           );
 
           if (response.success) {
+            _showSuccessMessage('Car deleted successfully');
             controller.getCarsData();
           } else {
-            _showErrorMessage(response);
+            _showErrorMessage(response.message);
           }
         },
       ),
     );
   }
 
-  void _showErrorMessage(ApiResponse response) {
+  void _showSuccessMessage(String message) {
     Get.snackbar(
-      'Error',
-      response.message,
+      'Success',
+      message,
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.red,
+      backgroundColor: CarsAdminTheme.success,
       colorText: Colors.white,
       duration: const Duration(seconds: 3),
+      margin: const EdgeInsets.all(CarsAdminTheme.spacingLg),
+      borderRadius: CarsAdminTheme.radiusMd,
+    );
+  }
+
+  void _showErrorMessage(String message) {
+    Get.snackbar(
+      'Error',
+      message,
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: CarsAdminTheme.error,
+      colorText: Colors.white,
+      duration: const Duration(seconds: 3),
+      margin: const EdgeInsets.all(CarsAdminTheme.spacingLg),
+      borderRadius: CarsAdminTheme.radiusMd,
     );
   }
 }
 
-class CarsTableWidget extends GetView<CarsController> {
-  const CarsTableWidget({super.key});
-
-  // Define consistent column widths as constants
-  static const double _tableWidth = 1200.0;
-  static const Map<String, double> _columnWidths = {
-    'id': 80.0,
-    'image': 60.0,
-    'name': 200.0,
-    'shop': 150.0,
-    'price': 100.0,
-    'sold': 80.0,
-    'published': 140.0,
-    'status': 100.0,
-    'actions': 250.0,
-  };
+/// Empty Table State Widget
+class _CarsEmptyTableState extends StatelessWidget {
+  const _CarsEmptyTableState();
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: _tableWidth,
-      child: Column(
-        children: [
-          // Header
-          _buildTableHeader(),
-          // Body
-          Obx(() {
-            debugPrint(
-              "Table rebuilding: products.length=${controller.products.length}, currentPage=${controller.currentPage.value}",
-            );
-            if (controller.products.isEmpty) {
-              return _buildEmptyState();
-            }
-            return Column(
-              children: List.generate(controller.products.length, (index) {
-                final product = controller.products[index];
-                debugPrint("Building row $index: product.id=${product.id}");
-                return _buildDataRow(product, index, context);
-              }),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTableHeader() {
     return Container(
-      height: 56,
-      width: _tableWidth,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF97316), // Orange color from image
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFF97316).withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Row(
-        children: [
-          _buildHeaderCell("ID", width: _columnWidths['id']!),
-          _buildHeaderCell("Product Image", width: _columnWidths['image']!),
-          _buildHeaderCell("Product Name", width: _columnWidths['name']!),
-          _buildHeaderCell("Shop Name", width: _columnWidths['shop']!),
-          _buildHeaderCell("Price", width: _columnWidths['price']!),
-          _buildHeaderCell("Sold", width: _columnWidths['sold']!),
-          _buildHeaderCell("Published", width: _columnWidths['published']!),
-          _buildHeaderCell("Status", width: _columnWidths['status']!),
-          _buildHeaderCell("Actions", width: _columnWidths['actions']!),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeaderCell(String title, {required double width}) {
-    return SizedBox(
-      width: width,
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-          color: Colors.white,
-          letterSpacing: 0.5,
-        ),
-        overflow: TextOverflow.ellipsis,
-        textAlign: TextAlign.center,
-      ),
-    );
-  }
-
-  Widget _buildDataRow(AdminProducts product, int index, BuildContext context) {
-    return Container(
-      width: _tableWidth,
-      height: 72, // Fixed height per row
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      decoration: BoxDecoration(
-        color: index % 2 == 0 ? Colors.white : Colors.grey[50],
-        border: Border(bottom: BorderSide(color: Colors.grey[100]!, width: 1)),
-      ),
-      child: Row(
-        children: [
-          // ID
-          SizedBox(
-            width: _columnWidths['id']!,
-            child: Text(
-              product.meta?.productId ?? "---",
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF1e3c72),
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-
-          // Image
-          SizedBox(
-            width: _columnWidths['image']!,
-            child: _buildProductImage(product),
-          ),
-
-          // Car Name
-          SizedBox(
-            width: _columnWidths['name']!,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text(
-                product.name ?? "---",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey[800],
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ),
-
-          // Shop
-          SizedBox(
-            width: _columnWidths['shop']!,
-            child: Text(
-              product.shop?.shop?.name ?? "---",
-              style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-
-          // Price
-          SizedBox(
-            width: _columnWidths['price']!,
-            child: Text(
-              "\$${product.price ?? 0}",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[800],
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-
-          // Sold Status
-          SizedBox(
-            width: _columnWidths['sold']!,
-            child: Text(
-              product.meta?.sold == '1' ? 'Yes' : 'No',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color:
-                    product.meta?.sold == '1'
-                        ? Colors.green[600]
-                        : Colors.grey[600],
-              ),
-            ),
-          ),
-
-          // Published Date
-          SizedBox(
-            width: _columnWidths['published']!,
-            child: Text(
-              _formatDate(product.createdAt?.toString() ?? ""),
-              style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-
-          // Status
-          SizedBox(
-            width: _columnWidths['status']!,
-            child: _buildStatusChip(product.status ?? ""),
-          ),
-
-          // Actions
-          SizedBox(
-            width: _columnWidths['actions']!,
-            child: CustomIconBar(product: product),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    debugPrint(
-      "Building empty state: products.length=${controller.products.length}, currentPage=${controller.currentPage.value}",
-    );
-    return Center(
+      width: double.infinity,
+      padding: const EdgeInsets.all(CarsAdminTheme.spacing2Xl),
+      decoration: CarsAdminTheme.cardDecoration,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.directions_car_outlined,
-            size: 80,
-            color: Colors.grey[300],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            "No cars found",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[600],
+          Container(
+            padding: const EdgeInsets.all(CarsAdminTheme.spacingXl),
+            decoration: const BoxDecoration(
+              color: CarsAdminTheme.primaryLight,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.directions_car_outlined,
+              size: 48,
+              color: CarsAdminTheme.primary,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            "Try adjusting your search filters",
-            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+          const SizedBox(height: CarsAdminTheme.spacingXl),
+          const Text(
+            'No Cars Found',
+            style: CarsAdminTheme.headingMedium,
           ),
-          const SizedBox(height: 16),
-          // Debug information
-          Obx(
-            () => Text(
-              "Debug: Products: ${controller.products.length}, Total: ${controller.totalItems.value}, Pages: ${controller.totalPages.value}",
-              style: TextStyle(fontSize: 12, color: Colors.grey[400]),
+          const SizedBox(height: CarsAdminTheme.spacingSm),
+          Text(
+            'Try adjusting your search filters or add a new car',
+            textAlign: TextAlign.center,
+            style: CarsAdminTheme.bodyMedium.copyWith(
+              color: CarsAdminTheme.textSecondary,
             ),
           ),
         ],
       ),
     );
   }
-
-  Widget _buildProductImage(AdminProducts product) {
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        color: Colors.grey[100],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child:
-            product.thumbnail?.media?.url != null
-                ? CachedNetworkImage(
-                  imageUrl: product.thumbnail!.media!.url!,
-                  fit: BoxFit.cover,
-                  placeholder:
-                      (context, url) => Container(
-                        color: Colors.grey[100],
-                        child: Icon(
-                          Icons.image,
-                          color: Colors.grey[400],
-                          size: 20,
-                        ),
-                      ),
-                  errorWidget:
-                      (context, url, error) => Container(
-                        color: Colors.grey[100],
-                        child: Icon(
-                          Icons.broken_image,
-                          color: Colors.grey[400],
-                          size: 20,
-                        ),
-                      ),
-                )
-                : Icon(Icons.image, color: Colors.grey[400], size: 20),
-      ),
-    );
-  }
-
-  Widget _buildStatusChip(String status) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: _getStatusColor(status).withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        status,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: _getStatusColor(status),
-        ),
-        textAlign: TextAlign.center,
-        overflow: TextOverflow.ellipsis,
-      ),
-    );
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return Colors.green;
-      case 'inactive':
-        return Colors.orange;
-      case 'pending':
-        return Colors.blue;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  String _formatDate(String isoDate) {
-    try {
-      final DateTime dateTime = DateTime.parse(isoDate);
-      return DateFormat('MMM d, y').format(dateTime);
-    } catch (e) {
-      return "---";
-    }
-  }
-
-  // Static method to get column width for header
-  static double getColumnWidth(String column) {
-    return _columnWidths[column] ?? 100.0;
-  }
-
-  // Static method to get total table width
-  static double getTableWidth() {
-    return _tableWidth;
-  }
 }
 
-// cars_pagination_widget.dart
+/// Cars Pagination Widget
 class CarsPaginationWidget extends GetView<CarsController> {
   const CarsPaginationWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      // height: 80, // Reduced height from 300
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        border: Border(top: BorderSide(color: Colors.grey[200]!)),
-      ),
-      child: Obx(() {
-        debugPrint(
-          "CarsPaginationWidget: totalPages=${controller.totalPages.value}, currentPage=${controller.currentPage.value}, totalItems=${controller.totalItems.value}",
-        );
-
-        if (controller.totalPages.value <= 1) {
-          debugPrint("Pagination hidden: totalPages <= 1");
-          return const SizedBox.shrink();
-        }
-
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            debugPrint("LayoutBuilder constraints: ${constraints.maxWidth}");
-            if (constraints.maxWidth < 600) {
-              debugPrint("Building mobile pagination");
-              return _buildMobilePagination();
-            } else {
-              debugPrint("Building desktop pagination");
-              return _buildDesktopPagination();
-            }
-          },
-        );
-      }),
-    );
-  }
-
-  Widget _buildDesktopPagination() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Obx(
-          () => Text(
-            "Showing ${controller.getDisplayRange()} of ${controller.totalItems.value} entries",
-            style: TextStyle(color: Colors.grey[600], fontSize: 14),
-          ),
-        ),
-        _buildPaginationButtons(),
-      ],
-    );
-  }
-
-  Widget _buildMobilePagination() {
-    return Column(
-      children: [
-        Obx(
-          () => Text(
-            "Showing ${controller.getDisplayRange()} of ${controller.totalItems.value} entries",
-            style: TextStyle(color: Colors.grey[600], fontSize: 14),
-          ),
-        ),
-        const SizedBox(height: 16),
-        _buildPaginationButtons(),
-      ],
-    );
-  }
-
-  Widget _buildPaginationButtons() {
     return Obx(() {
-      final int currentPage = controller.currentPage.value;
-      final int totalPages = controller.totalPages.value;
-      final int startPage = controller.calculateStartPage();
-      const int visibleButtons = 5;
+      if (controller.totalPages.value <= 1) {
+        return const SizedBox.shrink();
+      }
 
-      debugPrint(
-        "Building pagination buttons: currentPage=$currentPage, totalPages=$totalPages, startPage=$startPage, visibleButtons=$visibleButtons",
-      );
-
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildPaginationButton(
-            icon: Icons.chevron_left,
-            onPressed: controller.goToPreviousPage,
-            enabled: currentPage > 1,
-          ),
-          const SizedBox(width: 8),
-          ...List.generate(visibleButtons, (index) {
-            final int page = startPage + index;
-            if (page > totalPages) return const SizedBox.shrink();
-
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2),
-              child: _buildPaginationButton(
-                text: '$page',
-                onPressed: () => controller.goToPage(page),
-                isActive: page == currentPage,
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: CarsAdminTheme.spacingLg),
+        padding: const EdgeInsets.all(CarsAdminTheme.spacingLg),
+        decoration: CarsAdminTheme.cardDecoration,
+        child: Column(
+          children: [
+            // Pagination info
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: CarsAdminTheme.spacingMd,
+                vertical: CarsAdminTheme.spacingXs,
               ),
-            );
-          }),
-          const SizedBox(width: 8),
-          _buildPaginationButton(
-            icon: Icons.chevron_right,
-            onPressed: controller.goToNextPage,
-            enabled: currentPage < totalPages,
-          ),
-        ],
+              decoration: BoxDecoration(
+                color: CarsAdminTheme.primaryLight,
+                borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
+              ),
+              child: Text(
+                'Page ${controller.currentPage.value} of ${controller.totalPages.value}',
+                style: CarsAdminTheme.bodySmall.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: CarsAdminTheme.primary,
+                ),
+              ),
+            ),
+            const SizedBox(height: CarsAdminTheme.spacingMd),
+
+            // Showing entries text
+            Text(
+              'Showing ${controller.getDisplayRange()} of ${controller.totalItems.value} entries',
+              style: CarsAdminTheme.bodySmall,
+            ),
+            const SizedBox(height: CarsAdminTheme.spacingMd),
+
+            // Pagination controls
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Previous button
+                _PaginationNavButton(
+                  icon: Icons.chevron_left_rounded,
+                  onTap: controller.currentPage.value > 1
+                      ? controller.goToPreviousPage
+                      : null,
+                  tooltip: 'Previous Page',
+                ),
+                const SizedBox(width: CarsAdminTheme.spacingSm),
+
+                // Page numbers
+                ..._buildPageNumbers(),
+
+                const SizedBox(width: CarsAdminTheme.spacingSm),
+
+                // Next button
+                _PaginationNavButton(
+                  icon: Icons.chevron_right_rounded,
+                  onTap: controller.currentPage.value < controller.totalPages.value
+                      ? controller.goToNextPage
+                      : null,
+                  tooltip: 'Next Page',
+                ),
+              ],
+            ),
+
+            // Jump to page for many pages
+            if (controller.totalPages.value > 10)
+              Padding(
+                padding: const EdgeInsets.only(top: CarsAdminTheme.spacingMd),
+                child: _JumpToPageWidget(controller: controller),
+              ),
+          ],
+        ),
       );
     });
   }
 
-  Widget _buildPaginationButton({
-    String? text,
-    IconData? icon,
-    required VoidCallback onPressed,
-    bool enabled = true,
-    bool isActive = false,
-  }) {
-    debugPrint(
-      "Building pagination button: text=$text, icon=${icon != null}, enabled=$enabled, isActive=$isActive",
-    );
+  List<Widget> _buildPageNumbers() {
+    final int currentPage = controller.currentPage.value;
+    final int totalPages = controller.totalPages.value;
+    final int startPage = controller.calculateStartPage();
+    const int visibleButtons = 5;
 
-    return SizedBox(
-      width: 36,
-      height: 36,
+    return List.generate(visibleButtons, (index) {
+      final int page = startPage + index;
+      if (page > totalPages) return const SizedBox.shrink();
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: CarsAdminTheme.spacingXs),
+        child: _PageNumberButton(
+          page: page,
+          isCurrentPage: page == currentPage,
+          onTap: () => controller.goToPage(page),
+        ),
+      );
+    });
+  }
+}
+
+/// Pagination Navigation Button
+class _PaginationNavButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback? onTap;
+  final String tooltip;
+
+  const _PaginationNavButton({
+    required this.icon,
+    required this.onTap,
+    required this.tooltip,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isEnabled = onTap != null;
+
+    return Tooltip(
+      message: tooltip,
       child: Material(
-        color: isActive ? const Color(0xFFF97316) : Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
+        color: Colors.transparent,
         child: InkWell(
-          onTap:
-              enabled
-                  ? () {
-                    debugPrint(
-                      "Pagination button tapped: text=$text, icon=${icon != null}",
-                    );
-                    onPressed();
-                  }
-                  : () {
-                    debugPrint(
-                      "Pagination button disabled: text=$text, icon=${icon != null}",
-                    );
-                  },
-          borderRadius: BorderRadius.circular(8),
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
           child: Container(
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
+              color: isEnabled
+                  ? CarsAdminTheme.surfaceSecondary
+                  : CarsAdminTheme.surfaceSecondary.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
               border: Border.all(
-                color: isActive ? const Color(0xffF97316) : Colors.grey[300]!,
+                color: isEnabled
+                    ? CarsAdminTheme.border
+                    : CarsAdminTheme.borderLight,
               ),
-              borderRadius: BorderRadius.circular(8),
             ),
-            child: Center(
-              child:
-                  icon != null
-                      ? Icon(
-                        icon,
-                        size: 18,
-                        color:
-                            enabled
-                                ? (isActive ? Colors.white : Colors.grey[600])
-                                : Colors.grey[400],
-                      )
-                      : Text(
-                        text!,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: isActive ? Colors.white : Colors.grey[700],
-                        ),
-                      ),
+            child: Icon(
+              icon,
+              size: 20,
+              color: isEnabled
+                  ? CarsAdminTheme.textPrimary
+                  : CarsAdminTheme.textTertiary,
             ),
           ),
         ),
       ),
     );
+  }
+}
+
+/// Page Number Button
+class _PageNumberButton extends StatelessWidget {
+  final int page;
+  final bool isCurrentPage;
+  final VoidCallback onTap;
+
+  const _PageNumberButton({
+    required this.page,
+    required this.isCurrentPage,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: isCurrentPage
+                ? CarsAdminTheme.primary
+                : CarsAdminTheme.surface,
+            borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
+            border: Border.all(
+              color: isCurrentPage
+                  ? CarsAdminTheme.primary
+                  : CarsAdminTheme.border,
+            ),
+            boxShadow: isCurrentPage ? CarsAdminTheme.shadowColored(CarsAdminTheme.primary) : null,
+          ),
+          child: Center(
+            child: Text(
+              page.toString(),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: isCurrentPage ? FontWeight.w600 : FontWeight.w500,
+                color: isCurrentPage
+                    ? CarsAdminTheme.textOnPrimary
+                    : CarsAdminTheme.textPrimary,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Jump to Page Widget
+class _JumpToPageWidget extends StatelessWidget {
+  final CarsController controller;
+
+  const _JumpToPageWidget({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    final TextEditingController textController = TextEditingController();
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Go to page:',
+          style: CarsAdminTheme.bodySmall.copyWith(
+            color: CarsAdminTheme.textSecondary,
+          ),
+        ),
+        const SizedBox(width: CarsAdminTheme.spacingSm),
+        SizedBox(
+          width: 64,
+          height: 36,
+          child: TextField(
+            controller: textController,
+            keyboardType: TextInputType.number,
+            textAlign: TextAlign.center,
+            style: CarsAdminTheme.bodyMedium,
+            decoration: InputDecoration(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: CarsAdminTheme.spacingSm,
+                vertical: CarsAdminTheme.spacingXs,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
+                borderSide: const BorderSide(color: CarsAdminTheme.border),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
+                borderSide: const BorderSide(color: CarsAdminTheme.border),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
+                borderSide: const BorderSide(color: CarsAdminTheme.primary),
+              ),
+            ),
+            onSubmitted: (value) => _handleJump(textController),
+          ),
+        ),
+        const SizedBox(width: CarsAdminTheme.spacingXs),
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => _handleJump(textController),
+            borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
+            child: Container(
+              padding: const EdgeInsets.all(CarsAdminTheme.spacingSm),
+              decoration: BoxDecoration(
+                color: CarsAdminTheme.primary,
+                borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
+              ),
+              child: const Icon(
+                Icons.arrow_forward_rounded,
+                size: 16,
+                color: CarsAdminTheme.textOnPrimary,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _handleJump(TextEditingController textController) {
+    final page = int.tryParse(textController.text) ?? 0;
+    if (page >= 1 && page <= controller.totalPages.value) {
+      controller.goToPage(page);
+      textController.clear();
+    }
+  }
+}
+
+/// Legacy CustomIconBar - kept for backward compatibility
+@Deprecated('Use _CarActionButtons instead')
+class CustomIconBar extends StatelessWidget {
+  final AdminProducts product;
+
+  const CustomIconBar({super.key, required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    return _CarActionButtons(product: product);
   }
 }

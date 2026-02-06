@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_flash_deals/controller/flash_deal_controller.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_flash_deals/views/widgets/flash_deal_settings_form.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_flash_deals/views/widgets/flash_deal_products_tabs.dart';
+import 'package:tjara/app/modules/admin_products_module/admin_flash_deals/views/widgets/flash_deal_shimmer.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/widgets/admin_ui_components.dart';
 
 class FlashDealSettingsView extends GetView<FlashDealController> {
@@ -15,9 +16,7 @@ class FlashDealSettingsView extends GetView<FlashDealController> {
       appBar: _buildAppBar(),
       body: Obx(() {
         if (controller.isInitialLoading.value) {
-          return const Center(
-            child: CircularProgressIndicator(color: AdminTheme.primaryColor),
-          );
+          return const FlashDealSettingsShimmer();
         }
 
         if (controller.error.value.isNotEmpty) {
