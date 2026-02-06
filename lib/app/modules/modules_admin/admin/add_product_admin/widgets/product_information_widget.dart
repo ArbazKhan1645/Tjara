@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:tjara/app/core/utils/thems/my_colors.dart';
 import 'package:tjara/app/core/widgets/simple_text_form_field_Widget.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/controllers/add_product_admin_controller.dart';
+import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/widgets/admin_ui_components.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/views/add_product_admin_view.dart';
 import 'package:tjara/app/modules/modules_admin/admin/categories_admin/controllers/categories_admin_controller.dart';
 import 'package:http/http.dart' as http;
@@ -38,7 +39,7 @@ class ProductInformationWidget extends StatelessWidget {
               height: 45.88,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                color: const Color(0xFFF97316),
+                color: AdminTheme.primaryColor,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -778,7 +779,7 @@ class _CategorySearchDialogState extends State<_CategorySearchDialog> {
                                                 : FontWeight.normal,
                                         color:
                                             isSelected
-                                                ? const Color(0xFFF97316)
+                                                ? AdminTheme.primaryColor
                                                 : Colors.black87,
                                       ),
                                     ),

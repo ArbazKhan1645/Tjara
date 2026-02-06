@@ -6,16 +6,17 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tjara/app/core/utils/helpers/alerts.dart';
 import 'package:tjara/app/models/users_model.dart/customer_models.dart';
+import 'package:tjara/app/modules/admin_products_module/admin_flash_deals/views/flash_deal_settings_view.dart';
+import 'package:tjara/app/modules/admin_products_module/admin_products_bundles/views/admin_bundle_view.dart';
+import 'package:tjara/app/modules/admin_products_module/admin_products_config/views/admin_products_config_view.dart';
+import 'package:tjara/app/modules/admin_products_module/admin_products_promotion/controller/admin_promotion_controller.dart';
+import 'package:tjara/app/modules/admin_products_module/admin_products_promotion/views/admin_promotion_view.dart';
+import 'package:tjara/app/modules/admin_products_module/admin_products_templates/views/admin_template_view.dart';
 import 'package:tjara/app/modules/authentication/dialogs/contact_us.dart';
 import 'package:tjara/app/modules/modules_customer/customer_dashboard/controllers/dashboard_controller.dart';
 import 'package:tjara/app/modules/modules_customer/customer_cart/controllers/my_cart_controller.dart';
 import 'package:tjara/app/modules/modules_customer/tjara_surveys/view/survey_view.dart';
 import 'package:tjara/app/modules/modules_customer/user_wishlist/service/wishlist_service.dart';
-import 'package:tjara/app/modules/web_settings/analytics_reporting/analytics_reporting_screen.dart';
-import 'package:tjara/app/modules/web_settings/api_throttle/api_throttle_screen.dart';
-import 'package:tjara/app/modules/web_settings/inventory_reporting/inventory_reporting_screen.dart';
-import 'package:tjara/app/modules/web_settings/log_monitor/log_monitor_screen.dart';
-import 'package:tjara/app/modules/web_settings/roles_management/roles_management_screen.dart';
 import 'package:tjara/app/modules/web_settings/web_settings_dashboard/web_settings_dashboard_screen.dart';
 import 'package:tjara/app/routes/app_pages.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
@@ -719,11 +720,29 @@ class _LinksSection extends StatelessWidget {
           const SizedBox(height: 16),
           _LinkItem(
             icon: Icons.article_outlined,
+            label: 'Products',
+            onTap: () {
+              // Get.toNamed(Routes.FLASH_DEAL_SETTINGS);
+
+              // Get.lazyPut<AdminPromotionController>(
+              //   () => AdminPromotionController(),
+              // );
+              Get.to(() => const AdminProductsConfigView());
+            },
+          ),
+
+          _LinkItem(
+            icon: Icons.article_outlined,
             label: 'Admin Web Settings',
             onTap: () {
               Get.to(() => const WebSettingsDashboardScreen());
             },
           ),
+          Text(
+            'will remove web setting and products from here and will add inside dashbaord after work complete',
+          ),
+
+          const SizedBox(height: 16),
           _LinkItem(
             icon: Icons.article_outlined,
             label: 'Blogs',

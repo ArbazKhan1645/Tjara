@@ -1,76 +1,90 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/controllers/add_product_admin_controller.dart';
-import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/views/add_product_admin_view.dart';
+import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/widgets/admin_ui_components.dart';
 
 class ProductSettingsWidget extends StatelessWidget {
-  final AddProductAdminController controller = Get.put(
-    AddProductAdminController(),
-  );
+  final AddProductAdminController controller = Get.find<AddProductAdminController>();
 
   ProductSettingsWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AdminCard(
+      title: 'Product Settings',
+      icon: Icons.settings_outlined,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildProductTypeSelector(),
+          const SizedBox(height: 20),
+          _buildToggleSwitches(),
+          const SizedBox(height: 20),
+          _buildSKUField(),
+        ],
+      ),
+    );
+  }
 
   Widget _buildProductTypeSelector() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "${controller.selectedProductgroup.value} Type:",
-          style: const TextStyle(fontWeight: FontWeight.bold),
+        AdminSectionHeader(
+          title: '${controller.selectedProductgroup.value} Type',
+          subtitle: 'Select the product type for your listing',
         ),
-        const SizedBox(height: 4),
-        Text("Select the ${controller.selectedProductgroup.value} type."),
-        const SizedBox(height: 10),
         Row(
           children: [
-            _buildTypeButton("Simple"),
-            const SizedBox(width: 10),
-            _buildTypeButton("Variants"),
+            Expanded(child: _buildTypeChip('Simple')),
+            const SizedBox(width: 12),
+            Expanded(child: _buildTypeChip('Variants')),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildTypeButton(String type) {
+  Widget _buildTypeChip(String type) {
     return Obx(() {
       final bool isSelected = controller.selectedProductType.value == type;
-      return GestureDetector(
+      return AdminSelectionChip(
+        label: type,
+        isSelected: isSelected,
         onTap: () => controller.setProductType(type),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFFF97316) : Colors.transparent,
-            border: Border.all(color: const Color(0xFFF97316)),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(
-            type,
-            style: TextStyle(
-              color: isSelected ? Colors.white : Colors.black,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
       );
     });
   }
 
-  Widget _buildSwitchTile(String title, RxBool value) {
-    return Obx(
-      () => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
-          Switch(
-            value: value.value,
-            onChanged: (val) => value.value = val,
-            activeThumbColor: Colors.white,
-            activeTrackColor: const Color(0xFFF97316),
-          ),
-          const SizedBox(height: 10),
-        ],
-      ),
+  Widget _buildToggleSwitches() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const AdminSectionHeader(
+          title: 'Product Options',
+          subtitle: 'Configure additional product settings',
+        ),
+        Obx(() => AdminToggleSwitch(
+          title: 'Featured Product',
+          subtitle: 'Highlight this product on the homepage',
+          value: controller.isFeatured.value,
+          onChanged: (val) => controller.isFeatured.value = val,
+        )),
+        const SizedBox(height: 12),
+        Obx(() => AdminToggleSwitch(
+          title: 'Deal of the Day',
+          subtitle: 'Show in deals section',
+          value: controller.isDeal.value,
+          onChanged: (val) => controller.isDeal.value = val,
+        )),
+        const SizedBox(height: 12),
+        Obx(() => AdminToggleSwitch(
+          title: 'Purchase Limit',
+          subtitle: 'Limit purchase quantity per customer',
+          value: controller.enablePurchaseLimit.value,
+          onChanged: (val) => controller.enablePurchaseLimit.value = val,
+        )),
+      ],
     );
   }
 
@@ -78,46 +92,16 @@ class ProductSettingsWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("SKU:", style: TextStyle(fontWeight: FontWeight.w500)),
-        const SizedBox(height: 6),
-        TextField(
+        const AdminSectionHeader(
+          title: 'SKU (Stock Keeping Unit)',
+          subtitle: 'Unique identifier for inventory management',
+        ),
+        AdminTextField(
           controller: controller.skuController,
-          decoration: InputDecoration(
-            hintText: "Add SKU",
-            filled: true,
-            fillColor: Colors.grey.shade200,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 14,
-            ),
-          ),
+          hint: 'Enter SKU code',
+          prefixIcon: Icons.qr_code_outlined,
         ),
       ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ProductFieldsCardCustomWidget(
-      column: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildProductTypeSelector(),
-          const SizedBox(height: 24),
-          _buildSwitchTile("Is Featured ?", controller.isFeatured),
-          _buildSwitchTile("Is Deal?", controller.isDeal),
-          _buildSwitchTile(
-            "Enable purchase limit per customer ?",
-            controller.enablePurchaseLimit,
-          ),
-          const SizedBox(height: 16),
-          _buildSKUField(),
-        ],
-      ),
     );
   }
 }

@@ -12,6 +12,7 @@ import 'package:tjara/app/models/admin_products_model.dart';
 import 'package:tjara/app/models/categories/categories_model.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/widgets/attributes/attributes_manage.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/widgets/car_location_data_widget.dart';
+import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/widgets/admin_ui_components.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
 import 'package:tjara/main.dart';
 
@@ -37,7 +38,7 @@ class AddProductAdminController extends GetxController {
       'https://api.libanbuy.com/api/products/insert';
   static const String _updateApiUrl = 'https://api.libanbuy.com/api/products';
   static const String _shopId = '0000c539-9857-3456-bc53-2bbdc1474f1a';
-  static const String _requestFromHeader = 'Application';
+  static const String _requestFromHeader = 'Dashboard';
 
   // Observable variables
   var isExpanded = true.obs;
@@ -259,26 +260,19 @@ class AddProductAdminController extends GetxController {
         errorMessage = '${message.substring(0, 100)}...';
       }
     }
-
-    Get.snackbar(
-      title,
-      errorMessage,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.red.shade100,
-      colorText: Colors.red.shade900,
-      duration: const Duration(seconds: 4),
-    );
+    AdminSnackbar.error(title, errorMessage);
   }
 
   void _showSuccessSnackbar(String title, String message) {
-    Get.snackbar(
-      title,
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green.shade100,
-      colorText: Colors.green.shade900,
-      duration: const Duration(seconds: 3),
-    );
+    AdminSnackbar.success(title, message);
+  }
+
+  void _showWarningSnackbar(String title, String message) {
+    AdminSnackbar.warning(title, message);
+  }
+
+  void _showInfoSnackbar(String title, String message) {
+    AdminSnackbar.info(title, message);
   }
 
   Map<String, String> _getCommonHeaders() {
@@ -396,6 +390,11 @@ class AddProductAdminController extends GetxController {
   // Variant Management
   void addVariant(VariantData variant) {
     variants.add(variant);
+    // Set mainattributeId from the first variant's primary attribute
+    if (mainattributeId.isEmpty) {
+      mainattributeId = variant.primaryAttribute.id.toString();
+    }
+    update();
   }
 
   void removeVariant(VariantData variant) {
@@ -712,13 +711,18 @@ class AddProductAdminController extends GetxController {
       request.fields['name'] = name.isNotEmpty ? name : 'ab';
       request.fields['product_group'] =
           (productGroup?.isNotEmpty == true) ? productGroup! : 'car';
-      // Force simple for this payload unless explicitly set otherwise
-      request.fields['product_type'] = 'simple';
+      // Convert product type: handles both 'Variants'/'variable' -> 'variable', otherwise 'simple'
+      final String lowerProductType = productType.toLowerCase();
+      final String apiProductType =
+          (lowerProductType == 'variants' || lowerProductType == 'variable')
+              ? 'variable'
+              : 'simple';
+      request.fields['product_type'] = apiProductType;
       // If description provided already contains HTML, use as is; otherwise wrap
       final String descValue =
           (description != null && description.trim().isNotEmpty)
               ? description
-              : '<p>a test of new car</p>';
+              : '<p></p>';
       request.fields['description'] = descValue;
       request.fields['stock'] = (stock ?? 1).toString();
       request.fields['is_featured'] = (isFeatured == true) ? '1' : '0';
@@ -755,6 +759,7 @@ class AddProductAdminController extends GetxController {
       // Add more categories if needed:
       // request.fields['categories[1]'] = 'another-category-id';
 
+      // Add variations for variable products
       for (var i = 0; i < variants.length; i++) {
         request.fields['variations[$i]'] = jsonEncode(variants[i].toJson());
       }
@@ -836,10 +841,17 @@ class AddProductAdminController extends GetxController {
     try {
       final url = Uri.parse('$_updateApiUrl/$id/update');
 
+      // Convert product type: handles both 'Variants'/'variable' -> 'variable', otherwise 'simple'
+      final String lowerProductType = productType.toLowerCase();
+      final String apiProductType =
+          (lowerProductType == 'variants' || lowerProductType == 'variable')
+              ? 'variable'
+              : 'simple';
+
       // Prepare JSON data matching the expected format
       final Map<String, dynamic> requestBody = {
         'name': name.isNotEmpty ? name : 'ab',
-        'product_type': 'simple',
+        'product_type': apiProductType,
         'description':
             (description != null && description.trim().isNotEmpty)
                 ? description

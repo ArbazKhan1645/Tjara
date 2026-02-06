@@ -6,7 +6,6 @@ import 'package:tjara/app/core/widgets/admin_app_bar_actions.dart';
 
 import 'package:tjara/app/core/widgets/admin_header_animated_background_widget.dart';
 import 'package:tjara/app/core/widgets/admin_sliver_app_bar_widget.dart';
-import 'package:tjara/app/core/widgets/buttons/simple_button_with_left_icon_and_icon_widget.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/widgets/car_location_data_widget.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/widgets/car_meta_data_widget.dart';
 import 'package:tjara/app/modules/modules_admin/admin/cars/cars_view.dart';
@@ -20,6 +19,7 @@ import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/widgets/
 import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/widgets/scan.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/widgets/shipping.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/widgets/upload_product_images_widget.dart';
+import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/widgets/admin_ui_components.dart';
 import 'package:tjara/app/modules/modules_admin/admin/categories_admin/controllers/categories_admin_controller.dart';
 
 class AddProductAdminView extends StatelessWidget {
@@ -166,28 +166,26 @@ class AddAdminProductWidget extends StatelessWidget {
   }
 
   Widget _buildActionButtons(AddProductAdminController controller) {
-    return GetBuilder<AddProductAdminController>(
-      builder: (controller) {
-        return Column(
-          children: [
-            const SizedBox(height: 25),
-            RoundedTextButton(
-              label: 'Save',
-              onPressed: () => _handleSave(controller),
-              backgroundColor: const Color(0xFF0D9488),
-              textColor: Colors.white,
-            ),
-            const SizedBox(height: 12),
-            RoundedTextButton(
-              label: 'Cancel',
-              onPressed: () => Get.back(),
-              backgroundColor: const Color(0xFFE5E5E5),
-              textColor: Colors.black,
-            ),
-          ],
-        );
-      },
-    );
+    return Obx(() {
+      final isLoading = controller.isLoading.value;
+      return Column(
+        children: [
+          const SizedBox(height: 25),
+          AdminPrimaryButton(
+            label: controller.isEditMode.value ? 'Update' : 'Save',
+            icon: Icons.save_outlined,
+            isLoading: isLoading,
+            onPressed: isLoading ? null : () => _handleSave(controller),
+          ),
+          const SizedBox(height: 12),
+          AdminSecondaryButton(
+            label: 'Cancel',
+            icon: Icons.close,
+            onPressed: isLoading ? null : () => Get.back(),
+          ),
+        ],
+      );
+    });
   }
 
   String _getGroupName() {
@@ -207,16 +205,29 @@ class AddAdminProductWidget extends StatelessWidget {
     // Validation
     final validationError = _validateForm(controller);
     if (validationError != null) {
-      Get.snackbar('Error', validationError);
+      AdminSnackbar.warning('Validation Error', validationError);
       return;
     }
 
-    final success =
-        controller.isEditMode.value
-            ? await _updateProduct(controller)
-            : await _insertProduct(controller);
+    // Show loading
+    AdminFullScreenLoader.show(
+      message: controller.isEditMode.value ? 'Updating product...' : 'Saving product...',
+    );
 
-    _handleSaveResult(success, controller.isEditMode.value);
+    try {
+      final success =
+          controller.isEditMode.value
+              ? await _updateProduct(controller)
+              : await _insertProduct(controller);
+
+      // Hide loading
+      AdminFullScreenLoader.hide();
+
+      _handleSaveResult(success, controller.isEditMode.value);
+    } catch (e) {
+      AdminFullScreenLoader.hide();
+      AdminSnackbar.error('Error', 'An unexpected error occurred');
+    }
   }
 
   String? _validateForm(AddProductAdminController controller) {
@@ -338,6 +349,11 @@ class AddAdminProductWidget extends StatelessWidget {
 
   void _handleSaveResult(bool success, bool isEditMode) {
     if (success) {
+      AdminSnackbar.success(
+        'Success',
+        isEditMode ? 'Product updated successfully' : 'Product added successfully',
+      );
+
       // Prefer explicit return route if provided by caller
       final args = Get.arguments;
       final String? returnToRoute =
@@ -345,32 +361,28 @@ class AddAdminProductWidget extends StatelessWidget {
               ? args['return_to']
               : null;
 
-      if (returnToRoute != null && returnToRoute.isNotEmpty) {
-        Get.offNamed(returnToRoute);
-      } else {
-        // Context-aware fallback: cars → CarsView, else back
-        String groupName = 'Product';
-        if (args is String) {
-          groupName = args;
-        } else if (args is Map) {
-          final pg = args['product_group'];
-          if (pg is String) groupName = pg;
-          if (pg is Map && pg['name'] is String) groupName = pg['name'];
-        }
-
-        if (groupName.toLowerCase().contains('car')) {
-          Get.off(() => const CarsView());
+      // Delay navigation slightly to show snackbar
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (returnToRoute != null && returnToRoute.isNotEmpty) {
+          Get.offNamed(returnToRoute);
         } else {
-          Get.back();
+          // Context-aware fallback: cars → CarsView, else back
+          String groupName = 'Product';
+          if (args is String) {
+            groupName = args;
+          } else if (args is Map) {
+            final pg = args['product_group'];
+            if (pg is String) groupName = pg;
+            if (pg is Map && pg['name'] is String) groupName = pg['name'];
+          }
+
+          if (groupName.toLowerCase().contains('car')) {
+            Get.off(() => const CarsView());
+          } else {
+            Get.back();
+          }
         }
-      }
-      Get.snackbar(
-        'Success',
-        isEditMode
-            ? 'Product Updated successfully'
-            : 'Product Added successfully',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      });
     }
   }
 }
