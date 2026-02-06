@@ -178,7 +178,10 @@ class _FilterDialogState extends State<FilterDialog> {
           color: isSelected ? const Color(0xFFF97316) : const Color(0xFFE8E8E8),
           width: isSelected ? 2 : 1,
         ),
-        color: isSelected ? const Color(0xFFF97316).withOpacity(0.05) : Colors.white,
+        color:
+            isSelected
+                ? const Color(0xFFF97316).withOpacity(0.05)
+                : Colors.white,
       ),
       child: InkWell(
         onTap: () {
@@ -201,7 +204,9 @@ class _FilterDialogState extends State<FilterDialog> {
                 child: Icon(
                   option.icon,
                   color:
-                      isSelected ? const Color(0xFFF97316) : const Color(0xFF666666),
+                      isSelected
+                          ? const Color(0xFFF97316)
+                          : const Color(0xFF666666),
                   size: 20,
                 ),
               ),
@@ -248,7 +253,8 @@ class _FilterDialogState extends State<FilterDialog> {
                             : const Color(0xFFD0D0D0),
                     width: 2,
                   ),
-                  color: isSelected ? const Color(0xFFF97316) : Colors.transparent,
+                  color:
+                      isSelected ? const Color(0xFFF97316) : Colors.transparent,
                 ),
                 child:
                     isSelected

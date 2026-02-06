@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:tjara/app/modules/modules_admin/admin/products_admin/widgets/admin_products_theme.dart';
 import 'package:tjara/app/modules/modules_admin/admin/products_admin/widgets/order_item_widget.dart';
 import 'package:tjara/app/modules/modules_admin/admin/products_admin/widgets/shimmer.dart';
 import 'package:tjara/app/services/dashbopard_services/admin_products_service.dart';
@@ -16,15 +17,10 @@ class AdminProductsList extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 80.0),
         child: Column(
           children: [
-            // Main content area
-            _buildContent(),
-
-            // Pagination
+            _buildContent(context),
             if (!adminProductsService.isLoading.value &&
                 adminProductsService.adminProducts.isNotEmpty)
               _buildPagination(),
-
-            // Load more indicator for infinite scroll
             if (adminProductsService.isPaginationLoading.value)
               _buildLoadMoreIndicator(),
           ],
@@ -33,11 +29,11 @@ class AdminProductsList extends StatelessWidget {
     });
   }
 
-  Widget _buildContent() {
+  Widget _buildContent(BuildContext context) {
     // Initial loading state
     if (adminProductsService.isLoading.value &&
         adminProductsService.adminProducts.isEmpty) {
-      return const ProductsShimmerList(itemCount: 10);
+      return const ProductsShimmerList(itemCount: 8);
     }
 
     // Empty state
@@ -46,59 +42,72 @@ class AdminProductsList extends StatelessWidget {
       return _buildEmptyState();
     }
 
-    // Products list
+    // Products list with smooth horizontal scrolling
     return RefreshIndicator(
       onRefresh: adminProductsService.refreshProducts,
-      child: SingleChildScrollView(
-        controller: adminProductsService.scrollController,
-        scrollDirection: Axis.horizontal,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Table header
-            _buildTableHeader(),
-
-            // Products
-            ...adminProductsService.adminProducts.map(
-              (product) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: OrderItemCard(product: product),
+      color: AdminProductsTheme.primary,
+      backgroundColor: AdminProductsTheme.surface,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Scrollbar(
+            thumbVisibility: true,
+            trackVisibility: true,
+            child: SingleChildScrollView(
+              // Note: Don't use adminProductsService.scrollController here
+              // That controller has pagination listener which triggers on horizontal scroll
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minWidth: constraints.maxWidth,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildTableHeader(),
+                    const SizedBox(height: AdminProductsTheme.spacingSm),
+                    ...adminProductsService.adminProducts.map(
+                      (product) => Padding(
+                        padding: const EdgeInsets.only(
+                          bottom: AdminProductsTheme.spacingSm,
+                        ),
+                        child: ProductItemCard(product: product),
+                      ),
+                    ),
+                    if (adminProductsService.isPaginationLoading.value)
+                      const Padding(
+                        padding: EdgeInsets.all(AdminProductsTheme.spacingLg),
+                        child: ProductShimmerCard(),
+                      ),
+                  ],
+                ),
               ),
             ),
-
-            // Loading more indicator at bottom of list
-            if (adminProductsService.isPaginationLoading.value)
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: ProductShimmerCard(),
-              ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
   Widget _buildTableHeader() {
     return Container(
-      height: 50,
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: IntrinsicWidth(
+      height: 48,
+      decoration: AdminProductsTheme.tableHeaderDecoration,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AdminProductsTheme.spacingLg,
+        ),
         child: Row(
           children: [
             _buildHeaderCell('Product ID', 100),
-            _buildHeaderCell('Image', 150),
-            _buildHeaderCell('Product Name', 120),
-            _buildHeaderCell('Shop Name', 150),
+            _buildHeaderCell('Image', 80),
+            _buildHeaderCell('Product Name', 180),
+            _buildHeaderCell('Shop', 150),
             _buildHeaderCell('Price', 100),
-            _buildHeaderCell('Stock', 100),
-            _buildHeaderCell('Published At', 120),
+            _buildHeaderCell('Stock', 80),
+            _buildHeaderCell('Published', 120),
             _buildHeaderCell('Status', 100),
-            _buildHeaderCell('Actions', 250),
+            _buildHeaderCell('Actions', 200),
           ],
         ),
       ),
@@ -108,13 +117,16 @@ class AdminProductsList extends StatelessWidget {
   Widget _buildHeaderCell(String title, double width) {
     return Container(
       width: width,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AdminProductsTheme.spacingSm,
+      ),
       child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 12,
+        title.toUpperCase(),
+        style: AdminProductsTheme.labelMedium.copyWith(
+          fontSize: 11,
           fontWeight: FontWeight.w600,
-          color: Colors.black87,
+          letterSpacing: 0.5,
+          color: AdminProductsTheme.textSecondary,
         ),
         overflow: TextOverflow.ellipsis,
       ),
@@ -124,57 +136,50 @@ class AdminProductsList extends StatelessWidget {
   Widget _buildEmptyState() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(40),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
+      padding: const EdgeInsets.all(AdminProductsTheme.spacing2Xl),
+      decoration: AdminProductsTheme.cardDecoration,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.inventory_2_outlined,
-            size: 64,
-            color: Colors.grey.shade400,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No Products Found',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade600,
+          Container(
+            padding: const EdgeInsets.all(AdminProductsTheme.spacingXl),
+            decoration: const BoxDecoration(
+              color: AdminProductsTheme.primaryLight,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.inventory_2_outlined,
+              size: 48,
+              color: AdminProductsTheme.primary,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AdminProductsTheme.spacingXl),
+          const Text(
+            'No Products Found',
+            style: AdminProductsTheme.headingMedium,
+          ),
+          const SizedBox(height: AdminProductsTheme.spacingSm),
           Text(
             _getEmptyStateMessage(),
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+            style: AdminProductsTheme.bodyMedium,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AdminProductsTheme.spacingXl),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ElevatedButton.icon(
+              OutlinedButton.icon(
                 onPressed: () => adminProductsService.clearAllFilters(),
-                icon: const Icon(Icons.clear_all, size: 16),
+                icon: const Icon(Icons.filter_alt_off_outlined, size: 18),
                 label: const Text('Clear Filters'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey.shade100,
-                  foregroundColor: Colors.black87,
-                ),
+                style: AdminProductsTheme.outlineButtonStyle,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AdminProductsTheme.spacingMd),
               ElevatedButton.icon(
                 onPressed: () => adminProductsService.refreshProducts(),
-                icon: const Icon(Icons.refresh, size: 16),
+                icon: const Icon(Icons.refresh, size: 18),
                 label: const Text('Refresh'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                ),
+                style: AdminProductsTheme.primaryButtonStyle,
               ),
             ],
           ),
@@ -184,13 +189,18 @@ class AdminProductsList extends StatelessWidget {
   }
 
   String _getEmptyStateMessage() {
-    if (adminProductsService.searchQuery.value.isNotEmpty) {
-      return 'No products found matching "${adminProductsService.searchQuery.value}".\nTry adjusting your search terms or filters.';
+    final searchQuery = adminProductsService.searchQuery.value;
+    if (searchQuery.isNotEmpty) {
+      return 'No products found matching "$searchQuery".\nTry adjusting your search terms or filters.';
     }
 
-    if (adminProductsService.selectedStatus.value != ProductStatus.all ||
-        adminProductsService.activeFilters.isNotEmpty ||
-        adminProductsService.startDate.value != null) {
+    final selectedStatus = adminProductsService.selectedStatus.value;
+    final activeFilters = adminProductsService.activeFilters;
+    final startDate = adminProductsService.startDate.value;
+
+    if (selectedStatus != ProductStatus.all ||
+        activeFilters.isNotEmpty ||
+        startDate != null) {
       return 'No products found with the current filters applied.\nTry removing some filters to see more results.';
     }
 
@@ -199,100 +209,78 @@ class AdminProductsList extends StatelessWidget {
 
   Widget _buildPagination() {
     return Obx(() {
-      if (adminProductsService.totalPages.value <= 1) {
+      final totalPages = adminProductsService.totalPages.value;
+      if (totalPages <= 1) {
         return const SizedBox.shrink();
       }
 
+      final currentPage = adminProductsService.currentPage.value;
+
       return Container(
-        margin: const EdgeInsets.symmetric(vertical: 16),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
-          boxShadow: const [
-            BoxShadow(color: Color(0x0A000000), blurRadius: 4, spreadRadius: 1),
-          ],
-        ),
+        margin: const EdgeInsets.symmetric(vertical: AdminProductsTheme.spacingLg),
+        padding: const EdgeInsets.all(AdminProductsTheme.spacingLg),
+        decoration: AdminProductsTheme.cardDecoration,
         child: Column(
           children: [
             // Pagination info
-            Text(
-              'Page ${adminProductsService.currentPage.value} of ${adminProductsService.totalPages.value}',
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.black54,
-                fontWeight: FontWeight.w500,
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AdminProductsTheme.spacingMd,
+                vertical: AdminProductsTheme.spacingXs,
+              ),
+              decoration: BoxDecoration(
+                color: AdminProductsTheme.surfaceSecondary,
+                borderRadius: BorderRadius.circular(AdminProductsTheme.radiusSm),
+              ),
+              child: Text(
+                'Page $currentPage of $totalPages',
+                style: AdminProductsTheme.bodySmall.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AdminProductsTheme.spacingMd),
 
             // Pagination controls
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // First page
-                // _buildPaginationButton(
-                //   icon: Icons.first_page,
-                //   onPressed:
-                //       adminProductsService.currentPage.value > 1
-                //           ? () => adminProductsService.goToPage(1)
-                //           : null,
-                //   tooltip: 'First Page',
-                // ),
-
                 // Previous page
                 _buildPaginationButton(
-                  icon: Icons.chevron_left,
-                  onPressed:
-                      adminProductsService.currentPage.value > 1
-                          ? adminProductsService.previousPage
-                          : null,
+                  icon: Icons.chevron_left_rounded,
+                  onPressed: currentPage > 1
+                      ? adminProductsService.previousPage
+                      : null,
                   tooltip: 'Previous Page',
                 ),
 
-                const SizedBox(width: 8),
+                const SizedBox(width: AdminProductsTheme.spacingSm),
 
                 // Page numbers
                 ...adminProductsService.visiblePageNumbers().map(
-                  (page) => Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 2),
-                    child: _buildPageNumberButton(page),
-                  ),
-                ),
+                      (page) => Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 3),
+                        child: _buildPageNumberButton(page, currentPage),
+                      ),
+                    ),
 
-                const SizedBox(width: 8),
+                const SizedBox(width: AdminProductsTheme.spacingSm),
 
                 // Next page
                 _buildPaginationButton(
-                  icon: Icons.chevron_right,
-                  onPressed:
-                      adminProductsService.currentPage.value <
-                              adminProductsService.totalPages.value
-                          ? adminProductsService.nextPage
-                          : null,
+                  icon: Icons.chevron_right_rounded,
+                  onPressed: currentPage < totalPages
+                      ? adminProductsService.nextPage
+                      : null,
                   tooltip: 'Next Page',
                 ),
-
-                // Last page
-                // _buildPaginationButton(
-                //   icon: Icons.last_page,
-                //   onPressed:
-                //       adminProductsService.currentPage.value <
-                //               adminProductsService.totalPages.value
-                //           ? () => adminProductsService.goToPage(
-                //             adminProductsService.totalPages.value,
-                //           )
-                //           : null,
-                //   tooltip: 'Last Page',
-                // ),
               ],
             ),
 
             // Jump to page
-            if (adminProductsService.totalPages.value > 10)
+            if (totalPages > 10)
               Padding(
-                padding: const EdgeInsets.only(top: 12),
+                padding: const EdgeInsets.only(top: AdminProductsTheme.spacingMd),
                 child: _buildJumpToPage(),
               ),
           ],
@@ -306,42 +294,76 @@ class AdminProductsList extends StatelessWidget {
     required VoidCallback? onPressed,
     required String tooltip,
   }) {
+    final isEnabled = onPressed != null;
+
     return Tooltip(
       message: tooltip,
-      child: IconButton(
-        onPressed: onPressed,
-        icon: Icon(icon),
-        style: IconButton.styleFrom(
-          backgroundColor: onPressed != null ? Colors.grey.shade100 : null,
-          foregroundColor:
-              onPressed != null ? Colors.black87 : Colors.grey.shade400,
-          padding: const EdgeInsets.all(8),
-          minimumSize: const Size(36, 36),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(AdminProductsTheme.radiusSm),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            padding: const EdgeInsets.all(AdminProductsTheme.spacingSm),
+            decoration: BoxDecoration(
+              color: isEnabled
+                  ? AdminProductsTheme.surfaceSecondary
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(AdminProductsTheme.radiusSm),
+              border: Border.all(
+                color: isEnabled
+                    ? AdminProductsTheme.border
+                    : AdminProductsTheme.borderLight,
+              ),
+            ),
+            child: Icon(
+              icon,
+              size: 20,
+              color: isEnabled
+                  ? AdminProductsTheme.textPrimary
+                  : AdminProductsTheme.textTertiary,
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildPageNumberButton(int page) {
-    final isCurrentPage = page == adminProductsService.currentPage.value;
+  Widget _buildPageNumberButton(int page, int currentPage) {
+    final isCurrentPage = page == currentPage;
 
-    return SizedBox(
-      width: 36,
-      height: 36,
-      child: ElevatedButton(
-        onPressed: () => adminProductsService.goToPage(page),
-        style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-          backgroundColor: isCurrentPage ? Colors.blue : Colors.grey.shade100,
-          foregroundColor: isCurrentPage ? Colors.white : Colors.black87,
-          elevation: isCurrentPage ? 2 : 0,
-        ),
-        child: Text(
-          page.toString(),
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: isCurrentPage ? FontWeight.w600 : FontWeight.w400,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => adminProductsService.goToPage(page),
+        borderRadius: BorderRadius.circular(AdminProductsTheme.radiusSm),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          width: 36,
+          height: 36,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: isCurrentPage
+                ? AdminProductsTheme.primary
+                : AdminProductsTheme.surface,
+            borderRadius: BorderRadius.circular(AdminProductsTheme.radiusSm),
+            border: Border.all(
+              color: isCurrentPage
+                  ? AdminProductsTheme.primary
+                  : AdminProductsTheme.border,
+            ),
+            boxShadow: isCurrentPage ? AdminProductsTheme.shadowSm : null,
+          ),
+          child: Text(
+            page.toString(),
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: isCurrentPage ? FontWeight.w600 : FontWeight.w400,
+              color: isCurrentPage
+                  ? AdminProductsTheme.textOnPrimary
+                  : AdminProductsTheme.textPrimary,
+            ),
           ),
         ),
       ),
@@ -350,60 +372,75 @@ class AdminProductsList extends StatelessWidget {
 
   Widget _buildJumpToPage() {
     final TextEditingController controller = TextEditingController();
+    final totalPages = adminProductsService.totalPages.value;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const Text(
           'Go to page:',
-          style: TextStyle(fontSize: 12, color: Colors.black54),
+          style: AdminProductsTheme.bodySmall,
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: AdminProductsTheme.spacingSm),
         SizedBox(
-          width: 60,
-          height: 32,
+          width: 64,
+          height: 36,
           child: TextField(
             controller: controller,
             keyboardType: TextInputType.number,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 12),
+            style: AdminProductsTheme.bodyMedium,
             decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(4),
-                borderSide: BorderSide(color: Colors.grey.shade300),
-              ),
               contentPadding: const EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 4,
+                horizontal: AdminProductsTheme.spacingSm,
+                vertical: AdminProductsTheme.spacingXs,
               ),
-              isDense: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AdminProductsTheme.radiusSm),
+                borderSide: const BorderSide(color: AdminProductsTheme.border),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AdminProductsTheme.radiusSm),
+                borderSide: const BorderSide(color: AdminProductsTheme.border),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AdminProductsTheme.radiusSm),
+                borderSide: const BorderSide(color: AdminProductsTheme.primary),
+              ),
             ),
             onSubmitted: (value) {
-              final page = int.tryParse(value);
-              if (page != null &&
-                  page >= 1 &&
-                  page <= adminProductsService.totalPages.value) {
+              final page = int.tryParse(value) ?? 0;
+              if (page >= 1 && page <= totalPages) {
                 adminProductsService.goToPage(page);
                 controller.clear();
               }
             },
           ),
         ),
-        const SizedBox(width: 4),
-        IconButton(
-          onPressed: () {
-            final page = int.tryParse(controller.text);
-            if (page != null &&
-                page >= 1 &&
-                page <= adminProductsService.totalPages.value) {
-              adminProductsService.goToPage(page);
-              controller.clear();
-            }
-          },
-          icon: const Icon(Icons.arrow_forward, size: 16),
-          style: IconButton.styleFrom(
-            padding: const EdgeInsets.all(4),
-            minimumSize: const Size(24, 24),
+        const SizedBox(width: AdminProductsTheme.spacingXs),
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              final page = int.tryParse(controller.text) ?? 0;
+              if (page >= 1 && page <= totalPages) {
+                adminProductsService.goToPage(page);
+                controller.clear();
+              }
+            },
+            borderRadius: BorderRadius.circular(AdminProductsTheme.radiusSm),
+            child: Container(
+              padding: const EdgeInsets.all(AdminProductsTheme.spacingSm),
+              decoration: BoxDecoration(
+                color: AdminProductsTheme.primary,
+                borderRadius: BorderRadius.circular(AdminProductsTheme.radiusSm),
+              ),
+              child: const Icon(
+                Icons.arrow_forward_rounded,
+                size: 16,
+                color: AdminProductsTheme.textOnPrimary,
+              ),
+            ),
           ),
         ),
       ],
@@ -412,19 +449,22 @@ class AdminProductsList extends StatelessWidget {
 
   Widget _buildLoadMoreIndicator() {
     return Container(
-      padding: const EdgeInsets.all(16),
-      child: Row(
+      padding: const EdgeInsets.all(AdminProductsTheme.spacingLg),
+      child: const Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(
-            width: 16,
-            height: 16,
-            child: CircularProgressIndicator(strokeWidth: 2),
+          SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: AdminProductsTheme.primary,
+            ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: AdminProductsTheme.spacingMd),
           Text(
             'Loading more products...',
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+            style: AdminProductsTheme.bodySmall,
           ),
         ],
       ),

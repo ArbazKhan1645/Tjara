@@ -1,6 +1,17 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
+
+/// Theme constants for Admin Bottom Navigation
+class _NavTheme {
+  _NavTheme._();
+
+  static const Color primary = Color(0xFFfda730);
+  static const Color primaryLight = Color(0xFFFFF7ED);
+  static const Color surface = Color(0xFFFFFFFF);
+  static const Color textTertiary = Color(0xFF94A3B8);
+
+  static const double radiusXl = 24.0;
+  static const double radiusMd = 12.0;
+}
 
 class AdminBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
@@ -14,41 +25,51 @@ class AdminBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              spreadRadius: 2,
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: _NavTheme.surface,
+        borderRadius: BorderRadius.circular(_NavTheme.radiusXl),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 24,
+            offset: const Offset(0, 4),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            NavItem(
-              icon: Icons.home,
-              label: "Home",
+            _NavItem(
+              icon: Icons.home_rounded,
+              activeIcon: Icons.home_rounded,
+              label: 'Home',
               index: 0,
               selectedIndex: currentIndex,
               onTap: onTap,
             ),
-            NavItem(
+            _NavItem(
               icon: Icons.shopping_bag_outlined,
-              label: "Orders",
+              activeIcon: Icons.shopping_bag_rounded,
+              label: 'Orders',
               index: 1,
               selectedIndex: currentIndex,
               onTap: onTap,
             ),
-            NavItem(
-              icon: Icons.chat_bubble_outline,
-              label: "Chats",
+            _NavItem(
+              icon: Icons.chat_bubble_outline_rounded,
+              activeIcon: Icons.chat_bubble_rounded,
+              label: 'Chats',
               index: 2,
               selectedIndex: currentIndex,
               onTap: onTap,
@@ -60,16 +81,17 @@ class AdminBottomNavigationBar extends StatelessWidget {
   }
 }
 
-class NavItem extends StatelessWidget {
+class _NavItem extends StatefulWidget {
   final IconData icon;
+  final IconData activeIcon;
   final String label;
   final int index;
   final int selectedIndex;
   final ValueChanged<int> onTap;
 
-  const NavItem({
-    super.key,
+  const _NavItem({
     required this.icon,
+    required this.activeIcon,
     required this.label,
     required this.index,
     required this.selectedIndex,
@@ -77,28 +99,109 @@ class NavItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final isSelected = selectedIndex == index;
+  State<_NavItem> createState() => _NavItemState();
+}
 
+class _NavItemState extends State<_NavItem>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  bool get isSelected => widget.selectedIndex == widget.index;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.92,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleTapDown(TapDownDetails details) {
+    _controller.forward();
+  }
+
+  void _handleTapUp(TapUpDetails details) {
+    _controller.reverse();
+  }
+
+  void _handleTapCancel() {
+    _controller.reverse();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
+      onTapDown: _handleTapDown,
+      onTapUp: _handleTapUp,
+      onTapCancel: _handleTapCancel,
       onTap: () {
         if (!isSelected) {
-          onTap(index);
+          widget.onTap(widget.index);
         }
       },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: isSelected ? const Color(0xFFF97316) : Colors.grey),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? const Color(0xFFF97316) : Colors.grey,
-              fontSize: 12,
-            ),
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutCubic,
+          padding: EdgeInsets.symmetric(
+            horizontal: isSelected ? 20 : 16,
+            vertical: 10,
           ),
-        ],
+          decoration: BoxDecoration(
+            color: isSelected ? _NavTheme.primaryLight : Colors.transparent,
+            borderRadius: BorderRadius.circular(_NavTheme.radiusMd),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                transitionBuilder: (child, animation) {
+                  return ScaleTransition(scale: animation, child: child);
+                },
+                child: Icon(
+                  isSelected ? widget.activeIcon : widget.icon,
+                  key: ValueKey(isSelected),
+                  color:
+                      isSelected ? _NavTheme.primary : _NavTheme.textTertiary,
+                  size: 24,
+                ),
+              ),
+              AnimatedSize(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeOutCubic,
+                child:
+                    isSelected
+                        ? Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Text(
+                            widget.label,
+                            style: const TextStyle(
+                              color: _NavTheme.primary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                        )
+                        : const SizedBox.shrink(),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

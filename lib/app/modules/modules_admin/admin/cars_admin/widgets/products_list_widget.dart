@@ -103,7 +103,7 @@ class AdminCarsList extends StatelessWidget {
                   adminProductsService.adminProducts!.length,
                   (index) => Padding(
                     padding: const EdgeInsets.only(bottom: 10),
-                    child: OrderItemCard(
+                    child: ProductItemCard(
                       product: adminProductsService.adminProducts![index],
                     ),
                   ),

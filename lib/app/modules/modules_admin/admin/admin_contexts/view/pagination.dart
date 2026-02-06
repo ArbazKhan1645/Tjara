@@ -225,15 +225,10 @@ class ContestsPagination extends StatelessWidget {
                 onPressed:
                     isCurrentPage ? null : () => contestsService.goToPage(page),
                 style: TextButton.styleFrom(
-                  backgroundColor:
-                      isCurrentPage ? const Color(0xFFF97316) : Colors.white,
-                  foregroundColor:
-                      isCurrentPage ? Colors.white : const Color(0xFFF97316),
+                  backgroundColor: isCurrentPage ? Colors.teal : Colors.white,
+                  foregroundColor: isCurrentPage ? Colors.white : Colors.teal,
                   side: BorderSide(
-                    color:
-                        isCurrentPage
-                            ? const Color(0xFFF97316)
-                            : Colors.grey.shade300,
+                    color: isCurrentPage ? Colors.teal : Colors.grey.shade300,
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),

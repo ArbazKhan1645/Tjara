@@ -16,13 +16,13 @@ class AdminSliverAppBarWidget extends StatelessWidget {
   LinearGradient get _expandedGradient => const LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [Color(0xFFF97316), Color(0xFFF97316)],
+    colors: [Colors.teal, Colors.teal],
   );
 
   LinearGradient get _collapsedGradient => const LinearGradient(
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
-    colors: [Color.fromARGB(255, 13, 17, 14), Colors.red],
+    colors: [Color.fromARGB(255, 13, 17, 14), Colors.teal],
   );
 
   @override
@@ -32,7 +32,7 @@ class AdminSliverAppBarWidget extends StatelessWidget {
       pinned: true,
       expandedHeight: 80,
       elevation: 0,
-      backgroundColor: const Color(0xFFF97316),
+      backgroundColor: Colors.teal,
       iconTheme: const IconThemeData(color: Colors.white),
       title: Text(
         title,

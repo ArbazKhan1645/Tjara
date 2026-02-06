@@ -1,15 +1,13 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:tjara/app/core/widgets/admin_app_bar_actions.dart';
 import 'package:tjara/app/core/widgets/admin_header_animated_background_widget.dart';
 import 'package:tjara/app/core/widgets/admin_sliver_app_bar_widget.dart';
-import 'package:tjara/app/core/widgets/buttons/gardient_button_with_left_arrow_and_text.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_auction_admin/controllers/add_product_auction_admin_controller.dart';
+import 'package:tjara/app/modules/modules_admin/admin/add_product_auction_admin/widgets/auction_admin_theme.dart';
 import 'package:tjara/app/modules/modules_admin/admin/auction_admin/widgets/products_list_widget.dart';
 import 'package:tjara/app/routes/app_pages.dart';
-
 import 'package:tjara/app/services/dashbopard_services/admin_auction_service.dart';
 
 class EnhancedAuctionViewWidget extends StatefulWidget {
@@ -29,8 +27,6 @@ class EnhancedAuctionViewWidget extends StatefulWidget {
 
 class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
   final TextEditingController _searchController = TextEditingController();
-  final TextEditingController _idController = TextEditingController();
-  final TextEditingController _skuController = TextEditingController();
 
   @override
   void initState() {
@@ -38,23 +34,11 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
     _searchController.addListener(() {
       widget.adminAuctionService.updateSearchQuery(_searchController.text);
     });
-    _idController.addListener(() {
-      if (widget.adminAuctionService.searchField.value == 'id') {
-        widget.adminAuctionService.updateSearchQuery(_idController.text);
-      }
-    });
-    _skuController.addListener(() {
-      if (widget.adminAuctionService.searchField.value == 'sku') {
-        widget.adminAuctionService.updateSearchQuery(_skuController.text);
-      }
-    });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
-    _idController.dispose();
-    _skuController.dispose();
     super.dispose();
   }
 
@@ -74,25 +58,15 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                 isAppBarExpanded: widget.isAppBarExpanded,
               ),
               Padding(
-                padding: const EdgeInsets.only(left: 16, right: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AuctionAdminTheme.spacingLg,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Auctions',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-
-                    // Add New Product Button
-                    GradientButtonWithLeftArrowAndText(
-                      label: 'Add New Auction',
-                      icon: Icons.add,
-                      onPressed: () {
+                    // Header Section
+                    _AuctionHeader(
+                      onAddAuction: () {
                         Get.delete<AuctionAddProductAdminController>();
                         Get.toNamed(
                           Routes.ADD_AUCTION_PRODUCT_ADMIN_VIEW,
@@ -102,36 +76,26 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                         });
                       },
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AuctionAdminTheme.spacingMd),
 
-                    // Filters and Search Container
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: Colors.white,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Search Section
-                          _buildSearchSection(),
-                          const SizedBox(height: 16),
-
-                          // Filters Section
-                          _buildFiltersSection(),
-                          const SizedBox(height: 16),
-
-                          // Active Filters Display
-                          _buildActiveFilters(),
-                        ],
-                      ),
+                    // Filters Card
+                    _FiltersCard(
+                      searchController: _searchController,
+                      adminAuctionService: widget.adminAuctionService,
+                      onSelectStartDate: _selectStartDate,
+                      onSelectEndDate: _selectEndDate,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AuctionAdminTheme.spacingLg),
 
                     // Results Summary
-                    _buildResultsSummary(),
-                    const SizedBox(height: 8),
+                    _ResultsSummary(
+                      adminAuctionService: widget.adminAuctionService,
+                      onClearFilters: () {
+                        widget.adminAuctionService.clearAllFilters();
+                        _searchController.clear();
+                      },
+                    ),
+                    const SizedBox(height: AuctionAdminTheme.spacingSm),
 
                     // Products List
                     AdminAuctionList(
@@ -147,531 +111,6 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
     );
   }
 
-  Widget _buildSearchSection() {
-    return Container(
-      height: 48,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          // Search Icon Container
-          Container(
-            width: 48,
-            height: 48,
-            decoration: const BoxDecoration(
-              color: Color(0xFF4A9B8E), // Teal color matching the image
-              borderRadius: BorderRadius.horizontal(
-                // v: Radius.circular(12),
-                left: Radius.circular(12),
-              ),
-            ),
-            child: const Icon(Icons.search, color: Colors.white, size: 20),
-          ),
-
-          // Search Field
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              onTap: () => widget.adminAuctionService.updateSearchField('name'),
-              decoration: const InputDecoration(
-                hintText: 'Search',
-                hintStyle: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                ),
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchField({
-    required TextEditingController controller,
-    required String label,
-    required String hintText,
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: Colors.black54,
-          ),
-        ),
-        const SizedBox(height: 4),
-        TextField(
-          controller: controller,
-          onTap: onTap,
-          decoration: InputDecoration(
-            hintText: hintText,
-            prefixIcon: Icon(icon, color: Colors.grey),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Colors.blue),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFiltersSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Filters',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 12),
-
-        // Status Filter
-        _buildStatusFilter(),
-        const SizedBox(height: 12),
-
-        // Date Range Filter
-        _buildDateRangeFilter(),
-        const SizedBox(height: 12),
-
-        // // Predefined Filters
-        // _buildPredefinedFilters(),
-        const SizedBox(height: 12),
-
-        // Per Page Selection
-        // _buildPerPageSelector(),
-      ],
-    );
-  }
-
-  Widget _buildStatusFilter() {
-    return Obx(
-      () => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Status',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: Colors.black54,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            children:
-                ProductStatus.values.map((status) {
-                  final isSelected =
-                      widget.adminAuctionService.selectedStatus.value == status;
-                  return FilterChip(
-                    label: Text(status.name.capitalize ?? status.name),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      widget.adminAuctionService.updateStatusFilter(status);
-                    },
-                    selectedColor: Colors.blue.shade100,
-                    checkmarkColor: const Color(0xFF4A9B8E),
-                  );
-                }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDateRangeFilter() {
-    return Obx(
-      () => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Date Range',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
-              ),
-              if (widget.adminAuctionService.startDate.value != null ||
-                  widget.adminAuctionService.endDate.value != null)
-                TextButton.icon(
-                  onPressed: () {
-                    widget.adminAuctionService.updateDateRange(null, null);
-                  },
-                  icon: const Icon(Icons.clear, size: 16),
-                  label: const Text('Clear'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.red.shade600,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade200),
-            ),
-            child: Column(
-              children: [
-                // Start Date
-                _buildDatePickerTile(
-                  label: 'From',
-                  date: widget.adminAuctionService.startDate.value,
-                  onTap: _selectStartDate,
-                  icon: Icons.event_available,
-                  isFirst: true,
-                ),
-                Divider(
-                  height: 1,
-                  color: Colors.grey.shade200,
-                  indent: 16,
-                  endIndent: 16,
-                ),
-                // End Date
-                _buildDatePickerTile(
-                  label: 'To',
-                  date: widget.adminAuctionService.endDate.value,
-                  onTap: _selectEndDate,
-                  icon: Icons.event_busy,
-                  isFirst: false,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDatePickerTile({
-    required String label,
-    required DateTime? date,
-    required VoidCallback onTap,
-    required IconData icon,
-    required bool isFirst,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.vertical(
-          top: isFirst ? const Radius.circular(12) : Radius.zero,
-          bottom: !isFirst ? const Radius.circular(12) : Radius.zero,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color:
-                      date != null
-                          ? const Color(0xFF4A9B8E).withOpacity(0.1)
-                          : Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  icon,
-                  size: 18,
-                  color:
-                      date != null
-                          ? const Color(0xFF4A9B8E)
-                          : Colors.grey.shade600,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      date != null
-                          ? DateFormat('EEEE, MMM dd, yyyy').format(date)
-                          : 'Select ${label.toLowerCase()} date',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color:
-                            date != null
-                                ? Colors.black87
-                                : Colors.grey.shade500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPredefinedFilters() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Quick Filters',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: Colors.black54,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Obx(
-          () => Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children:
-                widget.adminAuctionService.getPredefinedFilters().map((filter) {
-                  final isActive = widget.adminAuctionService.activeFilters.any(
-                    (f) => f.column == filter.column,
-                  );
-                  return FilterChip(
-                    label: Text(filter.name),
-                    selected: isActive,
-                    onSelected: (selected) {
-                      if (selected) {
-                        widget.adminAuctionService.addColumnFilter(filter);
-                      } else {
-                        widget.adminAuctionService.removeColumnFilter(
-                          filter.column,
-                        );
-                      }
-                    },
-                    selectedColor: Colors.green.shade100,
-                    checkmarkColor: Colors.green,
-                  );
-                }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPerPageSelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Items per page',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Obx(
-          () => Container(
-            height: 48,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF97316), // Orange color matching the image
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFF97316).withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<int>(
-                value: widget.adminAuctionService.perPage.value,
-                isExpanded: true,
-                icon: const Icon(
-                  Icons.keyboard_arrow_down,
-                  color: Colors.white,
-                  size: 24,
-                ),
-                dropdownColor: const Color(0xFFF97316),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-                items:
-                    [10, 20, 40, 60, 100].map((value) {
-                      return DropdownMenuItem<int>(
-                        value: value,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Text(
-                            '$value',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    widget.adminAuctionService.perPage.value = value;
-                    widget.adminAuctionService.fetchProducts(refresh: true);
-                  }
-                },
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActiveFilters() {
-    return Obx(() {
-      final hasFilters =
-          widget.adminAuctionService.searchQuery.value.isNotEmpty ||
-          widget.adminAuctionService.selectedStatus.value !=
-              ProductStatus.all ||
-          widget.adminAuctionService.activeFilters.isNotEmpty ||
-          widget.adminAuctionService.startDate.value != null;
-
-      if (!hasFilters) return const SizedBox.shrink();
-
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Active Filters',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
-              ),
-              TextButton.icon(
-                onPressed: () {
-                  widget.adminAuctionService.clearAllFilters();
-                  _searchController.clear();
-                  _idController.clear();
-                  _skuController.clear();
-                },
-                icon: const Icon(Icons.clear_all, size: 16),
-                label: const Text('Clear All'),
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.red,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.blue.shade200),
-            ),
-            child: Text(
-              widget.adminAuctionService.getFilterSummary(),
-              style: const TextStyle(fontSize: 12, color: Colors.black87),
-            ),
-          ),
-        ],
-      );
-    });
-  }
-
-  Widget _buildResultsSummary() {
-    return Obx(
-      () => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Showing ${widget.adminAuctionService.adminProducts.length} of ${widget.adminAuctionService.totalItems.value} Auctions',
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Colors.black54,
-              ),
-            ),
-            Row(
-              children: [
-                IconButton(
-                  onPressed: widget.adminAuctionService.refreshProducts,
-                  icon: const Icon(Icons.refresh, size: 18),
-                  tooltip: 'Refresh',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-                const SizedBox(width: 8),
-                if (widget.adminAuctionService.isRefreshing.value)
-                  const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Future<void> _selectStartDate() async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -679,6 +118,19 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
       helpText: 'Select Start Date',
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AuctionAdminTheme.accent,
+              onPrimary: Colors.white,
+              surface: AuctionAdminTheme.surface,
+              onSurface: AuctionAdminTheme.textPrimary,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null) {
       widget.adminAuctionService.updateDateRange(
@@ -695,6 +147,19 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
       firstDate: widget.adminAuctionService.startDate.value ?? DateTime(2020),
       lastDate: DateTime.now(),
       helpText: 'Select End Date',
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AuctionAdminTheme.accent,
+              onPrimary: Colors.white,
+              surface: AuctionAdminTheme.surface,
+              onSurface: AuctionAdminTheme.textPrimary,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null) {
       widget.adminAuctionService.updateDateRange(
@@ -705,71 +170,802 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
   }
 }
 
-class OrderColumnWidget extends StatelessWidget {
-  final String label;
-  final String value;
-  final CrossAxisAlignment crossAxisAlignment;
-  final Color textColor;
-  final bool hasIcon;
-  final IconData icon;
-  final Color iconColor;
-  final String hasImage;
-  final TextAlign textAlign;
-  final double width; // New parameter
+/// Auction Header Widget
+class _AuctionHeader extends StatelessWidget {
+  final VoidCallback onAddAuction;
 
-  const OrderColumnWidget({
-    super.key,
-    required this.label,
-    required this.value,
-    this.crossAxisAlignment = CrossAxisAlignment.start,
-    this.textColor = Colors.black,
-    this.hasIcon = false,
-    this.icon = Icons.open_in_new,
-    this.iconColor = Colors.red,
-    this.hasImage = '',
-    this.textAlign = TextAlign.left,
-    this.width = 100, // Default width
+  const _AuctionHeader({required this.onAddAuction});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Auctions',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.5,
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              'Manage your auction listings',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
+        _AddAuctionButton(onTap: onAddAuction),
+      ],
+    );
+  }
+}
+
+/// Add Auction Button Widget
+class _AddAuctionButton extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _AddAuctionButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AuctionAdminTheme.spacingLg,
+            vertical: AuctionAdminTheme.spacingMd,
+          ),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [
+                AuctionAdminTheme.primary,
+                AuctionAdminTheme.primaryDark,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
+            boxShadow: AuctionAdminTheme.shadowColored(AuctionAdminTheme.primary),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.add_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+              SizedBox(width: AuctionAdminTheme.spacingSm),
+              Text(
+                'Add Auction',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Filters Card Widget
+class _FiltersCard extends StatelessWidget {
+  final TextEditingController searchController;
+  final AdminAuctionService adminAuctionService;
+  final VoidCallback onSelectStartDate;
+  final VoidCallback onSelectEndDate;
+
+  const _FiltersCard({
+    required this.searchController,
+    required this.adminAuctionService,
+    required this.onSelectStartDate,
+    required this.onSelectEndDate,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: width,
+    return Container(
+      decoration: AuctionAdminTheme.elevatedCardDecoration,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: crossAxisAlignment,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(color: Colors.grey), maxLines: 2),
-          if (hasImage.isEmpty)
-            SizedBox(
-              child: Text(
-                value,
-                style: TextStyle(color: textColor),
-                maxLines: 2,
-                textAlign: textAlign,
-                overflow: TextOverflow.ellipsis,
+          // Header
+          Container(
+            padding: const EdgeInsets.all(AuctionAdminTheme.spacingLg),
+            decoration: AuctionAdminTheme.sectionHeaderDecoration,
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(AuctionAdminTheme.spacingSm),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusSm),
+                  ),
+                  child: const Icon(
+                    Icons.filter_list_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: AuctionAdminTheme.spacingMd),
+                const Expanded(
+                  child: Text(
+                    'Search & Filters',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Content
+          Padding(
+            padding: const EdgeInsets.all(AuctionAdminTheme.spacingXl),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Search Field
+                _SearchField(
+                  controller: searchController,
+                  adminAuctionService: adminAuctionService,
+                ),
+                const SizedBox(height: AuctionAdminTheme.spacingXl),
+
+                // Status Filter
+                _StatusFilter(adminAuctionService: adminAuctionService),
+                const SizedBox(height: AuctionAdminTheme.spacingXl),
+
+                // Date Range Filter
+                _DateRangeFilter(
+                  adminAuctionService: adminAuctionService,
+                  onSelectStartDate: onSelectStartDate,
+                  onSelectEndDate: onSelectEndDate,
+                ),
+                const SizedBox(height: AuctionAdminTheme.spacingLg),
+
+                // Active Filters Display
+                _ActiveFiltersDisplay(
+                  adminAuctionService: adminAuctionService,
+                  searchController: searchController,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Search Field Widget
+class _SearchField extends StatelessWidget {
+  final TextEditingController controller;
+  final AdminAuctionService adminAuctionService;
+
+  const _SearchField({
+    required this.controller,
+    required this.adminAuctionService,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const FieldLabel(
+          label: 'Search Auctions',
+          description: 'Find auctions by name, ID, or SKU',
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: AuctionAdminTheme.surfaceSecondary,
+            borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
+            border: Border.all(color: AuctionAdminTheme.border),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(AuctionAdminTheme.spacingMd),
+                decoration: const BoxDecoration(
+                  color: AuctionAdminTheme.accent,
+                  borderRadius: BorderRadius.horizontal(
+                    left: Radius.circular(AuctionAdminTheme.radiusMd - 1),
+                  ),
+                ),
+                child: const Icon(
+                  Icons.search_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  onTap: () => adminAuctionService.updateSearchField('name'),
+                  style: AuctionAdminTheme.bodyLarge,
+                  decoration: const InputDecoration(
+                    hintText: 'Search auctions...',
+                    hintStyle: TextStyle(
+                      color: AuctionAdminTheme.textTertiary,
+                      fontSize: 14,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: AuctionAdminTheme.spacingLg,
+                      vertical: AuctionAdminTheme.spacingMd,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Status Filter Widget
+class _StatusFilter extends StatelessWidget {
+  final AdminAuctionService adminAuctionService;
+
+  const _StatusFilter({required this.adminAuctionService});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AuctionAdminTheme.spacingSm),
+              decoration: BoxDecoration(
+                color: AuctionAdminTheme.infoLight,
+                borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusSm),
+              ),
+              child: const Icon(
+                Icons.flag_rounded,
+                color: AuctionAdminTheme.info,
+                size: 16,
               ),
             ),
-          if (hasImage.isNotEmpty)
-            CachedNetworkImage(
-              imageUrl: value,
-              height: 50,
-              width: 50,
-              fit: BoxFit.cover,
-              placeholder:
-                  (context, url) => SizedBox(
-                    height: 50,
-                    width: 50,
-                    child: Image.asset('assets/icons/logo.png'),
-                  ),
-              errorWidget:
-                  (context, url, error) => SizedBox(
-                    height: 50,
-                    width: 50,
-                    child: Image.asset('assets/icons/logo.png'),
-                  ),
+            const SizedBox(width: AuctionAdminTheme.spacingMd),
+            const Text(
+              'Status Filter',
+              style: AuctionAdminTheme.headingSmall,
             ),
-        ],
+          ],
+        ),
+        const SizedBox(height: AuctionAdminTheme.spacingMd),
+        Obx(
+          () => Wrap(
+            spacing: AuctionAdminTheme.spacingSm,
+            runSpacing: AuctionAdminTheme.spacingSm,
+            children: ProductStatus.values.map((status) {
+              final isSelected =
+                  adminAuctionService.selectedStatus.value == status;
+              return _StatusChip(
+                label: status.name.capitalize ?? status.name,
+                isSelected: isSelected,
+                onTap: () => adminAuctionService.updateStatusFilter(status),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Status Chip Widget
+class _StatusChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _StatusChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AuctionAdminTheme.spacingMd,
+            vertical: AuctionAdminTheme.spacingSm,
+          ),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AuctionAdminTheme.accent.withValues(alpha: 0.1)
+                : AuctionAdminTheme.surfaceSecondary,
+            borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
+            border: Border.all(
+              color: isSelected
+                  ? AuctionAdminTheme.accent
+                  : AuctionAdminTheme.border,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isSelected) ...[
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: AuctionAdminTheme.accent,
+                  size: 16,
+                ),
+                const SizedBox(width: AuctionAdminTheme.spacingXs),
+              ],
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color: isSelected
+                      ? AuctionAdminTheme.accent
+                      : AuctionAdminTheme.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Date Range Filter Widget
+class _DateRangeFilter extends StatelessWidget {
+  final AdminAuctionService adminAuctionService;
+  final VoidCallback onSelectStartDate;
+  final VoidCallback onSelectEndDate;
+
+  const _DateRangeFilter({
+    required this.adminAuctionService,
+    required this.onSelectStartDate,
+    required this.onSelectEndDate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AuctionAdminTheme.spacingSm),
+              decoration: BoxDecoration(
+                color: AuctionAdminTheme.primaryLight,
+                borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusSm),
+              ),
+              child: const Icon(
+                Icons.date_range_rounded,
+                color: AuctionAdminTheme.primary,
+                size: 16,
+              ),
+            ),
+            const SizedBox(width: AuctionAdminTheme.spacingMd),
+            const Expanded(
+              child: Text(
+                'Date Range',
+                style: AuctionAdminTheme.headingSmall,
+              ),
+            ),
+            Obx(() {
+              final hasDateFilter =
+                  adminAuctionService.startDate.value != null ||
+                      adminAuctionService.endDate.value != null;
+              if (!hasDateFilter) return const SizedBox.shrink();
+
+              return Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () =>
+                      adminAuctionService.updateDateRange(null, null),
+                  borderRadius:
+                      BorderRadius.circular(AuctionAdminTheme.radiusSm),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AuctionAdminTheme.spacingSm,
+                      vertical: AuctionAdminTheme.spacingXs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AuctionAdminTheme.errorLight,
+                      borderRadius:
+                          BorderRadius.circular(AuctionAdminTheme.radiusSm),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.clear_rounded,
+                          color: AuctionAdminTheme.error,
+                          size: 14,
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          'Clear',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: AuctionAdminTheme.error,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ],
+        ),
+        const SizedBox(height: AuctionAdminTheme.spacingMd),
+        Container(
+          decoration: BoxDecoration(
+            color: AuctionAdminTheme.surfaceSecondary,
+            borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
+            border: Border.all(color: AuctionAdminTheme.border),
+          ),
+          child: Obx(
+            () => Column(
+              children: [
+                _DatePickerTile(
+                  label: 'From',
+                  date: adminAuctionService.startDate.value,
+                  onTap: onSelectStartDate,
+                  icon: Icons.event_available_rounded,
+                  isFirst: true,
+                  accentColor: AuctionAdminTheme.success,
+                ),
+                const Divider(
+                  height: 1,
+                  color: AuctionAdminTheme.border,
+                  indent: AuctionAdminTheme.spacingLg,
+                  endIndent: AuctionAdminTheme.spacingLg,
+                ),
+                _DatePickerTile(
+                  label: 'To',
+                  date: adminAuctionService.endDate.value,
+                  onTap: onSelectEndDate,
+                  icon: Icons.event_busy_rounded,
+                  isFirst: false,
+                  accentColor: AuctionAdminTheme.error,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Date Picker Tile Widget
+class _DatePickerTile extends StatelessWidget {
+  final String label;
+  final DateTime? date;
+  final VoidCallback onTap;
+  final IconData icon;
+  final bool isFirst;
+  final Color accentColor;
+
+  const _DatePickerTile({
+    required this.label,
+    required this.date,
+    required this.onTap,
+    required this.icon,
+    required this.isFirst,
+    required this.accentColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasDate = date != null;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.vertical(
+          top: isFirst ? const Radius.circular(AuctionAdminTheme.radiusMd) : Radius.zero,
+          bottom: !isFirst ? const Radius.circular(AuctionAdminTheme.radiusMd) : Radius.zero,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AuctionAdminTheme.spacingLg,
+            vertical: AuctionAdminTheme.spacingMd,
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(AuctionAdminTheme.spacingSm),
+                decoration: BoxDecoration(
+                  color: hasDate
+                      ? accentColor.withValues(alpha: 0.1)
+                      : AuctionAdminTheme.surface,
+                  borderRadius:
+                      BorderRadius.circular(AuctionAdminTheme.radiusSm),
+                ),
+                child: Icon(
+                  icon,
+                  size: 18,
+                  color: hasDate ? accentColor : AuctionAdminTheme.textTertiary,
+                ),
+              ),
+              const SizedBox(width: AuctionAdminTheme.spacingMd),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: AuctionAdminTheme.textTertiary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      hasDate
+                          ? DateFormat('EEEE, MMM dd, yyyy').format(date!)
+                          : 'Select ${label.toLowerCase()} date',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: hasDate ? FontWeight.w500 : FontWeight.w400,
+                        color: hasDate
+                            ? AuctionAdminTheme.textPrimary
+                            : AuctionAdminTheme.textTertiary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: hasDate ? accentColor : AuctionAdminTheme.textTertiary,
+                size: 20,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Active Filters Display Widget
+class _ActiveFiltersDisplay extends StatelessWidget {
+  final AdminAuctionService adminAuctionService;
+  final TextEditingController searchController;
+
+  const _ActiveFiltersDisplay({
+    required this.adminAuctionService,
+    required this.searchController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final hasFilters =
+          adminAuctionService.searchQuery.value.isNotEmpty ||
+              adminAuctionService.selectedStatus.value != ProductStatus.all ||
+              adminAuctionService.activeFilters.isNotEmpty ||
+              adminAuctionService.startDate.value != null;
+
+      if (!hasFilters) return const SizedBox.shrink();
+
+      return Container(
+        padding: const EdgeInsets.all(AuctionAdminTheme.spacingMd),
+        decoration: BoxDecoration(
+          color: AuctionAdminTheme.accentLight,
+          borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusSm),
+          border: Border.all(color: AuctionAdminTheme.accent.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.filter_alt_rounded,
+              size: 16,
+              color: AuctionAdminTheme.accent,
+            ),
+            const SizedBox(width: AuctionAdminTheme.spacingSm),
+            Expanded(
+              child: Text(
+                adminAuctionService.getFilterSummary(),
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AuctionAdminTheme.textPrimary,
+                ),
+              ),
+            ),
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  adminAuctionService.clearAllFilters();
+                  searchController.clear();
+                },
+                borderRadius:
+                    BorderRadius.circular(AuctionAdminTheme.radiusSm),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AuctionAdminTheme.spacingSm,
+                    vertical: AuctionAdminTheme.spacingXs,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AuctionAdminTheme.error.withValues(alpha: 0.1),
+                    borderRadius:
+                        BorderRadius.circular(AuctionAdminTheme.radiusSm),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.clear_all_rounded,
+                        size: 14,
+                        color: AuctionAdminTheme.error,
+                      ),
+                      SizedBox(width: 4),
+                      Text(
+                        'Clear All',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: AuctionAdminTheme.error,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+/// Results Summary Widget
+class _ResultsSummary extends StatelessWidget {
+  final AdminAuctionService adminAuctionService;
+  final VoidCallback onClearFilters;
+
+  const _ResultsSummary({
+    required this.adminAuctionService,
+    required this.onClearFilters,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(
+      () => Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AuctionAdminTheme.spacingLg,
+          vertical: AuctionAdminTheme.spacingMd,
+        ),
+        decoration: BoxDecoration(
+          color: AuctionAdminTheme.surface,
+          borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
+          border: Border.all(color: AuctionAdminTheme.border),
+          boxShadow: AuctionAdminTheme.shadowSm,
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AuctionAdminTheme.spacingSm),
+              decoration: BoxDecoration(
+                color: AuctionAdminTheme.accentLight,
+                borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusSm),
+              ),
+              child: const Icon(
+                Icons.inventory_2_rounded,
+                size: 16,
+                color: AuctionAdminTheme.accent,
+              ),
+            ),
+            const SizedBox(width: AuctionAdminTheme.spacingMd),
+            Expanded(
+              child: RichText(
+                text: TextSpan(
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AuctionAdminTheme.textSecondary,
+                  ),
+                  children: [
+                    const TextSpan(text: 'Showing '),
+                    TextSpan(
+                      text: '${adminAuctionService.adminProducts.length}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: AuctionAdminTheme.accent,
+                      ),
+                    ),
+                    const TextSpan(text: ' of '),
+                    TextSpan(
+                      text: '${adminAuctionService.totalItems.value}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: AuctionAdminTheme.textPrimary,
+                      ),
+                    ),
+                    const TextSpan(text: ' auctions'),
+                  ],
+                ),
+              ),
+            ),
+            Row(
+              children: [
+                if (adminAuctionService.isRefreshing.value)
+                  Container(
+                    width: 18,
+                    height: 18,
+                    margin: const EdgeInsets.only(
+                      right: AuctionAdminTheme.spacingSm,
+                    ),
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AuctionAdminTheme.accent,
+                      ),
+                    ),
+                  ),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: adminAuctionService.refreshProducts,
+                    borderRadius:
+                        BorderRadius.circular(AuctionAdminTheme.radiusSm),
+                    child: Container(
+                      padding: const EdgeInsets.all(AuctionAdminTheme.spacingSm),
+                      decoration: BoxDecoration(
+                        color: AuctionAdminTheme.surfaceSecondary,
+                        borderRadius:
+                            BorderRadius.circular(AuctionAdminTheme.radiusSm),
+                      ),
+                      child: const Icon(
+                        Icons.refresh_rounded,
+                        size: 18,
+                        color: AuctionAdminTheme.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

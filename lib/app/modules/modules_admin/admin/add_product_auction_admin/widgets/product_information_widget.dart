@@ -1,17 +1,17 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tjara/app/core/utils/thems/my_colors.dart';
-import 'package:tjara/app/core/widgets/simple_text_form_field_Widget.dart';
-import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/views/add_product_admin_view.dart';
-import 'package:tjara/app/modules/modules_admin/admin/add_product_auction_admin/controllers/add_product_auction_admin_controller.dart';
-import 'package:tjara/app/modules/modules_admin/admin/categories_admin/controllers/categories_admin_controller.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'dart:async';
+import 'package:tjara/app/modules/modules_admin/admin/add_product_auction_admin/controllers/add_product_auction_admin_controller.dart';
+import 'package:tjara/app/modules/modules_admin/admin/add_product_auction_admin/widgets/auction_admin_theme.dart';
+import 'package:tjara/app/modules/modules_admin/admin/categories_admin/controllers/categories_admin_controller.dart';
 
 class AuctionProductInformationWidget extends StatelessWidget {
   final AuctionAddProductAdminController controller;
   final CategoriesAdminController categoryAdminController;
+
   const AuctionProductInformationWidget({
     super.key,
     required this.controller,
@@ -21,22 +21,19 @@ class AuctionProductInformationWidget extends StatelessWidget {
   void _showCategorySearchDialog(
     BuildContext context,
     AuctionAddProductAdminController ctrl,
-  ) async {
-    // Show category search dialog with API search
+  ) {
     showDialog(
       context: context,
-      builder: (BuildContext dialogContext) {
-        return _CategorySearchDialog(
-          onSearch: (query) => _searchCategories(query),
-          onCategorySelected: (id, name) {
-            ctrl.selectedCategoryId = id;
-            ctrl.selectedCategoryName = name;
-            ctrl.update();
-            Navigator.of(dialogContext).pop();
-          },
-          selectedCategoryId: ctrl.selectedCategoryId,
-        );
-      },
+      builder: (dialogContext) => _CategorySearchDialog(
+        onSearch: _searchCategories,
+        onCategorySelected: (id, name) {
+          ctrl.selectedCategoryId = id;
+          ctrl.selectedCategoryName = name;
+          ctrl.update();
+          Navigator.of(dialogContext).pop();
+        },
+        selectedCategoryId: ctrl.selectedCategoryId,
+      ),
     );
   }
 
@@ -51,18 +48,16 @@ class AuctionProductInformationWidget extends StatelessWidget {
       );
 
       if (res.statusCode == 200) {
-        final categories = _extractAttributeItems(json.decode(res.body));
-        return categories;
+        return _extractAttributeItems(json.decode(res.body));
       }
     } catch (e) {
-      print('❌ Error searching categories: $e');
+      debugPrint('Error searching categories: $e');
     }
     return [];
   }
 
   List<Map<String, String>> _extractAttributeItems(Map<String, dynamic> body) {
     try {
-      // The response structure is: product_attribute -> attribute_items -> product_attribute_items
       final productAttribute = body['product_attribute'];
 
       if (productAttribute != null && productAttribute is Map) {
@@ -85,136 +80,121 @@ class AuctionProductInformationWidget extends StatelessWidget {
         }
       }
     } catch (e) {
-      print('❌ Error extracting categories: $e');
+      debugPrint('Error extracting categories: $e');
     }
     return [];
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-            spreadRadius: 0,
+    return AuctionFormCard(
+      title: 'Auction Information',
+      icon: Icons.info_outline_rounded,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Auction Name Field
+          const FieldLabel(
+            label: 'Auction Name',
+            isRequired: true,
+            description:
+                'Enter the unique name of your auction. Make it descriptive and easy to remember for customers.',
+          ),
+          TextField(
+            controller: controller.productNameController,
+            style: AuctionAdminTheme.bodyLarge,
+            decoration: AuctionAdminTheme.inputDecoration(
+              hintText: 'Enter auction name',
+              prefixIcon: Icons.gavel_rounded,
+            ),
+          ),
+          const SizedBox(height: AuctionAdminTheme.spacingXl),
+
+          // Category Selection
+          const FieldLabel(
+            label: 'Category',
+            description: 'Select the primary category for your auction.',
+          ),
+          GetBuilder<AuctionAddProductAdminController>(
+            builder: (ctrl) => _CategorySelector(
+              selectedCategoryName: ctrl.selectedCategoryName,
+              onTap: () => _showCategorySearchDialog(context, ctrl),
+            ),
           ),
         ],
       ),
-      child: ProductFieldsCardCustomWidget(
-        column: Column(
-          children: [
-            Container(
-              height: 45.88,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: const Color(0xFFF97316),
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Auction Information",
-                    style: TextStyle(
-                      color: AppColors.white,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Icon(Icons.keyboard_arrow_down, color: AppColors.white),
-                ],
-              ),
-            ),
-            const SizedBox(height: 25),
+    );
+  }
+}
 
-            // Auction Name
-            const Row(
-              children: [
-                Text(
-                  "Auction Name",
+/// Category Selector Button
+class _CategorySelector extends StatelessWidget {
+  final String? selectedCategoryName;
+  final VoidCallback onTap;
+
+  const _CategorySelector({
+    required this.selectedCategoryName,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasSelection = selectedCategoryName != null;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AuctionAdminTheme.spacingLg,
+            vertical: AuctionAdminTheme.spacingMd,
+          ),
+          decoration: BoxDecoration(
+            color: AuctionAdminTheme.surfaceSecondary,
+            borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
+            border: Border.all(
+              color: hasSelection
+                  ? AuctionAdminTheme.accent
+                  : AuctionAdminTheme.border,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.category_rounded,
+                size: 20,
+                color: hasSelection
+                    ? AuctionAdminTheme.accent
+                    : AuctionAdminTheme.textTertiary,
+              ),
+              const SizedBox(width: AuctionAdminTheme.spacingMd),
+              Expanded(
+                child: Text(
+                  selectedCategoryName ?? 'Select Category',
                   style: TextStyle(
-                    fontSize: 18,
-                    color: AppColors.black,
-                    fontWeight: FontWeight.normal,
+                    fontSize: 14,
+                    color: hasSelection
+                        ? AuctionAdminTheme.textPrimary
+                        : AuctionAdminTheme.textTertiary,
                   ),
                 ),
-                Text("*", style: TextStyle(color: AppColors.red, fontSize: 20)),
-              ],
-            ),
-            const Text(
-              "Enter the unique name of your auction. Make it descriptive and easy to remember for customers.",
-              style: TextStyle(color: AppColors.adminGreyColorText),
-            ),
-            const SizedBox(height: 10),
-            SimpleTextFormFieldWidget(
-              textController: controller.productNameController,
-              hint: 'Auction name',
-            ),
-            const SizedBox(height: 25),
-
-            // Category selection with dialog
-            const Row(
-              children: [
-                Text(
-                  "Category",
-                  style: TextStyle(
-                    color: AppColors.darkLightTextColor,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-            const Text(
-              "Select the primary category for your auction.",
-              style: TextStyle(color: AppColors.adminGreyColorText),
-            ),
-            const SizedBox(height: 10),
-            GetBuilder<AuctionAddProductAdminController>(
-              builder: (ctrl) {
-                return GestureDetector(
-                  onTap: () => _showCategorySearchDialog(context, ctrl),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: AppColors.lightGreyBorderColor,
-                        width: 1.2,
-                      ),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            ctrl.selectedCategoryName ?? 'Select Category',
-                            style: TextStyle(
-                              color:
-                                  ctrl.selectedCategoryName == null
-                                      ? Colors.grey[600]
-                                      : Colors.black,
-                            ),
-                          ),
-                        ),
-                        Icon(Icons.search, color: Colors.grey[600], size: 20),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 25),
-          ],
+              ),
+              const Icon(
+                Icons.search_rounded,
+                size: 20,
+                color: AuctionAdminTheme.textTertiary,
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
+/// Category Search Dialog
 class _CategorySearchDialog extends StatefulWidget {
   final Future<List<Map<String, String>>> Function(String query) onSearch;
   final Function(String id, String name) onCategorySelected;
@@ -253,10 +233,12 @@ class _CategorySearchDialogState extends State<_CategorySearchDialog> {
   Future<void> _loadInitialData() async {
     setState(() => _isLoading = true);
     final results = await widget.onSearch('');
-    setState(() {
-      _categories = results;
-      _isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _categories = results;
+        _isLoading = false;
+      });
+    }
   }
 
   void _onSearchChanged() {
@@ -269,196 +251,260 @@ class _CategorySearchDialogState extends State<_CategorySearchDialog> {
   Future<void> _performSearch(String query) async {
     setState(() => _isLoading = true);
     final results = await widget.onSearch(query);
-    setState(() {
-      _categories = results;
-      _isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _categories = results;
+        _isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusLg),
+      ),
       child: Container(
         width: MediaQuery.of(context).size.width * 0.85,
         height: MediaQuery.of(context).size.height * 0.7,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AuctionAdminTheme.spacingXl),
         child: Column(
           children: [
             // Header
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Select Category',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFF97316),
+                Container(
+                  padding: const EdgeInsets.all(AuctionAdminTheme.spacingSm),
+                  decoration: BoxDecoration(
+                    color: AuctionAdminTheme.accentLight,
+                    borderRadius:
+                        BorderRadius.circular(AuctionAdminTheme.radiusSm),
+                  ),
+                  child: const Icon(
+                    Icons.category_rounded,
+                    color: AuctionAdminTheme.accent,
+                    size: 20,
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.of(context).pop(),
+                const SizedBox(width: AuctionAdminTheme.spacingMd),
+                const Expanded(
+                  child: Text(
+                    'Select Category',
+                    style: AuctionAdminTheme.headingMedium,
+                  ),
+                ),
+                Material(
+                  color: AuctionAdminTheme.surfaceSecondary,
+                  borderRadius:
+                      BorderRadius.circular(AuctionAdminTheme.radiusSm),
+                  child: InkWell(
+                    onTap: () => Navigator.of(context).pop(),
+                    borderRadius:
+                        BorderRadius.circular(AuctionAdminTheme.radiusSm),
+                    child: const Padding(
+                      padding: EdgeInsets.all(AuctionAdminTheme.spacingSm),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 20,
+                        color: AuctionAdminTheme.textSecondary,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AuctionAdminTheme.spacingLg),
 
-            // Search field
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey[300]!),
+            // Search Field
+            TextField(
+              controller: _searchController,
+              style: AuctionAdminTheme.bodyLarge,
+              decoration: AuctionAdminTheme.inputDecoration(
+                hintText: 'Search categories...',
+                prefixIcon: Icons.search_rounded,
+                suffix: _searchController.text.isNotEmpty
+                    ? GestureDetector(
+                        onTap: () {
+                          _searchController.clear();
+                          _performSearch('');
+                        },
+                        child: const Icon(
+                          Icons.clear_rounded,
+                          size: 18,
+                          color: AuctionAdminTheme.textTertiary,
+                        ),
+                      )
+                    : null,
               ),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Search categories...',
-                  prefixIcon: const Icon(
-                    Icons.search,
-                    color: Color(0xFFF97316),
-                  ),
-                  suffixIcon:
-                      _searchController.text.isNotEmpty
-                          ? IconButton(
-                            icon: const Icon(Icons.clear, size: 20),
-                            onPressed: () {
-                              _searchController.clear();
-                            },
-                          )
-                          : null,
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                ),
-                onChanged: (value) => setState(() {}),
-              ),
+              onChanged: (_) => setState(() {}),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AuctionAdminTheme.spacingMd),
 
-            // Results count
+            // Results Count
             if (!_isLoading)
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   '${_categories.length} categories found',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                  style: AuctionAdminTheme.bodySmall,
                 ),
               ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AuctionAdminTheme.spacingSm),
 
-            // Category list
+            // Category List
             Expanded(
-              child:
-                  _isLoading
-                      ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Color(0xFFF97316),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Searching...',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
+              child: _isLoading
+                  ? const _LoadingState()
+                  : _categories.isEmpty
+                      ? const _EmptyState()
+                      : _CategoryList(
+                          categories: _categories,
+                          selectedCategoryId: widget.selectedCategoryId,
+                          onCategorySelected: widget.onCategorySelected,
                         ),
-                      )
-                      : _categories.isEmpty
-                      ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.search_off,
-                              size: 64,
-                              color: Colors.grey[400],
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No categories found',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                      : ListView.builder(
-                        itemCount: _categories.length,
-                        itemBuilder: (context, index) {
-                          final category = _categories[index];
-                          final id = category['id'] ?? '';
-                          final name = category['name'] ?? '';
-                          final isSelected = id == widget.selectedCategoryId;
-
-                          return InkWell(
-                            onTap: () => widget.onCategorySelected(id, name),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              decoration: BoxDecoration(
-                                color:
-                                    isSelected
-                                        ? const Color(
-                                          0xFFF97316,
-                                        ).withOpacity(0.1)
-                                        : Colors.transparent,
-                                border: Border(
-                                  bottom: BorderSide(
-                                    color: Colors.grey[200]!,
-                                    width: 1,
-                                  ),
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      name,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight:
-                                            isSelected
-                                                ? FontWeight.w600
-                                                : FontWeight.normal,
-                                        color:
-                                            isSelected
-                                                ? const Color(0xFFF97316)
-                                                : Colors.black87,
-                                      ),
-                                    ),
-                                  ),
-                                  if (isSelected)
-                                    const Icon(
-                                      Icons.check_circle,
-                                      color: Color(0xFFF97316),
-                                      size: 24,
-                                    ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Loading State Widget
+class _LoadingState extends StatelessWidget {
+  const _LoadingState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(
+            width: 40,
+            height: 40,
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
+              valueColor:
+                  AlwaysStoppedAnimation<Color>(AuctionAdminTheme.accent),
+            ),
+          ),
+          const SizedBox(height: AuctionAdminTheme.spacingLg),
+          Text(
+            'Searching...',
+            style: AuctionAdminTheme.bodyMedium.copyWith(
+              color: AuctionAdminTheme.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Empty State Widget
+class _EmptyState extends StatelessWidget {
+  const _EmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AuctionAdminTheme.spacingLg),
+            decoration: const BoxDecoration(
+              color: AuctionAdminTheme.surfaceSecondary,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.search_off_rounded,
+              size: 48,
+              color: AuctionAdminTheme.textTertiary,
+            ),
+          ),
+          const SizedBox(height: AuctionAdminTheme.spacingLg),
+          const Text(
+            'No categories found',
+            style: AuctionAdminTheme.bodyMedium,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Category List Widget
+class _CategoryList extends StatelessWidget {
+  final List<Map<String, String>> categories;
+  final String? selectedCategoryId;
+  final Function(String id, String name) onCategorySelected;
+
+  const _CategoryList({
+    required this.categories,
+    required this.selectedCategoryId,
+    required this.onCategorySelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      itemCount: categories.length,
+      itemBuilder: (context, index) {
+        final category = categories[index];
+        final id = category['id'] ?? '';
+        final name = category['name'] ?? '';
+        final isSelected = id == selectedCategoryId;
+
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => onCategorySelected(id, name),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AuctionAdminTheme.spacingLg,
+                vertical: AuctionAdminTheme.spacingMd,
+              ),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? AuctionAdminTheme.primaryLight
+                    : Colors.transparent,
+                border: const Border(
+                  bottom: BorderSide(
+                    color: AuctionAdminTheme.border,
+                    width: 1,
+                  ),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      name,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.normal,
+                        color: isSelected
+                            ? AuctionAdminTheme.accent
+                            : AuctionAdminTheme.textPrimary,
+                      ),
+                    ),
+                  ),
+                  if (isSelected)
+                    const Icon(
+                      Icons.check_circle_rounded,
+                      color: AuctionAdminTheme.accent,
+                      size: 22,
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

@@ -1,13 +1,12 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:tjara/app/core/locators/cache_images.dart';
+import 'package:tjara/app/modules/modules_admin/admin/dashboard_admin/widgets/admin_dashboard_theme.dart';
+import 'package:tjara/app/modules/modules_customer/orders_dashboard/controllers/orders_dashboard_controller.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
 import 'package:tjara/app/services/orders_service.dart';
-import 'package:tjara/app/modules/modules_customer/orders_dashboard/controllers/orders_dashboard_controller.dart';
-import 'package:tjara/app/core/utils/thems/theme.dart';
 
 class OrdersDetailOverview extends StatefulWidget {
   const OrdersDetailOverview({super.key});
@@ -19,27 +18,24 @@ class OrdersDetailOverview extends StatefulWidget {
 class _OrdersDetailOverviewState extends State<OrdersDetailOverview> {
   late final OrderService _orderService;
   late final OrdersDashboardController _controller;
-  late final bool _isAdmin;
 
   // Loading states
   bool _isDeleting = false;
   bool _isUpdatingStatus = false;
+
+  // Safe getters
+  bool get _isAdmin =>
+      AuthService.instance.authCustomer?.user?.role == 'admin';
 
   @override
   void initState() {
     super.initState();
     _orderService = Get.find<OrderService>();
     _controller = Get.find<OrdersDashboardController>();
-    _isAdmin = AuthService.instance.authCustomer?.user?.role == 'admin';
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 
   Future<void> _deleteOrder(String orderId) async {
-    if (_isDeleting) return; // Prevent multiple simultaneous calls
+    if (_isDeleting) return;
 
     try {
       final shouldDelete = await _showDeleteConfirmation();
@@ -58,10 +54,10 @@ class _OrdersDetailOverviewState extends State<OrdersDetailOverview> {
       );
       _controller.selectedOrder.value = null;
 
-      _showSuccessSnackBar('Order deleted successfully');
+      _showSnackBar('Order deleted successfully', isSuccess: true);
     } catch (e) {
       if (!mounted) return;
-      _showErrorSnackBar('Failed to delete order: ${e.toString()}');
+      _showSnackBar('Failed to delete order', isSuccess: false);
     } finally {
       if (mounted) {
         setState(() => _isDeleting = false);
@@ -73,24 +69,50 @@ class _OrdersDetailOverviewState extends State<OrdersDetailOverview> {
     return showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Delete Order'),
-            content: const Text(
-              'Are you sure you want to delete this order? This action cannot be undone.',
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusLg),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AdminDashboardTheme.errorLight,
+                borderRadius: BorderRadius.circular(
+                  AdminDashboardTheme.radiusSm,
+                ),
+              ),
+              child: const Icon(
+                Icons.delete_outline_rounded,
+                color: AdminDashboardTheme.error,
+                size: 20,
+              ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text('Delete'),
-              ),
-            ],
+            const SizedBox(width: 12),
+            const Text(
+              'Delete Order',
+              style: AdminDashboardTheme.headingMedium,
+            ),
+          ],
+        ),
+        content: const Text(
+          'Are you sure you want to delete this order? This action cannot be undone.',
+          style: AdminDashboardTheme.bodyLarge,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            style: AdminDashboardTheme.outlineButtonStyle,
+            child: const Text('Cancel'),
           ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: AdminDashboardTheme.errorButtonStyle,
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -101,7 +123,7 @@ class _OrdersDetailOverviewState extends State<OrdersDetailOverview> {
       setState(() => _isUpdatingStatus = true);
 
       await _controller.updateOrderStatus(
-        _controller.selectedOrder.value!.id.toString(),
+        _controller.selectedOrder.value?.id?.toString() ?? '',
         context,
       );
 
@@ -110,7 +132,7 @@ class _OrdersDetailOverviewState extends State<OrdersDetailOverview> {
       }
     } catch (e) {
       if (mounted) {
-        _showErrorSnackBar('Failed to update order status: ${e.toString()}');
+        _showSnackBar('Failed to update order status', isSuccess: false);
       }
     } finally {
       if (mounted) {
@@ -119,39 +141,43 @@ class _OrdersDetailOverviewState extends State<OrdersDetailOverview> {
     }
   }
 
-  void _showSuccessSnackBar(String message) {
+  void _showSnackBar(String message, {required bool isSuccess}) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
+        content: Row(
+          children: [
+            Icon(
+              isSuccess
+                  ? Icons.check_circle_rounded
+                  : Icons.error_outline_rounded,
+              color: Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Text(message),
+          ],
+        ),
+        backgroundColor:
+            isSuccess ? AdminDashboardTheme.success : AdminDashboardTheme.error,
         behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
-  void _showErrorSnackBar(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusMd),
+        ),
+        margin: const EdgeInsets.all(AdminDashboardTheme.spacingLg),
       ),
     );
   }
 
   void _navigateBack() {
-    // Clear the selected order before navigating back
     _controller.selectedOrder.value = null;
-    // Use GetX navigation to ensure proper route management and avoid controller deletion
     Get.back();
   }
 
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
           _controller.selectedOrder.value = null;
         }
@@ -159,143 +185,170 @@ class _OrdersDetailOverviewState extends State<OrdersDetailOverview> {
       child: Obx(() {
         final selectedOrder = _controller.selectedOrder.value;
         if (selectedOrder == null) {
-          return const Center(child: Text('No order selected'));
+          return const _EmptyOrderState();
         }
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(selectedOrder),
-            const SizedBox(height: 10),
-            _buildOrderDetails(selectedOrder),
+            _OrderHeader(
+              order: selectedOrder,
+              isAdmin: _isAdmin,
+              isDeleting: _isDeleting,
+              isUpdatingStatus: _isUpdatingStatus,
+              onDelete: () => _deleteOrder(selectedOrder.id?.toString() ?? ''),
+              onUpdateStatus: _updateOrderStatus,
+              onShowDispute: () {
+                _controller.setisSHowndispute(true);
+                setState(() {});
+              },
+            ),
+            const SizedBox(height: AdminDashboardTheme.spacingMd),
+            _OrderDetailsCard(
+              order: selectedOrder,
+              controller: _controller,
+              onNavigateBack: _navigateBack,
+            ),
           ],
         );
       }),
     );
   }
+}
 
-  Widget _buildHeader(selectedOrder) {
-    final isPending =
-        selectedOrder.status?.toString().toLowerCase() == 'pending';
+/// Empty Order State Widget
+class _EmptyOrderState extends StatelessWidget {
+  const _EmptyOrderState();
 
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AdminDashboardTheme.spacing2Xl),
+      decoration: AdminDashboardTheme.cardDecoration,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AdminDashboardTheme.spacingLg),
+            decoration: const BoxDecoration(
+              color: AdminDashboardTheme.surfaceSecondary,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.receipt_long_rounded,
+              size: 48,
+              color: AdminDashboardTheme.textTertiary,
+            ),
+          ),
+          const SizedBox(height: AdminDashboardTheme.spacingLg),
+          const Text(
+            'No Order Selected',
+            style: AdminDashboardTheme.headingMedium,
+          ),
+          const SizedBox(height: AdminDashboardTheme.spacingSm),
+          const Text(
+            'Select an order to view its details',
+            style: AdminDashboardTheme.bodyMedium,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Order Header with action buttons
+class _OrderHeader extends StatelessWidget {
+  final dynamic order;
+  final bool isAdmin;
+  final bool isDeleting;
+  final bool isUpdatingStatus;
+  final VoidCallback onDelete;
+  final VoidCallback onUpdateStatus;
+  final VoidCallback onShowDispute;
+
+  const _OrderHeader({
+    required this.order,
+    required this.isAdmin,
+    required this.isDeleting,
+    required this.isUpdatingStatus,
+    required this.onDelete,
+    required this.onUpdateStatus,
+    required this.onShowDispute,
+  });
+
+  bool get _isPending =>
+      order.status?.toString().toLowerCase() == 'pending';
+
+  @override
+  Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         const Text(
           'Order Details',
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
-            fontWeight: FontWeight.w100,
+            fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(width: 10),
+        const Spacer(),
+        if (isAdmin)
+          Expanded(
+            child: _ActionButton(
+              icon: Icons.delete_outline_rounded,
+              label: 'Delete',
+              color: AdminDashboardTheme.error,
+              isLoading: isDeleting,
+              onTap: onDelete,
+            ),
+          ),
+        const SizedBox(width: AdminDashboardTheme.spacingSm),
         Expanded(
-          child: Row(
-            children: [
-              if (_isAdmin) _buildDeleteButton(selectedOrder),
-              _buildActionButton(selectedOrder, isPending),
-            ],
+          child: _ActionButton(
+            icon: _isPending ? Icons.cancel_outlined : Icons.gavel_rounded,
+            label: _isPending ? 'Cancel' : 'Dispute',
+            color: _isPending
+                ? AdminDashboardTheme.warning
+                : AdminDashboardTheme.accent,
+            isLoading: isUpdatingStatus,
+            onTap: _isPending ? onUpdateStatus : onShowDispute,
           ),
         ),
       ],
     );
   }
+}
 
-  Widget _buildDeleteButton(selectedOrder) {
-    return Expanded(
-      child: Container(
-        margin: const EdgeInsets.only(right: 10),
-        child: InkWell(
-          onTap:
-              _isDeleting
-                  ? null
-                  : () => _deleteOrder(selectedOrder.id.toString()),
-          borderRadius: BorderRadius.circular(12),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            height: 48,
-            decoration: BoxDecoration(
-              color: _isDeleting ? Colors.grey.shade300 : Colors.red.shade600,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.red.withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (_isDeleting)
-                  const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                else
-                  const Icon(
-                    Icons.delete_outline,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                const SizedBox(width: 8),
-                Text(
-                  'Delete',
-                  style: defaultTextStyle.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+/// Action Button Widget
+class _ActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final bool isLoading;
+  final VoidCallback onTap;
 
-  Widget _buildActionButton(selectedOrder, bool isPending) {
-    final isLoading = _isUpdatingStatus;
+  const _ActionButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.isLoading,
+    required this.onTap,
+  });
 
-    return Expanded(
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
       child: InkWell(
-        onTap:
-            isLoading
-                ? null
-                : (isPending
-                    ? _updateOrderStatus
-                    : () {
-                      _controller.setisSHowndispute(true);
-                      setState(() {});
-                    }),
-        borderRadius: BorderRadius.circular(12),
+        onTap: isLoading ? null : onTap,
+        borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusMd),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           height: 48,
-          width: 130,
           decoration: BoxDecoration(
-            color:
-                isLoading
-                    ? Colors.grey.shade300
-                    : isPending
-                    ? Colors.orange.shade600
-                    : const Color(0xFF0D9488),
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: (isPending ? Colors.orange : const Color(0xFF0D9488))
-                    .withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            color: isLoading ? AdminDashboardTheme.surfaceSecondary : color,
+            borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusMd),
+            boxShadow: isLoading ? null : AdminDashboardTheme.shadowColored(color),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -306,20 +359,20 @@ class _OrdersDetailOverviewState extends State<OrdersDetailOverview> {
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AdminDashboardTheme.textSecondary,
+                    ),
                   ),
                 )
               else
-                Icon(
-                  isPending ? Icons.cancel_outlined : Icons.gavel,
-                  color: Colors.white,
-                  size: 20,
-                ),
+                Icon(icon, color: Colors.white, size: 18),
               const SizedBox(width: 8),
               Text(
-                isPending ? 'Cancel' : 'Dispute',
-                style: defaultTextStyle.copyWith(
-                  color: Colors.white,
+                label,
+                style: TextStyle(
+                  color: isLoading
+                      ? AdminDashboardTheme.textSecondary
+                      : Colors.white,
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
                 ),
@@ -330,39 +383,50 @@ class _OrdersDetailOverviewState extends State<OrdersDetailOverview> {
       ),
     );
   }
+}
 
-  Widget _buildOrderDetails(selectedOrder) {
+/// Order Details Card
+class _OrderDetailsCard extends StatelessWidget {
+  final dynamic order;
+  final OrdersDashboardController controller;
+  final VoidCallback onNavigateBack;
+
+  const _OrderDetailsCard({
+    required this.order,
+    required this.controller,
+    required this.onNavigateBack,
+  });
+
+  // Safe getters
+  String get _orderId => order.meta?['order_id']?.toString() ?? '--';
+  String get _shopName => order.shop?.shop?.name?.toString() ?? 'Unknown Shop';
+  String get _shopBanner => order.shop?.shop?.banner?.media?.url?.toString() ?? '';
+  String get _status => order.status?.toString() ?? '--';
+  String get _paymentStatus =>
+      order.transaction?.paymentStatus?.toString() ?? '--';
+  String get _paymentMethod =>
+      order.transaction?.paymentMethod?.toString() ?? '--';
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(color: Colors.grey.shade200, width: 1),
-      ),
+      decoration: AdminDashboardTheme.cardDecoration,
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(AdminDashboardTheme.spacingXl),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 12),
-            _buildOrderHeader(selectedOrder),
-            const SizedBox(height: 8),
-            _buildShopDetails(selectedOrder),
-            const SizedBox(height: 12),
-            _buildOrderInfo(selectedOrder),
-            const SizedBox(height: 60),
-            _buildBuyerDetails(selectedOrder),
-            const SizedBox(height: 20),
-            _buildItemsHeader(),
-            _buildItemsList(selectedOrder),
-            const SizedBox(height: 20),
-            _buildOrderSummary(selectedOrder),
+            _buildOrderHeader(),
+            const SizedBox(height: AdminDashboardTheme.spacingLg),
+            _buildShopSection(),
+            const SizedBox(height: AdminDashboardTheme.spacingLg),
+            _buildOrderInfoSection(),
+            const SizedBox(height: AdminDashboardTheme.spacingXl),
+            _buildBuyerSection(),
+            const SizedBox(height: AdminDashboardTheme.spacingXl),
+            _buildItemsSection(),
+            const SizedBox(height: AdminDashboardTheme.spacingXl),
+            _buildOrderSummary(),
             const SizedBox(height: 100),
           ],
         ),
@@ -370,260 +434,83 @@ class _OrdersDetailOverviewState extends State<OrdersDetailOverview> {
     );
   }
 
-  Widget _buildOrderHeader(selectedOrder) {
+  Widget _buildOrderHeader() {
     return Row(
       children: [
-        const SizedBox(width: 10),
-        Text(
-          'Order ID: #',
-          style: defaultTextStyle.copyWith(
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-            color: const Color(0xFF0D9488),
+        Container(
+          padding: const EdgeInsets.all(AdminDashboardTheme.spacingSm),
+          decoration: BoxDecoration(
+            color: AdminDashboardTheme.accentLight,
+            borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusSm),
+          ),
+          child: const Icon(
+            Icons.receipt_long_rounded,
+            color: AdminDashboardTheme.accent,
+            size: 20,
           ),
         ),
-        Text(
-          selectedOrder.meta?['order_id']?.toString() ?? '--',
-          style: defaultTextStyle.copyWith(
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-            color: Colors.grey.shade700,
-          ),
+        const SizedBox(width: AdminDashboardTheme.spacingMd),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Order ID',
+              style: AdminDashboardTheme.bodySmall,
+            ),
+            Text(
+              '#$_orderId',
+              style: AdminDashboardTheme.headingMedium.copyWith(
+                color: AdminDashboardTheme.accent,
+              ),
+            ),
+          ],
         ),
         const Spacer(),
-        Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFF0D9488),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: IconButton(
-            onPressed: _navigateBack,
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildShopDetails(selectedOrder) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const SizedBox(width: 10),
-            Text(
-              'SHOP DETAILS:',
-              style: defaultTextStyle.copyWith(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-                color: const Color(0xFF0D9488),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            const SizedBox(width: 10),
-            _buildShopImage(selectedOrder),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                selectedOrder.shop?.shop?.name?.toString() ?? '--',
-                style: defaultTextStyle.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color: Colors.black87,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildShopImage(selectedOrder) {
-    final shopName = selectedOrder.shop?.shop?.name?.toString() ?? '';
-    final imageUrl = selectedOrder.shop?.shop?.banner?.media?.url?.toString();
-
-    return Container(
-      decoration: BoxDecoration(
-        // border: Border.all(color: const Color(0xFF0D9488), width: 3),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0D9488).withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: CachedNetworkImage(
-          placeholder:
-              (context, url) => Container(
-                height: 120,
-                width: 120,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0D9488),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Center(
-                  child: CircularProgressIndicator(color: Colors.white),
-                ),
-              ),
-          height: 120,
-          width: 120,
-          errorWidget:
-              (context, url, error) => Container(
-                height: 120,
-                width: 120,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0D9488),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: Text(
-                    shopName.length >= 2
-                        ? shopName.substring(0, 2).toUpperCase()
-                        : shopName.toUpperCase(),
-                    style: defaultTextStyle.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 28,
-                    ),
-                  ),
-                ),
-              ),
-          cacheManager: PersistentCacheManager(),
-          fit: BoxFit.cover,
-          imageUrl: imageUrl ?? '',
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOrderInfo(selectedOrder) {
-    return Column(
-      children: [
-        _buildDetailRow(
-          'Order Status:',
-          selectedOrder.status?.toString() ?? '--',
-        ),
-        _buildDetailRow(
-          'Payment Status:',
-          selectedOrder.transaction?.paymentStatus?.toString() ?? '--',
-        ),
-        _buildDetailRow('Tracking Number:', '#--'),
-        _buildDetailRow(' ', '-'),
-        _buildDetailRow(
-          'Payment Method: ',
-          selectedOrder.transaction?.paymentMethod?.toString() ?? '--',
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBuyerDetails(selectedOrder) {
-    final meta = selectedOrder.meta ?? <String, dynamic>{};
-    final buyer = selectedOrder.buyer;
-    final user = buyer?.user;
-
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-          decoration: BoxDecoration(
-            color: const Color(0xFF0D9488),
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF0D9488).withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Center(
-            child: Text(
-              'Buyer Details',
-              style: defaultTextStyle.copyWith(
-                fontWeight: FontWeight.bold,
-                fontSize: 24,
+        Material(
+          color: AdminDashboardTheme.accent,
+          borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusSm),
+          child: InkWell(
+            onTap: onNavigateBack,
+            borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusSm),
+            child: const Padding(
+              padding: EdgeInsets.all(AdminDashboardTheme.spacingSm),
+              child: Icon(
+                Icons.arrow_back_rounded,
                 color: Colors.white,
+                size: 20,
               ),
             ),
           ),
-        ),
-        const SizedBox(height: 20),
-        _buildDetailRow(
-          'Full Name:',
-          '${user?.firstName ?? ''} ${user?.lastName ?? ''}'.trim(),
-        ),
-        const SizedBox(height: 20),
-        _buildDetailRow(
-          'Email:',
-          meta['custom_buyer_email']?.toString() ?? '--',
-        ),
-        const SizedBox(height: 20),
-        _buildDetailRow(
-          'Phone Number:',
-          meta['custom_buyer_phone']?.toString() ?? '--',
-        ),
-        const SizedBox(height: 20),
-        _buildDetailRow(
-          'Order Date:',
-          selectedOrder.createdAt?.toLocal().toString().split(' ')[0] ?? '--',
-        ),
-        const SizedBox(height: 20),
-        _buildDetailRow(
-          'Address:',
-          meta['custom_buyer_street_address']?.toString() ?? '--',
-        ),
-        const SizedBox(height: 20),
-        _buildDetailRow(
-          'Postal:',
-          meta['custom_buyer_postal_code']?.toString() ?? '--',
         ),
       ],
     );
   }
 
-  Widget _buildItemsHeader() {
+  Widget _buildShopSection() {
     return Container(
-      height: 60,
+      padding: const EdgeInsets.all(AdminDashboardTheme.spacingLg),
       decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFF0D9488), width: 2),
-        color: const Color(0xFF0D9488),
-        borderRadius: BorderRadius.circular(8),
+        color: AdminDashboardTheme.surfaceSecondary,
+        borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusMd),
       ),
       child: Row(
         children: [
+          _ShopImage(shopName: _shopName, imageUrl: _shopBanner),
+          const SizedBox(width: AdminDashboardTheme.spacingLg),
           Expanded(
-            child: Center(
-              child: Text(
-                'Item Name',
-                style: defaultTextStyle.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Shop',
+                  style: AdminDashboardTheme.bodySmall,
                 ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: Center(
-              child: Text(
-                'Quantity',
-                style: defaultTextStyle.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                const SizedBox(height: 4),
+                Text(
+                  _shopName,
+                  style: AdminDashboardTheme.headingSmall,
                 ),
-              ),
+              ],
             ),
           ),
         ],
@@ -631,182 +518,570 @@ class _OrdersDetailOverviewState extends State<OrdersDetailOverview> {
     );
   }
 
-  Widget _buildItemsList(selectedOrder) {
-    return FutureBuilder(
-      future: _controller.fetchOrderItemsFuture(
-        selectedOrder.id?.toString() ?? '',
-      ),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(20.0),
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
+  Widget _buildOrderInfoSection() {
+    final statusColor = AdminDashboardTheme.getStatusColor(_status);
+    final statusBgColor = AdminDashboardTheme.getStatusBackgroundColor(_status);
+    final statusIcon = AdminDashboardTheme.getStatusIcon(_status);
 
-        if (snapshot.hasError) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Text('Error loading items: ${snapshot.error}'),
+    return Column(
+      children: [
+        _DetailRow(
+          label: 'Order Status',
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AdminDashboardTheme.spacingSm,
+              vertical: AdminDashboardTheme.spacingXs,
             ),
-          );
-        }
-
-        final items = snapshot.data;
-        if (items == null || items.isEmpty) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(20.0),
-              child: Text('No items found'),
+            decoration: BoxDecoration(
+              color: statusBgColor,
+              borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusSm),
             ),
-          );
-        }
-
-        return ListView.builder(
-          physics: const NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          padding: EdgeInsets.zero,
-          itemCount: items.length,
-          itemBuilder: (context, index) {
-            final item = items[index];
-            return Card(
-              elevation: 0,
-              child: ListTile(
-                leading: CachedNetworkImage(
-                  imageUrl: item.imageUrl,
-                  width: 50,
-                  height: 50,
-                  fit: BoxFit.cover,
-                  placeholder:
-                      (context, url) => const SizedBox(
-                        width: 50,
-                        height: 50,
-                        child: CircularProgressIndicator(),
-                      ),
-                  errorWidget: (context, url, error) => const Icon(Icons.image),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(statusIcon, size: 14, color: statusColor),
+                const SizedBox(width: 4),
+                Text(
+                  _status,
+                  style: AdminDashboardTheme.labelMedium.copyWith(
+                    color: statusColor,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-                title: Text(
-                  item.product.name,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                trailing: Text(
-                  "\$${item.price}",
-                  style: const TextStyle(fontSize: 16),
-                ),
-              ),
-            );
-          },
-        );
-      },
+              ],
+            ),
+          ),
+        ),
+        _DetailRow(label: 'Payment Status', value: _paymentStatus),
+        _DetailRow(label: 'Payment Method', value: _paymentMethod),
+        const _DetailRow(label: 'Tracking Number', value: '#--'),
+      ],
     );
   }
 
-  Widget _buildOrderSummary(selectedOrder) {
-    final meta = selectedOrder.meta ?? <String, dynamic>{};
+  Widget _buildBuyerSection() {
+    final meta = order.meta ?? <String, dynamic>{};
+    final buyer = order.buyer;
+    final user = buyer?.user;
 
-    // Parse financial values with proper fallbacks
+    final firstName = user?.firstName?.toString() ?? '';
+    final lastName = user?.lastName?.toString() ?? '';
+    final fullName = '$firstName $lastName'.trim();
+    final email = meta['custom_buyer_email']?.toString() ?? '--';
+    final phone = meta['custom_buyer_phone']?.toString() ?? '--';
+    final address = meta['custom_buyer_street_address']?.toString() ?? '--';
+    final postal = meta['custom_buyer_postal_code']?.toString() ?? '--';
+    final orderDate =
+        order.createdAt?.toLocal().toString().split(' ')[0] ?? '--';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(
+            vertical: AdminDashboardTheme.spacingMd,
+            horizontal: AdminDashboardTheme.spacingLg,
+          ),
+          decoration: BoxDecoration(
+            color: AdminDashboardTheme.accent,
+            borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusMd),
+            boxShadow: AdminDashboardTheme.shadowColored(
+              AdminDashboardTheme.accent,
+            ),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.person_rounded, color: Colors.white, size: 20),
+              SizedBox(width: AdminDashboardTheme.spacingSm),
+              Text(
+                'Buyer Details',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AdminDashboardTheme.spacingLg),
+        _DetailRow(label: 'Full Name', value: fullName.isEmpty ? '--' : fullName),
+        _DetailRow(label: 'Email', value: email),
+        _DetailRow(label: 'Phone', value: phone),
+        _DetailRow(label: 'Order Date', value: orderDate),
+        _DetailRow(label: 'Address', value: address),
+        _DetailRow(label: 'Postal Code', value: postal),
+      ],
+    );
+  }
+
+  Widget _buildItemsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(AdminDashboardTheme.spacingMd),
+          decoration: BoxDecoration(
+            color: AdminDashboardTheme.accent,
+            borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusSm),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Item Name',
+                  style: AdminDashboardTheme.labelMedium.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Text(
+                'Quantity',
+                style: AdminDashboardTheme.labelMedium.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+        FutureBuilder(
+          future: controller.fetchOrderItemsFuture(
+            order.id?.toString() ?? '',
+          ),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const _ItemsShimmerList();
+            }
+
+            if (snapshot.hasError) {
+              return Container(
+                padding: const EdgeInsets.all(AdminDashboardTheme.spacingLg),
+                decoration: BoxDecoration(
+                  color: AdminDashboardTheme.errorLight,
+                  borderRadius: BorderRadius.circular(
+                    AdminDashboardTheme.radiusSm,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.error_outline_rounded,
+                      color: AdminDashboardTheme.error,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Failed to load items',
+                        style: AdminDashboardTheme.bodyMedium.copyWith(
+                          color: AdminDashboardTheme.error,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            final items = snapshot.data;
+            if (items == null || items.isEmpty) {
+              return Container(
+                padding: const EdgeInsets.all(AdminDashboardTheme.spacingLg),
+                decoration: BoxDecoration(
+                  color: AdminDashboardTheme.surfaceSecondary,
+                  borderRadius: BorderRadius.circular(
+                    AdminDashboardTheme.radiusSm,
+                  ),
+                ),
+                child: const Center(
+                  child: Text(
+                    'No items found',
+                    style: AdminDashboardTheme.bodyMedium,
+                  ),
+                ),
+              );
+            }
+
+            return ListView.builder(
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              padding: EdgeInsets.zero,
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                final item = items[index];
+                return _OrderItemTile(item: item);
+              },
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOrderSummary() {
+    final meta = order.meta ?? <String, dynamic>{};
+
     final double subtotal =
         double.tryParse(meta['initial_total']?.toString() ?? '0') ?? 0.0;
     final double shippingFee =
         double.tryParse(meta['shipping_total']?.toString() ?? '0') ?? 0.0;
     final double discountTotal =
         double.tryParse(meta['discount_total']?.toString() ?? '0') ?? 0.0;
-    final double adminCommission = selectedOrder.adminCommissionTotal ?? 0.0;
-    final double transactionAmount = selectedOrder.transaction?.amount ?? 0.0;
-    final double finalOrderTotal = selectedOrder.orderTotal ?? 0.0;
-
-    // Calculate intermediate total (subtotal + shipping - discount)
+    final double adminCommission = order.adminCommissionTotal ?? 0.0;
+    final double transactionAmount = order.transaction?.amount ?? 0.0;
+    final double finalOrderTotal = order.orderTotal ?? 0.0;
     final double calculatedTotal = subtotal + shippingFee - discountTotal;
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildDetailRow(
-          'Subtotal:',
-          subtotal > 0 ? '\$${subtotal.toStringAsFixed(2)}' : '--',
-        ),
-        const SizedBox(height: 10),
-        _buildDetailRow(
-          'Delivery Fee:',
-          shippingFee > 0 ? '\$${shippingFee.toStringAsFixed(2)}' : 'Free',
-        ),
-        if (discountTotal > 0) ...[
-          const SizedBox(height: 10),
-          _buildDetailRow(
-            'Discount:',
-            '-\$${discountTotal.toStringAsFixed(2)}',
+        Container(
+          padding: const EdgeInsets.symmetric(
+            vertical: AdminDashboardTheme.spacingMd,
+            horizontal: AdminDashboardTheme.spacingLg,
           ),
-        ],
-        const Divider(),
-        const SizedBox(height: 10),
-        _buildDetailRow(
-          'Subtotal + Fees:',
-          calculatedTotal > 0
+          decoration: BoxDecoration(
+            color: AdminDashboardTheme.accent,
+            borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusMd),
+            boxShadow: AdminDashboardTheme.shadowColored(
+              AdminDashboardTheme.accent,
+            ),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.receipt_rounded, color: Colors.white, size: 20),
+              SizedBox(width: AdminDashboardTheme.spacingSm),
+              Text(
+                'Order Summary',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AdminDashboardTheme.spacingLg),
+        _SummaryRow(
+          label: 'Subtotal',
+          value: subtotal > 0 ? '\$${subtotal.toStringAsFixed(2)}' : '--',
+        ),
+        _SummaryRow(
+          label: 'Delivery Fee',
+          value: shippingFee > 0 ? '\$${shippingFee.toStringAsFixed(2)}' : 'Free',
+        ),
+        if (discountTotal > 0)
+          _SummaryRow(
+            label: 'Discount',
+            value: '-\$${discountTotal.toStringAsFixed(2)}',
+            valueColor: AdminDashboardTheme.success,
+          ),
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: AdminDashboardTheme.spacingSm),
+          child: Divider(color: AdminDashboardTheme.divider),
+        ),
+        _SummaryRow(
+          label: 'Subtotal + Fees',
+          value: calculatedTotal > 0
               ? '\$${calculatedTotal.toStringAsFixed(2)}'
               : '--',
         ),
-        if (adminCommission > 0) ...[
-          const SizedBox(height: 10),
-          _buildDetailRow(
-            'Admin Commission:',
-            '-\$${adminCommission.toStringAsFixed(2)}',
+        if (adminCommission > 0)
+          _SummaryRow(
+            label: 'Admin Commission',
+            value: '-\$${adminCommission.toStringAsFixed(2)}',
           ),
-        ],
-        const Divider(),
-        const SizedBox(height: 10),
-        _buildDetailRow(
-          'Transaction Amount:',
-          transactionAmount > 0
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: AdminDashboardTheme.spacingSm),
+          child: Divider(color: AdminDashboardTheme.divider),
+        ),
+        _SummaryRow(
+          label: 'Transaction Amount',
+          value: transactionAmount > 0
               ? '\$${transactionAmount.toStringAsFixed(2)}'
               : '--',
         ),
-        const Divider(),
-        _buildDetailRow(
-          'Final Total:',
-          finalOrderTotal > 0
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: AdminDashboardTheme.spacingSm),
+          child: Divider(color: AdminDashboardTheme.divider, thickness: 2),
+        ),
+        _SummaryRow(
+          label: 'Final Total',
+          value: finalOrderTotal > 0
               ? '\$${finalOrderTotal.toStringAsFixed(2)}'
               : '--',
+          isBold: true,
+          valueColor: AdminDashboardTheme.success,
         ),
       ],
     );
   }
+}
 
-  Widget _buildDetailRow(String title, String value) {
+/// Shop Image Widget
+class _ShopImage extends StatelessWidget {
+  final String shopName;
+  final String imageUrl;
+
+  const _ShopImage({
+    required this.shopName,
+    required this.imageUrl,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      width: 80,
+      height: 80,
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusMd),
+        boxShadow: AdminDashboardTheme.shadowSm,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusMd),
+        child: CachedNetworkImage(
+          imageUrl: imageUrl,
+          fit: BoxFit.cover,
+          cacheManager: PersistentCacheManager(),
+          placeholder: (context, url) => Container(
+            color: AdminDashboardTheme.accent,
+            child: const Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+          ),
+          errorWidget: (context, url, error) => Container(
+            color: AdminDashboardTheme.accent,
+            child: Center(
+              child: Text(
+                shopName.length >= 2
+                    ? shopName.substring(0, 2).toUpperCase()
+                    : shopName.toUpperCase(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Detail Row Widget
+class _DetailRow extends StatelessWidget {
+  final String label;
+  final String? value;
+  final Widget? child;
+
+  const _DetailRow({
+    required this.label,
+    this.value,
+    this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: AdminDashboardTheme.spacingSm),
+      padding: const EdgeInsets.symmetric(
+        vertical: AdminDashboardTheme.spacingMd,
+        horizontal: AdminDashboardTheme.spacingLg,
+      ),
+      decoration: BoxDecoration(
+        color: AdminDashboardTheme.surfaceSecondary,
+        borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusSm),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(
-            child: Text(
-              title,
-              style: defaultTextStyle.copyWith(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: const Color(0xFF0D9488),
+          Text(
+            label,
+            style: AdminDashboardTheme.bodyMedium.copyWith(
+              color: AdminDashboardTheme.accent,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          child ??
+              Text(
+                value ?? '--',
+                style: AdminDashboardTheme.bodyLarge.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Summary Row Widget
+class _SummaryRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool isBold;
+  final Color? valueColor;
+
+  const _SummaryRow({
+    required this.label,
+    required this.value,
+    this.isBold = false,
+    this.valueColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AdminDashboardTheme.spacingXs),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: isBold
+                ? AdminDashboardTheme.headingSmall
+                : AdminDashboardTheme.bodyMedium,
+          ),
+          Text(
+            value,
+            style: (isBold
+                    ? AdminDashboardTheme.headingMedium
+                    : AdminDashboardTheme.bodyLarge)
+                .copyWith(
+              color: valueColor,
+              fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Order Item Tile Widget
+class _OrderItemTile extends StatelessWidget {
+  final dynamic item;
+
+  const _OrderItemTile({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(top: AdminDashboardTheme.spacingSm),
+      padding: const EdgeInsets.all(AdminDashboardTheme.spacingMd),
+      decoration: BoxDecoration(
+        color: AdminDashboardTheme.surface,
+        borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusSm),
+        border: Border.all(color: AdminDashboardTheme.border),
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusSm),
+            child: CachedNetworkImage(
+              imageUrl: item.imageUrl ?? '',
+              width: 50,
+              height: 50,
+              fit: BoxFit.cover,
+              cacheManager: PersistentCacheManager(),
+              placeholder: (context, url) => Container(
+                width: 50,
+                height: 50,
+                color: AdminDashboardTheme.surfaceSecondary,
+                child: const Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+              ),
+              errorWidget: (context, url, error) => Container(
+                width: 50,
+                height: 50,
+                color: AdminDashboardTheme.surfaceSecondary,
+                child: const Icon(
+                  Icons.image_rounded,
+                  color: AdminDashboardTheme.textTertiary,
+                ),
               ),
             ),
           ),
+          const SizedBox(width: AdminDashboardTheme.spacingMd),
           Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.product?.name ?? 'Unknown Product',
+                  style: AdminDashboardTheme.bodyLarge.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '\$${item.price ?? 0}',
+                  style: AdminDashboardTheme.bodyMedium.copyWith(
+                    color: AdminDashboardTheme.success,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AdminDashboardTheme.spacingSm,
+              vertical: AdminDashboardTheme.spacingXs,
+            ),
+            decoration: BoxDecoration(
+              color: AdminDashboardTheme.primaryLight,
+              borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusSm),
+            ),
             child: Text(
-              value,
-              textAlign: TextAlign.end,
-              style: defaultTextStyle.copyWith(
-                fontSize: 16,
-                color: Colors.black87,
-                fontWeight: FontWeight.w500,
+              'x${item.quantity ?? 1}',
+              style: AdminDashboardTheme.labelMedium.copyWith(
+                color: AdminDashboardTheme.primary,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Items Shimmer Loading
+class _ItemsShimmerList extends StatelessWidget {
+  const _ItemsShimmerList();
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: AdminDashboardTheme.surfaceSecondary,
+      highlightColor: AdminDashboardTheme.surface,
+      child: Column(
+        children: List.generate(
+          3,
+          (index) => Container(
+            margin: const EdgeInsets.only(top: AdminDashboardTheme.spacingSm),
+            height: 70,
+            decoration: BoxDecoration(
+              color: AdminDashboardTheme.surface,
+              borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusSm),
+            ),
+          ),
+        ),
       ),
     );
   }

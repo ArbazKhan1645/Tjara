@@ -395,7 +395,7 @@ class ProductAttributeItemsScreen extends StatelessWidget {
     const expandedStackGradient = LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: [Color(0xFFF97316), Color(0xFFFACC15)],
+      colors: [Colors.teal, Color(0xFFFACC15)],
     );
     final controller = Get.put(ProductAttributeItemsController());
 
@@ -404,7 +404,7 @@ class ProductAttributeItemsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF97316),
+        backgroundColor: Colors.teal,
         actions: [const AdminAppBarActionsSimple()],
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
@@ -509,7 +509,7 @@ class ProductAttributeItemsScreen extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFFF97316),
+                color: Colors.teal,
               ),
             ),
             const SizedBox(height: 16),
@@ -813,7 +813,7 @@ class ProductAttributeItemsScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: const BoxDecoration(
-              color: Color(0xFFF97316),
+              color: Colors.teal,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(12),
                 topRight: Radius.circular(12),

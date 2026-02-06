@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:tjara/app/modules/modules_admin/admin/products_admin/widgets/admin_products_theme.dart';
 
 class ProductActionButtons extends StatelessWidget {
   final String productId;
@@ -38,84 +39,143 @@ class ProductActionButtons extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         // QR Code Button
-        IconButton(
-          onPressed: () => _showQRCodeDialog(context),
-          icon: const Icon(Icons.qr_code, size: 24),
+        _buildActionButton(
+          icon: Icons.qr_code_2_rounded,
           tooltip: 'Show QR Code',
+          onTap: () => _showQRCodeDialog(context),
+          color: AdminProductsTheme.textSecondary,
         ),
 
         // Active Status Button
-        IconButton(
-          onPressed: () => _showActiveDialog(context),
-          icon: Icon(
-            isActive ? Icons.visibility : Icons.visibility_off,
-            size: 24,
-            color: isActive ? Colors.green : Colors.grey,
-          ),
+        _buildActionButton(
+          icon: isActive ? Icons.visibility_rounded : Icons.visibility_off_rounded,
           tooltip: isActive ? 'Product Active' : 'Product Inactive',
+          onTap: () => _showActiveDialog(context),
+          color: isActive ? AdminProductsTheme.success : AdminProductsTheme.textTertiary,
+          backgroundColor: isActive ? AdminProductsTheme.successLight : null,
         ),
 
         // Featured Button
-        IconButton(
-          onPressed: () => _showFeaturedDialog(context),
-          icon: Icon(
-            Icons.star,
-            size: 24,
-            color: isFeatured ? Colors.amber : Colors.grey,
-          ),
+        _buildActionButton(
+          icon: Icons.star_rounded,
           tooltip: isFeatured ? 'Featured Product' : 'Not Featured',
+          onTap: () => _showFeaturedDialog(context),
+          color: isFeatured ? AdminProductsTheme.featured : AdminProductsTheme.textTertiary,
+          backgroundColor: isFeatured ? AdminProductsTheme.featuredLight : null,
         ),
 
         // Deal Button
-        IconButton(
-          onPressed: () => _showDealDialog(context),
-          icon: Icon(
-            Icons.local_offer,
-            size: 24,
-            color: isDeal ? Colors.red : Colors.grey,
-          ),
+        _buildActionButton(
+          icon: Icons.local_offer_rounded,
           tooltip: isDeal ? 'Deal Product' : 'Not on Deal',
+          onTap: () => _showDealDialog(context),
+          color: isDeal ? AdminProductsTheme.deal : AdminProductsTheme.textTertiary,
+          backgroundColor: isDeal ? AdminProductsTheme.dealLight : null,
         ),
 
         // More Options Button
-        PopupMenuButton<String>(
-          onSelected: _handleMenuSelection,
-          icon: const Icon(Icons.more_vert, size: 28),
-          itemBuilder:
-              (BuildContext context) => [
-                const PopupMenuItem<String>(
-                  value: 'duplicate',
-                  child: Row(
-                    children: [
-                      Icon(Icons.edit, size: 20, color: Colors.blue),
-                      SizedBox(width: 8),
-                      Text('Duplicate'),
-                    ],
-                  ),
-                ),
-                const PopupMenuItem<String>(
-                  value: 'edit',
-                  child: Row(
-                    children: [
-                      Icon(Icons.edit, size: 20, color: Colors.blue),
-                      SizedBox(width: 8),
-                      Text('Edit'),
-                    ],
-                  ),
-                ),
-                const PopupMenuItem<String>(
-                  value: 'delete',
-                  child: Row(
-                    children: [
-                      Icon(Icons.delete, size: 20, color: Colors.red),
-                      SizedBox(width: 8),
-                      Text('Delete'),
-                    ],
-                  ),
-                ),
-              ],
+        _buildPopupMenu(),
+      ],
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onTap,
+    required Color color,
+    Color? backgroundColor,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AdminProductsTheme.radiusSm),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: backgroundColor ?? Colors.transparent,
+              borderRadius: BorderRadius.circular(AdminProductsTheme.radiusSm),
+            ),
+            child: Icon(icon, size: 20, color: color),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPopupMenu() {
+    return PopupMenuButton<String>(
+      onSelected: _handleMenuSelection,
+      offset: const Offset(0, 40),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AdminProductsTheme.radiusMd),
+      ),
+      elevation: 8,
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        child: const Icon(
+          Icons.more_vert_rounded,
+          size: 20,
+          color: AdminProductsTheme.textSecondary,
+        ),
+      ),
+      itemBuilder: (BuildContext context) => [
+        _buildPopupMenuItem(
+          value: 'duplicate',
+          icon: Icons.copy_rounded,
+          label: 'Duplicate',
+          color: AdminProductsTheme.info,
+        ),
+        _buildPopupMenuItem(
+          value: 'edit',
+          icon: Icons.edit_rounded,
+          label: 'Edit',
+          color: AdminProductsTheme.primary,
+        ),
+        const PopupMenuDivider(),
+        _buildPopupMenuItem(
+          value: 'delete',
+          icon: Icons.delete_outline_rounded,
+          label: 'Delete',
+          color: AdminProductsTheme.error,
         ),
       ],
+    );
+  }
+
+  PopupMenuItem<String> _buildPopupMenuItem({
+    required String value,
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return PopupMenuItem<String>(
+      value: value,
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AdminProductsTheme.radiusSm),
+            ),
+            child: Icon(icon, size: 16, color: color),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: value == 'delete' ? color : AdminProductsTheme.textPrimary,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -125,76 +185,135 @@ class ProductActionButtons extends StatelessWidget {
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AdminProductsTheme.radiusLg),
           ),
           child: Container(
-            padding: const EdgeInsets.all(20),
-            width: 350,
+            padding: const EdgeInsets.all(AdminProductsTheme.spacingXl),
+            constraints: const BoxConstraints(maxWidth: 380),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Header
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Inventory QR Code',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AdminProductsTheme.primaryLight,
+                            borderRadius: BorderRadius.circular(
+                              AdminProductsTheme.radiusSm,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.qr_code_2_rounded,
+                            size: 20,
+                            color: AdminProductsTheme.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'Inventory QR Code',
+                          style: AdminProductsTheme.headingMedium,
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.close),
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => Navigator.of(context).pop(),
+                        borderRadius: BorderRadius.circular(
+                          AdminProductsTheme.radiusSm,
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          child: const Icon(
+                            Icons.close_rounded,
+                            size: 20,
+                            color: AdminProductsTheme.textSecondary,
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  productName,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'SKU: $productSku',
-                  style: const TextStyle(fontSize: 14, color: Colors.grey),
-                ),
-                const SizedBox(height: 20),
+                const SizedBox(height: AdminProductsTheme.spacingXl),
+
+                // Product info
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(AdminProductsTheme.spacingMd),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade300),
-                    borderRadius: BorderRadius.circular(8),
+                    color: AdminProductsTheme.surfaceSecondary,
+                    borderRadius: BorderRadius.circular(
+                      AdminProductsTheme.radiusMd,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        productName,
+                        style: AdminProductsTheme.bodyLarge.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'SKU: $productSku',
+                        style: AdminProductsTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AdminProductsTheme.spacingXl),
+
+                // QR Code
+                Container(
+                  padding: const EdgeInsets.all(AdminProductsTheme.spacingLg),
+                  decoration: BoxDecoration(
+                    color: AdminProductsTheme.surface,
+                    borderRadius: BorderRadius.circular(
+                      AdminProductsTheme.radiusMd,
+                    ),
+                    border: Border.all(color: AdminProductsTheme.border),
                   ),
                   child: QrImageView(
                     data: productId,
                     version: QrVersions.auto,
-                    size: 200.0,
+                    size: 180.0,
+                    eyeStyle: const QrEyeStyle(
+                      eyeShape: QrEyeShape.square,
+                      color: AdminProductsTheme.textPrimary,
+                    ),
+                    dataModuleStyle: const QrDataModuleStyle(
+                      dataModuleShape: QrDataModuleShape.square,
+                      color: AdminProductsTheme.textPrimary,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: AdminProductsTheme.spacingXl),
+
+                // Actions
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => Navigator.of(context).pop(),
+                        style: AdminProductsTheme.outlineButtonStyle,
                         child: const Text('Close'),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: AdminProductsTheme.spacingMd),
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () => _printQRCode(),
-                        icon: const Icon(Icons.print, color: Colors.white),
-                        label: const Text('Print QR Code'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.pink,
-                          foregroundColor: Colors.white,
-                        ),
+                        onPressed: _printQRCode,
+                        icon: const Icon(Icons.print_rounded, size: 18),
+                        label: const Text('Print'),
+                        style: AdminProductsTheme.primaryButtonStyle,
                       ),
                     ),
                   ],
@@ -208,87 +327,140 @@ class ProductActionButtons extends StatelessWidget {
   }
 
   void _showActiveDialog(BuildContext context) {
-    showDialog(
+    _showConfirmationDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Product Status'),
-          content: Text(
-            isActive
-                ? 'Do you want to make this product inactive?'
-                : 'Do you want to make this product active?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                onActiveChanged?.call();
-              },
-              child: Text(isActive ? 'Make Inactive' : 'Make Active'),
-            ),
-          ],
-        );
+      title: 'Product Status',
+      message: isActive
+          ? 'Do you want to make this product inactive?'
+          : 'Do you want to make this product active?',
+      confirmLabel: isActive ? 'Make Inactive' : 'Make Active',
+      confirmColor: isActive ? AdminProductsTheme.warning : AdminProductsTheme.success,
+      icon: isActive ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+      onConfirm: () {
+        Navigator.of(context).pop();
+        onActiveChanged?.call();
       },
     );
   }
 
   void _showFeaturedDialog(BuildContext context) {
-    showDialog(
+    _showConfirmationDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Featured Product'),
-          content: Text(
-            isFeatured
-                ? 'Do you want to remove this product from featured?'
-                : 'Do you want to make this product featured?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                onFeaturedChanged?.call();
-              },
-              child: Text(isFeatured ? 'Remove Featured' : 'Make Featured'),
-            ),
-          ],
-        );
+      title: 'Featured Product',
+      message: isFeatured
+          ? 'Do you want to remove this product from featured?'
+          : 'Do you want to make this product featured?',
+      confirmLabel: isFeatured ? 'Remove Featured' : 'Make Featured',
+      confirmColor: AdminProductsTheme.featured,
+      icon: Icons.star_rounded,
+      onConfirm: () {
+        Navigator.of(context).pop();
+        onFeaturedChanged?.call();
       },
     );
   }
 
   void _showDealDialog(BuildContext context) {
+    _showConfirmationDialog(
+      context: context,
+      title: 'Deal Product',
+      message: isDeal
+          ? 'Do you want to remove this product from deals?'
+          : 'Do you want to add this product to deals?',
+      confirmLabel: isDeal ? 'Remove from Deal' : 'Add to Deal',
+      confirmColor: AdminProductsTheme.deal,
+      icon: Icons.local_offer_rounded,
+      onConfirm: () {
+        Navigator.of(context).pop();
+        onDealChanged?.call();
+      },
+    );
+  }
+
+  void _showConfirmationDialog({
+    required BuildContext context,
+    required String title,
+    required String message,
+    required String confirmLabel,
+    required Color confirmColor,
+    required IconData icon,
+    required VoidCallback onConfirm,
+  }) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Deal Product'),
-          content: Text(
-            isDeal
-                ? 'Do you want to remove this product from deals?'
-                : 'Do you want to add this product to deals?',
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AdminProductsTheme.radiusLg),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+          child: Container(
+            padding: const EdgeInsets.all(AdminProductsTheme.spacingXl),
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Icon
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: confirmColor.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, size: 32, color: confirmColor),
+                ),
+                const SizedBox(height: AdminProductsTheme.spacingLg),
+
+                // Title
+                Text(
+                  title,
+                  style: AdminProductsTheme.headingMedium,
+                ),
+                const SizedBox(height: AdminProductsTheme.spacingSm),
+
+                // Message
+                Text(
+                  message,
+                  style: AdminProductsTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AdminProductsTheme.spacingXl),
+
+                // Actions
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: AdminProductsTheme.outlineButtonStyle,
+                        child: const Text('Cancel'),
+                      ),
+                    ),
+                    const SizedBox(width: AdminProductsTheme.spacingMd),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: onConfirm,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: confirmColor,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AdminProductsTheme.spacingLg,
+                            vertical: AdminProductsTheme.spacingMd,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AdminProductsTheme.radiusMd,
+                            ),
+                          ),
+                        ),
+                        child: Text(confirmLabel),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                onDealChanged?.call();
-              },
-              child: Text(isDeal ? 'Remove from Deal' : 'Add to Deal'),
-            ),
-          ],
+          ),
         );
       },
     );
@@ -310,121 +482,101 @@ class ProductActionButtons extends StatelessWidget {
 
   void _showDeleteConfirmation() {
     Get.dialog(
-      AlertDialog(
-        title: const Text('Delete Product'),
-        content: const Text(
-          'Are you sure you want to delete this product? This action cannot be undone.',
+      Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AdminProductsTheme.radiusLg),
         ),
-        actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () {
-              Get.back();
-              onDelete?.call();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Delete'),
+        child: Container(
+          padding: const EdgeInsets.all(AdminProductsTheme.spacingXl),
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Warning Icon
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AdminProductsTheme.errorLight,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.warning_amber_rounded,
+                  size: 32,
+                  color: AdminProductsTheme.error,
+                ),
+              ),
+              const SizedBox(height: AdminProductsTheme.spacingLg),
+
+              // Title
+              const Text(
+                'Delete Product',
+                style: AdminProductsTheme.headingMedium,
+              ),
+              const SizedBox(height: AdminProductsTheme.spacingSm),
+
+              // Message
+              Text(
+                'Are you sure you want to delete "$productName"? This action cannot be undone.',
+                style: AdminProductsTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AdminProductsTheme.spacingXl),
+
+              // Actions
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Get.back(),
+                      style: AdminProductsTheme.outlineButtonStyle,
+                      child: const Text('Cancel'),
+                    ),
+                  ),
+                  const SizedBox(width: AdminProductsTheme.spacingMd),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Get.back();
+                        onDelete?.call();
+                      },
+                      icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                      label: const Text('Delete'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AdminProductsTheme.error,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AdminProductsTheme.spacingLg,
+                          vertical: AdminProductsTheme.spacingMd,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            AdminProductsTheme.radiusMd,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
   void _printQRCode() {
-    // Implement your print functionality here
-    // You might want to use packages like printing or pdf
     Get.snackbar(
       'Print QR Code',
       'QR Code sent to printer',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green,
+      backgroundColor: AdminProductsTheme.success,
       colorText: Colors.white,
+      duration: const Duration(seconds: 3),
+      margin: const EdgeInsets.all(16),
+      borderRadius: AdminProductsTheme.radiusMd,
+      icon: const Icon(Icons.print_rounded, color: Colors.white),
     );
-  }
-}
-
-// Usage Example:
-class ProductListItem extends StatefulWidget {
-  final Map<String, dynamic> product;
-
-  const ProductListItem({super.key, required this.product});
-
-  @override
-  State<ProductListItem> createState() => _ProductListItemState();
-}
-
-class _ProductListItemState extends State<ProductListItem> {
-  late bool isActive;
-  late bool isFeatured;
-  late bool isDeal;
-
-  @override
-  void initState() {
-    super.initState();
-    isActive = widget.product['isActive'] ?? false;
-    isFeatured = widget.product['isFeatured'] ?? false;
-    isDeal = widget.product['isDeal'] ?? false;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        title: Text(widget.product['name'] ?? 'Product Name'),
-        subtitle: Text('SKU: ${widget.product['sku'] ?? 'N/A'}'),
-        trailing: ProductActionButtons(
-          productId: widget.product['id'] ?? '',
-          productName: widget.product['name'] ?? 'Product Name',
-          productSku: widget.product['sku'] ?? 'N/A',
-          isActive: isActive,
-          isFeatured: isFeatured,
-          isDeal: isDeal,
-          onActiveChanged: () {
-            setState(() {
-              isActive = !isActive;
-            });
-            // Call your API to update status
-            _updateProductStatus('active', isActive);
-          },
-          onFeaturedChanged: () {
-            setState(() {
-              isFeatured = !isFeatured;
-            });
-            // Call your API to update featured status
-            _updateProductStatus('featured', isFeatured);
-          },
-          onDealChanged: () {
-            setState(() {
-              isDeal = !isDeal;
-            });
-            // Call your API to update deal status
-            _updateProductStatus('deal', isDeal);
-          },
-          onEdit: () {
-            // Navigate to edit page
-            Get.toNamed('/edit-product', arguments: widget.product);
-          },
-          onDelete: () {
-            // Call delete API
-            _deleteProduct();
-          },
-        ),
-      ),
-    );
-  }
-
-  void _updateProductStatus(String type, bool value) {
-    // Implement your API call here
-    print(
-      'Updating $type status to $value for product ${widget.product['id']}',
-    );
-  }
-
-  void _deleteProduct() {
-    // Implement your delete API call here
-    print('Deleting product ${widget.product['id']}');
   }
 }

@@ -1,162 +1,351 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:tjara/app/core/utils/thems/my_colors.dart';
-import 'package:tjara/app/core/widgets/simple_text_form_field_Widget.dart';
-
-import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/views/add_product_admin_view.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/widgets/product_details/product_details_editor_widget.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_auction_admin/controllers/add_product_auction_admin_controller.dart';
+import 'package:tjara/app/modules/modules_admin/admin/add_product_auction_admin/widgets/auction_admin_theme.dart';
 
 class AuctionProductDetailsCardWidget extends StatelessWidget {
   const AuctionProductDetailsCardWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<AuctionAddProductAdminController>();
-    return ProductFieldsCardCustomWidget(
-      column: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return GetBuilder<AuctionAddProductAdminController>(
+      builder: (controller) {
+        return AuctionFormCard(
+          title: 'Auction Details',
+          icon: Icons.description_rounded,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Description Section
+              _DescriptionSection(controller: controller),
+              const SizedBox(height: AuctionAdminTheme.spacingXl),
+
+              // Pricing Section
+              _PricingSection(controller: controller),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Description Section Widget
+class _DescriptionSection extends StatelessWidget {
+  final AuctionAddProductAdminController controller;
+
+  const _DescriptionSection({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const FieldLabel(
+          label: 'Auction Description',
+          description:
+              'Provide a detailed description of your auction item. Include key features, condition, and any relevant information.',
+        ),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
+            border: Border.all(color: AuctionAdminTheme.border),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
+            child: ProductDetailsEditorWidget(
+              controller: controller.productdescriptionController,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Pricing Section Widget
+class _PricingSection extends StatelessWidget {
+  final AuctionAddProductAdminController controller;
+
+  const _PricingSection({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section Header
+        _buildSectionHeader(),
+        const SizedBox(height: AuctionAdminTheme.spacingLg),
+
+        // Price Field
+        _PriceField(controller: controller),
+        const SizedBox(height: AuctionAdminTheme.spacingXl),
+
+        // Reserved Price Field
+        _ReservedPriceField(controller: controller),
+        const SizedBox(height: AuctionAdminTheme.spacingXl),
+
+        // Bids Increment Field
+        _BidsIncrementField(controller: controller),
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader() {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(AuctionAdminTheme.spacingSm),
+          decoration: BoxDecoration(
+            color: AuctionAdminTheme.primaryLight,
+            borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusSm),
+          ),
+          child: const Icon(
+            Icons.attach_money_rounded,
+            color: AuctionAdminTheme.primary,
+            size: 18,
+          ),
+        ),
+        const SizedBox(width: AuctionAdminTheme.spacingMd),
+        const Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Pricing Information',
+                style: AuctionAdminTheme.headingSmall,
+              ),
+              SizedBox(height: 2),
+              Text(
+                'Set the starting price and bid increments',
+                style: AuctionAdminTheme.bodySmall,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Price Field Widget
+class _PriceField extends StatelessWidget {
+  final AuctionAddProductAdminController controller;
+
+  const _PriceField({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const FieldLabel(
+          label: 'Starting Price',
+          isRequired: true,
+          description:
+              'Set the minimum starting price for your auction. Bidding will begin from this amount.',
+        ),
+        TextField(
+          controller: controller.priceController,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+          ],
+          style: AuctionAdminTheme.bodyLarge,
+          decoration: AuctionAdminTheme.inputDecoration(
+            hintText: '0.00',
+            prefixIcon: Icons.attach_money_rounded,
+          ),
+        ),
+        const SizedBox(height: AuctionAdminTheme.spacingXs),
+        const _HelperText(text: 'Price will be in decimals e.g: 10.00'),
+      ],
+    );
+  }
+}
+
+/// Reserved Price Field Widget
+class _ReservedPriceField extends StatelessWidget {
+  final AuctionAddProductAdminController controller;
+
+  const _ReservedPriceField({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const FieldLabel(
+          label: 'Reserved Price',
+          description:
+              'Set a minimum price the item must reach for the sale to complete. This is optional.',
+        ),
+        TextField(
+          controller: controller.salepriceController,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+          ],
+          style: AuctionAdminTheme.bodyLarge,
+          decoration: AuctionAdminTheme.inputDecoration(
+            hintText: '0.00',
+            prefixIcon: Icons.lock_outline_rounded,
+          ),
+        ),
+        const SizedBox(height: AuctionAdminTheme.spacingXs),
+        Row(
           children: [
             Container(
-              height: 45.88,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AuctionAdminTheme.spacingSm,
+                vertical: AuctionAdminTheme.spacingXs,
+              ),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: const Color(0xFFF97316),
+                color: AuctionAdminTheme.infoLight,
+                borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusSm),
               ),
               child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
+                  Icon(
+                    Icons.info_outline_rounded,
+                    size: 12,
+                    color: AuctionAdminTheme.info,
+                  ),
+                  SizedBox(width: 4),
                   Text(
-                    "Auction Detail",
+                    'Optional',
                     style: TextStyle(
-                      color: AppColors.white,
+                      fontSize: 11,
                       fontWeight: FontWeight.w500,
+                      color: AuctionAdminTheme.info,
                     ),
                   ),
-                  Icon(Icons.keyboard_arrow_down, color: AppColors.white),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
-            const Text(
-              "Auction Description",
-              style: TextStyle(
-                color: AppColors.darkLightTextColor,
-                fontWeight: FontWeight.w500,
+            const SizedBox(width: AuctionAdminTheme.spacingSm),
+            const Expanded(
+              child: Text(
+                'Leave empty for no minimum',
+                style: AuctionAdminTheme.bodySmall,
               ),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: Colors.transparent,
-              ),
-              child: const Text(
-                "Enter the unique name of your product. Make it descriptive and easy to remember for customers.",
-                style: TextStyle(color: AppColors.adminGreyColorText),
-              ),
-            ),
-            const SizedBox(height: 15),
-            ProductDetailsEditorWidget(
-              controller: controller.productdescriptionController,
-            ),
-            const SizedBox(height: 25),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Text(
-                      "Price",
-                      style: TextStyle(
-                        color: AppColors.darkLightTextColor,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.buttonLightGreyColor,
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 10.0,
-                          vertical: 5,
-                        ),
-                        child: Text(
-                          "Required",
-                          style: TextStyle(color: AppColors.darkLightTextColor),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const Text(
-                  "Enter the unique name of your product. Make it descriptive and easy to remember for customers.",
-                  style: TextStyle(color: AppColors.adminGreyColorText),
-                ),
-                const SizedBox(height: 10),
-                SimpleTextFormFieldWidget(
-                  textController: controller.priceController,
-                  hint: '\$0',
-                ),
-                const SizedBox(height: 2),
-                const Text(
-                  "Price will be in decimals e-g: 10.00",
-                  style: TextStyle(color: AppColors.adminGreyColorText),
-                ),
-              ],
-            ),
-            const SizedBox(height: 25),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Reserved Price",
-                  style: TextStyle(
-                    color: AppColors.darkLightTextColor,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const Text(
-                  "Add reserved_price of your product here",
-                  style: TextStyle(color: AppColors.adminGreyColorText),
-                ),
-                const SizedBox(height: 10),
-                SimpleTextFormFieldWidget(
-                  textController: controller.salepriceController,
-                  hint: '\$0',
-                ),
-                const SizedBox(height: 2),
-              ],
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "bids Incrments By",
-                  style: TextStyle(
-                    color: AppColors.darkLightTextColor,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const Text(
-                  "Add the number to increment the bid by it. if the number is 10 then the each new bid has to be incremented by 10, e.g. 10, 20, 30.",
-                  style: TextStyle(color: AppColors.adminGreyColorText),
-                ),
-                const SizedBox(height: 10),
-                SimpleTextFormFieldWidget(
-                  textController: controller.bidsIncrementBy,
-                  hint: '\$0',
-                ),
-                const SizedBox(height: 2),
-              ],
             ),
           ],
         ),
+      ],
+    );
+  }
+}
+
+/// Bids Increment Field Widget
+class _BidsIncrementField extends StatelessWidget {
+  final AuctionAddProductAdminController controller;
+
+  const _BidsIncrementField({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const FieldLabel(
+          label: 'Bid Increment',
+          isRequired: true,
+          description:
+              'Set the minimum amount each new bid must increase by. For example, if set to 10, bids would be 100, 110, 120, etc.',
+        ),
+        TextField(
+          controller: controller.bidsIncrementBy,
+          keyboardType: TextInputType.number,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+          ],
+          style: AuctionAdminTheme.bodyLarge,
+          decoration: AuctionAdminTheme.inputDecoration(
+            hintText: '0',
+            prefixIcon: Icons.trending_up_rounded,
+          ),
+        ),
+        const SizedBox(height: AuctionAdminTheme.spacingMd),
+        _buildIncrementExamples(),
+      ],
+    );
+  }
+
+  Widget _buildIncrementExamples() {
+    return Container(
+      padding: const EdgeInsets.all(AuctionAdminTheme.spacingMd),
+      decoration: BoxDecoration(
+        color: AuctionAdminTheme.surfaceSecondary,
+        borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusSm),
+        border: Border.all(color: AuctionAdminTheme.borderLight),
       ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AuctionAdminTheme.spacingSm),
+            decoration: BoxDecoration(
+              color: AuctionAdminTheme.accentLight,
+              borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusSm),
+            ),
+            child: const Icon(
+              Icons.lightbulb_outline_rounded,
+              color: AuctionAdminTheme.accent,
+              size: 16,
+            ),
+          ),
+          const SizedBox(width: AuctionAdminTheme.spacingMd),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Example',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AuctionAdminTheme.textPrimary,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'If increment is 10, bids will be: 10 → 20 → 30 → 40...',
+                  style: AuctionAdminTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Helper Text Widget
+class _HelperText extends StatelessWidget {
+  final String text;
+
+  const _HelperText({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Icon(
+          Icons.info_outline_rounded,
+          size: 14,
+          color: AuctionAdminTheme.textTertiary,
+        ),
+        const SizedBox(width: AuctionAdminTheme.spacingXs),
+        Text(
+          text,
+          style: AuctionAdminTheme.bodySmall,
+        ),
+      ],
     );
   }
 }

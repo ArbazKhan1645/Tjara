@@ -5,6 +5,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/core/widgets/appbar.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/widgets/other_product_grid.dart';
+import 'package:tjara/app/modules/modules_customer/customer_dashboard/controllers/dashboard_controller.dart';
 import 'package:tjara/app/modules/modules_customer/user_wishlist/controllers/wishlist_controller.dart';
 
 class WishlistView extends GetView<WishlistController> {
@@ -159,7 +160,9 @@ class WishlistScreen extends GetView<WishlistController> {
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
-            onPressed: () => Get.back(),
+            onPressed: () {
+              DashboardController.instance.reset();
+            },
             icon: const Icon(Icons.shopping_bag_outlined),
             label: const Text('Start Shopping'),
             style: ElevatedButton.styleFrom(

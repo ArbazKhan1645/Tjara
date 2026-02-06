@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_switch/flutter_advanced_switch.dart';
 import 'package:get/get.dart';
-import 'package:tjara/app/core/utils/thems/my_colors.dart';
 import 'package:tjara/app/core/widgets/admin_app_bar_actions.dart';
 import 'package:tjara/app/core/widgets/admin_header_animated_background_widget.dart';
 import 'package:tjara/app/core/widgets/admin_sliver_app_bar_widget.dart';
-import 'package:tjara/app/core/widgets/buttons/simple_button_with_left_icon_and_icon_widget.dart';
-import 'package:tjara/app/core/widgets/simple_text_form_field_Widget.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_auction_admin/controllers/add_product_auction_admin_controller.dart';
+import 'package:tjara/app/modules/modules_admin/admin/add_product_auction_admin/widgets/auction_admin_theme.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_auction_admin/widgets/auction_products_settings.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_auction_admin/widgets/product_details_card_widget.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_auction_admin/widgets/product_information_widget.dart';
@@ -22,7 +19,7 @@ class AuctionAddProductAdminView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: AppColors.adminBgLightGreyColor,
+      backgroundColor: AuctionAdminTheme.background,
       body: AuctionAddAdminProductWidget(),
     );
   }
@@ -31,12 +28,28 @@ class AuctionAddProductAdminView extends StatelessWidget {
 class AuctionAddAdminProductWidget extends StatelessWidget {
   const AuctionAddAdminProductWidget({super.key});
 
+  // Safe getter for group name
+  String get _groupName {
+    final args = Get.arguments;
+    if (args is String && args.isNotEmpty) return args;
+
+    if (args is Map) {
+      final pg = args['product_group'];
+      if (pg is String && pg.isNotEmpty) return pg;
+      if (pg is Map && pg['name'] is String && (pg['name'] as String).isNotEmpty) {
+        return pg['name'];
+      }
+    }
+    return 'Auction';
+  }
+
   @override
   Widget build(BuildContext context) {
     return GetBuilder<AuctionAddProductAdminController>(
       init: AuctionAddProductAdminController(),
       builder: (controller) {
         return CustomScrollView(
+          physics: const BouncingScrollPhysics(),
           slivers: [
             const AdminSliverAppBarWidget(
               title: 'Dashboard',
@@ -50,13 +63,20 @@ class AuctionAddAdminProductWidget extends StatelessWidget {
                     isAppBarExpanded: true,
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AuctionAdminTheme.spacingLg,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildHeader(controller),
-                        _buildProductForm(controller),
-                        _buildActionButtons(controller),
+                        _AuctionHeader(
+                          groupName: _groupName,
+                          isEditMode: controller.isEditMode.value,
+                        ),
+                        const SizedBox(height: AuctionAdminTheme.spacingLg),
+                        _AuctionFormContent(controller: controller),
+                        const SizedBox(height: AuctionAdminTheme.spacingXl),
+                        _AuctionActionButtons(controller: controller),
                         const SizedBox(height: 100),
                       ],
                     ),
@@ -69,476 +89,385 @@ class AuctionAddAdminProductWidget extends StatelessWidget {
       },
     );
   }
+}
 
-  Widget _buildHeader(AuctionAddProductAdminController controller) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: GetBuilder<AuctionAddProductAdminController>(
-        builder: (controller) {
-          final groupName = _getGroupName();
-          final label =
-              controller.isEditMode.value
-                  ? 'Update $groupName'
-                  : 'Add $groupName';
+/// Auction Header Widget
+class _AuctionHeader extends StatelessWidget {
+  final String groupName;
+  final bool isEditMode;
 
-          return Text(
-            label,
-            style: const TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 18,
-              letterSpacing: 1.5,
-              color: Colors.white,
-            ),
-          );
-        },
-      ),
-    );
-  }
+  const _AuctionHeader({
+    required this.groupName,
+    required this.isEditMode,
+  });
 
-  Widget _buildProductForm(AuctionAddProductAdminController controller) {
-    return Column(
-      children: [
-        GetBuilder<CategoriesAdminController>(
-          builder:
-              (categoryController) => AuctionProductInformationWidget(
-                controller: controller,
-                categoryAdminController: categoryController,
-              ),
-        ),
-        const SizedBox(height: 20),
-        const AuctionUploadProductImagesWidget(),
-        const SizedBox(height: 20),
-        GetBuilder<AuctionAddProductAdminController>(
-          builder: (controller) => AuctionProductSettingsWidget(),
-        ),
-
-        const SizedBox(height: 20),
-        const AuctionProductDetailsCardWidget(),
-        const SizedBox(height: 20),
-        // UPCFormWidget(),
-        const SizedBox(height: 20),
-        const AuctionProductManagementWidget(),
-        const SizedBox(height: 20),
-
-        AuctionShippingWidget(),
-        const SizedBox(height: 20),
-      ],
-    );
-  }
-
-  Widget _buildActionButtons(AuctionAddProductAdminController controller) {
+  @override
+  Widget build(BuildContext context) {
     return GetBuilder<AuctionAddProductAdminController>(
       builder: (controller) {
-        return Column(
+        final label = controller.isEditMode.value
+            ? 'Update $groupName'
+            : 'Add $groupName';
+
+        return Row(
           children: [
-            const SizedBox(height: 25),
-            RoundedTextButton(
-              label: controller.isEditMode.value ? 'Update' : 'Save',
-              onPressed: () => _handleSave(controller),
-              backgroundColor: const Color(0xFF0D9488),
-              textColor: Colors.white,
+            Container(
+              padding: const EdgeInsets.all(AuctionAdminTheme.spacingSm),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusSm),
+              ),
+              child: const Icon(
+                Icons.gavel_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
-            const SizedBox(height: 12),
-            RoundedTextButton(
-              label: 'Cancel',
-              onPressed: Get.back,
-              backgroundColor: const Color(0xFFE5E5E5),
-              textColor: Colors.black,
+            const SizedBox(width: AuctionAdminTheme.spacingMd),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18,
+                      letterSpacing: 0.5,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Fill in the auction details below',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.white.withValues(alpha: 0.7),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         );
       },
     );
   }
+}
 
-  String _getGroupName() {
-    final args = Get.arguments;
-    if (args is String && args.isNotEmpty) return args;
+/// Auction Form Content
+class _AuctionFormContent extends StatelessWidget {
+  final AuctionAddProductAdminController controller;
 
-    if (args is Map) {
-      final pg = args['product_group'];
-      if (pg is String && pg.isNotEmpty) return pg;
-      if (pg is Map &&
-          pg['name'] is String &&
-          (pg['name'] as String).isNotEmpty) {
-        return pg['name'];
-      }
-    }
+  const _AuctionFormContent({required this.controller});
 
-    // This is the Auction add/update screen, default to "Auction"
-    return 'Auction';
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        GetBuilder<CategoriesAdminController>(
+          builder: (categoryController) => AuctionProductInformationWidget(
+            controller: controller,
+            categoryAdminController: categoryController,
+          ),
+        ),
+        const SizedBox(height: AuctionAdminTheme.spacingLg),
+        const AuctionUploadProductImagesWidget(),
+        const SizedBox(height: AuctionAdminTheme.spacingLg),
+        GetBuilder<AuctionAddProductAdminController>(
+          builder: (_) => const AuctionProductSettingsWidget(),
+        ),
+        const SizedBox(height: AuctionAdminTheme.spacingLg),
+        const AuctionProductDetailsCardWidget(),
+        const SizedBox(height: AuctionAdminTheme.spacingLg),
+        const AuctionProductManagementWidget(),
+        const SizedBox(height: AuctionAdminTheme.spacingLg),
+        const AuctionShippingWidget(),
+      ],
+    );
   }
+}
 
-  Future<void> _handleSave(AuctionAddProductAdminController controller) async {
-    // Validation
-    final validationError = _validateForm(controller);
+/// Action Buttons Widget
+class _AuctionActionButtons extends StatefulWidget {
+  final AuctionAddProductAdminController controller;
+
+  const _AuctionActionButtons({required this.controller});
+
+  @override
+  State<_AuctionActionButtons> createState() => _AuctionActionButtonsState();
+}
+
+class _AuctionActionButtonsState extends State<_AuctionActionButtons> {
+  bool _isSubmitting = false;
+
+  Future<void> _handleSave() async {
+    if (_isSubmitting) return;
+
+    final validationError = _validateForm();
     if (validationError != null) {
-      Get.snackbar('Error', validationError);
+      _showSnackBar(validationError, isError: true);
       return;
     }
 
-    final success =
-        controller.isEditMode.value
-            ? await _updateProduct(controller)
-            : await _insertProduct(controller);
+    setState(() => _isSubmitting = true);
 
-    _handleSaveResult(success);
+    try {
+      final success = widget.controller.isEditMode.value
+          ? await _updateProduct()
+          : await _insertProduct();
+
+      if (!mounted) return;
+      _handleSaveResult(success);
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
   }
 
-  String? _validateForm(AuctionAddProductAdminController controller) {
-    if (controller.productNameController.text.trim().isEmpty) {
+  String? _validateForm() {
+    final ctrl = widget.controller;
+
+    if (ctrl.productNameController.text.trim().isEmpty) {
       return 'Auction name is required';
     }
-    if (controller.selectedProductType.value.isEmpty) {
+    if (ctrl.selectedProductType.value.isEmpty) {
       return 'Product type is required';
     }
-    if (controller.thumbnailId?.isEmpty ?? true) {
+    if (ctrl.thumbnailId?.isEmpty ?? true) {
       return 'Thumbnail is required';
     }
-
-    if (controller.priceController.text.trim().isEmpty) {
+    if (ctrl.priceController.text.trim().isEmpty) {
       return 'Auction price is required';
     }
-
-    if (controller.selectedEndTime.value == null) {
+    if (ctrl.selectedEndTime.value == null) {
       return 'Auction end time is required';
     }
-
-    if (controller.selectedStartTime.value == null) {
+    if (ctrl.selectedStartTime.value == null) {
       return 'Auction start time is required';
     }
-
-    if (controller.selectedEndTime.value!.isBefore(
-      controller.selectedStartTime.value!,
-    )) {
+    if (ctrl.selectedEndTime.value!.isBefore(ctrl.selectedStartTime.value!)) {
       return 'Auction end time must be after start time';
     }
-
-    if (controller.selectedEndTime.value!.isBefore(DateTime.now())) {
+    if (ctrl.selectedEndTime.value!.isBefore(DateTime.now())) {
       return 'Auction end time must be in the future';
     }
-
-    if (controller.bidsIncrementBy.text.isEmpty) {
+    if (ctrl.bidsIncrementBy.text.isEmpty) {
       return 'Bids increment by is required';
     }
-
-    if (int.tryParse(controller.bidsIncrementBy.text) == null) {
+    if (int.tryParse(ctrl.bidsIncrementBy.text) == null) {
       return 'Bids increment by must be a number';
     }
-
     return null;
   }
 
-  Future<bool> _updateProduct(AuctionAddProductAdminController controller) {
-    return controller.updateProduct(
-      productGroup:
-          (controller.selectedProductgroup.value == 'product' ||
-                  controller.selectedProductgroup.value == 'Product')
-              ? 'global'
-              : 'car',
-      description: controller.productdescriptionController.text,
-
-      id: controller.editProduct?.id ?? '',
-      name: controller.productNameController.text.trim(),
+  Future<bool> _updateProduct() {
+    final ctrl = widget.controller;
+    return ctrl.updateProduct(
+      productGroup: (ctrl.selectedProductgroup.value == 'product' ||
+              ctrl.selectedProductgroup.value == 'Product')
+          ? 'global'
+          : 'car',
+      description: ctrl.productdescriptionController.text,
+      id: ctrl.editProduct?.id ?? '',
+      name: ctrl.productNameController.text.trim(),
       productType: 'auction',
-      stock: int.tryParse(controller.inputProductStock.text.trim()),
-      thumbnailId: controller.thumbnailId ?? '',
-      videoId: controller.videoId,
-      isFeatured: controller.isFeatured.value,
-      isDeal: controller.isDeal.value,
-      price: double.tryParse(controller.priceController.text.trim()),
-      salePrice: double.tryParse(controller.salepriceController.text.trim()),
+      stock: int.tryParse(ctrl.inputProductStock.text.trim()),
+      thumbnailId: ctrl.thumbnailId ?? '',
+      videoId: ctrl.videoId,
+      isFeatured: ctrl.isFeatured.value,
+      isDeal: ctrl.isDeal.value,
+      price: double.tryParse(ctrl.priceController.text.trim()),
+      salePrice: double.tryParse(ctrl.salepriceController.text.trim()),
       reservedPrice: null,
-      auctionStartTime: controller.selectedStartTime.value,
-      auctionEndTime: controller.selectedEndTime.value,
-      galleryIds: controller.galleryIds,
-      categoryIds:
-          controller.selectedCategoryId != null
-              ? [controller.selectedCategoryId!]
-              : (controller.selectedItem != null
-                  ? [controller.selectedItem!.id ?? '']
-                  : []),
+      auctionStartTime: ctrl.selectedStartTime.value,
+      auctionEndTime: ctrl.selectedEndTime.value,
+      galleryIds: ctrl.galleryIds,
+      categoryIds: ctrl.selectedCategoryId != null
+          ? [ctrl.selectedCategoryId!]
+          : (ctrl.selectedItem != null ? [ctrl.selectedItem!.id ?? ''] : []),
       tagIds: [],
       meta: {},
     );
   }
 
-  Future<bool> _insertProduct(AuctionAddProductAdminController controller) {
-    return controller.insertProduct(
-      productGroup:
-          (controller.selectedProductgroup.value == 'product' ||
-                  controller.selectedProductgroup.value == 'Product')
-              ? 'global'
-              : 'car',
-
-      description: controller.productdescriptionController.text,
-      name: controller.productNameController.text.trim(),
+  Future<bool> _insertProduct() {
+    final ctrl = widget.controller;
+    return ctrl.insertProduct(
+      productGroup: (ctrl.selectedProductgroup.value == 'product' ||
+              ctrl.selectedProductgroup.value == 'Product')
+          ? 'global'
+          : 'car',
+      description: ctrl.productdescriptionController.text,
+      name: ctrl.productNameController.text.trim(),
       productType: 'auction',
-      stock: int.tryParse(controller.inputProductStock.text.trim()),
-      thumbnailId: controller.thumbnailId ?? '',
-      videoId: controller.videoId,
-      isFeatured: controller.isFeatured.value,
-      isDeal: controller.isDeal.value,
-      price: double.tryParse(controller.priceController.text.trim()) ?? 0,
-      salePrice: double.tryParse(controller.salepriceController.text.trim()),
+      stock: int.tryParse(ctrl.inputProductStock.text.trim()),
+      thumbnailId: ctrl.thumbnailId ?? '',
+      videoId: ctrl.videoId,
+      isFeatured: ctrl.isFeatured.value,
+      isDeal: ctrl.isDeal.value,
+      price: double.tryParse(ctrl.priceController.text.trim()) ?? 0,
+      salePrice: double.tryParse(ctrl.salepriceController.text.trim()),
       reservedPrice: null,
-      auctionStartTime: controller.selectedStartTime.value,
-      auctionEndTime: controller.selectedEndTime.value,
-      galleryIds: controller.galleryIds,
-      categoryIds:
-          controller.selectedCategoryId != null
-              ? [controller.selectedCategoryId!]
-              : (controller.selectedItem != null
-                  ? [controller.selectedItem!.id ?? '']
-                  : []),
+      auctionStartTime: ctrl.selectedStartTime.value,
+      auctionEndTime: ctrl.selectedEndTime.value,
+      galleryIds: ctrl.galleryIds,
+      categoryIds: ctrl.selectedCategoryId != null
+          ? [ctrl.selectedCategoryId!]
+          : (ctrl.selectedItem != null ? [ctrl.selectedItem!.id ?? ''] : []),
       tagIds: [],
       meta: {},
     );
   }
 
   void _handleSaveResult(bool success) {
-    final controller = Get.find<AuctionAddProductAdminController>();
     if (success) {
       final args = Get.arguments;
       final String? returnToRoute =
-          (args is Map && args['return_to'] is String)
-              ? args['return_to']
-              : null;
+          (args is Map && args['return_to'] is String) ? args['return_to'] : null;
+
       if (returnToRoute != null && returnToRoute.isNotEmpty) {
         Get.offNamed(returnToRoute);
       } else {
         Get.back();
       }
-      Get.snackbar(
-        'Success',
-        'Product ${controller.isEditMode.value ? 'updated' : 'added'} successfully',
-        snackPosition: SnackPosition.BOTTOM,
+
+      _showSnackBar(
+        'Auction ${widget.controller.isEditMode.value ? 'updated' : 'added'} successfully',
+        isError: false,
       );
     }
   }
-}
 
-class ShippingDetails extends StatelessWidget {
-  final AuctionAddProductAdminController controller;
-
-  const ShippingDetails({super.key, required this.controller});
+  void _showSnackBar(String message, {required bool isError}) {
+    Get.snackbar(
+      isError ? 'Error' : 'Success',
+      message,
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: isError
+          ? AuctionAdminTheme.errorLight
+          : AuctionAdminTheme.successLight,
+      colorText:
+          isError ? AuctionAdminTheme.error : AuctionAdminTheme.success,
+      margin: const EdgeInsets.all(AuctionAdminTheme.spacingLg),
+      borderRadius: AuctionAdminTheme.radiusMd,
+      icon: Icon(
+        isError ? Icons.error_outline : Icons.check_circle_outline,
+        color: isError ? AuctionAdminTheme.error : AuctionAdminTheme.success,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return GetBuilder<AuctionAddProductAdminController>(
       builder: (controller) {
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionTitle('Shipping'),
-            const Divider(thickness: 1, color: Colors.grey),
-            _buildShippingField(
-              title: "Shipping Company",
-              description:
-                  "Enter the preferred shipping company or method for delivering this product to customers.",
-              hint: 'ORIENT Shipping co',
-              value: "Shipping Company : ORIENT Shipping co",
-              controller: controller.inputProductStock,
-            ),
-            _buildShippingTimeSection(),
-            _buildShippingField(
-              title: "Shipping Fees",
-              description:
-                  "Enter the shipping fee for delivering this product to customers.",
-              hint: '10.00',
-              value:
-                  "Shipping Fees :\$10\nPrice will be in decimals e.g. 10.00",
-              controller: controller.inputProductStock,
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Row(
-      children: [
-        const Icon(
-          Icons.keyboard_arrow_down,
-          color: AppColors.darkLightTextColor,
-        ),
-        Text(
-          title,
-          style: const TextStyle(
-            color: AppColors.darkLightTextColor,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildShippingField({
-    required String title,
-    required String description,
-    required String hint,
-    required String value,
-    required TextEditingController controller,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 15),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: AppColors.darkLightTextColor,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            description,
-            style: const TextStyle(color: AppColors.adminGreyColorText),
-          ),
-          const SizedBox(height: 10),
-          SimpleTextFormFieldWidget(textController: controller, hint: hint),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: const TextStyle(color: AppColors.adminGreyColorText),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildShippingTimeSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 15),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Shipping Time",
-            style: TextStyle(
-              color: AppColors.darkLightTextColor,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            "Enter the shipping time range.",
-            style: TextStyle(color: AppColors.adminGreyColorText),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: List.generate(
-              3,
-              (index) => Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(right: index < 2 ? 8.0 : 0),
-                  child: SimpleTextFormFieldWidget(
-                    textController: controller.inputProductStock,
-                    hint: '${index + 1}',
+            // Save/Update Button
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: _isSubmitting ? null : _handleSave,
+                borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: double.infinity,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: _isSubmitting
+                        ? AuctionAdminTheme.surfaceSecondary
+                        : AuctionAdminTheme.accent,
+                    borderRadius:
+                        BorderRadius.circular(AuctionAdminTheme.radiusMd),
+                    boxShadow: _isSubmitting
+                        ? null
+                        : AuctionAdminTheme.shadowColored(
+                            AuctionAdminTheme.accent),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (_isSubmitting)
+                        const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AuctionAdminTheme.textSecondary,
+                            ),
+                          ),
+                        )
+                      else
+                        Icon(
+                          controller.isEditMode.value
+                              ? Icons.update_rounded
+                              : Icons.save_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      const SizedBox(width: AuctionAdminTheme.spacingSm),
+                      Text(
+                        _isSubmitting
+                            ? 'Saving...'
+                            : (controller.isEditMode.value ? 'Update' : 'Save'),
+                        style: TextStyle(
+                          color: _isSubmitting
+                              ? AuctionAdminTheme.textSecondary
+                              : Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 2),
-          const Text(
-            "Shipping Time : 5 - 10 Business Days",
-            style: TextStyle(color: AppColors.adminGreyColorText),
-          ),
-        ],
-      ),
-    );
-  }
-}
+            const SizedBox(height: AuctionAdminTheme.spacingMd),
 
-class ToggleSwitchButtonWidget extends StatelessWidget {
-  final bool value;
-  final Function(dynamic)? onChanged;
-
-  const ToggleSwitchButtonWidget({
-    super.key,
-    this.value = false,
-    this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          padding: EdgeInsets.zero,
-          decoration: BoxDecoration(
-            border:
-                value
-                    ? null
-                    : Border.all(color: AppColors.lightGreyBorderColor),
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: AdvancedSwitch(
-            onChanged: (value) {
-              onChanged!(value);
-            },
-            initialValue: value,
-            activeColor: Colors.red,
-            inactiveColor: Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(24),
-            width: 60,
-            height: 32,
-            thumb: const DecoratedBox(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
+            // Cancel Button
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => Get.back(),
+                borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
+                child: Container(
+                  width: double.infinity,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: AuctionAdminTheme.surfaceSecondary,
+                    borderRadius:
+                        BorderRadius.circular(AuctionAdminTheme.radiusMd),
+                    border: Border.all(color: AuctionAdminTheme.border),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.close_rounded,
+                        color: AuctionAdminTheme.textSecondary,
+                        size: 20,
+                      ),
+                      SizedBox(width: AuctionAdminTheme.spacingSm),
+                      Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: AuctionAdminTheme.textPrimary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Text(value ? "active" : "inactive"),
-      ],
-    );
-  }
-}
-
-class ProductFieldsCardCustomWidget extends StatelessWidget {
-  final Widget column;
-  const ProductFieldsCardCustomWidget({super.key, required this.column});
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Column(
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: column,
-            ),
-            const SizedBox(height: 15),
           ],
-        ),
-        const Positioned(
-          bottom: 0,
-          left: 20,
-          right: 20,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(10)),
-            ),
-            child: SizedBox(height: 15),
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 }

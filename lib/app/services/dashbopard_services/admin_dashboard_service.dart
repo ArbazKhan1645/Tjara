@@ -36,61 +36,92 @@ class AdminDashboardService extends GetxService {
 
     try {
       final LoginResponse? current = AuthService.instance.authCustomer;
-      if (current?.user?.id == null) {
-        return;
-      }
+      if (current?.user?.id == null) return;
 
-      // Base query parameters
       final Map<String, String> queryParams = {
-        'per_page': perPage.value.toString(),
+        /// 🔹 ORDER TYPE
+        'ordersType': 'received-orders',
+
+        /// 🔹 SEARCH
+        'dateFilter': 'all',
+        'search': '',
+        'searchByBuyerName': '',
+        'searchByPhoneNumber': '',
+
+        /// 🔹 META FIELD FILTERS
+        'filterByMetaFields[filterJoin]': 'AND',
+
+        // is_testing IS_EMPTY
+        'filterByMetaFields[fields][0][key]': 'is_testing',
+        'filterByMetaFields[fields][0][value]': '1',
+        'filterByMetaFields[fields][0][operator]': 'IS_EMPTY',
+
+        // is_soft_deleted IS_EMPTY
+        'filterByMetaFields[fields][1][key]': 'is_soft_deleted',
+        'filterByMetaFields[fields][1][value]': '1',
+        'filterByMetaFields[fields][1][operator]': 'IS_EMPTY',
+
+        /// 🔹 RELATIONS
+        'with': 'thumbnail,shop,order_items',
+        'include_batch_info': 'true',
+
+        /// 🔹 COLUMN FILTER JOIN
+        'filterJoin': 'AND',
+
+        /// 🔹 SORTING
+        'orderBy': 'created_at',
+        'order': 'desc',
+
+        /// 🔹 PAGINATION
         'page': currentPage.value.toString(),
+        'per_page': perPage.value.toString(),
       };
 
-      // Add filter if user is not admin
-      if (current?.user?.role != 'admin') {
+      /// 🔹 NON-ADMIN BUYER FILTER
+      if (current!.user!.role != 'admin') {
         queryParams.addAll({
           'filterByColumns[columns][0][column]': 'buyer_id',
-          'filterByColumns[columns][0][value]': current!.user!.id!,
+          'filterByColumns[columns][0][value]': current.user!.id!,
           'filterByColumns[columns][0][operator]': '=',
         });
       }
 
-      // Construct final URI
       final uri = Uri.parse(_apiUrl).replace(queryParameters: queryParams);
 
       final response = await http.get(
         uri,
-        headers: {'X-Request-From': 'Application'},
+        headers: {
+          'Accept': 'application/json',
+          'X-Request-From': 'Application',
+        },
       );
 
-      // final log = Logger();
-      // final data = jsonDecode(response.body);
-
-      // log.d(data['orders']['data'][0]);
-      // log.d("Another Test ====");
       isLoading.value = false;
       hideLoaderDialog();
 
-      // final data = jsonDecode(response.body);
-
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
-        totalPages.value = data['orders']['total'] ?? 0;
+        final ordersJson = data['orders'];
+
+        /// 🔥 PAGINATION FIX
+        currentPage.value = ordersJson['current_page'] ?? 1;
+        perPage.value = ordersJson['per_page'] ?? 10;
+        totalPages.value = ordersJson['last_page'] ?? 1;
 
         final List<Order> fetchedOrders =
-            (data['orders']['data'] as List)
+            (ordersJson['data'] as List)
                 .map((order) => Order.fromJson(order))
                 .toList();
+
         orders.assignAll(fetchedOrders);
         _saveOrdersToCache(fetchedOrders);
       } else {
-        isLoading.value = false;
-        hideLoaderDialog();
         throw Exception('Failed to load orders');
       }
     } catch (e) {
       isLoading.value = false;
       hideLoaderDialog();
+
       final cachedOrders = await _getOrdersFromCache();
       if (cachedOrders.isNotEmpty) {
         orders.assignAll(cachedOrders);

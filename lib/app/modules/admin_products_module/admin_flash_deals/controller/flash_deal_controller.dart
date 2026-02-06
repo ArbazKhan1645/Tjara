@@ -59,7 +59,8 @@ class FlashDealController extends GetxController {
   final productSearchController = TextEditingController();
 
   // Product cache
-  final RxMap<String, FlashDealProduct> productCache = <String, FlashDealProduct>{}.obs;
+  final RxMap<String, FlashDealProduct> productCache =
+      <String, FlashDealProduct>{}.obs;
 
   // Tab index
   final RxInt selectedTabIndex = 0.obs;
@@ -144,13 +145,17 @@ class FlashDealController extends GetxController {
       final newSettings = response.flashDealSettings;
 
       // Check if product lists changed
-      final activeChanged = newSettings.flashDealsProductsSortOrder !=
+      final activeChanged =
+          newSettings.flashDealsProductsSortOrder !=
           settings.value?.flashDealsProductsSortOrder;
-      final skippedChanged = newSettings.skippedDealsProductsSortOrder !=
+      final skippedChanged =
+          newSettings.skippedDealsProductsSortOrder !=
           settings.value?.skippedDealsProductsSortOrder;
-      final expiredChanged = newSettings.expiredDealsProductsSortOrder !=
+      final expiredChanged =
+          newSettings.expiredDealsProductsSortOrder !=
           settings.value?.expiredDealsProductsSortOrder;
-      final soldChanged = newSettings.soldDealsProductsSortOrder !=
+      final soldChanged =
+          newSettings.soldDealsProductsSortOrder !=
           settings.value?.soldDealsProductsSortOrder;
 
       settings.value = newSettings;
@@ -232,7 +237,9 @@ class FlashDealController extends GetxController {
           products.add(product);
         } catch (e) {
           // Add placeholder if product not found
-          products.add(FlashDealProduct(id: id, name: 'Product #${id.substring(0, 8)}...'));
+          products.add(
+            FlashDealProduct(id: id, name: 'Product #${id.substring(0, 8)}...'),
+          );
         }
       }
     }
@@ -275,7 +282,10 @@ class FlashDealController extends GetxController {
   void updateScheduledStartTime(DateTime dateTime) {
     // Validate future time
     if (dateTime.isBefore(DateTime.now())) {
-      AdminSnackbar.warning('Invalid Time', 'Please select a future date and time');
+      AdminSnackbar.warning(
+        'Invalid Time',
+        'Please select a future date and time',
+      );
       return;
     }
     scheduledStartTime.value = dateTime;
@@ -336,7 +346,10 @@ class FlashDealController extends GetxController {
       } else if (soldProductIds.contains(product.id)) {
         tabName = 'sold deals';
       }
-      AdminSnackbar.warning('Already Exists', 'This product is already in $tabName');
+      AdminSnackbar.warning(
+        'Already Exists',
+        'This product is already in $tabName',
+      );
       return;
     }
 
@@ -486,14 +499,21 @@ class FlashDealController extends GetxController {
 
     try {
       // Validate
-      if (schedulingMode.value == 'schedule' && scheduledStartTime.value == null) {
-        AdminSnackbar.warning('Validation Error', 'Please select a start date and time');
+      if (schedulingMode.value == 'schedule' &&
+          scheduledStartTime.value == null) {
+        AdminSnackbar.warning(
+          'Validation Error',
+          'Please select a start date and time',
+        );
         return;
       }
 
       if (schedulingMode.value == 'schedule' &&
           scheduledStartTime.value!.isBefore(DateTime.now())) {
-        AdminSnackbar.warning('Validation Error', 'Start time must be in the future');
+        AdminSnackbar.warning(
+          'Validation Error',
+          'Start time must be in the future',
+        );
         return;
       }
 
@@ -508,9 +528,10 @@ class FlashDealController extends GetxController {
       );
 
       // Get start time
-      final startTime = schedulingMode.value == 'live'
-          ? DateTime.now().toUtc()
-          : scheduledStartTime.value!.toUtc();
+      final startTime =
+          schedulingMode.value == 'live'
+              ? DateTime.now().toUtc()
+              : scheduledStartTime.value!.toUtc();
 
       // Call flash-deal-products API
       await _apiService.saveFlashDealProducts(
@@ -526,7 +547,10 @@ class FlashDealController extends GetxController {
       // Update settings
       await _apiService.updateSettings(settingsPayload);
 
-      AdminSnackbar.success('Success', 'Flash deal settings saved successfully');
+      AdminSnackbar.success(
+        'Success',
+        'Flash deal settings saved successfully',
+      );
     } on FlashDealApiException catch (e) {
       AdminSnackbar.error('Error', e.message);
     } catch (e) {
@@ -560,7 +584,8 @@ class FlashDealController extends GetxController {
       'flash_deals_scheduling_mode': schedulingMode.value,
       'flash_deals_start_time': startTime.toIso8601String(),
       'flash_deals_time_limit_hours': timeLimitController.text,
-      'flash_deals_purchase_limit_enabled': purchaseLimitEnabled.value ? '1' : '0',
+      'flash_deals_purchase_limit_enabled':
+          purchaseLimitEnabled.value ? '1' : '0',
       'flash_deals_purchase_limit_per_store': purchaseLimitController.text,
       'flash_deal_lock_duration': lockDurationController.text,
       'flash_deals_products_sort_order': activeProductIds.join(','),
@@ -570,11 +595,17 @@ class FlashDealController extends GetxController {
       'deal_sequence_reset': true,
       'deal_schedule_time': startTime.toIso8601String(),
       'current_deal_start_time': startTime.toIso8601String(),
-      'current_deal_end_time': startTime
-          .add(Duration(
-              seconds: _calculateSeconds(
-                  activeTimeController.text, activeTimeUnit.value)))
-          .toIso8601String(),
+      'current_deal_end_time':
+          startTime
+              .add(
+                Duration(
+                  seconds: _calculateSeconds(
+                    activeTimeController.text,
+                    activeTimeUnit.value,
+                  ),
+                ),
+              )
+              .toIso8601String(),
       'current_deal_product_id':
           activeProductIds.isNotEmpty ? activeProductIds.first : null,
     };
@@ -582,13 +613,15 @@ class FlashDealController extends GetxController {
 
   // Helper getters
   String get durationDisplay {
-    final value = activeTimeController.text.isEmpty ? '0' : activeTimeController.text;
+    final value =
+        activeTimeController.text.isEmpty ? '0' : activeTimeController.text;
     final seconds = _calculateSeconds(value, activeTimeUnit.value);
     return 'Total Duration: $value ${activeTimeUnit.value} ($seconds seconds)';
   }
 
   String get intervalDisplay {
-    final value = intervalTimeController.text.isEmpty ? '0' : intervalTimeController.text;
+    final value =
+        intervalTimeController.text.isEmpty ? '0' : intervalTimeController.text;
     final seconds = _calculateSeconds(value, intervalTimeUnit.value);
     return 'Interval Duration: $value ${intervalTimeUnit.value} ($seconds seconds)';
   }

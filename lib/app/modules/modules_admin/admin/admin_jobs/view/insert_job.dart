@@ -474,12 +474,12 @@ class _InsertJobScreenState extends State<InsertJobScreen> {
     const expandedStackGradient = LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: [Color(0xFFF97316), Color(0xFFFACC15)],
+      colors: [Colors.teal, Color(0xFFFACC15)],
     );
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF97316),
+        backgroundColor: Colors.teal,
         actions: [const AdminAppBarActionsSimple()],
         iconTheme: const IconThemeData(color: Colors.white),
         title: Obx(
@@ -531,7 +531,7 @@ class _InsertJobScreenState extends State<InsertJobScreen> {
                                     vertical: 16,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFF97316),
+                                    color: Colors.teal,
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(
@@ -743,7 +743,7 @@ class _InsertJobScreenState extends State<InsertJobScreen> {
                                     vertical: 16,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFF97316),
+                                    color: Colors.teal,
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(
@@ -918,7 +918,7 @@ class _InsertJobScreenState extends State<InsertJobScreen> {
                                     vertical: 16,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFF97316),
+                                    color: Colors.teal,
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(

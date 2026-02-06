@@ -365,7 +365,7 @@ class ProductAttributesScreen extends StatelessWidget {
     const expandedStackGradient = LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: [Color(0xFFF97316), Color(0xFFFACC15)],
+      colors: [Colors.teal, Color(0xFFFACC15)],
     );
     final controller = Get.put(ProductAttributesController());
     final TextEditingController attributeNameController =
@@ -373,7 +373,7 @@ class ProductAttributesScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF97316),
+        backgroundColor: Colors.teal,
         actions: [const AdminAppBarActionsSimple()],
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
@@ -653,7 +653,7 @@ class ProductAttributesScreen extends StatelessWidget {
                                   vertical: 12,
                                 ),
                                 decoration: const BoxDecoration(
-                                  color: Color(0xffF97316),
+                                  color: Colors.teal,
                                 ),
                                 child: const Row(
                                   children: [

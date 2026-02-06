@@ -417,14 +417,14 @@ class _QuizFormState extends State<QuizForm> {
     const expandedStackGradient = LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: [Color(0xFFF97316), Color(0xFFFACC15)],
+      colors: [Colors.teal, Color(0xFFFACC15)],
     );
 
     // Show loading screen while fetching contest data
     if (_isLoadingContest) {
       return Scaffold(
         appBar: AppBar(
-          backgroundColor: const Color(0xFFF97316),
+          backgroundColor: Colors.teal,
           iconTheme: const IconThemeData(color: Colors.white),
           title: const Text(
             'Loading...',
@@ -451,7 +451,7 @@ class _QuizFormState extends State<QuizForm> {
     if (!Get.isRegistered<QuizController>()) {
       return Scaffold(
         appBar: AppBar(
-          backgroundColor: const Color(0xFFF97316),
+          backgroundColor: Colors.teal,
           iconTheme: const IconThemeData(color: Colors.white),
           title: const Text('Error', style: TextStyle(color: Colors.white)),
         ),
@@ -478,7 +478,7 @@ class _QuizFormState extends State<QuizForm> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF97316),
+        backgroundColor: Colors.teal,
         actions: [const AdminAppBarActionsSimple()],
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
@@ -544,7 +544,7 @@ class _QuizFormState extends State<QuizForm> {
                                     vertical: 16,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFF97316),
+                                    color: Colors.teal,
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(
@@ -622,7 +622,7 @@ class _QuizFormState extends State<QuizForm> {
                                     vertical: 16,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFF97316),
+                                    color: Colors.teal,
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(
@@ -795,7 +795,7 @@ class _QuizFormState extends State<QuizForm> {
                                     vertical: 16,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFF97316),
+                                    color: Colors.teal,
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(
@@ -1104,7 +1104,7 @@ class _QuizFormState extends State<QuizForm> {
                                     vertical: 16,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFF97316),
+                                    color: Colors.teal,
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(
@@ -1298,7 +1298,7 @@ class _QuizFormState extends State<QuizForm> {
                                     vertical: 16,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFF97316),
+                                    color: Colors.teal,
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(

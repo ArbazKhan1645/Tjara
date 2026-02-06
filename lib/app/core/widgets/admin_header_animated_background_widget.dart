@@ -11,7 +11,7 @@ class AdminHeaderAnimatedBackgroundWidget extends StatelessWidget {
   LinearGradient get _expandedStackGradient => const LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [Color(0xFFF97316), Color(0xFFFACC15)],
+    colors: [Colors.teal, Colors.teal],
   );
 
   @override

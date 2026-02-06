@@ -86,7 +86,7 @@ class _DashboardAdminViewState extends State<DashboardAdminView> {
                 isAppBarExpanded: isAppBarExpanded,
               ),
               Padding(
-                padding: const EdgeInsets.only(left: 16, right: 16),
+                padding: const EdgeInsets.only(left: 8, right: 8),
                 child: Obx(
                   () =>
                       controller.selectedOrder.value == null

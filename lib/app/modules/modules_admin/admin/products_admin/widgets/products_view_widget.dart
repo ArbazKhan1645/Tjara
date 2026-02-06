@@ -5,8 +5,8 @@ import 'package:intl/intl.dart';
 import 'package:tjara/app/core/widgets/admin_app_bar_actions.dart';
 import 'package:tjara/app/core/widgets/admin_header_animated_background_widget.dart';
 import 'package:tjara/app/core/widgets/admin_sliver_app_bar_widget.dart';
-import 'package:tjara/app/core/widgets/buttons/gardient_button_with_left_arrow_and_text.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/controllers/add_product_admin_controller.dart';
+import 'package:tjara/app/modules/modules_admin/admin/products_admin/widgets/admin_products_theme.dart';
 import 'package:tjara/app/modules/modules_admin/admin/products_admin/widgets/products_list_widget.dart';
 import 'package:tjara/app/routes/app_pages.dart';
 import 'package:tjara/app/services/dashbopard_services/admin_products_service.dart';
@@ -32,22 +32,30 @@ class _EnhancedProductsViewWidgetState
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _skuController = TextEditingController();
 
+  AdminProductsService get _service => widget.adminProductsService;
+
   @override
   void initState() {
     super.initState();
-    _searchController.addListener(() {
-      widget.adminProductsService.updateSearchQuery(_searchController.text);
-    });
-    _idController.addListener(() {
-      if (widget.adminProductsService.searchField.value == 'id') {
-        widget.adminProductsService.updateSearchQuery(_idController.text);
-      }
-    });
-    _skuController.addListener(() {
-      if (widget.adminProductsService.searchField.value == 'sku') {
-        widget.adminProductsService.updateSearchQuery(_skuController.text);
-      }
-    });
+    _searchController.addListener(_onSearchChanged);
+    _idController.addListener(_onIdChanged);
+    _skuController.addListener(_onSkuChanged);
+  }
+
+  void _onSearchChanged() {
+    _service.updateSearchQuery(_searchController.text);
+  }
+
+  void _onIdChanged() {
+    if (_service.searchField.value == 'id') {
+      _service.updateSearchQuery(_idController.text);
+    }
+  }
+
+  void _onSkuChanged() {
+    if (_service.searchField.value == 'sku') {
+      _service.updateSearchQuery(_skuController.text);
+    }
   }
 
   @override
@@ -74,67 +82,19 @@ class _EnhancedProductsViewWidgetState
                 isAppBarExpanded: widget.isAppBarExpanded,
               ),
               Padding(
-                padding: const EdgeInsets.only(left: 16, right: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AdminProductsTheme.spacingLg,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Products',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-
-                    // Add New Product Button
-                    GradientButtonWithLeftArrowAndText(
-                      label: 'Add New Product',
-                      icon: Icons.add,
-                      onPressed: () {
-                        Get.delete<AddProductAdminController>();
-                        Get.offNamed(
-                          Routes.ADD_PRODUCT_ADMIN_VIEW,
-                          preventDuplicates: false,
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Filters and Search Container
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: Colors.white,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Search Section
-                          _buildSearchSection(),
-                          const SizedBox(height: 16),
-
-                          // Filters Section
-                          _buildFiltersSection(),
-                          const SizedBox(height: 16),
-
-                          // Active Filters Display
-                          _buildActiveFilters(),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Results Summary
+                    _buildHeader(),
+                    const SizedBox(height: AdminProductsTheme.spacingLg),
+                    _buildFiltersCard(),
+                    const SizedBox(height: AdminProductsTheme.spacingLg),
                     _buildResultsSummary(),
-                    const SizedBox(height: 8),
-
-                    // Products List
-                    AdminProductsList(
-                      adminProductsService: widget.adminProductsService,
-                    ),
+                    const SizedBox(height: AdminProductsTheme.spacingSm),
+                    AdminProductsList(adminProductsService: _service),
                   ],
                 ),
               ),
@@ -145,52 +105,142 @@ class _EnhancedProductsViewWidgetState
     );
   }
 
+  Widget _buildHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Products',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.5,
+              ),
+            ),
+          ],
+        ),
+        _buildAddProductButton(),
+      ],
+    );
+  }
+
+  Widget _buildAddProductButton() {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          Get.delete<AddProductAdminController>();
+          Get.offNamed(Routes.ADD_PRODUCT_ADMIN_VIEW, preventDuplicates: false);
+        },
+        borderRadius: BorderRadius.circular(AdminProductsTheme.radiusMd),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AdminProductsTheme.spacingLg,
+            vertical: AdminProductsTheme.spacingMd,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(AdminProductsTheme.radiusMd),
+            boxShadow: AdminProductsTheme.shadowMd,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AdminProductsTheme.primary,
+                  borderRadius: BorderRadius.circular(
+                    AdminProductsTheme.radiusSm,
+                  ),
+                ),
+                child: const Icon(Icons.add, size: 16, color: Colors.white),
+              ),
+              const SizedBox(width: AdminProductsTheme.spacingSm),
+              const Text(
+                'Add New Product',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AdminProductsTheme.textPrimary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFiltersCard() {
+    return Container(
+      padding: const EdgeInsets.all(AdminProductsTheme.spacingXl),
+      decoration: AdminProductsTheme.cardDecoration,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSearchSection(),
+          const SizedBox(height: AdminProductsTheme.spacingXl),
+          _buildFiltersSection(),
+          _buildActiveFilters(),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSearchSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Search Products',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
+        Row(
+          children: [
+            const Icon(
+              Icons.search_rounded,
+              size: 20,
+              color: AdminProductsTheme.primary,
+            ),
+            const SizedBox(width: AdminProductsTheme.spacingSm),
+            Text(
+              'Search Products',
+              style: AdminProductsTheme.headingSmall.copyWith(
+                color: AdminProductsTheme.textPrimary,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AdminProductsTheme.spacingMd),
 
-        // Search by Name
+        // Main search field
         _buildSearchField(
           controller: _searchController,
-          label: 'Search by Name',
-          hintText: 'Enter product name...',
+          hintText: 'Search by product name...',
           icon: Icons.search,
-          onTap: () => widget.adminProductsService.updateSearchField('name'),
+          onTap: () => _service.updateSearchField('name'),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AdminProductsTheme.spacingMd),
 
-        // Search by ID and SKU in a Row
+        // ID and SKU search in row
         Row(
           children: [
             Expanded(
               child: _buildSearchField(
                 controller: _idController,
-                label: 'Search by ID',
-                hintText: 'Enter product ID...',
+                hintText: 'Search by ID',
                 icon: Icons.tag,
-                onTap:
-                    () => widget.adminProductsService.updateSearchField('id'),
+                onTap: () => _service.updateSearchField('id'),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AdminProductsTheme.spacingMd),
             Expanded(
               child: _buildSearchField(
                 controller: _skuController,
-                label: 'Search by SKU',
-                hintText: 'Enter SKU...',
-                icon: Icons.qr_code,
-                onTap:
-                    () => widget.adminProductsService.updateSearchField('sku'),
+                hintText: 'Search by SKU',
+                icon: Icons.qr_code_2,
+                onTap: () => _service.updateSearchField('sku'),
               ),
             ),
           ],
@@ -201,44 +251,32 @@ class _EnhancedProductsViewWidgetState
 
   Widget _buildSearchField({
     required TextEditingController controller,
-    required String label,
     required String hintText,
     required IconData icon,
     required VoidCallback onTap,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: Colors.black54,
-          ),
-        ),
-        const SizedBox(height: 4),
-        TextField(
-          controller: controller,
-          onTap: onTap,
-          decoration: InputDecoration(
-            hintText: hintText,
-            prefixIcon: Icon(icon, color: Colors.grey),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Colors.blue),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-          ),
-        ),
-      ],
+    return TextField(
+      controller: controller,
+      onTap: onTap,
+      style: AdminProductsTheme.bodyLarge,
+      decoration: AdminProductsTheme.inputDecoration(
+        hintText: hintText,
+        prefixIcon: icon,
+        suffix:
+            controller.text.isNotEmpty
+                ? GestureDetector(
+                  onTap: () {
+                    controller.clear();
+                    _service.updateSearchQuery('');
+                  },
+                  child: const Icon(
+                    Icons.close,
+                    size: 18,
+                    color: AdminProductsTheme.textTertiary,
+                  ),
+                )
+                : null,
+      ),
     );
   }
 
@@ -246,222 +284,311 @@ class _EnhancedProductsViewWidgetState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Filters',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
+        Row(
+          children: [
+            const Icon(
+              Icons.filter_list_rounded,
+              size: 20,
+              color: AdminProductsTheme.primary,
+            ),
+            const SizedBox(width: AdminProductsTheme.spacingSm),
+            Text(
+              'Filters',
+              style: AdminProductsTheme.headingSmall.copyWith(
+                color: AdminProductsTheme.textPrimary,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AdminProductsTheme.spacingMd),
 
         // Status Filter
         _buildStatusFilter(),
-        const SizedBox(height: 12),
+        const SizedBox(height: AdminProductsTheme.spacingLg),
 
-        // Date Range Filter
-        _buildDateRangeFilter(),
-        const SizedBox(height: 12),
+        // Date Range and Per Page in row
+        LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth > 600) {
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: _buildDateRangeFilter()),
+                  const SizedBox(width: AdminProductsTheme.spacingXl),
+                  SizedBox(width: 200, child: _buildPerPageSelector()),
+                ],
+              );
+            }
+            return Column(
+              children: [
+                _buildDateRangeFilter(),
+                const SizedBox(height: AdminProductsTheme.spacingLg),
+                _buildPerPageSelector(),
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: AdminProductsTheme.spacingLg),
 
-        // Predefined Filters
-        _buildPredefinedFilters(),
-        const SizedBox(height: 12),
-
-        // Per Page Selection
-        _buildPerPageSelector(),
+        // Quick Filters
+        _buildQuickFilters(),
       ],
     );
   }
 
   Widget _buildStatusFilter() {
-    return Obx(
-      () => Column(
+    return Obx(() {
+      final selectedStatus = _service.selectedStatus.value;
+
+      return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Status',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: Colors.black54,
-            ),
-          ),
-          const SizedBox(height: 8),
+          const Text('STATUS', style: AdminProductsTheme.labelMedium),
+          const SizedBox(height: AdminProductsTheme.spacingSm),
           Wrap(
-            spacing: 8,
+            spacing: AdminProductsTheme.spacingSm,
+            runSpacing: AdminProductsTheme.spacingSm,
             children:
                 ProductStatus.values.map((status) {
-                  final isSelected =
-                      widget.adminProductsService.selectedStatus.value ==
-                      status;
-                  return FilterChip(
-                    label: Text(status.name.capitalize ?? status.name),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      widget.adminProductsService.updateStatusFilter(status);
-                    },
-                    selectedColor: Colors.blue.shade100,
-                    checkmarkColor: Colors.blue,
+                  final isSelected = selectedStatus == status;
+                  return _buildFilterChip(
+                    label: _formatStatusLabel(status.name),
+                    isSelected: isSelected,
+                    onTap: () => _service.updateStatusFilter(status),
+                    color: _getStatusColor(status),
                   );
                 }).toList(),
           ),
         ],
+      );
+    });
+  }
+
+  String _formatStatusLabel(String name) {
+    return name.substring(0, 1).toUpperCase() + name.substring(1);
+  }
+
+  Color _getStatusColor(ProductStatus status) {
+    switch (status) {
+      case ProductStatus.all:
+        return AdminProductsTheme.primary;
+      case ProductStatus.active:
+        return AdminProductsTheme.success;
+      case ProductStatus.inactive:
+        return AdminProductsTheme.error;
+      case ProductStatus.deleted:
+        return AdminProductsTheme.textTertiary;
+    }
+  }
+
+  Widget _buildFilterChip({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required Color color,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AdminProductsTheme.radiusLg),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AdminProductsTheme.spacingMd,
+            vertical: AdminProductsTheme.spacingSm,
+          ),
+          decoration: BoxDecoration(
+            color:
+                isSelected
+                    ? color.withValues(alpha: 0.1)
+                    : AdminProductsTheme.surface,
+            borderRadius: BorderRadius.circular(AdminProductsTheme.radiusLg),
+            border: Border.all(
+              color: isSelected ? color : AdminProductsTheme.border,
+              width: isSelected ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isSelected) ...[
+                Icon(Icons.check, size: 16, color: color),
+                const SizedBox(width: 6),
+              ],
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  color: isSelected ? color : AdminProductsTheme.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildDateRangeFilter() {
-    return Obx(
-      () => Column(
+    return Obx(() {
+      final startDate = _service.startDate.value;
+      final endDate = _service.endDate.value;
+
+      return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Date Range',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: Colors.black54,
-            ),
-          ),
-          const SizedBox(height: 8),
+          const Text('DATE RANGE', style: AdminProductsTheme.labelMedium),
+          const SizedBox(height: AdminProductsTheme.spacingSm),
           Row(
             children: [
               Expanded(
-                child: InkWell(
+                child: _buildDateButton(
+                  label: 'Start Date',
+                  date: startDate,
                   onTap: _selectStartDate,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.calendar_today,
-                          size: 16,
-                          color: Colors.grey,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          widget.adminProductsService.startDate.value != null
-                              ? DateFormat('MMM dd, yyyy').format(
-                                widget.adminProductsService.startDate.value!,
-                              )
-                              : 'Start Date',
-                          style: TextStyle(
-                            color:
-                                widget.adminProductsService.startDate.value !=
-                                        null
-                                    ? Colors.black87
-                                    : Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
               ),
-              const SizedBox(width: 12),
+              Container(
+                margin: const EdgeInsets.symmetric(
+                  horizontal: AdminProductsTheme.spacingSm,
+                ),
+                child: const Icon(
+                  Icons.arrow_forward,
+                  size: 16,
+                  color: AdminProductsTheme.textTertiary,
+                ),
+              ),
               Expanded(
-                child: InkWell(
+                child: _buildDateButton(
+                  label: 'End Date',
+                  date: endDate,
                   onTap: _selectEndDate,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
+                ),
+              ),
+              if (startDate != null || endDate != null) ...[
+                const SizedBox(width: AdminProductsTheme.spacingSm),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => _service.updateDateRange(null, null),
+                    borderRadius: BorderRadius.circular(
+                      AdminProductsTheme.radiusSm,
                     ),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.calendar_today,
-                          size: 16,
-                          color: Colors.grey,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AdminProductsTheme.errorLight,
+                        borderRadius: BorderRadius.circular(
+                          AdminProductsTheme.radiusSm,
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          widget.adminProductsService.endDate.value != null
-                              ? DateFormat('MMM dd, yyyy').format(
-                                widget.adminProductsService.endDate.value!,
-                              )
-                              : 'End Date',
-                          style: TextStyle(
-                            color:
-                                widget.adminProductsService.endDate.value !=
-                                        null
-                                    ? Colors.black87
-                                    : Colors.grey,
-                          ),
-                        ),
-                      ],
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        size: 16,
+                        color: AdminProductsTheme.error,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                onPressed: () {
-                  widget.adminProductsService.updateDateRange(null, null);
-                },
-                icon: const Icon(Icons.clear, color: Colors.red),
-                tooltip: 'Clear Date Range',
-              ),
+              ],
             ],
           ),
         ],
+      );
+    });
+  }
+
+  Widget _buildDateButton({
+    required String label,
+    required DateTime? date,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AdminProductsTheme.radiusMd),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AdminProductsTheme.spacingMd,
+            vertical: AdminProductsTheme.spacingMd,
+          ),
+          decoration: BoxDecoration(
+            color: AdminProductsTheme.surface,
+            borderRadius: BorderRadius.circular(AdminProductsTheme.radiusMd),
+            border: Border.all(
+              color:
+                  date != null
+                      ? AdminProductsTheme.primary
+                      : AdminProductsTheme.border,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.calendar_today_outlined,
+                size: 16,
+                color:
+                    date != null
+                        ? AdminProductsTheme.primary
+                        : AdminProductsTheme.textTertiary,
+              ),
+              const SizedBox(width: AdminProductsTheme.spacingSm),
+              Expanded(
+                child: Text(
+                  date != null
+                      ? DateFormat('MMM dd, yyyy').format(date)
+                      : label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color:
+                        date != null
+                            ? AdminProductsTheme.textPrimary
+                            : AdminProductsTheme.textTertiary,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildPredefinedFilters() {
+  Widget _buildQuickFilters() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Quick Filters',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: Colors.black54,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Obx(
-          () => Wrap(
-            spacing: 8,
-            runSpacing: 8,
+        const Text('QUICK FILTERS', style: AdminProductsTheme.labelMedium),
+        const SizedBox(height: AdminProductsTheme.spacingSm),
+        Obx(() {
+          final filters = _service.getPredefinedFilters();
+          return Wrap(
+            spacing: AdminProductsTheme.spacingSm,
+            runSpacing: AdminProductsTheme.spacingSm,
             children:
-                widget.adminProductsService.getPredefinedFilters().map((
-                  filter,
-                ) {
-                  final isActive = widget.adminProductsService.activeFilters
-                      .any((f) => f.column == filter.column);
-                  return FilterChip(
-                    label: Text(filter.name),
-                    selected: isActive,
-                    onSelected: (selected) {
-                      if (selected) {
-                        widget.adminProductsService.addColumnFilter(filter);
+                filters.map((filter) {
+                  final isActive = _service.activeFilters.any(
+                    (f) => f.column == filter.column,
+                  );
+                  return _buildFilterChip(
+                    label: filter.name,
+                    isSelected: isActive,
+                    onTap: () {
+                      if (isActive) {
+                        _service.removeColumnFilter(filter.column);
                       } else {
-                        widget.adminProductsService.removeColumnFilter(
-                          filter.column,
-                        );
+                        _service.addColumnFilter(filter);
                       }
                     },
-                    selectedColor: Colors.green.shade100,
-                    checkmarkColor: Colors.green,
+                    color: AdminProductsTheme.secondary,
                   );
                 }).toList(),
-          ),
-        ),
+          );
+        }),
       ],
     );
   }
@@ -470,43 +597,45 @@ class _EnhancedProductsViewWidgetState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Items per page',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: Colors.black54,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Obx(
-          () => DropdownButtonFormField<int>(
-            initialValue: widget.adminProductsService.perPage.value,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey.shade300),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 8,
+        const Text('ITEMS PER PAGE', style: AdminProductsTheme.labelMedium),
+        const SizedBox(height: AdminProductsTheme.spacingSm),
+        Obx(() {
+          final perPage = _service.perPage.value;
+          return Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AdminProductsTheme.spacingMd,
+            ),
+            decoration: BoxDecoration(
+              color: AdminProductsTheme.surface,
+              borderRadius: BorderRadius.circular(AdminProductsTheme.radiusMd),
+              border: Border.all(color: AdminProductsTheme.border),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<int>(
+                value: perPage,
+                isExpanded: true,
+                icon: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: AdminProductsTheme.textSecondary,
+                ),
+                style: AdminProductsTheme.bodyLarge,
+                items:
+                    [10, 20, 40, 60, 100].map((value) {
+                      return DropdownMenuItem<int>(
+                        value: value,
+                        child: Text('$value items'),
+                      );
+                    }).toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    _service.perPage.value = value;
+                    _service.fetchProducts(refresh: true);
+                  }
+                },
               ),
             ),
-            items:
-                [10, 20, 40, 60, 100].map((value) {
-                  return DropdownMenuItem<int>(
-                    value: value,
-                    child: Text('$value items'),
-                  );
-                }).toList(),
-            onChanged: (value) {
-              if (value != null) {
-                widget.adminProductsService.perPage.value = value;
-                widget.adminProductsService.fetchProducts(refresh: true);
-              }
-            },
-          ),
-        ),
+          );
+        }),
       ],
     );
   }
@@ -514,139 +643,256 @@ class _EnhancedProductsViewWidgetState
   Widget _buildActiveFilters() {
     return Obx(() {
       final hasFilters =
-          widget.adminProductsService.searchQuery.value.isNotEmpty ||
-          widget.adminProductsService.selectedStatus.value !=
-              ProductStatus.all ||
-          widget.adminProductsService.activeFilters.isNotEmpty ||
-          widget.adminProductsService.startDate.value != null;
+          _service.searchQuery.value.isNotEmpty ||
+          _service.selectedStatus.value != ProductStatus.all ||
+          _service.activeFilters.isNotEmpty ||
+          _service.startDate.value != null;
 
       if (!hasFilters) return const SizedBox.shrink();
 
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Active Filters',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+      return Padding(
+        padding: const EdgeInsets.only(top: AdminProductsTheme.spacingXl),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Row(
+                  children: [
+                    Icon(
+                      Icons.filter_alt,
+                      size: 18,
+                      color: AdminProductsTheme.primary,
+                    ),
+                    SizedBox(width: AdminProductsTheme.spacingSm),
+                    Text(
+                      'Active Filters',
+                      style: AdminProductsTheme.headingSmall,
+                    ),
+                  ],
+                ),
+                TextButton.icon(
+                  onPressed: _clearAllFilters,
+                  icon: const Icon(Icons.clear_all, size: 18),
+                  label: const Text('Clear All'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AdminProductsTheme.error,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AdminProductsTheme.spacingMd,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AdminProductsTheme.spacingSm),
+            Container(
+              padding: const EdgeInsets.all(AdminProductsTheme.spacingMd),
+              decoration: BoxDecoration(
+                color: AdminProductsTheme.primaryLight,
+                borderRadius: BorderRadius.circular(
+                  AdminProductsTheme.radiusMd,
+                ),
+                border: Border.all(
+                  color: AdminProductsTheme.primary.withValues(alpha: 0.2),
                 ),
               ),
-              TextButton.icon(
-                onPressed: () {
-                  widget.adminProductsService.clearAllFilters();
-                  _searchController.clear();
-                  _idController.clear();
-                  _skuController.clear();
-                },
-                icon: const Icon(Icons.clear_all, size: 16),
-                label: const Text('Clear All'),
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.red,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.info_outline,
+                    size: 16,
+                    color: AdminProductsTheme.primary,
+                  ),
+                  const SizedBox(width: AdminProductsTheme.spacingSm),
+                  Expanded(
+                    child: Text(
+                      _service.getFilterSummary(),
+                      style: AdminProductsTheme.bodySmall.copyWith(
+                        color: AdminProductsTheme.textPrimary,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.blue.shade200),
             ),
-            child: Text(
-              widget.adminProductsService.getFilterSummary(),
-              style: const TextStyle(fontSize: 12, color: Colors.black87),
-            ),
-          ),
-        ],
+          ],
+        ),
       );
     });
   }
 
+  void _clearAllFilters() {
+    _service.clearAllFilters();
+    _searchController.clear();
+    _idController.clear();
+    _skuController.clear();
+  }
+
   Widget _buildResultsSummary() {
-    return Obx(
-      () => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    return Obx(() {
+      final productCount = _service.adminProducts.length;
+      final totalItems = _service.totalItems.value;
+      final isRefreshing = _service.isRefreshing.value;
+
+      return Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AdminProductsTheme.spacingLg,
+          vertical: AdminProductsTheme.spacingMd,
+        ),
         decoration: BoxDecoration(
-          color: Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(8),
+          color: AdminProductsTheme.surfaceSecondary,
+          borderRadius: BorderRadius.circular(AdminProductsTheme.radiusMd),
+          border: Border.all(color: AdminProductsTheme.border),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Showing ${widget.adminProductsService.adminProducts.length} of ${widget.adminProductsService.totalItems.value} products',
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Colors.black54,
-              ),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: AdminProductsTheme.primaryLight,
+                    borderRadius: BorderRadius.circular(
+                      AdminProductsTheme.radiusSm,
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.inventory_2_outlined,
+                    size: 16,
+                    color: AdminProductsTheme.primary,
+                  ),
+                ),
+                const SizedBox(width: AdminProductsTheme.spacingMd),
+                RichText(
+                  text: TextSpan(
+                    style: AdminProductsTheme.bodyMedium,
+                    children: [
+                      const TextSpan(text: 'Showing '),
+                      TextSpan(
+                        text: '$productCount',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: AdminProductsTheme.primary,
+                        ),
+                      ),
+                      const TextSpan(text: ' of '),
+                      TextSpan(
+                        text: '$totalItems',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      const TextSpan(text: ' products'),
+                    ],
+                  ),
+                ),
+              ],
             ),
             Row(
               children: [
-                IconButton(
-                  onPressed: widget.adminProductsService.refreshProducts,
-                  icon: const Icon(Icons.refresh, size: 18),
-                  tooltip: 'Refresh',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-                const SizedBox(width: 8),
-                if (widget.adminProductsService.isRefreshing.value)
-                  const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                if (isRefreshing)
+                  const Padding(
+                    padding: EdgeInsets.only(
+                      right: AdminProductsTheme.spacingSm,
+                    ),
+                    child: SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AdminProductsTheme.primary,
+                      ),
+                    ),
                   ),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _service.refreshProducts,
+                    borderRadius: BorderRadius.circular(
+                      AdminProductsTheme.radiusSm,
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AdminProductsTheme.surface,
+                        borderRadius: BorderRadius.circular(
+                          AdminProductsTheme.radiusSm,
+                        ),
+                        border: Border.all(color: AdminProductsTheme.border),
+                      ),
+                      child: const Icon(
+                        Icons.refresh_rounded,
+                        size: 18,
+                        color: AdminProductsTheme.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ],
         ),
-      ),
-    );
+      );
+    });
   }
 
   Future<void> _selectStartDate() async {
+    final startDate = _service.startDate.value;
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate:
-          widget.adminProductsService.startDate.value ?? DateTime.now(),
+      initialDate: startDate ?? DateTime.now(),
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
       helpText: 'Select Start Date',
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AdminProductsTheme.primary,
+              onPrimary: Colors.white,
+              surface: AdminProductsTheme.surface,
+              onSurface: AdminProductsTheme.textPrimary,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null) {
-      widget.adminProductsService.updateDateRange(
-        picked,
-        widget.adminProductsService.endDate.value,
-      );
+      _service.updateDateRange(picked, _service.endDate.value);
     }
   }
 
   Future<void> _selectEndDate() async {
+    final startDate = _service.startDate.value;
+    final endDate = _service.endDate.value;
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: widget.adminProductsService.endDate.value ?? DateTime.now(),
-      firstDate: widget.adminProductsService.startDate.value ?? DateTime(2020),
+      initialDate: endDate ?? DateTime.now(),
+      firstDate: startDate ?? DateTime(2020),
       lastDate: DateTime.now(),
       helpText: 'Select End Date',
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AdminProductsTheme.primary,
+              onPrimary: Colors.white,
+              surface: AdminProductsTheme.surface,
+              onSurface: AdminProductsTheme.textPrimary,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null) {
-      widget.adminProductsService.updateDateRange(
-        widget.adminProductsService.startDate.value,
-        picked,
-      );
+      _service.updateDateRange(_service.startDate.value, picked);
     }
   }
 }
 
+/// Reusable column widget for product data display
 class OrderColumnWidget extends StatelessWidget {
   final String label;
   final String value;
@@ -657,20 +903,20 @@ class OrderColumnWidget extends StatelessWidget {
   final Color iconColor;
   final String hasImage;
   final TextAlign textAlign;
-  final double width; // New parameter
+  final double width;
 
   const OrderColumnWidget({
     super.key,
     required this.label,
     required this.value,
     this.crossAxisAlignment = CrossAxisAlignment.start,
-    this.textColor = Colors.black,
+    this.textColor = AdminProductsTheme.textPrimary,
     this.hasIcon = false,
     this.icon = Icons.open_in_new,
-    this.iconColor = Colors.red,
+    this.iconColor = AdminProductsTheme.error,
     this.hasImage = '',
     this.textAlign = TextAlign.left,
-    this.width = 100, // Default width
+    this.width = 100,
   });
 
   @override
@@ -681,35 +927,63 @@ class OrderColumnWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: crossAxisAlignment,
         children: [
-          Text(label, style: const TextStyle(color: Colors.grey), maxLines: 2),
+          Text(
+            label.toUpperCase(),
+            style: AdminProductsTheme.labelMedium.copyWith(
+              fontSize: 10,
+              letterSpacing: 0.5,
+              color: AdminProductsTheme.textTertiary,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 6),
           if (hasImage.isEmpty)
-            SizedBox(
-              child: Text(
-                value,
-                style: TextStyle(color: textColor),
-                maxLines: 2,
-                textAlign: textAlign,
-                overflow: TextOverflow.ellipsis,
-              ),
+            Text(
+              value,
+              style: AdminProductsTheme.bodyMedium.copyWith(color: textColor),
+              maxLines: 2,
+              textAlign: textAlign,
+              overflow: TextOverflow.ellipsis,
             ),
           if (hasImage.isNotEmpty)
-            CachedNetworkImage(
-              imageUrl: value,
-              height: 50,
+            Container(
               width: 50,
-              fit: BoxFit.cover,
-              placeholder:
-                  (context, url) => SizedBox(
-                    height: 50,
-                    width: 50,
-                    child: Image.asset('assets/icons/logo.png'),
-                  ),
-              errorWidget:
-                  (context, url, error) => SizedBox(
-                    height: 50,
-                    width: 50,
-                    child: Image.asset('assets/icons/logo.png'),
-                  ),
+              height: 50,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(
+                  AdminProductsTheme.radiusSm,
+                ),
+                border: Border.all(color: AdminProductsTheme.border),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(
+                  AdminProductsTheme.radiusSm - 1,
+                ),
+                child: CachedNetworkImage(
+                  imageUrl: value,
+                  fit: BoxFit.cover,
+                  placeholder:
+                      (context, url) => Container(
+                        color: AdminProductsTheme.surfaceSecondary,
+                        child: const Center(
+                          child: Icon(
+                            Icons.image_outlined,
+                            size: 20,
+                            color: AdminProductsTheme.textTertiary,
+                          ),
+                        ),
+                      ),
+                  errorWidget:
+                      (context, url, error) => Container(
+                        color: AdminProductsTheme.surfaceSecondary,
+                        child: Image.asset(
+                          'assets/icons/logo.png',
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                ),
+              ),
             ),
         ],
       ),
