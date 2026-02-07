@@ -49,7 +49,12 @@ class AdminDashboardFaqsService extends GetxService {
 
       final response = await http.get(
         uri,
-        headers: {'X-Request-From': 'Application'},
+        headers: {
+          'X-Request-From': 'Dashboard',
+          'shop-id':
+              AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
+          'user-id': AuthService.instance.authCustomer!.user!.id.toString(),
+        },
       );
       // final log = Logger();
       // final data = jsonDecode(response.body);
@@ -60,6 +65,10 @@ class AdminDashboardFaqsService extends GetxService {
       hideLoaderDialog();
 
       // final data = jsonDecode(response.body);
+
+      if (response.statusCode == 404) {
+        return;
+      }
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);

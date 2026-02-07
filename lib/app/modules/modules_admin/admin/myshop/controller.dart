@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tjara/app/models/products/products_model.dart';
 import 'package:tjara/app/modules/modules_admin/admin/myshop/service.dart';
+import 'package:tjara/app/services/auth/auth_service.dart';
 
 import 'package:tjara/main.dart'; // For uploadMedia function
 
@@ -64,7 +65,8 @@ class MyShopController extends GetxController
   }
 
   RxString shopIdArguement = RxString('');
-  final String shopId = "0000c539-9857-3456-bc53-2bbdc1474f1a";
+  final String shopId =
+      AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '';
 
   @override
   void onInit() {

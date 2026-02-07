@@ -150,11 +150,11 @@ class CountryPage extends StatelessWidget {
     const expandedStackGradient = LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: [Color(0xFFF97316), Color(0xFFFACC15)],
+      colors: [Colors.teal, Colors.teal],
     );
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF97316),
+        backgroundColor: Colors.teal,
         actions: [const AdminAppBarActionsSimple()],
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
@@ -417,7 +417,7 @@ class CountryPage extends StatelessWidget {
                               Obx(() {
                                 if (controller.isLoading.value) {
                                   return const Center(
-                                    child: CircularProgressIndicator(
+                                    child: LinearProgressIndicator(
                                       color: Color(0xFFF97316),
                                     ),
                                   );

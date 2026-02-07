@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:async';
 
 import 'package:tjara/app/models/transactions/transactions_model.dart';
+import 'package:tjara/app/services/auth/auth_service.dart';
 
 class TransactionController extends GetxController {
   var transactions = <DataTransactions?>[].obs;
@@ -50,7 +51,10 @@ class TransactionController extends GetxController {
             url,
             headers: {
               'Content-Type': 'application/json',
-              'X-Request-From': 'Application',
+              'shop-id':
+                  AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
+              'user-id': AuthService.instance.authCustomer!.user!.id.toString(),
+              'X-Request-From': 'Dashboard',
             },
           )
           .timeout(
@@ -193,7 +197,7 @@ class TransactionPage extends StatelessWidget {
       appBar: _buildAppBar(),
       body: RefreshIndicator(
         onRefresh: controller.refreshTransactions,
-        color: const Color(0xFFF97316),
+        color: Colors.teal,
         child: CustomScrollView(
           slivers: [
             _buildHeader(),
@@ -208,7 +212,7 @@ class TransactionPage extends StatelessWidget {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: const Color(0xFFF97316),
+      backgroundColor: Colors.teal,
       elevation: 0,
       actions: [const AdminAppBarActionsSimple()],
       iconTheme: const IconThemeData(color: Colors.white),
@@ -226,7 +230,7 @@ class TransactionPage extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFFF97316), Color(0xFFFACC15)],
+            colors: [Colors.teal, Colors.teal],
           ),
         ),
         child: Padding(

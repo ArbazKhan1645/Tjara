@@ -6,6 +6,7 @@ import 'package:tjara/app/modules/modules_admin/admin/admin_jobs/controller/job_
 import 'package:tjara/app/modules/modules_admin/admin/admin_jobs/view/insert_job.dart';
 import 'package:tjara/app/modules/modules_admin/admin/admin_jobs/widgets/jobs_admin_theme.dart';
 import 'package:tjara/app/modules/modules_admin/admin/admin_jobs/widgets/jobs_shimmer.dart';
+import 'package:tjara/app/services/auth/auth_service.dart';
 import 'package:tjara/app/services/dashbopard_services/adminJobs_service.dart';
 import 'package:http/http.dart' as http;
 
@@ -62,7 +63,9 @@ class AdminJobsList extends StatelessWidget {
                 (entry) => _JobDataRow(
                   job: entry.value,
                   index: entry.key,
-                  onRefresh: () => adminProductsService.fetchProducts(loaderType: true),
+                  onRefresh:
+                      () =>
+                          adminProductsService.fetchProducts(loaderType: true),
                 ),
               ),
             ],
@@ -154,12 +157,11 @@ class _JobDataRow extends StatelessWidget {
       height: 72,
       padding: const EdgeInsets.symmetric(horizontal: JobsAdminTheme.spacingLg),
       decoration: BoxDecoration(
-        color: index % 2 == 0
-            ? JobsAdminTheme.surface
-            : JobsAdminTheme.surfaceSecondary,
-        border: Border(
-          bottom: BorderSide(color: JobsAdminTheme.borderLight),
-        ),
+        color:
+            index % 2 == 0
+                ? JobsAdminTheme.surface
+                : JobsAdminTheme.surfaceSecondary,
+        border: Border(bottom: BorderSide(color: JobsAdminTheme.borderLight)),
       ),
       child: Row(
         children: [
@@ -185,15 +187,9 @@ class _JobDataRow extends StatelessWidget {
             ),
           ),
           // Salary
-          SizedBox(
-            width: 100,
-            child: _SalaryBadge(salary: _salary),
-          ),
+          SizedBox(width: 100, child: _SalaryBadge(salary: _salary)),
           // Work Type
-          SizedBox(
-            width: 100,
-            child: _WorkTypeBadge(workType: _workType),
-          ),
+          SizedBox(width: 100, child: _WorkTypeBadge(workType: _workType)),
           // Proposals
           SizedBox(
             width: 80,
@@ -242,10 +238,7 @@ class _JobDataRow extends StatelessWidget {
             child: _DateBadge(dateString: _formatDate(job.createdAt)),
           ),
           // Status
-          SizedBox(
-            width: 100,
-            child: _StatusBadge(status: _status),
-          ),
+          SizedBox(width: 100, child: _StatusBadge(status: _status)),
           // Actions
           SizedBox(
             width: 100,
@@ -275,14 +268,15 @@ class _JobAvatar extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(19),
-        child: thumbnailUrl != null
-            ? CachedNetworkImage(
-                imageUrl: thumbnailUrl!,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => _buildPlaceholder(),
-                errorWidget: (context, url, error) => _buildPlaceholder(),
-              )
-            : _buildPlaceholder(),
+        child:
+            thumbnailUrl != null
+                ? CachedNetworkImage(
+                  imageUrl: thumbnailUrl!,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => _buildPlaceholder(),
+                  errorWidget: (context, url, error) => _buildPlaceholder(),
+                )
+                : _buildPlaceholder(),
       ),
     );
   }
@@ -378,9 +372,7 @@ class _DateBadge extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           dateString,
-          style: JobsAdminTheme.bodySmall.copyWith(
-            fontWeight: FontWeight.w500,
-          ),
+          style: JobsAdminTheme.bodySmall.copyWith(fontWeight: FontWeight.w500),
         ),
       ],
     );
@@ -447,7 +439,9 @@ class _JobActions extends StatelessWidget {
           color: JobsAdminTheme.info,
           tooltip: 'Edit',
           onTap: () {
-            Get.to(const InsertJobScreen(), arguments: {'job': job})?.then((value) {
+            Get.to(const InsertJobScreen(), arguments: {'job': job})?.then((
+              value,
+            ) {
               final JobAttributeController controller = Get.put(
                 JobAttributeController(),
               );
@@ -489,10 +483,7 @@ class _JobActions extends StatelessWidget {
               ),
             ),
             const SizedBox(width: JobsAdminTheme.spacingMd),
-            const Text(
-              'Delete Job',
-              style: JobsAdminTheme.headingMedium,
-            ),
+            const Text('Delete Job', style: JobsAdminTheme.headingMedium),
           ],
         ),
         content: const Text(
@@ -520,7 +511,9 @@ class _JobActions extends StatelessWidget {
                 headers: {
                   'Accept': 'application/json',
                   'X-Request-From': 'Application',
-                  'shop-id': '0000c539-9857-3456-bc53-2bbdc1474f1a',
+                  'shop-id':
+                      AuthService.instance.authCustomer?.user?.shop?.shop?.id ??
+                      '',
                 },
               );
 
@@ -628,10 +621,7 @@ class _JobsEmptyState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: JobsAdminTheme.spacingXl),
-          const Text(
-            'No Jobs Found',
-            style: JobsAdminTheme.headingMedium,
-          ),
+          const Text('No Jobs Found', style: JobsAdminTheme.headingMedium),
           const SizedBox(height: JobsAdminTheme.spacingSm),
           Text(
             'Click "Add Job" to create your first job posting',
@@ -692,9 +682,10 @@ class _JobsPagination extends StatelessWidget {
                 // Previous
                 _PaginationNavButton(
                   icon: Icons.chevron_left_rounded,
-                  onTap: adminProductsService.currentPage.value > 1
-                      ? adminProductsService.previousPage
-                      : null,
+                  onTap:
+                      adminProductsService.currentPage.value > 1
+                          ? adminProductsService.previousPage
+                          : null,
                   tooltip: 'Previous',
                 ),
                 const SizedBox(width: JobsAdminTheme.spacingSm),
@@ -707,7 +698,8 @@ class _JobsPagination extends StatelessWidget {
                     ),
                     child: _PageNumberButton(
                       page: page,
-                      isCurrentPage: page == adminProductsService.currentPage.value,
+                      isCurrentPage:
+                          page == adminProductsService.currentPage.value,
                       onTap: () => adminProductsService.goToPage(page),
                     ),
                   ),
@@ -718,10 +710,11 @@ class _JobsPagination extends StatelessWidget {
                 // Next
                 _PaginationNavButton(
                   icon: Icons.chevron_right_rounded,
-                  onTap: adminProductsService.currentPage.value <
-                          adminProductsService.totalPages.value
-                      ? adminProductsService.nextPage
-                      : null,
+                  onTap:
+                      adminProductsService.currentPage.value <
+                              adminProductsService.totalPages.value
+                          ? adminProductsService.nextPage
+                          : null,
                   tooltip: 'Next',
                 ),
               ],
@@ -760,22 +753,25 @@ class _PaginationNavButton extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: isEnabled
-                  ? JobsAdminTheme.surfaceSecondary
-                  : JobsAdminTheme.surfaceSecondary.withValues(alpha: 0.5),
+              color:
+                  isEnabled
+                      ? JobsAdminTheme.surfaceSecondary
+                      : JobsAdminTheme.surfaceSecondary.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(JobsAdminTheme.radiusSm),
               border: Border.all(
-                color: isEnabled
-                    ? JobsAdminTheme.border
-                    : JobsAdminTheme.borderLight,
+                color:
+                    isEnabled
+                        ? JobsAdminTheme.border
+                        : JobsAdminTheme.borderLight,
               ),
             ),
             child: Icon(
               icon,
               size: 20,
-              color: isEnabled
-                  ? JobsAdminTheme.textPrimary
-                  : JobsAdminTheme.textTertiary,
+              color:
+                  isEnabled
+                      ? JobsAdminTheme.textPrimary
+                      : JobsAdminTheme.textTertiary,
             ),
           ),
         ),
@@ -808,18 +804,19 @@ class _PageNumberButton extends StatelessWidget {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: isCurrentPage
-                ? JobsAdminTheme.primary
-                : JobsAdminTheme.surface,
+            color:
+                isCurrentPage ? JobsAdminTheme.primary : JobsAdminTheme.surface,
             borderRadius: BorderRadius.circular(JobsAdminTheme.radiusSm),
             border: Border.all(
-              color: isCurrentPage
-                  ? JobsAdminTheme.primary
-                  : JobsAdminTheme.border,
+              color:
+                  isCurrentPage
+                      ? JobsAdminTheme.primary
+                      : JobsAdminTheme.border,
             ),
-            boxShadow: isCurrentPage
-                ? JobsAdminTheme.shadowColored(JobsAdminTheme.primary)
-                : null,
+            boxShadow:
+                isCurrentPage
+                    ? JobsAdminTheme.shadowColored(JobsAdminTheme.primary)
+                    : null,
           ),
           child: Center(
             child: Text(
@@ -827,9 +824,10 @@ class _PageNumberButton extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: isCurrentPage ? FontWeight.w600 : FontWeight.w500,
-                color: isCurrentPage
-                    ? JobsAdminTheme.textOnPrimary
-                    : JobsAdminTheme.textPrimary,
+                color:
+                    isCurrentPage
+                        ? JobsAdminTheme.textOnPrimary
+                        : JobsAdminTheme.textPrimary,
               ),
             ),
           ),

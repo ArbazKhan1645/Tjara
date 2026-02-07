@@ -6,12 +6,7 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tjara/app/core/utils/helpers/alerts.dart';
 import 'package:tjara/app/models/users_model.dart/customer_models.dart';
-import 'package:tjara/app/modules/admin_products_module/admin_flash_deals/views/flash_deal_settings_view.dart';
-import 'package:tjara/app/modules/admin_products_module/admin_products_bundles/views/admin_bundle_view.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_products_config/views/admin_products_config_view.dart';
-import 'package:tjara/app/modules/admin_products_module/admin_products_promotion/controller/admin_promotion_controller.dart';
-import 'package:tjara/app/modules/admin_products_module/admin_products_promotion/views/admin_promotion_view.dart';
-import 'package:tjara/app/modules/admin_products_module/admin_products_templates/views/admin_template_view.dart';
 import 'package:tjara/app/modules/authentication/dialogs/contact_us.dart';
 import 'package:tjara/app/modules/modules_customer/customer_dashboard/controllers/dashboard_controller.dart';
 import 'package:tjara/app/modules/modules_customer/customer_cart/controllers/my_cart_controller.dart';
@@ -32,11 +27,16 @@ class MoreviewBody extends StatefulWidget {
 }
 
 class _MoreviewBodyState extends State<MoreviewBody> {
-  final WebsiteOptionsService optionsService =
-      Get.find<WebsiteOptionsService>();
-
-  bool _isArabic(String text) {
-    return RegExp(r'[\u0600-\u06FF]').hasMatch(text);
+  // Safe initialization - null if service not registered
+  WebsiteOptionsService? get optionsService {
+    try {
+      if (Get.isRegistered<WebsiteOptionsService>()) {
+        return Get.find<WebsiteOptionsService>();
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
   }
 
   Widget _buildAlignedContent(String htmlContent) {
@@ -148,11 +148,11 @@ class _MoreviewBodyState extends State<MoreviewBody> {
           ),
           const SizedBox(height: 4),
 
-          // ✨ About Section (if description exists)
-          if (optionsService.websiteOptions?.websiteDescription?.isNotEmpty ??
+          // ✨ About Section (if description exists and service is available)
+          if (optionsService?.websiteOptions?.websiteDescription?.isNotEmpty ??
               false)
             _AboutSection(
-              content: optionsService.websiteOptions?.websiteDescription ?? '',
+              content: optionsService?.websiteOptions?.websiteDescription ?? '',
               buildAlignedContent: _buildAlignedContent,
             ),
 
@@ -322,7 +322,19 @@ class ProfileCard extends StatelessWidget {
                 Get.toNamed(Routes.DASHBOARD_ADMIN);
               },
               gradient: const LinearGradient(
-                colors: [Color(0xFF00897B), Color(0xFF004D40)],
+                colors: [Colors.teal, Colors.teal],
+              ),
+            )
+          else if (AuthService.instance.authCustomer?.user?.role == 'vendor')
+            _PremiumButton(
+              icon: Icons.dashboard_outlined,
+              label: 'Vendor Dashboard',
+              onTap: () async {
+                await Get.putAsync(() => BalanceService().init());
+                Get.toNamed(Routes.DASHBOARD_ADMIN);
+              },
+              gradient: const LinearGradient(
+                colors: [Colors.teal, Colors.teal],
               ),
             )
           else
@@ -334,7 +346,7 @@ class ProfileCard extends StatelessWidget {
                 Get.toNamed(Routes.DASHBOARD_ADMIN);
               },
               gradient: const LinearGradient(
-                colors: [Color(0xFF00897B), Color(0xFF004D40)],
+                colors: [Colors.teal, Colors.teal],
               ),
             ),
 
@@ -716,30 +728,6 @@ class _LinksSection extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 16),
-          _LinkItem(
-            icon: Icons.article_outlined,
-            label: 'Products',
-            onTap: () {
-              // Get.toNamed(Routes.FLASH_DEAL_SETTINGS);
-
-              // Get.lazyPut<AdminPromotionController>(
-              //   () => AdminPromotionController(),
-              // );
-              Get.to(() => const AdminProductsConfigView());
-            },
-          ),
-
-          _LinkItem(
-            icon: Icons.article_outlined,
-            label: 'Admin Web Settings',
-            onTap: () {
-              Get.to(() => const WebSettingsDashboardScreen());
-            },
-          ),
-          Text(
-            'will remove web setting and products from here and will add inside dashbaord after work complete',
           ),
 
           const SizedBox(height: 16),

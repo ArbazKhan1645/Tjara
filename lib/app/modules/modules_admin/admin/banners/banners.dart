@@ -11,6 +11,7 @@ import 'dart:convert';
 
 import 'package:tjara/app/models/posts/posts_model.dart';
 import 'package:tjara/app/modules/modules_admin/admin/blogs_categories/blogs_categories.dart';
+import 'package:tjara/app/services/auth/auth_service.dart';
 import 'package:tjara/main.dart';
 
 // Common Banner Controller
@@ -245,13 +246,13 @@ class BannerListScreen extends StatelessWidget {
     const expandedStackGradient = LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: [Color(0xFFF97316), Color(0xFFFACC15)],
+      colors: [Colors.teal, Colors.teal],
     );
     final displayTitle = title ?? controller.displayName;
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF97316),
+        backgroundColor: Colors.teal,
         actions: [const AdminAppBarActionsSimple()],
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
@@ -492,7 +493,7 @@ class BannerListScreen extends StatelessWidget {
                                   return const SizedBox(
                                     height: 200,
                                     child: Center(
-                                      child: CircularProgressIndicator(
+                                      child: LinearProgressIndicator(
                                         color: Color(0xFFF97316),
                                       ),
                                     ),
@@ -538,7 +539,7 @@ class BannerListScreen extends StatelessWidget {
                                             : 800,
                                     child: DataTable(
                                       headingRowColor: WidgetStateProperty.all(
-                                        const Color(0xFFF97316),
+                                        Colors.teal,
                                       ),
                                       headingTextStyle: const TextStyle(
                                         fontWeight: FontWeight.bold,
@@ -1117,7 +1118,8 @@ class BannerFormController extends GetxController {
             'Content-Type': 'application/json',
             'X-Request-From': 'Application',
             'Accept': 'application/json',
-            'shop-id': '0000c539-9857-3456-bc53-2bbdc1474f1a',
+            'shop-id':
+                AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
           },
           body: json.encode(requestData),
         );

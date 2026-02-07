@@ -7,6 +7,7 @@ import 'package:tjara/app/core/widgets/buttons/gardient_button_with_left_arrow_a
 import 'package:tjara/app/modules/modules_admin/admin/stories/insert/insert_service.dart';
 import 'package:tjara/app/modules/modules_admin/admin/stories/view/sort.dart';
 import 'package:tjara/app/modules/modules_admin/admin/stories/view/stories_list_widget.dart';
+import 'package:tjara/app/services/auth/auth_service.dart';
 import 'package:tjara/app/services/dashbopard_services/stories_service.dart';
 import 'package:tjara/app/services/websettings_service/websetting_service.dart';
 
@@ -51,6 +52,10 @@ class StoriesViewWidget extends StatelessWidget {
                       ),
                       Builder(
                         builder: (context) {
+                          if (AuthService.instance.authCustomer?.user?.role !=
+                              'admin') {
+                            return Container();
+                          }
                           final WebsiteOptionsService optionsService =
                               Get.find<WebsiteOptionsService>();
 

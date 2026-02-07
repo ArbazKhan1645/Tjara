@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:tjara/app/core/widgets/admin_app_bar_actions.dart';
 import 'package:tjara/app/modules/modules_admin/admin/withdrawel/widgets/withdrawal_theme.dart';
 import 'package:tjara/app/modules/modules_admin/admin/withdrawel/widgets/withdrawal_shimmer.dart';
+import 'package:tjara/app/services/auth/auth_service.dart';
 
 /// API Response wrapper for better error handling
 class ApiResponse<T> {
@@ -320,7 +321,8 @@ class WithdrawalService {
 
 // Controller with proper loading states
 class WithdrawalController extends GetxController {
-  static const String staticShopId = '0000c539-9857-3456-bc53-2bbdc1474f1a';
+  static String staticShopId =
+      AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '';
 
   // Separate loading states
   var isInitialLoading = false.obs; // For shimmer loading on initial/refresh
@@ -1362,20 +1364,11 @@ class UserWithdrawalsScreen extends StatelessWidget {
       foregroundColor: Colors.white,
       iconTheme: const IconThemeData(color: Colors.white),
       actions: const [AdminAppBarActionsSimple()],
-      title: Row(
+      title: const Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(WithdrawalTheme.spacingXs),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(WithdrawalTheme.radiusSm),
-            ),
-            child: const Icon(Icons.account_balance_rounded, size: 20),
-          ),
-          const SizedBox(width: WithdrawalTheme.spacingSm),
-          const Text(
+          Text(
             'My Withdrawals',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
           ),
         ],
       ),

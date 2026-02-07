@@ -226,7 +226,7 @@ class AdminProductsConfigView extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: 3,
         mainAxisSpacing: 3,
-        childAspectRatio: 1,
+        childAspectRatio: 0.89,
       ),
       itemCount: menuItems.length,
       itemBuilder: (context, index) {

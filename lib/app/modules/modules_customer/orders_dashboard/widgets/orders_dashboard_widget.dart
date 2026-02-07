@@ -36,19 +36,19 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   static const LinearGradient _expandedGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [Color(0xFFF97316), Color(0xFFF97316)],
+    colors: [Colors.teal, Colors.teal],
   );
 
   static const LinearGradient _collapsedGradient = LinearGradient(
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
-    colors: [Color(0xFFF97316), Color(0xFFFACC15)],
+    colors: [Colors.teal, Colors.teal],
   );
 
   static const LinearGradient _expandedStackGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [Color(0xFFF97316), Color(0xFFFACC15)],
+    colors: [Colors.teal, Colors.teal],
   );
 
   @override
@@ -122,7 +122,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           pinned: true,
           iconTheme: const IconThemeData(color: Colors.white),
           expandedHeight: 80,
-          backgroundColor: const Color(0xFFF97316),
+          backgroundColor: Colors.teal,
           elevation: 0,
           flexibleSpace: FlexibleSpaceBar(
             background: AnimatedContainer(

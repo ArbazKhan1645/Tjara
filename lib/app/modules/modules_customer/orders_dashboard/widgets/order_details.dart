@@ -25,7 +25,8 @@ class _OrdersDetailOverviewState extends State<OrdersDetailOverview> {
 
   // Safe getters
   bool get _isAdmin =>
-      AuthService.instance.authCustomer?.user?.role == 'admin';
+      AuthService.instance.authCustomer?.user?.role == 'admin' ||
+      AuthService.instance.authCustomer?.user?.role == 'vendor';
 
   @override
   void initState() {
@@ -69,50 +70,51 @@ class _OrdersDetailOverviewState extends State<OrdersDetailOverview> {
     return showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusLg),
-        ),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AdminDashboardTheme.errorLight,
-                borderRadius: BorderRadius.circular(
-                  AdminDashboardTheme.radiusSm,
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusLg),
+            ),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AdminDashboardTheme.errorLight,
+                    borderRadius: BorderRadius.circular(
+                      AdminDashboardTheme.radiusSm,
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.delete_outline_rounded,
+                    color: AdminDashboardTheme.error,
+                    size: 20,
+                  ),
                 ),
-              ),
-              child: const Icon(
-                Icons.delete_outline_rounded,
-                color: AdminDashboardTheme.error,
-                size: 20,
-              ),
+                const SizedBox(width: 12),
+                const Text(
+                  'Delete Order',
+                  style: AdminDashboardTheme.headingMedium,
+                ),
+              ],
             ),
-            const SizedBox(width: 12),
-            const Text(
-              'Delete Order',
-              style: AdminDashboardTheme.headingMedium,
+            content: const Text(
+              'Are you sure you want to delete this order? This action cannot be undone.',
+              style: AdminDashboardTheme.bodyLarge,
             ),
-          ],
-        ),
-        content: const Text(
-          'Are you sure you want to delete this order? This action cannot be undone.',
-          style: AdminDashboardTheme.bodyLarge,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            style: AdminDashboardTheme.outlineButtonStyle,
-            child: const Text('Cancel'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                style: AdminDashboardTheme.outlineButtonStyle,
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: AdminDashboardTheme.errorButtonStyle,
+                child: const Text('Delete'),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: AdminDashboardTheme.errorButtonStyle,
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -202,6 +204,21 @@ class _OrdersDetailOverviewState extends State<OrdersDetailOverview> {
                 _controller.setisSHowndispute(true);
                 setState(() {});
               },
+              onUpdateOrderStatus: () {
+                _controller.showUpdateOrderStatusDialog(
+                  selectedOrder.id?.toString() ?? '',
+                  context,
+                  selectedOrder.status?.toString() ?? 'pending',
+                );
+              },
+              onUpdatePaymentStatus: () {
+                _controller.showUpdatePaymentStatusDialog(
+                  selectedOrder.id?.toString() ?? '',
+                  context,
+                  selectedOrder.transaction?.paymentStatus?.toString() ??
+                      'pending',
+                );
+              },
             ),
             const SizedBox(height: AdminDashboardTheme.spacingMd),
             _OrderDetailsCard(
@@ -265,6 +282,8 @@ class _OrderHeader extends StatelessWidget {
   final VoidCallback onDelete;
   final VoidCallback onUpdateStatus;
   final VoidCallback onShowDispute;
+  final VoidCallback onUpdateOrderStatus;
+  final VoidCallback onUpdatePaymentStatus;
 
   const _OrderHeader({
     required this.order,
@@ -274,14 +293,16 @@ class _OrderHeader extends StatelessWidget {
     required this.onDelete,
     required this.onUpdateStatus,
     required this.onShowDispute,
+    required this.onUpdateOrderStatus,
+    required this.onUpdatePaymentStatus,
   });
 
-  bool get _isPending =>
-      order.status?.toString().toLowerCase() == 'pending';
+  bool get _isPending => order.status?.toString().toLowerCase() == 'pending';
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
           'Order Details',
@@ -291,28 +312,60 @@ class _OrderHeader extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
-        const Spacer(),
+        const SizedBox(height: AdminDashboardTheme.spacingMd),
+        // Row 1: Admin actions
         if (isAdmin)
-          Expanded(
-            child: _ActionButton(
-              icon: Icons.delete_outline_rounded,
-              label: 'Delete',
-              color: AdminDashboardTheme.error,
-              isLoading: isDeleting,
-              onTap: onDelete,
+          Row(
+            children: [
+              Expanded(
+                child: _ActionButton(
+                  icon: Icons.edit_note_rounded,
+                  label: 'Order Status',
+                  color: const Color(0xFF00897B),
+                  isLoading: false,
+                  onTap: onUpdateOrderStatus,
+                ),
+              ),
+              const SizedBox(width: AdminDashboardTheme.spacingSm),
+              Expanded(
+                child: _ActionButton(
+                  icon: Icons.payment_rounded,
+                  label: 'Payment Status',
+                  color: const Color(0xFF5C6BC0),
+                  isLoading: false,
+                  onTap: onUpdatePaymentStatus,
+                ),
+              ),
+            ],
+          ),
+        if (isAdmin) const SizedBox(height: AdminDashboardTheme.spacingSm),
+        // Row 2: Delete and Cancel/Dispute
+        Row(
+          children: [
+            if (isAdmin)
+              Expanded(
+                child: _ActionButton(
+                  icon: Icons.delete_outline_rounded,
+                  label: 'Delete',
+                  color: AdminDashboardTheme.error,
+                  isLoading: isDeleting,
+                  onTap: onDelete,
+                ),
+              ),
+            if (isAdmin) const SizedBox(width: AdminDashboardTheme.spacingSm),
+            Expanded(
+              child: _ActionButton(
+                icon: _isPending ? Icons.cancel_outlined : Icons.gavel_rounded,
+                label: _isPending ? 'Cancel' : 'Dispute',
+                color:
+                    _isPending
+                        ? AdminDashboardTheme.warning
+                        : AdminDashboardTheme.accent,
+                isLoading: isUpdatingStatus,
+                onTap: _isPending ? onUpdateStatus : onShowDispute,
+              ),
             ),
-          ),
-        const SizedBox(width: AdminDashboardTheme.spacingSm),
-        Expanded(
-          child: _ActionButton(
-            icon: _isPending ? Icons.cancel_outlined : Icons.gavel_rounded,
-            label: _isPending ? 'Cancel' : 'Dispute',
-            color: _isPending
-                ? AdminDashboardTheme.warning
-                : AdminDashboardTheme.accent,
-            isLoading: isUpdatingStatus,
-            onTap: _isPending ? onUpdateStatus : onShowDispute,
-          ),
+          ],
         ),
       ],
     );
@@ -348,7 +401,8 @@ class _ActionButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: isLoading ? AdminDashboardTheme.surfaceSecondary : color,
             borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusMd),
-            boxShadow: isLoading ? null : AdminDashboardTheme.shadowColored(color),
+            boxShadow:
+                isLoading ? null : AdminDashboardTheme.shadowColored(color),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -370,9 +424,10 @@ class _ActionButton extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  color: isLoading
-                      ? AdminDashboardTheme.textSecondary
-                      : Colors.white,
+                  color:
+                      isLoading
+                          ? AdminDashboardTheme.textSecondary
+                          : Colors.white,
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
                 ),
@@ -400,7 +455,8 @@ class _OrderDetailsCard extends StatelessWidget {
   // Safe getters
   String get _orderId => order.meta?['order_id']?.toString() ?? '--';
   String get _shopName => order.shop?.shop?.name?.toString() ?? 'Unknown Shop';
-  String get _shopBanner => order.shop?.shop?.banner?.media?.url?.toString() ?? '';
+  String get _shopBanner =>
+      order.shop?.shop?.banner?.media?.url?.toString() ?? '';
   String get _status => order.status?.toString() ?? '--';
   String get _paymentStatus =>
       order.transaction?.paymentStatus?.toString() ?? '--';
@@ -453,10 +509,7 @@ class _OrderDetailsCard extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Order ID',
-              style: AdminDashboardTheme.bodySmall,
-            ),
+            const Text('Order ID', style: AdminDashboardTheme.bodySmall),
             Text(
               '#$_orderId',
               style: AdminDashboardTheme.headingMedium.copyWith(
@@ -501,15 +554,9 @@ class _OrderDetailsCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Shop',
-                  style: AdminDashboardTheme.bodySmall,
-                ),
+                const Text('Shop', style: AdminDashboardTheme.bodySmall),
                 const SizedBox(height: 4),
-                Text(
-                  _shopName,
-                  style: AdminDashboardTheme.headingSmall,
-                ),
+                Text(_shopName, style: AdminDashboardTheme.headingSmall),
               ],
             ),
           ),
@@ -605,7 +652,10 @@ class _OrderDetailsCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AdminDashboardTheme.spacingLg),
-        _DetailRow(label: 'Full Name', value: fullName.isEmpty ? '--' : fullName),
+        _DetailRow(
+          label: 'Full Name',
+          value: fullName.isEmpty ? '--' : fullName,
+        ),
         _DetailRow(label: 'Email', value: email),
         _DetailRow(label: 'Phone', value: phone),
         _DetailRow(label: 'Order Date', value: orderDate),
@@ -647,9 +697,7 @@ class _OrderDetailsCard extends StatelessWidget {
           ),
         ),
         FutureBuilder(
-          future: controller.fetchOrderItemsFuture(
-            order.id?.toString() ?? '',
-          ),
+          future: controller.fetchOrderItemsFuture(order.id?.toString() ?? ''),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const _ItemsShimmerList();
@@ -771,7 +819,8 @@ class _OrderDetailsCard extends StatelessWidget {
         ),
         _SummaryRow(
           label: 'Delivery Fee',
-          value: shippingFee > 0 ? '\$${shippingFee.toStringAsFixed(2)}' : 'Free',
+          value:
+              shippingFee > 0 ? '\$${shippingFee.toStringAsFixed(2)}' : 'Free',
         ),
         if (discountTotal > 0)
           _SummaryRow(
@@ -780,14 +829,17 @@ class _OrderDetailsCard extends StatelessWidget {
             valueColor: AdminDashboardTheme.success,
           ),
         const Padding(
-          padding: EdgeInsets.symmetric(vertical: AdminDashboardTheme.spacingSm),
+          padding: EdgeInsets.symmetric(
+            vertical: AdminDashboardTheme.spacingSm,
+          ),
           child: Divider(color: AdminDashboardTheme.divider),
         ),
         _SummaryRow(
           label: 'Subtotal + Fees',
-          value: calculatedTotal > 0
-              ? '\$${calculatedTotal.toStringAsFixed(2)}'
-              : '--',
+          value:
+              calculatedTotal > 0
+                  ? '\$${calculatedTotal.toStringAsFixed(2)}'
+                  : '--',
         ),
         if (adminCommission > 0)
           _SummaryRow(
@@ -795,24 +847,30 @@ class _OrderDetailsCard extends StatelessWidget {
             value: '-\$${adminCommission.toStringAsFixed(2)}',
           ),
         const Padding(
-          padding: EdgeInsets.symmetric(vertical: AdminDashboardTheme.spacingSm),
+          padding: EdgeInsets.symmetric(
+            vertical: AdminDashboardTheme.spacingSm,
+          ),
           child: Divider(color: AdminDashboardTheme.divider),
         ),
         _SummaryRow(
           label: 'Transaction Amount',
-          value: transactionAmount > 0
-              ? '\$${transactionAmount.toStringAsFixed(2)}'
-              : '--',
+          value:
+              transactionAmount > 0
+                  ? '\$${transactionAmount.toStringAsFixed(2)}'
+                  : '--',
         ),
         const Padding(
-          padding: EdgeInsets.symmetric(vertical: AdminDashboardTheme.spacingSm),
+          padding: EdgeInsets.symmetric(
+            vertical: AdminDashboardTheme.spacingSm,
+          ),
           child: Divider(color: AdminDashboardTheme.divider, thickness: 2),
         ),
         _SummaryRow(
           label: 'Final Total',
-          value: finalOrderTotal > 0
-              ? '\$${finalOrderTotal.toStringAsFixed(2)}'
-              : '--',
+          value:
+              finalOrderTotal > 0
+                  ? '\$${finalOrderTotal.toStringAsFixed(2)}'
+                  : '--',
           isBold: true,
           valueColor: AdminDashboardTheme.success,
         ),
@@ -826,10 +884,7 @@ class _ShopImage extends StatelessWidget {
   final String shopName;
   final String imageUrl;
 
-  const _ShopImage({
-    required this.shopName,
-    required this.imageUrl,
-  });
+  const _ShopImage({required this.shopName, required this.imageUrl});
 
   @override
   Widget build(BuildContext context) {
@@ -846,30 +901,32 @@ class _ShopImage extends StatelessWidget {
           imageUrl: imageUrl,
           fit: BoxFit.cover,
           cacheManager: PersistentCacheManager(),
-          placeholder: (context, url) => Container(
-            color: AdminDashboardTheme.accent,
-            child: const Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            ),
-          ),
-          errorWidget: (context, url, error) => Container(
-            color: AdminDashboardTheme.accent,
-            child: Center(
-              child: Text(
-                shopName.length >= 2
-                    ? shopName.substring(0, 2).toUpperCase()
-                    : shopName.toUpperCase(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
+          placeholder:
+              (context, url) => Container(
+                color: AdminDashboardTheme.accent,
+                child: const Center(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
                 ),
               ),
-            ),
-          ),
+          errorWidget:
+              (context, url, error) => Container(
+                color: AdminDashboardTheme.accent,
+                child: Center(
+                  child: Text(
+                    shopName.length >= 2
+                        ? shopName.substring(0, 2).toUpperCase()
+                        : shopName.toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
+                  ),
+                ),
+              ),
         ),
       ),
     );
@@ -882,11 +939,7 @@ class _DetailRow extends StatelessWidget {
   final String? value;
   final Widget? child;
 
-  const _DetailRow({
-    required this.label,
-    this.value,
-    this.child,
-  });
+  const _DetailRow({required this.label, this.value, this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -940,15 +993,18 @@ class _SummaryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AdminDashboardTheme.spacingXs),
+      padding: const EdgeInsets.symmetric(
+        vertical: AdminDashboardTheme.spacingXs,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             label,
-            style: isBold
-                ? AdminDashboardTheme.headingSmall
-                : AdminDashboardTheme.bodyMedium,
+            style:
+                isBold
+                    ? AdminDashboardTheme.headingSmall
+                    : AdminDashboardTheme.bodyMedium,
           ),
           Text(
             value,
@@ -956,9 +1012,9 @@ class _SummaryRow extends StatelessWidget {
                     ? AdminDashboardTheme.headingMedium
                     : AdminDashboardTheme.bodyLarge)
                 .copyWith(
-              color: valueColor,
-              fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
-            ),
+                  color: valueColor,
+                  fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
+                ),
           ),
         ],
       ),
@@ -992,27 +1048,29 @@ class _OrderItemTile extends StatelessWidget {
               height: 50,
               fit: BoxFit.cover,
               cacheManager: PersistentCacheManager(),
-              placeholder: (context, url) => Container(
-                width: 50,
-                height: 50,
-                color: AdminDashboardTheme.surfaceSecondary,
-                child: const Center(
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+              placeholder:
+                  (context, url) => Container(
+                    width: 50,
+                    height: 50,
+                    color: AdminDashboardTheme.surfaceSecondary,
+                    child: const Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              errorWidget: (context, url, error) => Container(
-                width: 50,
-                height: 50,
-                color: AdminDashboardTheme.surfaceSecondary,
-                child: const Icon(
-                  Icons.image_rounded,
-                  color: AdminDashboardTheme.textTertiary,
-                ),
-              ),
+              errorWidget:
+                  (context, url, error) => Container(
+                    width: 50,
+                    height: 50,
+                    color: AdminDashboardTheme.surfaceSecondary,
+                    child: const Icon(
+                      Icons.image_rounded,
+                      color: AdminDashboardTheme.textTertiary,
+                    ),
+                  ),
             ),
           ),
           const SizedBox(width: AdminDashboardTheme.spacingMd),

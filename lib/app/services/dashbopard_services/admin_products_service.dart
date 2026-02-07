@@ -114,7 +114,7 @@ class AdminProductsService extends GetxService {
         return;
       }
 
-      if (current?.user?.role != 'admin') {
+      if (current?.user?.role == 'customer') {
         return;
       }
 
@@ -294,13 +294,13 @@ class AdminProductsService extends GetxService {
     queryParams['filterByColumns[columns][$columnIndex][operator]'] = '!=';
     columnIndex++;
 
-    if ((AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '')
-        .isNotEmpty) {
-      queryParams['filterByColumns[columns][$columnIndex][column]'] = 'shop_id';
-      queryParams['filterByColumns[columns][$columnIndex][value]'] = 'car';
-      queryParams['filterByColumns[columns][$columnIndex][operator]'] = '=';
-      columnIndex++;
-    }
+    // if ((AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '')
+    //     .isNotEmpty) {
+    //   queryParams['filterByColumns[columns][$columnIndex][column]'] = 'shop_id';
+    //   queryParams['filterByColumns[columns][$columnIndex][value]'] = 'car';
+    //   queryParams['filterByColumns[columns][$columnIndex][operator]'] = '=';
+    //   columnIndex++;
+    // }
 
     // 4. Add created_at date range filter if provided
     if (startDate.value != null && endDate.value != null) {

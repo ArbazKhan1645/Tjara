@@ -15,7 +15,7 @@ class MyShopScreen extends StatelessWidget {
     final MyShopController controller = Get.put(MyShopController());
     PreferredSizeWidget buildAppBar() {
       return AppBar(
-        backgroundColor: const Color(0xFFF97316),
+        backgroundColor: Colors.teal,
         elevation: 0,
         actions: [const AdminAppBarActionsSimple()],
         iconTheme: const IconThemeData(color: Colors.white),
@@ -34,13 +34,7 @@ class MyShopScreen extends StatelessWidget {
           children: [
             // Header with balance and profile
             Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFFF97316), Color(0xFFF97316)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
+              decoration: const BoxDecoration(color: Colors.teal),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -103,7 +97,7 @@ class MyShopScreen extends StatelessWidget {
                                       vertical: 2,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.green,
+                                      color: Colors.teal,
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Obx(
@@ -168,9 +162,9 @@ class MyShopScreen extends StatelessWidget {
               color: Colors.white,
               child: TabBar(
                 controller: controller.tabController,
-                labelColor: const Color(0xFFF97316),
+                labelColor: Colors.teal,
                 unselectedLabelColor: Colors.grey,
-                indicatorColor: const Color(0xFFF97316),
+                indicatorColor: Colors.teal,
                 indicatorWeight: 3,
                 tabs: const [
                   Tab(icon: Icon(Icons.info_outline), text: 'Shop Info'),

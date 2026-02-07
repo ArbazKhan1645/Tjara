@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shimmer/shimmer.dart';
 import 'package:intl/intl.dart';
+import 'package:tjara/app/services/auth/auth_service.dart';
 
 class EmailAnalyticsWidget extends StatefulWidget {
   final String userId;
@@ -45,8 +46,9 @@ class _EmailAnalyticsWidgetState extends State<EmailAnalyticsWidget> {
         Uri.parse(url),
         headers: {
           'x-request-from': 'Dashboard',
-          'user-id': widget.userId,
-          'shop-id': widget.shopId,
+          'shop-id':
+              AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
+          'user-id': AuthService.instance.authCustomer!.user!.id.toString(),
           'Content-Type': 'application/json',
         },
       );

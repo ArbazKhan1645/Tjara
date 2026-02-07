@@ -12,6 +12,8 @@ import 'package:tjara/app/modules/modules_admin/admin_shops_module/const/app_url
 import 'package:tjara/app/modules/modules_admin/admin_shops_module/models/shopData_model.dart';
 import 'dart:convert';
 
+import 'package:tjara/app/services/auth/auth_service.dart';
+
 class ShopController extends GetxController {
   // Constants
   static const int _requestTimeout = 30;
@@ -272,7 +274,7 @@ class ShopController extends GetxController {
       'Content-Type': 'application/json',
       'X-Request-From': 'Application',
       'Accept': 'application/json',
-      'shop-id': shopId,
+      'shop-id': AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
     };
 
     await _executeWithRetry(() async {

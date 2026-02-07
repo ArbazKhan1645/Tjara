@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:shimmer/shimmer.dart';
 import 'package:tjara/app/models/orders_analytics.dart';
+import 'package:tjara/app/modules/modules_customer/my_activities/events_analytics/views/events_analytics_view.dart';
+import 'package:tjara/app/services/auth/auth_service.dart';
 
 /// Elegant theme constants for Orders Analytics
 class _AnalyticsTheme {
@@ -80,6 +84,21 @@ class _OrdersWebAnalyticsPageState extends State<OrdersWebAnalyticsPage>
   Future<OrderAnalyticsModel>? _analyticsData;
   late AnimationController _animationController;
 
+  // Date filter state
+  String _selectedDateFilter = 'all';
+  DateTime? _customStartDate;
+  DateTime? _customEndDate;
+
+  final List<Map<String, String>> _dateFilterOptions = [
+    {'value': 'daily', 'label': 'Today'},
+    {'value': 'yesterday', 'label': 'Yesterday'},
+    {'value': 'weekly', 'label': 'This Week'},
+    {'value': 'monthly', 'label': 'This Month'},
+    {'value': 'yearly', 'label': 'This Year'},
+    {'value': 'all', 'label': 'All Time'},
+    {'value': 'custom-date', 'label': 'Custom Date'},
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -98,13 +117,29 @@ class _OrdersWebAnalyticsPageState extends State<OrdersWebAnalyticsPage>
 
   Future<OrderAnalyticsModel> fetchAnalytics() async {
     try {
+      String url =
+          'https://api.libanbuy.com/api/orders/analytics?ordersType=received-orders&dateFilter=$_selectedDateFilter&search=&searchByBuyerName=&searchByPhoneNumber=&filterByMetaFields[filterJoin]=AND&filterByMetaFields[fields][0][key]=is_testing&filterByMetaFields[fields][0][value]=1&filterByMetaFields[fields][0][operator]=IS_EMPTY&filterByMetaFields[fields][1][key]=is_soft_deleted&filterByMetaFields[fields][1][value]=1&filterByMetaFields[fields][1][operator]=IS_EMPTY';
+
+      if (_selectedDateFilter == 'custom-date' &&
+          _customStartDate != null &&
+          _customEndDate != null) {
+        final startStr = DateFormat(
+          'd MMM, yyyy',
+        ).format(_customStartDate!).replaceAll(' ', '+');
+        final endStr = DateFormat(
+          'd MMM, yyyy',
+        ).format(_customEndDate!).replaceAll(' ', '+');
+        url += '&customStartDate=$startStr&customEndDate=$endStr';
+      }
+
       final response = await http.get(
-        Uri.parse(
-          'https://api.libanbuy.com/api/orders/analytics?ordersType=received-orders&dateFilter=all&search=&searchByBuyerName=${widget.userid}&searchByPhoneNumber=&filterByMetaFields[filterJoin]=AND&filterByMetaFields[fields][0][key]=is_testing&filterByMetaFields[fields][0][value]=1&filterByMetaFields[fields][0][operator]=IS_EMPTY&filterByMetaFields[fields][1][key]=is_soft_deleted&filterByMetaFields[fields][1][value]=1&filterByMetaFields[fields][1][operator]=IS_EMPTY',
-        ),
+        Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
-          'X-Request-From': 'Application',
+          'X-Request-From': 'Dashboard',
+          'shop-id':
+              AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
+          'user-id': AuthService.instance.authCustomer!.user!.id.toString(),
         },
       );
 
@@ -127,70 +162,194 @@ class _OrdersWebAnalyticsPageState extends State<OrdersWebAnalyticsPage>
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<OrderAnalyticsModel>(
-      future: _analyticsData,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return _buildShimmerLoading();
-        } else if (snapshot.hasError) {
-          return _buildErrorWidget(snapshot.error.toString());
-        } else if (snapshot.hasData && snapshot.data?.analytics != null) {
-          return _buildAnalyticsCards(snapshot.data!.analytics!);
-        } else {
-          return _buildNoDataWidget();
-        }
-      },
-    );
+  void _onDateFilterChanged(String value) {
+    setState(() {
+      _selectedDateFilter = value;
+      if (value != 'custom-date') {
+        _customStartDate = null;
+        _customEndDate = null;
+        _refreshData();
+      }
+    });
   }
 
-  Widget _buildShimmerLoading() {
+  Future<void> _pickCustomDateRange() async {
+    final DateTimeRange? picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      initialDateRange: DateTimeRange(
+        start:
+            _customStartDate ??
+            DateTime.now().subtract(const Duration(days: 30)),
+        end: _customEndDate ?? DateTime.now(),
+      ),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: _AnalyticsTheme.primary,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _customStartDate = picked.start;
+        _customEndDate = picked.end;
+      });
+      _refreshData();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(_AnalyticsTheme.spacingLg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header shimmer
-          _buildShimmerBox(width: 180, height: 28),
+          // Header
+          _buildHeader(),
+          const SizedBox(height: 12),
+
+          // Date Filter Chips
+          _buildDateFilterChips(),
+
+          // Custom Date Info
+          if (_selectedDateFilter == 'custom-date' &&
+              _customStartDate != null) ...[
+            const SizedBox(height: 8),
+            _buildCustomDateInfo(),
+          ],
+
           const SizedBox(height: _AnalyticsTheme.spacingXl),
 
-          // Summary cards shimmer
-          Container(
-            padding: const EdgeInsets.all(_AnalyticsTheme.spacingXl),
-            decoration: BoxDecoration(
-              color: _AnalyticsTheme.surface,
-              borderRadius: BorderRadius.circular(_AnalyticsTheme.radiusXl),
-              boxShadow: _AnalyticsTheme.shadowSm,
-            ),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(child: _buildCardShimmer()),
-                    const SizedBox(width: _AnalyticsTheme.spacingMd),
-                    Expanded(child: _buildCardShimmer()),
-                  ],
-                ),
-                const SizedBox(height: _AnalyticsTheme.spacingMd),
-                Row(
-                  children: [
-                    Expanded(child: _buildCardShimmer()),
-                    const SizedBox(width: _AnalyticsTheme.spacingMd),
-                    Expanded(child: _buildCardShimmer()),
-                  ],
-                ),
-                const SizedBox(height: _AnalyticsTheme.spacingXl),
-                ...List.generate(
-                  5,
-                  (index) => Padding(
-                    padding: const EdgeInsets.only(
-                      bottom: _AnalyticsTheme.spacingMd,
+          // Content
+          FutureBuilder<OrderAnalyticsModel>(
+            future: _analyticsData,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return _buildShimmerContent();
+              } else if (snapshot.hasError) {
+                return _buildErrorWidget(snapshot.error.toString());
+              } else if (snapshot.hasData && snapshot.data?.analytics != null) {
+                return _buildAnalyticsContent(snapshot.data!.analytics!);
+              } else {
+                return _buildNoDataWidget();
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Date Filter Chips ───
+  Widget _buildDateFilterChips() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children:
+            _dateFilterOptions.map((option) {
+              final isSelected = option['value'] == _selectedDateFilter;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    if (option['value'] == 'custom-date') {
+                      _onDateFilterChanged(option['value']!);
+                      _pickCustomDateRange();
+                    } else {
+                      _onDateFilterChanged(option['value']!);
+                    }
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 7,
                     ),
-                    child: _buildStatusCardShimmer(),
+                    decoration: BoxDecoration(
+                      color:
+                          isSelected
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color:
+                            isSelected
+                                ? Colors.white
+                                : Colors.white.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (option['value'] == 'custom-date') ...[
+                          Icon(
+                            Icons.calendar_today,
+                            size: 13,
+                            color:
+                                isSelected
+                                    ? _AnalyticsTheme.primary
+                                    : Colors.white70,
+                          ),
+                          const SizedBox(width: 5),
+                        ],
+                        Text(
+                          option['label'] ?? '',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight:
+                                isSelected ? FontWeight.w600 : FontWeight.w500,
+                            color:
+                                isSelected
+                                    ? _AnalyticsTheme.primary
+                                    : Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ],
+              );
+            }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildCustomDateInfo() {
+    final start = DateFormat('MMM dd, yyyy').format(_customStartDate!);
+    final end =
+        _customEndDate != null
+            ? DateFormat('MMM dd, yyyy').format(_customEndDate!)
+            : 'Now';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.date_range, size: 14, color: Colors.white70),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              '$start  -  $end',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -198,17 +357,41 @@ class _OrdersWebAnalyticsPageState extends State<OrdersWebAnalyticsPage>
     );
   }
 
-  Widget _buildShimmerBox({required double width, required double height}) {
-    return Shimmer.fromColors(
-      baseColor: _AnalyticsTheme.surfaceSecondary,
-      highlightColor: _AnalyticsTheme.surface,
-      child: Container(
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-          color: _AnalyticsTheme.surface,
-          borderRadius: BorderRadius.circular(_AnalyticsTheme.radiusSm),
-        ),
+  // ─── Shimmer Content ───
+  Widget _buildShimmerContent() {
+    return Container(
+      padding: const EdgeInsets.all(_AnalyticsTheme.spacingXl),
+      decoration: BoxDecoration(
+        color: _AnalyticsTheme.surface,
+        borderRadius: BorderRadius.circular(_AnalyticsTheme.radiusXl),
+        boxShadow: _AnalyticsTheme.shadowSm,
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(child: _buildCardShimmer()),
+              const SizedBox(width: _AnalyticsTheme.spacingMd),
+              Expanded(child: _buildCardShimmer()),
+            ],
+          ),
+          const SizedBox(height: _AnalyticsTheme.spacingMd),
+          Row(
+            children: [
+              Expanded(child: _buildCardShimmer()),
+              const SizedBox(width: _AnalyticsTheme.spacingMd),
+              Expanded(child: _buildCardShimmer()),
+            ],
+          ),
+          const SizedBox(height: _AnalyticsTheme.spacingXl),
+          ...List.generate(
+            5,
+            (index) => Padding(
+              padding: const EdgeInsets.only(bottom: _AnalyticsTheme.spacingMd),
+              child: _buildStatusCardShimmer(),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -241,8 +424,8 @@ class _OrdersWebAnalyticsPageState extends State<OrdersWebAnalyticsPage>
     );
   }
 
-  Widget _buildAnalyticsCards(Analytics analytics) {
-    // Safe getters with defaults
+  // ─── Analytics Content ───
+  Widget _buildAnalyticsContent(Analytics analytics) {
     final totalOrders = analytics.totalOrders ?? 0;
     final completedOrders = analytics.totalCompletedOrders ?? 0;
     final totalValue = analytics.totalOrderValue ?? 0.0;
@@ -257,136 +440,120 @@ class _OrdersWebAnalyticsPageState extends State<OrdersWebAnalyticsPage>
     final cancelledOrders = analytics.totalCancelledOrders ?? 0;
     final cancelledValue = analytics.cancelledOrdersValue ?? 0.0;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(_AnalyticsTheme.spacingLg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          _buildHeader(),
-          const SizedBox(height: _AnalyticsTheme.spacingXl),
+    return Container(
+      decoration: BoxDecoration(
+        color: _AnalyticsTheme.surface,
+        borderRadius: BorderRadius.circular(_AnalyticsTheme.radiusXl),
+        boxShadow: _AnalyticsTheme.shadowMd,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(_AnalyticsTheme.spacingXl),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Summary Section Title
+            _buildSectionTitle('Overview', Icons.analytics_outlined),
+            const SizedBox(height: _AnalyticsTheme.spacingLg),
 
-          // Main Card
-          Container(
-            decoration: BoxDecoration(
-              color: _AnalyticsTheme.surface,
-              borderRadius: BorderRadius.circular(_AnalyticsTheme.radiusXl),
-              boxShadow: _AnalyticsTheme.shadowMd,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(_AnalyticsTheme.spacingXl),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Summary Section Title
-                  _buildSectionTitle('Overview', Icons.analytics_outlined),
-                  const SizedBox(height: _AnalyticsTheme.spacingLg),
-
-                  // Summary Cards Grid
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildSummaryCard(
-                          title: 'Total Orders',
-                          value: totalOrders.toString(),
-                          icon: Icons.shopping_bag_outlined,
-                          color: _AnalyticsTheme.info,
-                          lightColor: _AnalyticsTheme.infoLight,
-                        ),
-                      ),
-                      const SizedBox(width: _AnalyticsTheme.spacingMd),
-                      Expanded(
-                        child: _buildSummaryCard(
-                          title: 'Completed',
-                          value: completedOrders.toString(),
-                          icon: Icons.check_circle_outline,
-                          color: _AnalyticsTheme.success,
-                          lightColor: _AnalyticsTheme.successLight,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: _AnalyticsTheme.spacingMd),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildSummaryCard(
-                          title: 'Total Sales',
-                          value: '\$${totalValue.toStringAsFixed(2)}',
-                          icon: Icons.payments_outlined,
-                          color: _AnalyticsTheme.primary,
-                          lightColor: _AnalyticsTheme.primaryLight,
-                        ),
-                      ),
-                      const SizedBox(width: _AnalyticsTheme.spacingMd),
-                      Expanded(
-                        child: _buildSummaryCard(
-                          title: 'Delivery Fees',
-                          value: '\$$deliveryFees',
-                          icon: Icons.local_shipping_outlined,
-                          color: _AnalyticsTheme.purple,
-                          lightColor: _AnalyticsTheme.purpleLight,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: _AnalyticsTheme.spacingXl),
-
-                  // Order Status Section
-                  _buildSectionTitle(
-                    'Order Status',
-                    Icons.pending_actions_outlined,
-                  ),
-                  const SizedBox(height: _AnalyticsTheme.spacingLg),
-
-                  // Status Cards
-                  _buildStatusCard(
-                    status: 'Pending',
-                    count: pendingOrders,
-                    value: pendingValue,
-                    icon: Icons.schedule_outlined,
-                    color: _AnalyticsTheme.warning,
-                    lightColor: _AnalyticsTheme.warningLight,
-                  ),
-                  _buildStatusCard(
-                    status: 'Processing',
-                    count: processingOrders,
-                    value: processingValue,
-                    icon: Icons.sync_outlined,
+            // Summary Cards Grid
+            Row(
+              children: [
+                Expanded(
+                  child: _buildSummaryCard(
+                    title: 'Total Orders',
+                    value: totalOrders.toString(),
+                    icon: Icons.shopping_bag_outlined,
                     color: _AnalyticsTheme.info,
                     lightColor: _AnalyticsTheme.infoLight,
                   ),
-                  _buildStatusCard(
-                    status: 'Shipping',
-                    count: shippingOrders,
-                    value: shippingValue,
-                    icon: Icons.local_shipping_outlined,
-                    color: _AnalyticsTheme.purple,
-                    lightColor: _AnalyticsTheme.purpleLight,
-                  ),
-                  _buildStatusCard(
-                    status: 'Completed',
-                    count: completedOrders,
-                    value: completedValue,
+                ),
+                const SizedBox(width: _AnalyticsTheme.spacingMd),
+                Expanded(
+                  child: _buildSummaryCard(
+                    title: 'Completed',
+                    value: completedOrders.toString(),
                     icon: Icons.check_circle_outline,
                     color: _AnalyticsTheme.success,
                     lightColor: _AnalyticsTheme.successLight,
                   ),
-                  _buildStatusCard(
-                    status: 'Cancelled',
-                    count: cancelledOrders,
-                    value: cancelledValue,
-                    icon: Icons.cancel_outlined,
-                    color: _AnalyticsTheme.error,
-                    lightColor: _AnalyticsTheme.errorLight,
-                    isLast: true,
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: _AnalyticsTheme.spacingMd),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildSummaryCard(
+                    title: 'Total Sales',
+                    value: '\$${totalValue.toStringAsFixed(2)}',
+                    icon: Icons.payments_outlined,
+                    color: _AnalyticsTheme.primary,
+                    lightColor: _AnalyticsTheme.primaryLight,
+                  ),
+                ),
+                const SizedBox(width: _AnalyticsTheme.spacingMd),
+                Expanded(
+                  child: _buildSummaryCard(
+                    title: 'Delivery Fees',
+                    value: '\$$deliveryFees',
+                    icon: Icons.local_shipping_outlined,
+                    color: _AnalyticsTheme.purple,
+                    lightColor: _AnalyticsTheme.purpleLight,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: _AnalyticsTheme.spacingXl),
+
+            // Order Status Section
+            _buildSectionTitle('Order Status', Icons.pending_actions_outlined),
+            const SizedBox(height: _AnalyticsTheme.spacingLg),
+
+            // Status Cards
+            _buildStatusCard(
+              status: 'Pending',
+              count: pendingOrders,
+              value: pendingValue,
+              icon: Icons.schedule_outlined,
+              color: _AnalyticsTheme.warning,
+              lightColor: _AnalyticsTheme.warningLight,
+            ),
+            _buildStatusCard(
+              status: 'Processing',
+              count: processingOrders,
+              value: processingValue,
+              icon: Icons.sync_outlined,
+              color: _AnalyticsTheme.info,
+              lightColor: _AnalyticsTheme.infoLight,
+            ),
+            _buildStatusCard(
+              status: 'Shipping',
+              count: shippingOrders,
+              value: shippingValue,
+              icon: Icons.local_shipping_outlined,
+              color: _AnalyticsTheme.purple,
+              lightColor: _AnalyticsTheme.purpleLight,
+            ),
+            _buildStatusCard(
+              status: 'Completed',
+              count: completedOrders,
+              value: completedValue,
+              icon: Icons.check_circle_outline,
+              color: _AnalyticsTheme.success,
+              lightColor: _AnalyticsTheme.successLight,
+            ),
+            _buildStatusCard(
+              status: 'Cancelled',
+              count: cancelledOrders,
+              value: cancelledValue,
+              icon: Icons.cancel_outlined,
+              color: _AnalyticsTheme.error,
+              lightColor: _AnalyticsTheme.errorLight,
+              isLast: true,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -401,7 +568,7 @@ class _OrdersWebAnalyticsPageState extends State<OrdersWebAnalyticsPage>
             Text(
               'Orders Analytics',
               style: TextStyle(
-                fontSize: 22,
+                fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
                 letterSpacing: -0.5,
@@ -410,29 +577,31 @@ class _OrdersWebAnalyticsPageState extends State<OrdersWebAnalyticsPage>
             SizedBox(height: 4),
             Text(
               'Track your order performance',
-              style: TextStyle(fontSize: 13, color: Colors.white70),
+              style: TextStyle(fontSize: 10, color: Colors.white70),
             ),
           ],
         ),
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: _refreshData,
-            borderRadius: BorderRadius.circular(_AnalyticsTheme.radiusSm),
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(_AnalyticsTheme.radiusSm),
-              ),
-              child: const Icon(
-                Icons.refresh_rounded,
-                color: Colors.white,
-                size: 20,
+        if (AuthService.instance.authCustomer?.user?.role == 'admin')
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                Get.to(() => EventsAnalyticsView());
+              },
+              borderRadius: BorderRadius.circular(_AnalyticsTheme.radiusSm),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(_AnalyticsTheme.radiusSm),
+                ),
+                child: const Text(
+                  'Event Analytics',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
           ),
-        ),
       ],
     );
   }

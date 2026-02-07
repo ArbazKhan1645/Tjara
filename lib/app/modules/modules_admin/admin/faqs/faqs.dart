@@ -5,6 +5,7 @@ import 'package:tjara/app/core/widgets/admin_app_bar_actions.dart';
 import 'dart:convert';
 
 import 'package:tjara/app/models/posts/posts_model.dart';
+import 'package:tjara/app/services/auth/auth_service.dart';
 
 // FAQ Controller
 
@@ -180,11 +181,11 @@ class FAQListScreen extends StatelessWidget {
     const expandedStackGradient = LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: [Color(0xFFF97316), Color(0xFFFACC15)],
+      colors: [Colors.teal, Colors.teal],
     );
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF97316),
+        backgroundColor: Colors.teal,
         actions: [const AdminAppBarActionsSimple()],
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
@@ -634,7 +635,8 @@ class FAQFormController extends GetxController {
             'Content-Type': 'application/json',
             'X-Request-From': 'Application',
             'Accept': 'application/json',
-            'shop-id': '0000c539-9857-3456-bc53-2bbdc1474f1a',
+            'shop-id':
+                AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
           },
           body: json.encode(requestData),
         );

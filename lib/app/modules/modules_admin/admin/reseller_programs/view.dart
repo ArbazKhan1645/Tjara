@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:tjara/app/core/widgets/admin_app_bar_actions.dart';
 import 'package:tjara/app/models/resseller_programs_my/model.dart';
 import 'package:tjara/app/modules/modules_admin/admin/reseller_programs/analytics.dart';
@@ -12,219 +13,308 @@ import 'package:tjara/app/modules/modules_admin/admin/reseller_programs/qr.dart'
 class ResellerProgramScreen extends StatelessWidget {
   const ResellerProgramScreen({super.key});
 
+  // Theme Colors
+  static const Color primaryTeal = Color(0xFF0D9488);
+  static const Color lightTeal = Color(0xFF14B8A6);
+  static const Color darkTeal = Color(0xFF0F766E);
+  static const Color accentOrange = Color(0xFFF97316);
+  static const Color surfaceColor = Color(0xFFF8FAFC);
+  static const Color cardColor = Colors.white;
+
   @override
   Widget build(BuildContext context) {
     final ResellerController controller = Get.put(ResellerController());
-    const expandedStackGradient = LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [Color(0xFFF97316), Color(0xFFFACC15)],
-    );
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF97316),
-        actions: [const AdminAppBarActionsSimple()],
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
+      backgroundColor: surfaceColor,
+      body: NestedScrollView(
+        headerSliverBuilder:
+            (context, innerBoxIsScrolled) => [
+              _buildSliverAppBar(innerBoxIsScrolled),
+            ],
+        body: Obx(() {
+          if (controller.isLoading.value) {
+            return _buildShimmerLoading();
+          }
+
+          if (controller.errorMessage.value.isNotEmpty) {
+            return _buildErrorState(controller);
+          }
+
+          return _buildContent(controller);
+        }),
       ),
-      body: Stack(
-        children: [
-          Container(
-            height: MediaQuery.of(context).size.height * 0.4,
-            decoration: const BoxDecoration(gradient: expandedStackGradient),
+    );
+  }
+
+  Widget _buildSliverAppBar(bool innerBoxIsScrolled) {
+    return SliverAppBar(
+      expandedHeight: 150,
+      floating: false,
+      pinned: true,
+      elevation: 0,
+      backgroundColor: primaryTeal,
+      iconTheme: const IconThemeData(color: Colors.white),
+      actions: const [AdminAppBarActionsSimple()],
+      flexibleSpace: FlexibleSpaceBar(
+        centerTitle: false,
+        titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
+        title: AnimatedOpacity(
+          opacity: innerBoxIsScrolled ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 200),
+          child: const Text(
+            'Reseller Club',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-
-          Obx(() {
-            if (controller.isLoading.value) {
-              return const Center(
-                child: CircularProgressIndicator(color: Color(0xFFFFFFFF)),
-              );
-            }
-
-            if (controller.errorMessage.value.isNotEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      size: 64,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Failed to load data',
-                      style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () => controller.refreshData(),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE91E63),
-                      ),
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              );
-            }
-
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+        ),
+        background: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [darkTeal, primaryTeal, lightTeal],
+            ),
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 50, 16, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  QRRewardsWidget(
-                    qrData:
-                        '\$${controller.resellerProgram.value?.referralCode ?? 0}',
-                    statusText: 'Active',
-                    balanceAmount:
-                        '\$${controller.resellerProgram.value?.balance ?? 0}',
+                  const Text(
+                    'My Tjara Reseller Club',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  const ResellerAnalyticsWidget(),
-                  // Bonus and Commission Cards
-                  // Row(
-                  //   children: [
-                  //     Expanded(
-                  //       child: _buildBonusCard(
-                  //         'Available Bonus',
-                  //         '\$${controller.resellerProgram.value?.balance ?? 249.87}',
-                  //         const Color(0xFFE91E63),
-                  //       ),
-                  //     ),
-                  //     const SizedBox(width: 12),
-                  //     Expanded(
-                  //       child: _buildBonusCard(
-                  //         'Pending Bonus',
-                  //         '\$130',
-                  //         const Color(0xFFE91E63),
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
-                  // const SizedBox(height: 12),
-                  // Row(
-                  //   children: [
-                  //     Expanded(
-                  //       child: _buildBonusCard(
-                  //         'Available Commission',
-                  //         '\$0',
-                  //         const Color(0xFF4CAF50),
-                  //       ),
-                  //     ),
-                  //     const SizedBox(width: 12),
-                  //     Expanded(
-                  //       child: _buildBonusCard(
-                  //         'Pending Commission',
-                  //         '\$0',
-                  //         const Color(0xFF4CAF50),
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
-                  const SizedBox(height: 24),
-
-                  // Share & Invite Section
-                  _buildShareInviteSection(controller),
-                  const SizedBox(height: 24),
-
-                  // My Team Section
-                  _buildMyTeamSection(controller),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Earn rewards by referring friends',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: 14,
+                    ),
+                  ),
                 ],
               ),
-            );
-          }),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShimmerLoading() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          // QR Card Shimmer
+          _buildShimmerCard(height: 200),
+          const SizedBox(height: 16),
+          // Analytics Shimmer
+          _buildShimmerCard(height: 120),
+          const SizedBox(height: 16),
+          // Share Section Shimmer
+          _buildShimmerCard(height: 250),
+          const SizedBox(height: 16),
+          // Team Section Shimmer
+          _buildShimmerCard(height: 300),
         ],
       ),
     );
   }
 
-  Widget _buildBonusCard(String title, String amount, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(8),
+  Widget _buildShimmerCard({required double height}) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Container(
+        height: height,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+    );
+  }
+
+  Widget _buildErrorState(ResellerController controller) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.error_outline_rounded,
+                size: 64,
+                color: Colors.red,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            amount,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+            const SizedBox(height: 24),
+            const Text(
+              'Oops! Something went wrong',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              'Failed to load your reseller data',
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () => controller.refreshData(),
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Try Again'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryTeal,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 14,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContent(ResellerController controller) {
+    return RefreshIndicator(
+      onRefresh: () async => controller.refreshData(),
+      color: primaryTeal,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // QR & Balance Card
+            QRRewardsWidget(
+              qrData:
+                  '\$${controller.resellerProgram.value?.referralCode ?? 0}',
+              statusText: 'Active',
+              balanceAmount:
+                  '\$${controller.resellerProgram.value?.balance ?? 0}',
+            ),
+            const SizedBox(height: 20),
+
+            // Analytics Section
+            const ResellerAnalyticsWidget(),
+            const SizedBox(height: 20),
+
+            // Share & Invite Section
+            _buildShareInviteSection(controller),
+            const SizedBox(height: 20),
+
+            // My Team Section
+            _buildMyTeamSection(controller),
+            const SizedBox(height: 100),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildShareInviteSection(ResellerController controller) {
     return Container(
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: cardColor,
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Share & Invite',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF0D9488),
-            ),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Share the link below with your friends and family to earn commission on their purchases.',
-            style: TextStyle(fontSize: 14, color: Colors.grey),
-          ),
-          const SizedBox(height: 16),
-
-          // Referral Link
+          // Header
           Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF5F5F5),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade300),
+            padding: const EdgeInsets.all(20),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [primaryTeal, lightTeal],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
             ),
             child: Row(
               children: [
-                Expanded(
-                  child: Text(
-                    'https://tjara.com?invited_by=${controller.resellerProgram.value?.referralCode ?? 'pbKcWogwRy'}',
-                    style: const TextStyle(fontSize: 14, color: Colors.black87),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.share_rounded,
+                    color: Colors.white,
+                    size: 22,
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.copy, size: 20),
-                  onPressed: () {
+                const SizedBox(width: 12),
+                const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Share & Invite',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      'Earn commission on referrals',
+                      style: TextStyle(fontSize: 12, color: Colors.white70),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // Content
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Referral Link
+                _buildSectionTitle('Your Referral Link', Icons.link_rounded),
+                const SizedBox(height: 12),
+                _buildCopyableField(
+                  value:
+                      'https://tjara.com?invited_by=${controller.resellerProgram.value?.referralCode ?? 'pbKcWogwRy'}',
+                  onCopy: () {
                     Clipboard.setData(
                       ClipboardData(
                         text:
@@ -234,41 +324,18 @@ class ResellerProgramScreen extends StatelessWidget {
                     controller.copyLinkToClipboard('');
                   },
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
 
-          const Text(
-            'Or, Share the code below with your friends and family to earn commission on their purchases.',
-            style: TextStyle(fontSize: 14, color: Colors.grey),
-          ),
-          const SizedBox(height: 16),
+                const SizedBox(height: 24),
 
-          // Referral Code
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF5F5F5),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    controller.resellerProgram.value?.referralCode ??
-                        'pbKcWogwRy',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.copy, size: 20),
-                  onPressed: () {
+                // Referral Code
+                _buildSectionTitle('Your Referral Code', Icons.qr_code_rounded),
+                const SizedBox(height: 12),
+                _buildCopyableField(
+                  value:
+                      controller.resellerProgram.value?.referralCode ??
+                      'pbKcWogwRy',
+                  isCode: true,
+                  onCopy: () {
                     Clipboard.setData(
                       ClipboardData(
                         text:
@@ -287,335 +354,432 @@ class ResellerProgramScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMyTeamSection(ResellerController controller) {
-    final ScrollController horizontalScrollController = ScrollController();
+  Widget _buildSectionTitle(String title, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: primaryTeal),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+      ],
+    );
+  }
 
+  Widget _buildCopyableField({
+    required String value,
+    required VoidCallback onCopy,
+    bool isCode = false,
+  }) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: surfaceColor,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: isCode ? 18 : 14,
+                fontWeight: isCode ? FontWeight.w700 : FontWeight.w500,
+                color: isCode ? primaryTeal : Colors.black87,
+                letterSpacing: isCode ? 2 : 0,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Material(
+            color: primaryTeal,
+            borderRadius: BorderRadius.circular(8),
+            child: InkWell(
+              onTap: onCopy,
+              borderRadius: BorderRadius.circular(8),
+              child: const Padding(
+                padding: EdgeInsets.all(10),
+                child: Icon(Icons.copy_rounded, size: 18, color: Colors.white),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMyTeamSection(ResellerController controller) {
+    return Container(
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with pagination info
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'My Team',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF0D9488),
-                ),
+          // Header
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.teal, Colors.teal],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
               ),
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          // Horizontal scrollable table
-          Obx(() {
-            if (controller.isLoadingReferrals.value &&
-                controller.referralMembers.isEmpty) {
-              return const Padding(
-                padding: EdgeInsets.all(20),
-                child: Center(
-                  child: CircularProgressIndicator(color: Color(0xFFE91E63)),
-                ),
-              );
-            }
-
-            if (controller.referralMembers.isEmpty) {
-              return Padding(
-                padding: const EdgeInsets.all(20),
-                child: Center(
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.people_outline,
-                        size: 48,
-                        color: Colors.grey[400],
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'No referral members yet',
-                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Share your referral code to invite members',
-                        style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-                      ),
-                    ],
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.groups_rounded,
+                    color: Colors.white,
+                    size: 22,
                   ),
                 ),
-              );
-            }
-
-            return Column(
-              children: [
-                // Table Header (scrolls horizontally with content)
-
-                // Team Members List (scrolls horizontally with header)
-                Scrollbar(
-                  controller: horizontalScrollController,
-                  thumbVisibility: true,
-                  child: SingleChildScrollView(
-                    controller: horizontalScrollController,
-                    scrollDirection: Axis.horizontal,
-                    child: Column(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 12,
-                            horizontal: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF97316),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Row(
-                            children: [
-                              SizedBox(
-                                width: 200, // Fixed width for first column
-                                child: Text(
-                                  'Referral Name',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: 16),
-                              SizedBox(
-                                width: 200, // Fixed width for second column
-                                child: Text(
-                                  'Rewards From Member',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: 16),
-                              SizedBox(
-                                width: 150, // Fixed width for third column
-                                child: Text(
-                                  'Recent Order',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: 16),
-                              SizedBox(
-                                width: 150, // Fixed width for third column
-                                child: Text(
-                                  'membership Status',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: 16),
-                              SizedBox(
-                                width: 150, // Fixed width for third column
-                                child: Text(
-                                  'Registered Date',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        ...controller.referralMembers.map(
-                          (member) => _buildTeamMemberRow(member),
-                        ),
-                      ],
-                    ),
+                const SizedBox(width: 12),
+                const Text(
+                  'My Team',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
                   ),
                 ),
               ],
-            );
+            ),
+          ),
+
+          // Team Content
+          Obx(() {
+            if (controller.isLoadingReferrals.value &&
+                controller.referralMembers.isEmpty) {
+              return _buildTeamShimmer();
+            }
+
+            if (controller.referralMembers.isEmpty) {
+              return _buildEmptyTeamState();
+            }
+
+            return _buildTeamList(controller);
           }),
         ],
       ),
     );
   }
 
-  Widget _buildTeamMemberRow(ResellerProgramModel member) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+  Widget _buildTeamShimmer() {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: Column(
+          children: List.generate(
+            3,
+            (index) => Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              height: 80,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
       ),
-      child: Row(
+    );
+  }
+
+  Widget _buildEmptyTeamState() {
+    return Padding(
+      padding: const EdgeInsets.all(40),
+      child: Column(
         children: [
-          SizedBox(
-            width: 200, // Match header column width
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${member.owner.user.firstName} ${member.owner.user.lastName}',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                ),
-                if (member.owner.user.email.isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    member.owner.user.email,
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                  ),
-                ],
-                if (member.owner.user.phone.isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    member.owner.user.phone,
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                  ),
-                ],
-              ],
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: const BoxDecoration(
+              color: surfaceColor,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.people_outline_rounded,
+              size: 48,
+              color: Colors.grey[400],
             ),
           ),
-          const SizedBox(width: 16),
-          SizedBox(
-            width: 200, // Match header column width
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.access_time,
-                      size: 12,
-                      color: Colors.orange,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Pending : \$${member.status}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.orange,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.check_circle,
-                      size: 12,
-                      color: Colors.green,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Available : \$${member.balance}',
-                      style: const TextStyle(fontSize: 12, color: Colors.green),
-                    ),
-                  ],
-                ),
-              ],
+          const SizedBox(height: 16),
+          Text(
+            'No team members yet',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[700],
             ),
           ),
-          const SizedBox(width: 16),
-          SizedBox(
-            width: 150, // Match header column width
-            child: Builder(
-              builder: (context) {
-                if (member.teamMemberOrders == null ||
-                    member.teamMemberOrders!.isEmpty) {
-                  return const Text(
-                    'No recent order',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.red,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  );
-                }
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Order ID: ${member.teamMemberOrders?.first.meta.orderId ?? ''}',
-
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Date: ${member.teamMemberOrders?.first.createdAt != null ? DateFormat('dd MMM yyyy').format(DateTime.parse(member.teamMemberOrders!.first.createdAt)) : ''}',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                    ),
-
-                    const SizedBox(height: 4),
-                    Text(
-                      'Total: \$${member.teamMemberOrders?.first.orderTotal ?? ''}',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-          const SizedBox(width: 16),
-          SizedBox(
-            width: 150, // Match header column width
-            child: Builder(
-              builder: (context) {
-                return Text(
-                  member.verified_member == 'verified'
-                      ? 'Verified'
-                      : 'Not Verified',
-
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                );
-              },
-            ),
-          ),
-          const SizedBox(width: 16),
-          SizedBox(
-            width: 150, // Match header column width
-            child: Builder(
-              builder: (context) {
-                return Text(
-                  member.createdAt != null
-                      ? DateFormat(
-                        'dd MMM yyyy',
-                      ).format(DateTime.parse(member.createdAt.toString()))
-                      : '',
-
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                );
-              },
-            ),
+          const SizedBox(height: 8),
+          Text(
+            'Share your referral code to build your team',
+            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTeamList(ResellerController controller) {
+    return Column(
+      children: [
+        // Table Header
+        Container(
+          margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          decoration: BoxDecoration(
+            color: surfaceColor,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildHeaderCell('Member', 180),
+                _buildHeaderCell('Rewards', 150),
+                _buildHeaderCell('Recent Order', 120),
+                _buildHeaderCell('Status', 100),
+                _buildHeaderCell('Joined', 100),
+              ],
+            ),
+          ),
+        ),
+
+        // Team Members
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          itemCount: controller.referralMembers.length,
+          itemBuilder: (context, index) {
+            return _buildTeamMemberCard(controller.referralMembers[index]);
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeaderCell(String text, double width) {
+    return SizedBox(
+      width: width,
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: Colors.grey[600],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTeamMemberCard(ResellerProgramModel member) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade100),
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            // Member Info
+            SizedBox(
+              width: 180,
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: primaryTeal,
+                    child: Text(
+                      (member.owner.user.firstName.isNotEmpty
+                              ? member.owner.user.firstName[0]
+                              : 'U')
+                          .toUpperCase(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${member.owner.user.firstName} ${member.owner.user.lastName}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (member.owner.user.email.isNotEmpty)
+                          Text(
+                            member.owner.user.email,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey[600],
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Rewards
+            SizedBox(
+              width: 150,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildRewardBadge(
+                    'Pending',
+                    '\$${member.status}',
+                    Colors.orange,
+                  ),
+                  const SizedBox(height: 4),
+                  _buildRewardBadge(
+                    'Available',
+                    '\$${member.balance}',
+                    Colors.green,
+                  ),
+                ],
+              ),
+            ),
+
+            // Recent Order
+            SizedBox(
+              width: 120,
+              child:
+                  member.teamMemberOrders == null ||
+                          member.teamMemberOrders!.isEmpty
+                      ? Text(
+                        'No orders',
+                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      )
+                      : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '#${member.teamMemberOrders?.first.meta.orderId ?? ''}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            '\$${member.teamMemberOrders?.first.orderTotal ?? ''}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+            ),
+
+            // Status
+            SizedBox(
+              width: 100,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color:
+                      member.verified_member == 'verified'
+                          ? Colors.green.withValues(alpha: 0.1)
+                          : Colors.orange.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  member.verified_member == 'verified' ? 'Verified' : 'Pending',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color:
+                        member.verified_member == 'verified'
+                            ? Colors.green[700]
+                            : Colors.orange[700],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+
+            // Joined Date
+            SizedBox(
+              width: 100,
+              child: Text(
+                member.createdAt != null
+                    ? DateFormat(
+                      'MMM dd, yy',
+                    ).format(DateTime.parse(member.createdAt.toString()))
+                    : '-',
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRewardBadge(String label, String value, Color color) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          label == 'Pending' ? Icons.schedule : Icons.check_circle,
+          size: 12,
+          color: color,
+        ),
+        const SizedBox(width: 4),
+        Text(
+          '$label: $value',
+          style: TextStyle(
+            fontSize: 11,
+            color: color,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 }

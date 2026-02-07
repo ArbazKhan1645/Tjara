@@ -60,7 +60,7 @@ class CarsController extends GetxController {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
       'X-Request-From': 'Dashboard',
-      'shop-id': '0000c539-9857-3456-bc53-2bbdc1474f1a',
+      'shop-id': AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
       'user-id': AuthService.instance.authCustomer!.user!.id.toString(),
     };
     // Build filter columns

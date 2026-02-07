@@ -109,7 +109,9 @@ class AdminDisputesService extends GetxService {
         _filterDisputes();
       }
     } catch (e) {
-      _handleError('Failed to load disputes', e);
+      if (showLoader) {
+        _handleError('Failed to load disputes', e);
+      }
     } finally {
       isLoading.value = false;
       isRefreshing.value = false;
@@ -123,7 +125,7 @@ class AdminDisputesService extends GetxService {
       return DisputesResponse(disputes: null);
     }
 
-    if (currentUser?.user?.role != 'admin') {
+    if (currentUser?.user?.role == 'customers') {
       return DisputesResponse(disputes: null);
     }
 
@@ -133,8 +135,11 @@ class AdminDisputesService extends GetxService {
         .get(
           uri,
           headers: {
-            'X-Request-From': 'Application',
+            'X-Request-From': 'Dashboard',
             'Content-Type': 'application/json',
+            'shop-id':
+                AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
+            'user-id': AuthService.instance.authCustomer!.user!.id.toString(),
           },
         )
         .timeout(
@@ -150,6 +155,8 @@ class AdminDisputesService extends GetxService {
       }
 
       return DisputesResponse.fromJson(data);
+    } else if (response.statusCode == 404) {
+      return DisputesResponse();
     } else {
       throw Exception('HTTP ${response.statusCode}: ${response.reasonPhrase}');
     }

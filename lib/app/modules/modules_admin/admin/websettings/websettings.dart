@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/core/utils/helpers/api_exceptions.dart';
 import 'package:tjara/app/models/website_settings/website_model.dart';
+import 'package:tjara/app/services/auth/auth_service.dart';
 import 'package:tjara/app/services/websettings_service/websetting_service.dart';
 
 // Assuming WebsiteResponse and WebsiteOptions classes are imported from another file
@@ -417,9 +418,9 @@ class _WebsiteOptionsScreenState extends State<WebsiteOptionsScreen> {
             headers: {
               'Content-Type': 'application/json',
               'X-Request-From': 'Application',
-              'shop-id': '0000c539-9857-3456-bc53-2bbdc1474f1a',
-
-              'user-id': '121d6d13-a26f-49ff-8786-a3b203dc3068',
+              'shop-id':
+                  AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
+              'user-id': AuthService.instance.authCustomer!.user!.id.toString(),
             },
             body: json.encode(body),
           )

@@ -78,7 +78,7 @@ class AdminDashboardService extends GetxService {
       };
 
       /// 🔹 NON-ADMIN BUYER FILTER
-      if (current!.user!.role != 'admin') {
+      if (current!.user!.role == 'customer') {
         queryParams.addAll({
           'filterByColumns[columns][0][column]': 'buyer_id',
           'filterByColumns[columns][0][value]': current.user!.id!,
@@ -92,9 +92,17 @@ class AdminDashboardService extends GetxService {
         uri,
         headers: {
           'Accept': 'application/json',
-          'X-Request-From': 'Application',
+          'X-Request-From': 'Dashboard',
+          if (current.user?.role != 'customer')
+            'shop-id':
+                AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
+          'user-id': AuthService.instance.authCustomer!.user!.id.toString(),
         },
       );
+
+      if (response.statusCode == 404) {
+        return;
+      }
 
       isLoading.value = false;
       hideLoaderDialog();

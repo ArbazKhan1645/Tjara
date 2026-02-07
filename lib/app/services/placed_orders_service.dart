@@ -56,6 +56,7 @@ class PlacedOrderService extends GetxService {
     int page = 1,
     bool refresh = false,
     String userId = '',
+    Map<String, String>? queryOverrides,
   }) async {
     try {
       final LoginResponse? current = AuthService.instance.authCustomer;
@@ -76,17 +77,24 @@ class PlacedOrderService extends GetxService {
       // Initialize query parameters
       // Base query parameters
       // Base query parameters
-      final Map<String, String> queryParams = {
-        'per_page': perPage.toString(),
-        'page': currentPage.value.toString(),
-      };
+      final Map<String, String> queryParams;
+      if (queryOverrides != null) {
+        queryParams = Map<String, String>.from(queryOverrides);
+        queryParams['per_page'] = perPage.toString();
+        queryParams['page'] = page.toString();
+      } else {
+        queryParams = {
+          'per_page': perPage.toString(),
+          'page': page.toString(),
+        };
 
-      // Add filter if user is not admin
-      queryParams.addAll({
-        'filterByColumns[columns][0][column]': 'buyer_id',
-        'filterByColumns[columns][0][value]': current!.user!.id!,
-        'filterByColumns[columns][0][operator]': '=',
-      });
+        // Add filter if user is not admin
+        queryParams.addAll({
+          'filterByColumns[columns][0][column]': 'buyer_id',
+          'filterByColumns[columns][0][value]': current!.user!.id!,
+          'filterByColumns[columns][0][operator]': '=',
+        });
+      }
 
       // Construct final URI
       final uri = Uri.parse(_baseApiUrl).replace(queryParameters: queryParams);

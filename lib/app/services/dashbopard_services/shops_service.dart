@@ -53,8 +53,17 @@ class AdminShopsService extends GetxService {
 
       final response = await http.get(
         uri,
-        headers: {'X-Request-From': 'Application'},
+        headers: {
+          'X-Request-From': 'Dashboard',
+          'shop-id':
+              AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
+          'user-id': AuthService.instance.authCustomer!.user!.id.toString(),
+        },
       );
+
+      if (response.statusCode == 404) {
+        return;
+      }
 
       // Check if response is successful before decoding
       if (response.statusCode != 200) {

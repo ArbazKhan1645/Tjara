@@ -12,6 +12,7 @@ import 'package:tjara/app/models/admin_products_model.dart';
 import 'package:tjara/app/models/categories/categories_model.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/widgets/attributes/attributes_manage.dart';
 import 'package:tjara/app/repo/network_repository.dart';
+import 'package:tjara/app/services/auth/auth_service.dart';
 import 'package:tjara/main.dart';
 
 class AuctionAddProductAdminController extends GetxController {
@@ -117,7 +118,8 @@ class AuctionAddProductAdminController extends GetxController {
   static const String _insertApiUrl =
       'https://api.libanbuy.com/api/products/insert';
   static const String _updateApiUrl = 'https://api.libanbuy.com/api/products';
-  static const String _shopId = '0000c539-9857-3456-bc53-2bbdc1474f1a';
+  static final String _shopId =
+      AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '';
   static const String _requestFromHeader = 'Application';
 
   // Observable variables
@@ -824,7 +826,8 @@ class AuctionAddProductAdminController extends GetxController {
       request.headers['Authorization'] = 'Bearer your-token-here';
       request.headers['Content-Type'] = 'multipart/form-data';
       request.headers['x-request-from'] = 'Application';
-      request.headers['shop-id'] = '0000c539-9857-3456-bc53-2bbdc1474f1a';
+      request.headers['shop-id'] =
+          AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '';
 
       // Send the request
       final response = await request.send();

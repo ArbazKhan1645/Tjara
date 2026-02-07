@@ -32,7 +32,11 @@ class GradientButtonWithLeftArrowAndText extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.description_outlined, color: Colors.white, size: 20),
+            const Icon(
+              Icons.description_outlined,
+              color: Colors.white,
+              size: 20,
+            ),
             const SizedBox(width: 12),
             Text(
               label,

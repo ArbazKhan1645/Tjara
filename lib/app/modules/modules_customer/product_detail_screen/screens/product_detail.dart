@@ -1221,29 +1221,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                 ],
               ),
             ),
-
-            if (product?.product?.bids != null)
-              BidderTable(
-                key: Key(product.hashCode.toString()),
-                auction_start_time: product?.product?.auctionStartTime ?? '',
-                auction_end_time: product?.product?.auctionEndTime ?? '',
-                winnerID:
-                    product?.product?.winnerId is String
-                        ? product?.product?.winnerId
-                        : '',
-                productBids: product?.product?.bids ?? ProductBids(),
-                startingPrice: widget.product.price ?? 0,
-                bidIncrement:
-                    num.tryParse(
-                      product?.product?.meta?.bidIncrementBy ?? '0',
-                    ) ??
-                    0,
-              ),
-
-            if (widget.product.productGroup?.toLowerCase() != 'car')
-              // Delivery Info
-              _buildDeliveryCard(),
-
             // Variations
             if (product?.product?.variation != null)
               Padding(
@@ -1281,8 +1258,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                         setState(() {
                           _selectedVariationStock = selectedVariation.stock;
                           // Reset quantity if it exceeds variation stock
-                          final currentQty = int.tryParse(_quantityController?.text ?? '1') ?? 1;
-                          final maxStock = _selectedVariationStock ?? (widget.product.stock ?? 999).toInt();
+                          final currentQty =
+                              int.tryParse(_quantityController?.text ?? '1') ??
+                              1;
+                          final maxStock =
+                              _selectedVariationStock ??
+                              (widget.product.stock ?? 999).toInt();
                           if (currentQty > maxStock) {
                             _quantityController?.text = maxStock.toString();
                           }
@@ -1292,6 +1273,28 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                   ),
                 ),
               ),
+
+            if (product?.product?.bids != null)
+              BidderTable(
+                key: Key(product.hashCode.toString()),
+                auction_start_time: product?.product?.auctionStartTime ?? '',
+                auction_end_time: product?.product?.auctionEndTime ?? '',
+                winnerID:
+                    product?.product?.winnerId is String
+                        ? product?.product?.winnerId
+                        : '',
+                productBids: product?.product?.bids ?? ProductBids(),
+                startingPrice: widget.product.price ?? 0,
+                bidIncrement:
+                    num.tryParse(
+                      product?.product?.meta?.bidIncrementBy ?? '0',
+                    ) ??
+                    0,
+              ),
+
+            if (widget.product.productGroup?.toLowerCase() != 'car')
+              // Delivery Info
+              _buildDeliveryCard(),
 
             // Quantity (for non-car, non-auction)
             if (widget.product.productGroup != 'car' &&
@@ -1314,7 +1317,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                     const Spacer(),
                     QuantitySelector(
                       controller: _quantityController!,
-                      maxQuantity: _selectedVariationStock ?? (widget.product.stock ?? 999).toInt(),
+                      maxQuantity:
+                          _selectedVariationStock ??
+                          (widget.product.stock ?? 999).toInt(),
                       minQuantity: 1,
                       onQuantityChanged: (quantity) {},
                     ),

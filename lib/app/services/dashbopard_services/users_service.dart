@@ -136,10 +136,17 @@ class AdminUsersService extends GetxService {
       final response = await http.get(
         uri,
         headers: {
-          'X-Request-From': 'Application',
+          'X-Request-From': 'Dashboard',
           'Content-Type': 'application/json',
+          'shop-id':
+              AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
+          'user-id': AuthService.instance.authCustomer!.user!.id.toString(),
         },
       );
+
+      if (response.statusCode == 404) {
+        return;
+      }
 
       if (response.statusCode != 200) {
         throw Exception('Server error: ${response.statusCode}');

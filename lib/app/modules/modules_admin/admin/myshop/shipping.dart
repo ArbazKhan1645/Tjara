@@ -197,7 +197,7 @@ class ShippingSettingsTab extends StatelessWidget {
                 onPressed:
                     controller.isUpdating.value ? null : controller.updateShop,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF97316),
+                  backgroundColor: Colors.teal,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),

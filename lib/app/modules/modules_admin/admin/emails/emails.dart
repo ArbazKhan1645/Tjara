@@ -21,19 +21,19 @@ class _EmailMainScreenState extends State<EmailMainScreen> {
     const SendEmailScreen(),
     EmailAnalyticsWidget(
       userId: AuthService.instance.authCustomer?.user?.id ?? '',
-      shopId: '0000c539-9857-3456-bc53-2bbdc1474f1a',
+      shopId: AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
     ),
   ];
   static const _expandedStackGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [Color(0xFFF97316), Color(0xFFFACC15)],
+    colors: [Colors.teal, Colors.teal],
   );
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF97316),
+        backgroundColor: Colors.teal,
         actions: [const AdminAppBarActionsSimple()],
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text('Dashboard', style: TextStyle(color: Colors.white)),

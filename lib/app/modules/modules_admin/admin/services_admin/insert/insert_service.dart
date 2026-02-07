@@ -15,6 +15,7 @@ import 'package:tjara/app/models/others/state_model.dart';
 import 'package:tjara/app/modules/modules_admin/admin/services_admin/insert/attributes_model.dart';
 import 'package:tjara/app/modules/modules_customer/tjara_services/model/sevices_model.dart'
     show ServiceData;
+import 'package:tjara/app/services/auth/auth_service.dart';
 import 'package:tjara/app/services/others/others_service.dart';
 import 'package:tjara/main.dart';
 
@@ -346,7 +347,8 @@ class _InsertServiceScreenState extends State<InsertServiceScreen> {
         'description': _descriptionController.text,
         'thumbnail_id': thumbnailId,
         'is_featured': false,
-        'shop_id': '0000c539-9857-3456-bc53-2bbdc1474f1a',
+        'shop_id':
+            AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
         'price':
             _priceController.text.isNotEmpty
                 ? double.tryParse(_priceController.text) ?? 0
@@ -414,7 +416,8 @@ class _InsertServiceScreenState extends State<InsertServiceScreen> {
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'shop-id': '0000c539-9857-3456-bc53-2bbdc1474f1a',
+            'shop-id':
+                AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
             'X-Request-From': 'Application',
           },
           body: jsonEncode(body),
@@ -427,7 +430,8 @@ class _InsertServiceScreenState extends State<InsertServiceScreen> {
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'shop-id': '0000c539-9857-3456-bc53-2bbdc1474f1a',
+            'shop-id':
+                AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
             'X-Request-From': 'Application',
           },
           body: jsonEncode(body),

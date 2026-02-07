@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:tjara/app/core/widgets/admin_app_bar_actions.dart';
 import 'package:tjara/app/modules/modules_customer/tjara_contests/model/contest_model.dart';
+import 'package:tjara/app/services/auth/auth_service.dart';
 
 // Add your ContestModel and related classes here if not imported
 // import 'package:your_app/models/contest_model.dart';
@@ -85,7 +86,8 @@ class _QuizFormState extends State<QuizForm> {
         headers: {
           'Content-Type': 'application/json',
           'X-Request-From': 'Application',
-          'shop-id': '0000c539-9857-3456-bc53-2bbdc1474f1a',
+          'shop-id':
+              AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
         },
       );
 
@@ -238,7 +240,8 @@ class _QuizFormState extends State<QuizForm> {
       request.headers.addAll({
         'X-Request-From': 'Application',
         'Accept': 'application/json',
-        'shop-id': '0000c539-9857-3456-bc53-2bbdc1474f1a',
+        'shop-id':
+            AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
       });
 
       // Add media files
@@ -2026,7 +2029,7 @@ class QuizController extends GetxController {
 
       // Check network connection
       final connectivityResult = await (Connectivity().checkConnectivity());
-      if (connectivityResult == ConnectivityResult.none) {
+      if (!connectivityResult.contains(ConnectivityResult.none)) {
         throw Exception('No internet connection');
       }
 
@@ -2053,7 +2056,9 @@ class QuizController extends GetxController {
               headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'shop-id': '0000c539-9857-3456-bc53-2bbdc1474f1a',
+                'shop-id':
+                    AuthService.instance.authCustomer?.user?.shop?.shop?.id ??
+                    '',
                 'X-Request-From': 'Application',
               },
               body: jsonEncode(payload),
@@ -2074,7 +2079,9 @@ class QuizController extends GetxController {
               headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'shop-id': '0000c539-9857-3456-bc53-2bbdc1474f1a',
+                'shop-id':
+                    AuthService.instance.authCustomer?.user?.shop?.shop?.id ??
+                    '',
                 'X-Request-From': 'Application',
               },
               body: jsonEncode(payload),

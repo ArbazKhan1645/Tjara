@@ -43,7 +43,7 @@ class WithdrawalTheme {
 
   // Gradients
   static const LinearGradient primaryGradient = LinearGradient(
-    colors: [Color(0xFF7C3AED), Color(0xFF4F46E5)],
+    colors: [Colors.teal, Colors.teal],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );

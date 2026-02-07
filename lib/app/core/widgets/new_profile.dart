@@ -141,23 +141,24 @@ class UserMenuDialog extends StatelessWidget {
                   const Divider(height: 1, thickness: 1),
 
                   // Switch Account
-                  if (AuthService.instance.authCustomer?.user?.role == 'admin')
-                    _MenuItem(
-                      icon: Icons.swap_horiz_rounded,
-                      title: 'Switch Account',
-                      trailing: Icon(
-                        Icons.chevron_right,
-                        color: Colors.grey.shade600,
-                      ),
-                      onTap: () {
-                        Navigator.pop(context);
-                        SwitchAccountDialog.show(
-                          context,
-                          AuthService.instance.authCustomer?.user?.email ?? '',
-                        );
-                      },
-                    ),
-
+                  // if (AuthService.instance.authCustomer?.user?.role ==
+                  //         'admin' ||
+                  //     AuthService.instance.authCustomer?.user?.role == 'vendor')
+                  //   _MenuItem(
+                  //     icon: Icons.swap_horiz_rounded,
+                  //     title: 'Switch Account',
+                  //     trailing: Icon(
+                  //       Icons.chevron_right,
+                  //       color: Colors.grey.shade600,
+                  //     ),
+                  //     onTap: () {
+                  //       Navigator.pop(context);
+                  //       SwitchAccountDialog.show(
+                  //         context,
+                  //         AuthService.instance.authCustomer?.user?.email ?? '',
+                  //       );
+                  //     },
+                  //   ),
                   if (AuthService.instance.authCustomer?.user?.role == 'admin')
                     const Divider(height: 1, thickness: 1),
 

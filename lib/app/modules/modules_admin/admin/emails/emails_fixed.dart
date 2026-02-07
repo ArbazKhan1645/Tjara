@@ -21,7 +21,7 @@ class _EmailMainScreenState extends State<EmailMainScreen> {
     const SendEmailScreen(),
     EmailAnalyticsWidget(
       userId: AuthService.instance.authCustomer?.user?.id ?? '',
-      shopId: '0000c539-9857-3456-bc53-2bbdc1474f1a',
+      shopId: AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
     ),
   ];
   static const _expandedStackGradient = LinearGradient(

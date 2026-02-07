@@ -59,10 +59,10 @@ class _ResellerAnalyticsWidgetState extends State<ResellerAnalyticsWidget> {
   }) {
     return Expanded(
       child: Container(
-        margin: const EdgeInsets.all(6),
+        margin: const EdgeInsets.all(2),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xffF97316),
+          color: Colors.teal,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(width: 1, color: const Color(0xff0D9488)),
         ),
@@ -136,7 +136,7 @@ class _ResellerAnalyticsWidgetState extends State<ResellerAnalyticsWidget> {
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(4),
             child: Column(
               children: [
                 Row(

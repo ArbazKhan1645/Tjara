@@ -14,6 +14,7 @@ import 'package:tjara/app/models/others/country_model.dart';
 import 'package:tjara/app/models/others/state_model.dart';
 import 'package:tjara/app/modules/modules_admin/admin/admin_jobs/models/attributes_model.dart';
 import 'package:tjara/app/repo/network_repository.dart';
+import 'package:tjara/app/services/auth/auth_service.dart';
 import 'package:tjara/app/services/others/others_service.dart';
 import 'package:tjara/app/models/others/cities_model.dart';
 
@@ -259,7 +260,7 @@ class InsertJobController extends GetxController {
     request.headers.addAll({
       'Accept': 'application/json',
       'X-Request-From': 'Application',
-      'shop-id': '0000c539-9857-3456-bc53-2bbdc1474f1a',
+      'shop-id': AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
     });
 
     // Regular string fields
@@ -329,7 +330,8 @@ class InsertJobController extends GetxController {
           'Accept': 'application/json',
           'Content-Type': 'application/x-www-form-urlencoded',
           'X-Request-From': 'Application',
-          'shop-id': '0000c539-9857-3456-bc53-2bbdc1474f1a',
+          'shop-id':
+              AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
         },
         body: body,
       );
@@ -382,7 +384,8 @@ class InsertJobController extends GetxController {
         headers: {
           'Accept': 'application/json',
           'X-Request-From': 'Application',
-          'shop-id': '0000c539-9857-3456-bc53-2bbdc1474f1a',
+          'shop-id':
+              AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
         },
       );
 

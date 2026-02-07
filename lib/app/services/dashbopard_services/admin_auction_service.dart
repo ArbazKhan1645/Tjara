@@ -333,7 +333,7 @@ class AdminAuctionService extends GetxService {
         return;
       }
 
-      if (current?.user?.role != 'admin') {
+      if (current?.user?.role == 'customer') {
         return;
       }
 
@@ -345,10 +345,15 @@ class AdminAuctionService extends GetxService {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
           'X-Request-From': 'Dashboard',
-          'shop-id': '0000c539-9857-3456-bc53-2bbdc1474f1a',
+          'shop-id':
+              AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
           'user-id': AuthService.instance.authCustomer!.user!.id.toString(),
         },
       );
+
+      if (response.statusCode == 404) {
+        return;
+      }
 
       if (response.statusCode != 200) {
         throw Exception('Failed to load products: ${response.statusCode}');

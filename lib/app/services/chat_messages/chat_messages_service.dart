@@ -308,4 +308,132 @@ class ProductChatsService extends GetxService {
 
     return 'Showing $start-$end of ${totalItems.value} results';
   }
+
+  // ==========================================
+  // INBOX CHATS (Receive) - shop-id + user-id
+  // ==========================================
+  final Rx<ProductChats> inboxChats = ProductChats(data: []).obs;
+  final RxBool isLoadingInbox = false.obs;
+  final RxInt inboxCurrentPage = 1.obs;
+  final RxInt inboxTotalPages = 1.obs;
+  final RxInt inboxTotalItems = 0.obs;
+
+  Future<void> fetchInboxData({
+    bool refresh = false,
+    int? page,
+    String? search,
+  }) async {
+    try {
+      if (refresh) {
+        inboxCurrentPage.value = 1;
+        inboxChats.value = ProductChats(data: []);
+      }
+
+      final targetPage = page ?? inboxCurrentPage.value;
+      isLoadingInbox.value = true;
+
+      final user = AuthService.instance.authCustomer?.user;
+      final shopId = AuthService.instance.authCustomer?.user?.shop?.shop?.id;
+
+      if (user?.id == null || shopId == null) {
+        inboxChats.value = ProductChats(data: []);
+        return;
+      }
+
+      final queryParams = {
+        'page': targetPage.toString(),
+        'per_page': perPage.value.toString(),
+      };
+
+      if (search != null && search.isNotEmpty) {
+        queryParams['search'] = search;
+      }
+
+      final uri = Uri.parse(baseApiUrl).replace(queryParameters: queryParams);
+
+      final response = await http
+          .get(
+            uri,
+            headers: {
+              "Content-Type": "application/json",
+              "X-Request-From": "Application",
+              'shop-id': shopId,
+              'user-id': user!.id!,
+            },
+          )
+          .timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200 && response.body.isNotEmpty) {
+        final responseJson = jsonDecode(response.body);
+
+        if (responseJson['ProductChats'] != null) {
+          final newData = ProductChats.fromJson(responseJson['ProductChats']);
+          inboxChats.value = newData;
+          inboxCurrentPage.value = newData.currentPage ?? 1;
+          inboxTotalPages.value = newData.lastPage ?? 1;
+          inboxTotalItems.value = newData.total ?? 0;
+          inboxChats.refresh();
+        }
+      }
+    } catch (e) {
+      print('Inbox fetch error: $e');
+    } finally {
+      isLoadingInbox.value = false;
+    }
+  }
+
+  // Inbox pagination
+  Future<void> goToInboxPage(int page) async {
+    if (page < 1 || page > inboxTotalPages.value || isLoadingInbox.value) {
+      return;
+    }
+    await fetchInboxData(page: page);
+  }
+
+  Future<void> nextInboxPage() async {
+    if (inboxCurrentPage.value < inboxTotalPages.value) {
+      await goToInboxPage(inboxCurrentPage.value + 1);
+    }
+  }
+
+  Future<void> previousInboxPage() async {
+    if (inboxCurrentPage.value > 1) {
+      await goToInboxPage(inboxCurrentPage.value - 1);
+    }
+  }
+
+  // Inbox getters
+  List<ChatData> get inboxChatsList => inboxChats.value.data ?? [];
+  int get inboxMessageCount => inboxChatsList.length;
+  bool get canGoNextInbox => inboxCurrentPage.value < inboxTotalPages.value;
+  bool get canGoPreviousInbox => inboxCurrentPage.value > 1;
+
+  String get inboxPaginationInfo {
+    if (inboxTotalItems.value == 0) return 'No results';
+    final start = ((inboxCurrentPage.value - 1) * perPage.value) + 1;
+    final end = (inboxCurrentPage.value * perPage.value).clamp(
+      0,
+      inboxTotalItems.value,
+    );
+    return 'Showing $start-$end of ${inboxTotalItems.value} results';
+  }
+
+  List<int> get inboxVisiblePages {
+    final total = inboxTotalPages.value;
+    final current = inboxCurrentPage.value;
+
+    if (total <= 7) {
+      return List.generate(total, (index) => index + 1);
+    }
+
+    if (current <= 4) {
+      return [1, 2, 3, 4, 5, -1, total];
+    }
+
+    if (current >= total - 3) {
+      return [1, -1, total - 4, total - 3, total - 2, total - 1, total];
+    }
+
+    return [1, -1, current - 1, current, current + 1, -1, total];
+  }
 }

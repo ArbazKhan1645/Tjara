@@ -7,6 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:tjara/app/models/posts/posts_model.dart';
 import 'package:tjara/app/modules/modules_admin/admin/stories/insert/insert_service.dart';
 import 'package:http/http.dart' as http;
+import 'package:tjara/app/services/auth/auth_service.dart';
 import 'package:tjara/app/services/dashbopard_services/stories_service.dart';
 
 class StoriesItemCard extends StatefulWidget {
@@ -443,7 +444,8 @@ class _StoriesItemCardState extends State<StoriesItemCard>
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'shop-id': '0000c539-9857-3456-bc53-2bbdc1474f1a',
+        'shop-id':
+            AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
         'X-Request-From': 'Application',
       },
       body: jsonEncode({'post_type': 'shop_stories', 'status': 'active'}),
@@ -479,7 +481,8 @@ class _StoriesItemCardState extends State<StoriesItemCard>
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'shop-id': '0000c539-9857-3456-bc53-2bbdc1474f1a',
+        'shop-id':
+            AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
         'X-Request-From': 'Application',
       },
       body: jsonEncode({'post_type': 'shop_stories', 'status': 'inactive'}),

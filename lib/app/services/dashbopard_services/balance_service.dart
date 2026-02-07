@@ -17,7 +17,8 @@ class BalanceService extends GetxService {
   final ShopService _shopService = ShopService();
   final ResellerService _resellerService = ResellerService();
   var resellerProgram = Rxn<ResellerProgramModel>();
-  final String shopId = "0000c539-9857-3456-bc53-2bbdc1474f1a";
+  final String shopId =
+      AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '';
 
   Future<void> fetchShopData() async {
     try {

@@ -10,6 +10,7 @@ import 'package:tjara/app/core/widgets/admin_app_bar_actions.dart';
 import 'package:tjara/app/models/posts/posts_model.dart';
 
 import 'package:tjara/app/modules/modules_admin/admin/services_admin/insert/attributes_model.dart';
+import 'package:tjara/app/services/auth/auth_service.dart';
 
 class InsertStoryScreen extends StatefulWidget {
   final PostModel? existingPost; // For edit mode
@@ -315,8 +316,10 @@ class _InsertStoryScreenState extends State<InsertStoryScreen> {
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'shop-id': '0000c539-9857-3456-bc53-2bbdc1474f1a',
-            'X-Request-From': 'Application',
+            'shop-id':
+                AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
+            'user-id': AuthService.instance.authCustomer!.user!.id.toString(),
+            'X-Request-From': 'Dashboard',
           },
           body: jsonEncode(body),
         );
@@ -328,8 +331,10 @@ class _InsertStoryScreenState extends State<InsertStoryScreen> {
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'shop-id': '0000c539-9857-3456-bc53-2bbdc1474f1a',
-            'X-Request-From': 'Application',
+            'shop-id':
+                AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
+            'user-id': AuthService.instance.authCustomer!.user!.id.toString(),
+            'X-Request-From': 'Dashboard',
           },
           body: jsonEncode(body),
         );

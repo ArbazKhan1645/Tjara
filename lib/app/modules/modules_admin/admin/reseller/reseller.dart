@@ -8,6 +8,263 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tjara/main.dart';
 
+// ==========================================
+// THEME COLORS
+// ==========================================
+class ResellerTheme {
+  static const Color primaryTeal = Color(0xFF0D9488);
+  static const Color lightTeal = Color(0xFF14B8A6);
+  static const Color darkTeal = Color(0xFF0F766E);
+  static const Color accentOrange = Colors.teal;
+  static const Color surfaceColor = Color(0xFFF8FAFC);
+  static const Color cardColor = Colors.white;
+
+  static const LinearGradient headerGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [darkTeal, primaryTeal, lightTeal],
+  );
+
+  static const LinearGradient cardGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [primaryTeal, lightTeal],
+  );
+
+  static BoxDecoration get cardDecoration => BoxDecoration(
+    color: cardColor,
+    borderRadius: BorderRadius.circular(16),
+    boxShadow: [
+      BoxShadow(
+        color: primaryTeal.withOpacity(0.08),
+        blurRadius: 20,
+        offset: const Offset(0, 4),
+      ),
+    ],
+  );
+}
+
+// ==========================================
+// SHIMMER LOADING WIDGET
+// ==========================================
+class ShimmerLoading extends StatefulWidget {
+  final Widget child;
+
+  const ShimmerLoading({super.key, required this.child});
+
+  @override
+  State<ShimmerLoading> createState() => _ShimmerLoadingState();
+}
+
+class _ShimmerLoadingState extends State<ShimmerLoading>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat();
+    _animation = Tween<double>(begin: -2, end: 2).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOutSine),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return ShaderMask(
+          shaderCallback: (bounds) {
+            return LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: const [
+                Color(0xFFE0E0E0),
+                Color(0xFFF5F5F5),
+                Color(0xFFE0E0E0),
+              ],
+              stops: [
+                (_animation.value - 1).clamp(0.0, 1.0),
+                _animation.value.clamp(0.0, 1.0),
+                (_animation.value + 1).clamp(0.0, 1.0),
+              ],
+              transform: GradientRotation(_animation.value),
+            ).createShader(bounds);
+          },
+          blendMode: BlendMode.srcATop,
+          child: widget.child,
+        );
+      },
+      child: widget.child,
+    );
+  }
+}
+
+class ShimmerTableRow extends StatelessWidget {
+  const ShimmerTableRow({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ShimmerLoading(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              flex: 2,
+              child: Container(
+                height: 16,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Container(
+                height: 16,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Container(
+                height: 16,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Container(
+              width: 60,
+              height: 24,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ShimmerCard extends StatelessWidget {
+  const ShimmerCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ShimmerLoading(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        height: 18,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        height: 14,
+                        width: 120,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: List.generate(
+                3,
+                (index) => Expanded(
+                  child: Container(
+                    margin: EdgeInsets.only(right: index < 2 ? 12 : 0),
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ==========================================
+// MODELS
+// ==========================================
 class MembershipPlan {
   final String id;
   final String slug;
@@ -100,12 +357,15 @@ class MembershipPlanFeature {
     return {
       'name': name,
       'value': value,
-      'is_available': isAvailable, // Send as integer
+      'is_available': isAvailable,
       if (planId != null) 'plan_id': planId,
     };
   }
 }
 
+// ==========================================
+// SERVICE
+// ==========================================
 class ResellerService {
   static const String baseUrl = 'https://api.libanbuy.com/api';
 
@@ -139,7 +399,10 @@ class ResellerService {
     }
   }
 
-  static Future<void> createMembershipPlan(MembershipPlan plan, String? thumbnailId) async {
+  static Future<void> createMembershipPlan(
+    MembershipPlan plan,
+    String? thumbnailId,
+  ) async {
     final url = Uri.parse('$baseUrl/membership-plans/insert');
 
     try {
@@ -152,7 +415,6 @@ class ResellerService {
         'status': 'active',
       };
 
-      // Add each feature as features[index]
       for (int i = 0; i < plan.features.length; i++) {
         final feature = plan.features[i];
         body['features[$i]'] = jsonEncode({
@@ -161,7 +423,7 @@ class ResellerService {
           'is_available': 1,
         });
       }
-      // Then send like this
+
       final response = await http.post(
         url,
         headers: {
@@ -201,7 +463,6 @@ class ResellerService {
       'status': 'active',
     };
 
-    // Add each feature as features[index]
     for (int i = 0; i < plan.features.length; i++) {
       final feature = plan.features[i];
       body['features[$i]'] = jsonEncode({
@@ -250,6 +511,9 @@ class ResellerService {
   }
 }
 
+// ==========================================
+// CONTROLLER
+// ==========================================
 class ResellerController extends GetxController {
   final RxList<MembershipPlan> membershipPlans = <MembershipPlan>[].obs;
   final RxBool isLoading = false.obs;
@@ -258,6 +522,7 @@ class ResellerController extends GetxController {
   final RxInt currentPage = 1.obs;
   final RxInt totalPages = 1.obs;
   final RxBool hasMoreData = true.obs;
+  final RxInt totalItems = 0.obs;
 
   final ScrollController scrollController = ScrollController();
   final TextEditingController searchController = TextEditingController();
@@ -306,13 +571,18 @@ class ResellerController extends GetxController {
       }
 
       totalPages.value = response['membership_plans']['last_page'] ?? 1;
+      totalItems.value = response['membership_plans']['total'] ?? 0;
       hasMoreData.value = currentPage.value < totalPages.value;
     } catch (e) {
       Get.snackbar(
         'Error',
-        'Failed to load membership plans: $e',
-        backgroundColor: Colors.red[100],
-        colorText: Colors.red[800],
+        'Failed to load membership plans',
+        backgroundColor: Colors.red[50],
+        colorText: Colors.red[700],
+        icon: const Icon(Icons.error_outline, color: Colors.red),
+        snackPosition: SnackPosition.TOP,
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
       );
     } finally {
       isLoading.value = false;
@@ -343,9 +613,12 @@ class ResellerController extends GetxController {
       currentPage.value--;
       Get.snackbar(
         'Error',
-        'Failed to load more plans: $e',
-        backgroundColor: Colors.red[100],
-        colorText: Colors.red[800],
+        'Failed to load more plans',
+        backgroundColor: Colors.red[50],
+        colorText: Colors.red[700],
+        snackPosition: SnackPosition.TOP,
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
       );
     } finally {
       isLoadingMore.value = false;
@@ -362,12 +635,27 @@ class ResellerController extends GetxController {
     try {
       await ResellerService.deleteMembershipPlan(id);
       membershipPlans.removeWhere((plan) => plan.id == id);
+      totalItems.value = totalItems.value - 1;
+      Get.snackbar(
+        'Success',
+        'Reseller level deleted successfully',
+        backgroundColor: ResellerTheme.lightTeal.withOpacity(0.1),
+        colorText: ResellerTheme.darkTeal,
+        icon: const Icon(Icons.check_circle, color: ResellerTheme.primaryTeal),
+        snackPosition: SnackPosition.TOP,
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
+      );
     } catch (e) {
       Get.snackbar(
         'Error',
-        'Failed to delete membership plan: $e',
-        backgroundColor: Colors.red[100],
-        colorText: Colors.red[800],
+        'Failed to delete membership plan',
+        backgroundColor: Colors.red[50],
+        colorText: Colors.red[700],
+        icon: const Icon(Icons.error_outline, color: Colors.red),
+        snackPosition: SnackPosition.TOP,
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
       );
     }
   }
@@ -375,16 +663,43 @@ class ResellerController extends GetxController {
   void showDeleteConfirmation(MembershipPlan plan) {
     Get.dialog(
       AlertDialog(
-        title: const Text('Confirm Delete'),
-        content: Text('Are you sure you want to delete "${plan.name}"?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.delete_outline, color: Colors.red),
+            ),
+            const SizedBox(width: 12),
+            const Text('Confirm Delete'),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to delete "${plan.name}"? This action cannot be undone.',
+          style: TextStyle(color: Colors.grey[700]),
+        ),
         actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
           TextButton(
+            onPressed: () => Get.back(),
+            style: TextButton.styleFrom(foregroundColor: Colors.grey[600]),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
             onPressed: () {
               Get.back();
               deletePlan(plan.id);
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
             child: const Text('Delete'),
           ),
         ],
@@ -400,20 +715,20 @@ class ResellerController extends GetxController {
   }
 }
 
+// ==========================================
+// ADD/EDIT CONTROLLER
+// ==========================================
 class AddEditResellerController extends GetxController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
-  // Controllers
   final nameController = TextEditingController();
   final descriptionController = TextEditingController();
   final priceController = TextEditingController();
 
-  // Observable variables
   final RxString selectedDuration = 'monthly'.obs;
   final RxBool isLoading = false.obs;
   final RxList<File> selectedImages = <File>[].obs;
 
-  // Feature controllers
   final minSpentController = TextEditingController();
   final checkoutDiscountController = TextEditingController();
   final bonusAmountController = TextEditingController();
@@ -428,7 +743,6 @@ class AddEditResellerController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // Check if we're editing
     if (Get.arguments != null && Get.arguments is MembershipPlan) {
       editingPlan = Get.arguments as MembershipPlan;
       populateFields();
@@ -443,7 +757,6 @@ class AddEditResellerController extends GetxController {
     priceController.text = editingPlan!.price.toString();
     selectedDuration.value = editingPlan!.duration;
 
-    // Populate features
     for (var feature in editingPlan!.features) {
       switch (feature.name) {
         case 'min-spent':
@@ -569,13 +882,16 @@ class AddEditResellerController extends GetxController {
   Future<void> savePlan() async {
     if (!formKey.currentState!.validate()) return;
 
-    // Validate that at least one feature is provided
     if (!validateFeatures()) {
       Get.snackbar(
         'Validation Error',
         'Please provide at least one feature for the membership plan',
-        backgroundColor: Colors.orange[100],
+        backgroundColor: Colors.orange[50],
         colorText: Colors.orange[800],
+        icon: const Icon(Icons.warning_amber, color: Colors.orange),
+        snackPosition: SnackPosition.TOP,
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
       );
       return;
     }
@@ -585,7 +901,6 @@ class AddEditResellerController extends GetxController {
     try {
       String? thumbnailId;
 
-      // Upload thumbnail if selected
       if (selectedImages.isNotEmpty) {
         thumbnailId = await uploadMedia(selectedImages);
       }
@@ -608,10 +923,6 @@ class AddEditResellerController extends GetxController {
         features: getFeatures(),
       );
 
-      print(
-        'Features being sent: ${plan.features.map((f) => f.toJson()).toList()}',
-      );
-
       if (isEditing) {
         await ResellerService.updateMembershipPlan(
           editingPlan!.id,
@@ -620,32 +931,48 @@ class AddEditResellerController extends GetxController {
         );
         Get.snackbar(
           'Success',
-          'Membership plan updated successfully',
-          backgroundColor: Colors.green[100],
-          colorText: Colors.green[800],
+          'Reseller level updated successfully',
+          backgroundColor: ResellerTheme.lightTeal.withOpacity(0.1),
+          colorText: ResellerTheme.darkTeal,
+          icon: const Icon(
+            Icons.check_circle,
+            color: ResellerTheme.primaryTeal,
+          ),
+          snackPosition: SnackPosition.TOP,
+          margin: const EdgeInsets.all(16),
+          borderRadius: 12,
         );
       } else {
         await ResellerService.createMembershipPlan(plan, thumbnailId);
         Get.snackbar(
           'Success',
-          'Membership plan created successfully',
-          backgroundColor: Colors.green[100],
-          colorText: Colors.green[800],
+          'Reseller level created successfully',
+          backgroundColor: ResellerTheme.lightTeal.withOpacity(0.1),
+          colorText: ResellerTheme.darkTeal,
+          icon: const Icon(
+            Icons.check_circle,
+            color: ResellerTheme.primaryTeal,
+          ),
+          snackPosition: SnackPosition.TOP,
+          margin: const EdgeInsets.all(16),
+          borderRadius: 12,
         );
       }
 
-      // Refresh the main list
       if (Get.isRegistered<ResellerController>()) {
         Get.find<ResellerController>().loadMembershipPlans(refresh: true);
       }
       Get.back();
     } catch (e) {
-      print('Error saving plan: $e');
       Get.snackbar(
         'Error',
-        'Failed to save membership plan: $e',
-        backgroundColor: Colors.red[100],
-        colorText: Colors.red[800],
+        'Failed to save membership plan',
+        backgroundColor: Colors.red[50],
+        colorText: Colors.red[700],
+        icon: const Icon(Icons.error_outline, color: Colors.red),
+        snackPosition: SnackPosition.TOP,
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
         duration: const Duration(seconds: 5),
       );
     } finally {
@@ -666,350 +993,586 @@ class AddEditResellerController extends GetxController {
   }
 }
 
+// ==========================================
+// RESELLER LIST PAGE
+// ==========================================
 class ResellerListPage extends StatelessWidget {
   const ResellerListPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(ResellerController());
-    const expandedStackGradient = LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [Color(0xFFF97316), Color(0xFFFACC15)],
-    );
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Reseller Levels'),
-        backgroundColor: const Color(0xFFF97316),
-        foregroundColor: Colors.white,
-        elevation: 2,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => Get.to(() => const AddEditResellerPage()),
-            tooltip: 'Add New Reseller Level',
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          Container(
-            height: MediaQuery.of(context).size.height * 0.4,
-            decoration: const BoxDecoration(gradient: expandedStackGradient),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Container(
-              color: Colors.white,
-              child: Column(
-                children: [
-                  // Search Bar
-                  Container(
-                    padding: const EdgeInsets.all(16.0),
-                    color: Colors.white,
-                    child: TextField(
-                      controller: controller.searchController,
-                      decoration: InputDecoration(
-                        hintText: 'Search by Title...',
-                        prefixIcon: const Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
+      backgroundColor: ResellerTheme.surfaceColor,
+      body: NestedScrollView(
+        headerSliverBuilder:
+            (context, innerBoxIsScrolled) => [
+              SliverAppBar(
+                expandedHeight: 220,
+                floating: false,
+                pinned: true,
+                backgroundColor: ResellerTheme.primaryTeal,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Container(
+                    decoration: const BoxDecoration(
+                      gradient: ResellerTheme.headerGradient,
+                    ),
+                    child: SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Reseller Levels',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Manage your reseller membership tiers',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.9),
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Obx(
+                              () => Row(
+                                children: [
+                                  _buildStatChip(
+                                    Icons.layers_outlined,
+                                    '${controller.membershipPlans.length}',
+                                    'Levels',
+                                  ),
+                                  const SizedBox(width: 12),
+                                  _buildStatChip(
+                                    Icons.check_circle_outline,
+                                    '${controller.membershipPlans.where((p) => p.status == 'active').length}',
+                                    'Active',
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.green[700]!),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
                       ),
-                      onChanged: controller.onSearchChanged,
                     ),
                   ),
+                ),
+                actions: [
+                  Container(
+                    margin: const EdgeInsets.only(right: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.add, color: Colors.white),
+                      onPressed:
+                          () => Get.to(() => const AddEditResellerPage()),
+                      tooltip: 'Add New Reseller Level',
+                    ),
+                  ),
+                ],
+              ),
+            ],
+        body: RefreshIndicator(
+          onRefresh: () async => controller.loadMembershipPlans(refresh: true),
+          color: ResellerTheme.primaryTeal,
+          child: SingleChildScrollView(
+            controller: controller.scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                // Search Bar
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: ResellerTheme.primaryTeal.withOpacity(0.08),
+                        blurRadius: 20,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: TextField(
+                    controller: controller.searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Search reseller levels...',
+                      hintStyle: TextStyle(color: Colors.grey[400]),
+                      prefixIcon: Icon(Icons.search, color: Colors.grey[400]),
+                      suffixIcon: Obx(
+                        () =>
+                            controller.searchQuery.value.isNotEmpty
+                                ? IconButton(
+                                  icon: Icon(
+                                    Icons.clear,
+                                    color: Colors.grey[400],
+                                  ),
+                                  onPressed: () {
+                                    controller.searchController.clear();
+                                    controller.onSearchChanged('');
+                                  },
+                                )
+                                : const SizedBox.shrink(),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
+                      ),
+                    ),
+                    onChanged: controller.onSearchChanged,
+                  ),
+                ),
 
-                  // Data Table
-                  Expanded(
-                    child: Obx(() {
-                      if (controller.isLoading.value &&
-                          controller.membershipPlans.isEmpty) {
-                        return const Column(
-                          children: [
-                            LinearProgressIndicator(),
-                            SizedBox(height: 16),
-                            Text('Loading membership plans...'),
-                          ],
-                        );
-                      }
+                const SizedBox(height: 20),
 
-                      if (controller.membershipPlans.isEmpty) {
-                        return Center(
-                          child: Column(
+                // Content
+                Obx(() {
+                  if (controller.isLoading.value &&
+                      controller.membershipPlans.isEmpty) {
+                    return Column(
+                      children: List.generate(
+                        3,
+                        (index) => const ShimmerCard(),
+                      ),
+                    );
+                  }
+
+                  if (controller.membershipPlans.isEmpty) {
+                    return _buildEmptyState();
+                  }
+
+                  return Column(
+                    children: [
+                      // Plans List
+                      ...controller.membershipPlans.map(
+                        (plan) => _buildPlanCard(plan, controller),
+                      ),
+
+                      // Loading more indicator
+                      if (controller.isLoadingMore.value)
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
-                                Icons.inbox_outlined,
-                                size: 64,
-                                color: Colors.grey[400],
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'No membership plans found',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.grey[600],
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    ResellerTheme.primaryTeal,
+                                  ),
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(width: 12),
                               Text(
-                                'Create your first reseller level',
-                                style: TextStyle(color: Colors.grey[500]),
-                              ),
-                              const SizedBox(height: 16),
-                              ElevatedButton.icon(
-                                onPressed:
-                                    () => Get.to(
-                                      () => const AddEditResellerPage(),
-                                    ),
-                                icon: const Icon(Icons.add),
-                                label: const Text('Add Reseller Level'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green[700],
-                                  foregroundColor: Colors.white,
+                                'Loading more...',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 14,
                                 ),
                               ),
                             ],
                           ),
-                        );
-                      }
-
-                      return RefreshIndicator(
-                        onRefresh:
-                            () => controller.loadMembershipPlans(refresh: true),
-                        child: SingleChildScrollView(
-                          controller: controller.scrollController,
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: DataTable(
-                              columnSpacing: 20,
-                              headingRowColor: WidgetStateProperty.all(
-                                const Color(0xff0D9488),
-                              ),
-                              headingTextStyle: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                              columns: const [
-                                DataColumn(label: Text('Thumbnail')),
-                                DataColumn(label: Text('Reseller Level Name')),
-                                DataColumn(label: Text('Minimum Amount Spent')),
-                                DataColumn(label: Text('Store Discount')),
-                                DataColumn(label: Text('Bonus Amount')),
-                                DataColumn(label: Text('Referral Earnings')),
-                                DataColumn(label: Text('Free Shipping')),
-                                DataColumn(label: Text('Status')),
-                                DataColumn(label: Text('Action')),
-                              ],
-                              rows:
-                                  controller.membershipPlans.map((plan) {
-                                    final bonus =
-                                        plan.features
-                                            .where(
-                                              (f) => f.name == 'bonus-amount',
-                                            )
-                                            .firstOrNull
-                                            ?.value ??
-                                        '0';
-                                    final referrelearnings =
-                                        plan.features
-                                            .where(
-                                              (f) =>
-                                                  f.name == 'referrel-earnings',
-                                            )
-                                            .firstOrNull
-                                            ?.value ??
-                                        '0';
-
-                                    final freeShipping =
-                                        plan.features
-                                            .where(
-                                              (f) => f.name == 'free-shipping',
-                                            )
-                                            .firstOrNull
-                                            ?.value ??
-                                        'false';
-                                    final minSpent =
-                                        plan.features
-                                            .where((f) => f.name == 'min-spent')
-                                            .firstOrNull
-                                            ?.value ??
-                                        '0';
-                                    final discount =
-                                        plan.features
-                                            .where(
-                                              (f) =>
-                                                  f.name == 'checkout-discount',
-                                            )
-                                            .firstOrNull
-                                            ?.value ??
-                                        '0';
-
-                                    return DataRow(
-                                      cells: [
-                                        const DataCell(
-                                          CircleAvatar(
-                                            backgroundColor: Colors.grey,
-                                            child: Icon(
-                                              Icons.image,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ),
-                                        DataCell(
-                                          Text(
-                                            plan.name,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ),
-                                        DataCell(Text('\$$minSpent.00')),
-                                        DataCell(Text('$discount%')),
-                                        DataCell(Text(bonus)),
-
-                                        DataCell(Text(referrelearnings)),
-                                        DataCell(
-                                          Text(
-                                            freeShipping.toLowerCase() == 'true'
-                                                ? 'Yes'
-                                                : 'No',
-                                          ),
-                                        ),
-                                        DataCell(
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 8,
-                                              vertical: 4,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color:
-                                                  plan.status == 'active'
-                                                      ? Colors.green[100]
-                                                      : Colors.red[100],
-                                              borderRadius:
-                                                  BorderRadius.circular(4),
-                                            ),
-                                            child: Text(
-                                              plan.status,
-                                              style: TextStyle(
-                                                color:
-                                                    plan.status == 'active'
-                                                        ? Colors.green[700]
-                                                        : Colors.red[700],
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        DataCell(
-                                          PopupMenuButton<String>(
-                                            icon: const Icon(Icons.more_vert),
-                                            onSelected: (value) {
-                                              switch (value) {
-                                                case 'edit':
-                                                  Get.to(
-                                                    () =>
-                                                        const AddEditResellerPage(),
-                                                    arguments: plan,
-                                                  );
-                                                  break;
-                                                case 'delete':
-                                                  controller
-                                                      .showDeleteConfirmation(
-                                                        plan,
-                                                      );
-                                                  break;
-                                              }
-                                            },
-                                            itemBuilder:
-                                                (context) => [
-                                                  const PopupMenuItem(
-                                                    value: 'edit',
-                                                    child: Row(
-                                                      children: [
-                                                        Icon(
-                                                          Icons.edit,
-                                                          size: 16,
-                                                        ),
-                                                        SizedBox(width: 8),
-                                                        Text('Edit'),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  const PopupMenuItem(
-                                                    value: 'delete',
-                                                    child: Row(
-                                                      children: [
-                                                        Icon(
-                                                          Icons.delete,
-                                                          size: 16,
-                                                          color: Colors.red,
-                                                        ),
-                                                        SizedBox(width: 8),
-                                                        Text(
-                                                          'Delete',
-                                                          style: TextStyle(
-                                                            color: Colors.red,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  }).toList(),
-                            ),
-                          ),
                         ),
-                      );
-                    }),
-                  ),
+                    ],
+                  );
+                }),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
-                  // Loading more indicator
-                  Obx(() {
-                    if (controller.isLoadingMore.value) {
-                      return Container(
-                        padding: const EdgeInsets.all(16.0),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            CircularProgressIndicator(),
-                            SizedBox(width: 16),
-                            Text('Loading more...'),
-                          ],
-                        ),
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  }),
-                ],
-              ),
+  Widget _buildStatChip(IconData icon, String value, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white, size: 18),
+          const SizedBox(width: 8),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.9),
+              fontSize: 12,
             ),
           ),
         ],
       ),
     );
   }
+
+  Widget _buildEmptyState() {
+    return Container(
+      padding: const EdgeInsets.all(40),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: ResellerTheme.primaryTeal.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Icon(
+              Icons.layers_outlined,
+              size: 64,
+              color: ResellerTheme.primaryTeal.withOpacity(0.5),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'No Reseller Levels Found',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[800],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Create your first reseller level to start\nmanaging membership tiers',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[600],
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: () => Get.to(() => const AddEditResellerPage()),
+            icon: const Icon(Icons.add),
+            label: const Text('Create Reseller Level'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ResellerTheme.primaryTeal,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 0,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlanCard(MembershipPlan plan, ResellerController controller) {
+    final minSpent =
+        plan.features.where((f) => f.name == 'min-spent').firstOrNull?.value ??
+        '0';
+    final discount =
+        plan.features
+            .where((f) => f.name == 'checkout-discount')
+            .firstOrNull
+            ?.value ??
+        '0';
+    final bonus =
+        plan.features
+            .where((f) => f.name == 'bonus-amount')
+            .firstOrNull
+            ?.value ??
+        '0';
+    final referral =
+        plan.features
+            .where((f) => f.name == 'referrel-earnings')
+            .firstOrNull
+            ?.value ??
+        '0';
+    final freeShipping =
+        plan.features
+            .where((f) => f.name == 'free-shipping')
+            .firstOrNull
+            ?.value ??
+        'false';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: ResellerTheme.cardDecoration,
+      child: Column(
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: ResellerTheme.cardGradient,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.workspace_premium,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        plan.name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color:
+                                  plan.status == 'active'
+                                      ? Colors.white.withOpacity(0.25)
+                                      : Colors.red.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              plan.status.toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            plan.duration.toUpperCase(),
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuButton<String>(
+                  icon: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.more_vert,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  offset: const Offset(0, 40),
+                  onSelected: (value) {
+                    switch (value) {
+                      case 'edit':
+                        Get.to(
+                          () => const AddEditResellerPage(),
+                          arguments: plan,
+                        );
+                        break;
+                      case 'delete':
+                        controller.showDeleteConfirmation(plan);
+                        break;
+                    }
+                  },
+                  itemBuilder:
+                      (context) => [
+                        PopupMenuItem(
+                          value: 'edit',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.edit_outlined,
+                                size: 18,
+                                color: ResellerTheme.primaryTeal,
+                              ),
+                              const SizedBox(width: 12),
+                              const Text('Edit'),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.delete_outline,
+                                size: 18,
+                                color: Colors.red[400],
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Delete',
+                                style: TextStyle(color: Colors.red[400]),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                ),
+              ],
+            ),
+          ),
+
+          // Features
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildFeatureItem(
+                        Icons.monetization_on_outlined,
+                        'Min Spent',
+                        '\$$minSpent',
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildFeatureItem(
+                        Icons.discount_outlined,
+                        'Discount',
+                        '$discount%',
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildFeatureItem(
+                        Icons.card_giftcard,
+                        'Bonus',
+                        '\$$bonus',
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildFeatureItem(
+                        Icons.people_outline,
+                        'Referral',
+                        '$referral%',
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildFeatureItem(
+                        Icons.local_shipping_outlined,
+                        'Free Ship',
+                        freeShipping.toLowerCase() == 'true' ? 'Yes' : 'No',
+                        isActive: freeShipping.toLowerCase() == 'true',
+                      ),
+                    ),
+                    const Expanded(child: SizedBox()),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureItem(
+    IconData icon,
+    String label,
+    String value, {
+    bool isActive = true,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        color:
+            isActive
+                ? ResellerTheme.primaryTeal.withOpacity(0.08)
+                : Colors.grey.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            icon,
+            size: 22,
+            color: isActive ? ResellerTheme.primaryTeal : Colors.grey,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: isActive ? ResellerTheme.darkTeal : Colors.grey,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(label, style: TextStyle(fontSize: 11, color: Colors.grey[600])),
+        ],
+      ),
+    );
+  }
 }
 
+// ==========================================
+// ADD/EDIT RESELLER PAGE
+// ==========================================
 class AddEditResellerPage extends StatelessWidget {
   const AddEditResellerPage({super.key});
 
@@ -1018,289 +1581,247 @@ class AddEditResellerPage extends StatelessWidget {
     final controller = Get.put(AddEditResellerController());
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text(
-          controller.isEditing
-              ? 'Edit Reseller Level'
-              : 'Add New Reseller Level',
-        ),
-        backgroundColor: const Color(0xFFF97316),
-        foregroundColor: Colors.white,
-        elevation: 2,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: controller.formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Reseller Level Information
-              Container(
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      spreadRadius: 1,
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    // Header (separate padded container inside card)
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 14,
-                          horizontal: 16,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF97316),
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFF97316).withOpacity(0.15),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
+      backgroundColor: ResellerTheme.surfaceColor,
+      body: NestedScrollView(
+        headerSliverBuilder:
+            (context, innerBoxIsScrolled) => [
+              SliverAppBar(
+                expandedHeight: 160,
+                floating: false,
+                pinned: true,
+                backgroundColor: ResellerTheme.accentOrange,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Container(
+                    decoration: const BoxDecoration(color: Colors.teal),
+                    child: SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              controller.isEditing
+                                  ? 'Edit Reseller Level'
+                                  : 'Create Reseller Level',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              controller.isEditing
+                                  ? 'Update membership tier settings'
+                                  : 'Set up a new membership tier',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.9),
+                                fontSize: 14,
+                              ),
                             ),
                           ],
                         ),
-                        child: const Center(
-                          child: Text(
-                            'Reseller Level Information',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
                       ),
                     ),
-                    // Content
-                    Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Name Field (external label + themed input)
-                          const Text(
-                            'Reseller Level Name *',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            'Enter the unique name of your membership Plan. Make it descriptive and easy to remember for customers.',
-                            style: TextStyle(color: Colors.grey, fontSize: 12),
-                          ),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: controller.nameController,
-                            decoration: InputDecoration(
-                              hintText: 'Reseller Level Name',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(
-                                  color: Colors.grey[300]!,
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(
-                                  color: Colors.grey[300]!,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFFF97316),
-                                ),
-                              ),
-                              filled: true,
-                              fillColor: Colors.grey[100],
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 14,
-                              ),
-                            ),
-                            validator: controller.validateName,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-
-              const SizedBox(height: 16),
-
-              // Features Section
-              Container(
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      spreadRadius: 1,
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    // Header (separate padded container inside card)
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 14,
-                          horizontal: 16,
+            ],
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Form(
+            key: controller.formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Basic Information Card
+                _buildSectionCard(
+                  title: 'Basic Information',
+                  icon: Icons.info_outline,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildFieldLabel('Reseller Level Name', true),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: controller.nameController,
+                        decoration: _buildInputDecoration(
+                          'Enter level name (e.g., Gold, Platinum)',
+                          Icons.badge_outlined,
                         ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF97316),
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFF97316).withOpacity(0.15),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'Reseller Level Features',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
+                        validator: controller.validateName,
+                      ),
+                      const SizedBox(height: 20),
+                      _buildFieldLabel('Description'),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: controller.descriptionController,
+                        maxLines: 3,
+                        decoration: _buildInputDecoration(
+                          'Brief description of this level',
+                          Icons.description_outlined,
                         ),
                       ),
-                    ),
-                    // Content
-                    Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Min Spent
-                          _buildFeatureField(
-                            'Minimum Amount Spent',
-                            'Amount required to maintain this level',
-                            controller.minSpentController,
-                            'Enter minimum spending amount',
-                            controller.validateFeatureValue,
-                          ),
-                          const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
 
-                          // Checkout Discount
-                          _buildFeatureField(
-                            'Checkout Discount (%)',
-                            'Percentage discount at checkout',
-                            controller.checkoutDiscountController,
-                            'Enter discount percentage',
-                            controller.validateFeatureValue,
-                          ),
-                          const SizedBox(height: 16),
+                const SizedBox(height: 20),
 
-                          // Bonus Amount
-                          _buildFeatureField(
-                            'Bonus Amount',
-                            'Additional bonus for this level',
-                            controller.bonusAmountController,
-                            'Enter bonus amount',
-                            controller.validateFeatureValue,
-                          ),
-                          const SizedBox(height: 16),
+                // Features Card
+                _buildSectionCard(
+                  title: 'Level Features',
+                  icon: Icons.star_outline,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Minimum Spent
+                      _buildFeatureInputField(
+                        controller: controller.minSpentController,
+                        label: 'Minimum Amount Spent',
+                        hint: 'Amount required to reach this level',
+                        icon: Icons.monetization_on_outlined,
+                        prefix: '\$',
+                        validator:
+                            (v) => controller.validateFeatureValue(
+                              v,
+                              'Minimum Amount',
+                            ),
+                      ),
+                      const SizedBox(height: 20),
 
-                          // Referral Earnings
-                          _buildFeatureField(
-                            'Referral Earnings (%)',
-                            'Commission percentage for referrals',
-                            controller.referralEarningsController,
-                            'Enter referral percentage',
-                            controller.validateFeatureValue,
-                          ),
-                          const SizedBox(height: 16),
+                      // Checkout Discount
+                      _buildFeatureInputField(
+                        controller: controller.checkoutDiscountController,
+                        label: 'Checkout Discount',
+                        hint: 'Percentage discount at checkout',
+                        icon: Icons.discount_outlined,
+                        suffix: '%',
+                        validator:
+                            (v) => controller.validateFeatureValue(
+                              v,
+                              'Checkout Discount',
+                            ),
+                      ),
+                      const SizedBox(height: 20),
 
-                          // Free Shipping
-                          Obx(
-                            () => Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color:
-                                    controller.freeShipping.value
-                                        ? Colors.green[50]
-                                        : Colors.grey[50],
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
+                      // Bonus Amount
+                      _buildFeatureInputField(
+                        controller: controller.bonusAmountController,
+                        label: 'Bonus Amount',
+                        hint: 'Additional bonus for this level',
+                        icon: Icons.card_giftcard,
+                        prefix: '\$',
+                        validator:
+                            (v) => controller.validateFeatureValue(
+                              v,
+                              'Bonus Amount',
+                            ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Referral Earnings
+                      _buildFeatureInputField(
+                        controller: controller.referralEarningsController,
+                        label: 'Referral Earnings',
+                        hint: 'Commission percentage for referrals',
+                        icon: Icons.people_outline,
+                        suffix: '%',
+                        validator:
+                            (v) => controller.validateFeatureValue(
+                              v,
+                              'Referral Earnings',
+                            ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Free Shipping Toggle
+                      Obx(
+                        () => Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color:
+                                controller.freeShipping.value
+                                    ? ResellerTheme.primaryTeal.withOpacity(
+                                      0.08,
+                                    )
+                                    : Colors.grey.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color:
+                                  controller.freeShipping.value
+                                      ? ResellerTheme.primaryTeal.withOpacity(
+                                        0.3,
+                                      )
+                                      : Colors.grey.withOpacity(0.2),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
                                   color:
                                       controller.freeShipping.value
-                                          ? Colors.green[200]!
-                                          : Colors.grey[300]!,
+                                          ? ResellerTheme.primaryTeal
+                                              .withOpacity(0.15)
+                                          : Colors.grey.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(
+                                  Icons.local_shipping_outlined,
+                                  color:
+                                      controller.freeShipping.value
+                                          ? ResellerTheme.primaryTeal
+                                          : Colors.grey,
+                                  size: 24,
                                 ),
                               ),
-                              child: SwitchListTile(
-                                title: const Text(
-                                  'Free Shipping',
-                                  style: TextStyle(fontWeight: FontWeight.w500),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Free Shipping',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Enable free shipping for this level',
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                subtitle: const Text(
-                                  'Enable free shipping for this level',
-                                ),
+                              ),
+                              Switch(
                                 value: controller.freeShipping.value,
-                                onChanged: (value) {
-                                  controller.freeShipping.value = value;
-                                },
-                                activeThumbColor: const Color(0xFFF97316),
-                                contentPadding: EdgeInsets.zero,
+                                onChanged:
+                                    (value) =>
+                                        controller.freeShipping.value = value,
+                                activeColor: ResellerTheme.primaryTeal,
                               ),
-                            ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 24),
+                const SizedBox(height: 30),
 
-              // Action Buttons
-              Container(
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      spreadRadius: 1,
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Row(
+                // Action Buttons
+                Obx(
+                  () => Row(
                     children: [
                       Expanded(
                         child: OutlinedButton(
@@ -1309,130 +1830,264 @@ class AddEditResellerPage extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             side: BorderSide(color: Colors.grey[400]!),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text('Cancel'),
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
-                        child: Obx(
-                          () => Container(
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFF97316), Color(0xFFFACC15)],
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight,
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(
-                                    0xFFF97316,
-                                  ).withOpacity(0.3),
-                                  spreadRadius: 1,
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
+                        flex: 2,
+                        child: ElevatedButton(
+                          onPressed:
+                              controller.isLoading.value
+                                  ? null
+                                  : controller.savePlan,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: ResellerTheme.accentOrange,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            child: ElevatedButton(
-                              onPressed:
-                                  controller.isLoading.value
-                                      ? null
-                                      : controller.savePlan,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                                shadowColor: Colors.transparent,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              child:
-                                  controller.isLoading.value
-                                      ? const SizedBox(
-                                        height: 20,
-                                        width: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                                Colors.white,
-                                              ),
-                                        ),
-                                      )
-                                      : Text(
+                            elevation: 0,
+                          ),
+                          child:
+                              controller.isLoading.value
+                                  ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    ),
+                                  )
+                                  : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
                                         controller.isEditing
-                                            ? 'Update'
-                                            : 'Create',
+                                            ? Icons.save_outlined
+                                            : Icons.add_circle_outline,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        controller.isEditing
+                                            ? 'Update Level'
+                                            : 'Create Level',
                                         style: const TextStyle(
                                           fontWeight: FontWeight.w600,
+                                          fontSize: 16,
                                         ),
                                       ),
-                            ),
-                          ),
+                                    ],
+                                  ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
-            ],
+
+                const SizedBox(height: 30),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildFeatureField(
-    String label,
-    String subtitle,
-    TextEditingController controller,
-    String hint,
-    String? Function(String?, String) validator,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildSectionCard({
+    required String title,
+    required IconData icon,
+    required Widget child,
+  }) {
+    return Container(
+      decoration: ResellerTheme.cardDecoration,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  ResellerTheme.accentOrange.withOpacity(0.1),
+                  ResellerTheme.accentOrange.withOpacity(0.05),
+                ],
+              ),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: ResellerTheme.accentOrange.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: ResellerTheme.accentOrange,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1F2937),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Content
+          Padding(padding: const EdgeInsets.all(20), child: child),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFieldLabel(String label, [bool required = false]) {
+    return Row(
       children: [
         Text(
           label,
-          style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+            color: Color(0xFF374151),
+          ),
         ),
-        const SizedBox(height: 4),
-        Text(subtitle, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+        if (required)
+          const Text(
+            ' *',
+            style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
+          ),
+      ],
+    );
+  }
+
+  InputDecoration _buildInputDecoration(String hint, IconData icon) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+      prefixIcon: Icon(icon, color: Colors.grey[400], size: 20),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey[300]!),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey[300]!),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(
+          color: ResellerTheme.accentOrange,
+          width: 2,
+        ),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.red),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.red, width: 2),
+      ),
+      filled: true,
+      fillColor: Colors.grey[50],
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+    );
+  }
+
+  Widget _buildFeatureInputField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    String? prefix,
+    String? suffix,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildFieldLabel(label),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           keyboardType: TextInputType.number,
           decoration: InputDecoration(
             hintText: hint,
+            hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+            prefixIcon: Icon(icon, color: Colors.grey[400], size: 20),
+            prefixText: prefix,
+            prefixStyle: TextStyle(
+              color: Colors.grey[700],
+              fontWeight: FontWeight.w600,
+            ),
+            suffixText: suffix,
+            suffixStyle: TextStyle(
+              color: Colors.grey[700],
+              fontWeight: FontWeight.w600,
+            ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: Colors.grey[300]!),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFF97316)),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(
+                color: ResellerTheme.accentOrange,
+                width: 2,
+              ),
             ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.red),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.red, width: 2),
             ),
             filled: true,
             fillColor: Colors.grey[50],
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
           ),
-          validator: (value) => validator(value, label),
+          validator: validator,
         ),
       ],
     );
   }
 }
 
+// ==========================================
+// IMAGE PICKER WIDGET
+// ==========================================
 class ImagePickerWidget extends StatelessWidget {
   final List<File> selectedImages;
   final Function(List<File>) onImagesSelected;
@@ -1458,7 +2113,6 @@ class ImagePickerWidget extends StatelessWidget {
         ),
         const SizedBox(height: 8),
 
-        // Selected Images Preview
         if (selectedImages.isNotEmpty)
           Container(
             height: 120,
@@ -1472,7 +2126,7 @@ class ImagePickerWidget extends StatelessWidget {
                   child: Stack(
                     children: [
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(12),
                         child: Image.file(
                           selectedImages[index],
                           width: 120,
@@ -1512,25 +2166,35 @@ class ImagePickerWidget extends StatelessWidget {
             ),
           ),
 
-        // Add Image Button
         GestureDetector(
           onTap: () => _showImageSourceDialog(context),
           child: Container(
             width: double.infinity,
             height: 120,
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey[300]!),
-              borderRadius: BorderRadius.circular(8),
-              color: Colors.grey[50],
+              border: Border.all(
+                color: ResellerTheme.primaryTeal.withOpacity(0.3),
+                style: BorderStyle.solid,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              color: ResellerTheme.primaryTeal.withOpacity(0.05),
             ),
-            child: const Column(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.add_photo_alternate, size: 48, color: Colors.grey),
-                SizedBox(height: 8),
+                Icon(
+                  Icons.add_photo_alternate_outlined,
+                  size: 40,
+                  color: ResellerTheme.primaryTeal.withOpacity(0.5),
+                ),
+                const SizedBox(height: 8),
                 Text(
                   'Tap to add image',
-                  style: TextStyle(color: Colors.grey, fontSize: 16),
+                  style: TextStyle(
+                    color: ResellerTheme.primaryTeal.withOpacity(0.7),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),
@@ -1549,38 +2213,84 @@ class ImagePickerWidget extends StatelessWidget {
       builder: (BuildContext context) {
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(20.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 20),
                 const Text(
                   'Select Image Source',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildSourceOption(
+                      context,
+                      Icons.photo_library_outlined,
+                      'Gallery',
+                      () {
+                        Navigator.of(context).pop();
+                        _pickImages(ImageSource.gallery);
+                      },
+                    ),
+                    _buildSourceOption(
+                      context,
+                      Icons.camera_alt_outlined,
+                      'Camera',
+                      () {
+                        Navigator.of(context).pop();
+                        _pickImages(ImageSource.camera);
+                      },
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 16),
-                ListTile(
-                  leading: const Icon(Icons.photo_library),
-                  title: const Text('Gallery'),
-                  subtitle: const Text('Choose from gallery'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    _pickImages(ImageSource.gallery);
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.camera_alt),
-                  title: const Text('Camera'),
-                  subtitle: const Text('Take a new photo'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    _pickImages(ImageSource.camera);
-                  },
-                ),
               ],
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildSourceOption(
+    BuildContext context,
+    IconData icon,
+    String label,
+    VoidCallback onTap,
+  ) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+        decoration: BoxDecoration(
+          color: ResellerTheme.primaryTeal.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, size: 40, color: ResellerTheme.primaryTeal),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                color: ResellerTheme.darkTeal,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1604,30 +2314,48 @@ class ImagePickerWidget extends StatelessWidget {
     } catch (e) {
       Get.snackbar(
         'Error',
-        'Failed to pick image: $e',
-        backgroundColor: Colors.red[100],
-        colorText: Colors.red[800],
+        'Failed to pick image',
+        backgroundColor: Colors.red[50],
+        colorText: Colors.red[700],
+        snackPosition: SnackPosition.TOP,
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
       );
     }
   }
 }
 
-// Enhanced Widgets for better UX
+// ==========================================
+// UTILITY CLASSES
+// ==========================================
 class LoadingDialog {
   static void show({String message = 'Loading...'}) {
     Get.dialog(
       Center(
-        child: Card(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(),
-                const SizedBox(height: 16),
-                Text(message),
-              ],
-            ),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          margin: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  ResellerTheme.primaryTeal,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                message,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -1642,7 +2370,6 @@ class LoadingDialog {
   }
 }
 
-// Extensions for better code organization
 extension StringExtension on String {
   String get capitalize {
     if (isEmpty) return this;
@@ -1659,7 +2386,6 @@ extension ListExtensions<T> on List<T> {
   }
 }
 
-// Validation utilities
 class ValidationUtils {
   static String? validateRequired(String? value, String fieldName) {
     if (value == null || value.trim().isEmpty) {
@@ -1689,15 +2415,8 @@ class ValidationUtils {
     }
     return null;
   }
-
-  static String? validateEmail(String? value) {
-    if (value == null || value.isEmpty) return null;
-
-    return null;
-  }
 }
 
-// Error handling utility
 class ErrorHandler {
   static void handleError(dynamic error) {
     String message = 'An unexpected error occurred';
@@ -1711,10 +2430,13 @@ class ErrorHandler {
     Get.snackbar(
       'Error',
       message,
-      backgroundColor: Colors.red[100],
-      colorText: Colors.red[800],
+      backgroundColor: Colors.red[50],
+      colorText: Colors.red[700],
+      icon: const Icon(Icons.error_outline, color: Colors.red),
       duration: const Duration(seconds: 5),
       snackPosition: SnackPosition.TOP,
+      margin: const EdgeInsets.all(16),
+      borderRadius: 12,
     );
   }
 
@@ -1722,15 +2444,17 @@ class ErrorHandler {
     Get.snackbar(
       'Success',
       message,
-      backgroundColor: Colors.green[100],
-      colorText: Colors.green[800],
+      backgroundColor: ResellerTheme.lightTeal.withOpacity(0.1),
+      colorText: ResellerTheme.darkTeal,
+      icon: const Icon(Icons.check_circle, color: ResellerTheme.primaryTeal),
       duration: const Duration(seconds: 3),
       snackPosition: SnackPosition.TOP,
+      margin: const EdgeInsets.all(16),
+      borderRadius: 12,
     );
   }
 }
 
-// Network utility for handling API responses
 class NetworkUtils {
   static bool isSuccessStatusCode(int statusCode) {
     return statusCode >= 200 && statusCode < 300;

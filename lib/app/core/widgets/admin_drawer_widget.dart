@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/core/utils/constants/assets_manager.dart';
+import 'package:tjara/app/modules/admin_products_module/admin_products_config/views/admin_products_config_view.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/controllers/add_product_admin_controller.dart';
 import 'package:tjara/app/modules/modules_admin/admin/admin_contexts/insert.dart';
 import 'package:tjara/app/modules/modules_admin/admin/admin_contexts/view/contests_view.dart';
@@ -40,8 +41,12 @@ import 'package:tjara/app/modules/modules_admin/admin/websettings/websettings_vi
 import 'package:tjara/app/modules/modules_admin/admin/withdrawel/withdrawel.dart';
 import 'package:tjara/app/modules/modules_customer/my_account/widgets/orders_screen.dart';
 import 'package:tjara/app/modules/modules_customer/my_account/widgets/placed_orders_screen.dart';
+import 'package:tjara/app/modules/modules_customer/my_activities/my_bids/views/my_bids_view.dart';
+import 'package:tjara/app/modules/modules_customer/my_activities/my_job_applications/views/my_job_applications_view.dart';
+import 'package:tjara/app/modules/modules_customer/my_activities/my_participations/views/my_participations_view.dart';
 import 'package:tjara/app/modules/modules_customer/orders_dashboard/widgets/chats.dart';
 import 'package:tjara/app/modules/modules_admin/admin_shops_module/views/shops/shops_view.dart';
+import 'package:tjara/app/modules/web_settings/web_settings_dashboard/web_settings_dashboard_screen.dart';
 import 'package:tjara/app/routes/app_pages.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
 
@@ -56,18 +61,22 @@ class _AdminDrawerWidgetState extends State<AdminDrawerWidget> {
   int? expandedIndex;
 
   List<DrawerMenuModel> get filteredMenus {
-    final userRole =
+    final roleString =
         AuthService.instance.role ??
         AuthService.instance.authCustomerRx.value?.user?.role ??
         'customer';
 
-    if (userRole == 'admin') {
+    final userRole = RoleMenuConfig.getRoleFromString(roleString);
+
+    // Admin ko sab menus
+    if (userRole == UserRole.admin) {
       return menusList;
-    } else {
-      return menusList
-          .where((menu) => nonAdminAllowedMenus.contains(menu.title))
-          .toList();
     }
+
+    // Vendor/Customer ko filtered menus
+    return menusList
+        .where((menu) => RoleMenuConfig.isMenuAllowed(menu.title, userRole))
+        .toList();
   }
 
   @override
@@ -141,6 +150,12 @@ class _AdminDrawerWidgetState extends State<AdminDrawerWidget> {
 
   Widget _buildDrawerItem(int i) {
     final item = filteredMenus[i];
+    final roleString =
+        AuthService.instance.role ??
+        AuthService.instance.authCustomerRx.value?.user?.role ??
+        'customer';
+    final userRole = RoleMenuConfig.getRoleFromString(roleString);
+
     return TileWidget(
       index: i,
       isExpanded: expandedIndex == i,
@@ -153,6 +168,7 @@ class _AdminDrawerWidgetState extends State<AdminDrawerWidget> {
       title: item.title,
       arrowIcon: item.arrowIcon,
       categoriesList: item.subCategories,
+      userRole: userRole,
     );
   }
 }
@@ -165,6 +181,7 @@ class TileWidget extends StatelessWidget {
   final bool isExpanded;
   final int index;
   final VoidCallback onTap;
+  final UserRole userRole;
 
   const TileWidget({
     super.key,
@@ -175,7 +192,13 @@ class TileWidget extends StatelessWidget {
     required this.isExpanded,
     required this.index,
     required this.onTap,
+    required this.userRole,
   });
+
+  // Filtered sub-categories based on role
+  List<Map<String, dynamic>>? get filteredSubCategories {
+    return RoleMenuConfig.filterSubCategories(categoriesList, userRole);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -209,7 +232,10 @@ class TileWidget extends StatelessWidget {
               ),
             ),
             trailing:
-                arrowIcon == null
+                // Arrow sirf tab dikhao jab sub-menus available hain
+                (arrowIcon == null ||
+                        filteredSubCategories == null ||
+                        filteredSubCategories!.isEmpty)
                     ? null
                     : AnimatedRotation(
                       turns: isExpanded ? 0.5 : 0.0,
@@ -223,8 +249,10 @@ class TileWidget extends StatelessWidget {
             onTap: _handleTap,
           ),
         ),
-        // Expanded sub-items
-        if (isExpanded && categoriesList != null) ...[
+        // Expanded sub-items (filtered by role)
+        if (isExpanded &&
+            filteredSubCategories != null &&
+            filteredSubCategories!.isNotEmpty) ...[
           const SizedBox(height: 8),
           ..._buildSubItems(),
         ],
@@ -233,7 +261,8 @@ class TileWidget extends StatelessWidget {
   }
 
   void _handleTap() {
-    if (categoriesList == null || categoriesList!.isEmpty) {
+    // Agar filtered sub-categories empty hain to direct navigate karo
+    if (filteredSubCategories == null || filteredSubCategories!.isEmpty) {
       _handleMainItemTap();
     } else {
       onTap();
@@ -243,6 +272,18 @@ class TileWidget extends StatelessWidget {
   void _handleMainItemTap() {
     Get.back();
     switch (title) {
+      case 'My bids':
+        Get.to(() => MyBidsView());
+
+        break;
+      case 'My Participations':
+        Get.to(() => MyParticipationsView());
+
+        break;
+      case 'My Applications':
+        Get.to(() => MyJobApplicationsView());
+
+        break;
       case 'My Shop':
         Get.to(() => const MyShopScreen());
         break;
@@ -251,7 +292,7 @@ class TileWidget extends StatelessWidget {
         Get.to(() => const MyShopScreen());
         break;
       case 'Settings':
-        Get.to(() => const WebSettingsView());
+        Get.to(() => const WebSettingsDashboardScreen());
         break;
       case 'Resellers':
         Get.to(() => const AllResellerProgramScreen());
@@ -290,7 +331,7 @@ class TileWidget extends StatelessWidget {
   }
 
   List<Widget> _buildSubItems() {
-    return categoriesList!.map((item) {
+    return filteredSubCategories!.map((item) {
       return Container(
         margin: const EdgeInsets.only(left: 16, bottom: 6),
         decoration: BoxDecoration(
@@ -322,6 +363,19 @@ class TileWidget extends StatelessWidget {
   void _handleSubItemTap(String title) {
     Get.back();
     switch (title) {
+      case 'My bids':
+        Get.to(() => MyBidsView());
+
+        break;
+      case 'My Participations':
+        Get.to(() => MyParticipationsView());
+
+        break;
+      case 'My Applications':
+        Get.to(() => MyJobApplicationsView());
+
+        break;
+
       case 'Products':
         Get.to(() => const ProductsAdminView());
         break;
@@ -338,6 +392,9 @@ class TileWidget extends StatelessWidget {
       case 'Add Products':
         Get.delete<AddProductAdminController>();
         Get.toNamed(Routes.ADD_PRODUCT_ADMIN_VIEW, preventDuplicates: false);
+      case 'Products Configs':
+        Get.to(() => const AdminProductsConfigView());
+
       case 'Add Car':
         Get.toNamed(
           Routes.ADD_PRODUCT_ADMIN_VIEW,
@@ -488,12 +545,154 @@ class DrawerMenuModel {
   });
 }
 
-final List<String> nonAdminAllowedMenus = [
-  'Orders',
-  'My Tjara Reseller Club',
-  'Product Inquiry Chats',
-  'My Withdrawals',
-];
+// ============================================
+// ROLE-BASED MENU CONFIGURATION
+// ============================================
+// Yahan easily configure karo ke kis role ko kya menus/submenus dikhne chahiye
+// 'all' means sab menus milenge
+
+enum UserRole { admin, vendor, customer }
+
+class RoleMenuConfig {
+  // ==========================================
+  // ADMIN CONFIG - Sab kuch allowed
+  // ==========================================
+  static const List<String> adminMenus = ['all'];
+  static const List<String> adminSubMenus = ['all'];
+
+  // ==========================================
+  // VENDOR CONFIG - Yahan customize karo
+  // ==========================================
+  static const List<String> vendorMenus = [
+    'Products',
+    'Auctions',
+    'Cars',
+    'Services',
+    'Orders',
+    'Disputes',
+    'My shop',
+    'My Tjara Reseller Club',
+    'Product Inquiry Chats',
+    'My Withdrawals',
+    'Jobs',
+    'Stories',
+  ];
+
+  // Vendor ke allowed sub-menus - yahan add/remove karo
+  static const List<String> vendorSubMenus = [
+    // Products ke under
+    'Products',
+    'Add Products',
+    'Product Reviews',
+
+    // 'Categories',      // <-- Vendor ko nahi dikhega
+
+    // 'Attributes',      // <-- Vendor ko nahi dikhega
+    'Cars',
+    'Add Car',
+    'Services',
+    // 'Add Services',
+    // Orders ke under
+    'Orders',
+    'Placed Orders',
+
+    // Disputes ke under
+    'Received Disputes',
+    'Placed Disputes',
+
+    // Coupens ke under
+    'Coupens',
+    'Add Coupens',
+
+    //jobs
+    'Add Job',
+    'Jobs',
+
+    'Add Stories',
+    'Stories',
+  ];
+
+  // ==========================================
+  // CUSTOMER CONFIG - Yahan customize karo
+  // ==========================================
+  static const List<String> customerMenus = [
+    'Orders',
+    'Disputes',
+    'My Applications',
+    'My Participations',
+    'My bids',
+    'My Tjara Reseller Club',
+    'Product Inquiry Chats',
+  ];
+
+  // Customer ke allowed sub-menus
+  static const List<String> customerSubMenus = [
+    'Placed Orders',
+    'Placed Disputes',
+  ];
+
+  // ==========================================
+  // HELPER METHODS - Inhe change mat karo
+  // ==========================================
+
+  static UserRole getRoleFromString(String? role) {
+    switch (role?.toLowerCase()) {
+      case 'admin':
+        return UserRole.admin;
+      case 'vendor':
+        return UserRole.vendor;
+      default:
+        return UserRole.customer;
+    }
+  }
+
+  static List<String> getAllowedMenus(UserRole role) {
+    switch (role) {
+      case UserRole.admin:
+        return adminMenus;
+      case UserRole.vendor:
+        return vendorMenus;
+      case UserRole.customer:
+        return customerMenus;
+    }
+  }
+
+  static List<String> getAllowedSubMenus(UserRole role) {
+    switch (role) {
+      case UserRole.admin:
+        return adminSubMenus;
+      case UserRole.vendor:
+        return vendorSubMenus;
+      case UserRole.customer:
+        return customerSubMenus;
+    }
+  }
+
+  static bool isMenuAllowed(String menuTitle, UserRole role) {
+    final allowedMenus = getAllowedMenus(role);
+    if (allowedMenus.contains('all')) return true;
+    return allowedMenus.contains(menuTitle);
+  }
+
+  static bool isSubMenuAllowed(String subMenuTitle, UserRole role) {
+    final allowedSubMenus = getAllowedSubMenus(role);
+    if (allowedSubMenus.contains('all')) return true;
+    return allowedSubMenus.contains(subMenuTitle);
+  }
+
+  // Sub-categories filter karo role ke hisaab se
+  static List<Map<String, dynamic>>? filterSubCategories(
+    List<Map<String, dynamic>>? subCategories,
+    UserRole role,
+  ) {
+    if (subCategories == null || subCategories.isEmpty) return subCategories;
+    if (getAllowedSubMenus(role).contains('all')) return subCategories;
+
+    return subCategories
+        .where((sub) => isSubMenuAllowed(sub['title'] as String, role))
+        .toList();
+  }
+}
 
 final List<DrawerMenuModel> menusList = [
   DrawerMenuModel(
@@ -503,6 +702,7 @@ final List<DrawerMenuModel> menusList = [
     subCategories: [
       {'title': 'Products', 'icon': Icons.grid_view_rounded},
       {'title': 'Add Products', 'icon': Icons.add_circle_outline},
+      {'title': 'Products Configs', 'icon': Icons.accessibility_sharp},
       {'title': 'Categories', 'icon': Icons.category_outlined},
       {'title': 'Product Reviews', 'icon': Icons.pie_chart_outline},
       {'title': 'Attributes', 'icon': Icons.local_shipping_outlined},
@@ -588,6 +788,23 @@ final List<DrawerMenuModel> menusList = [
   DrawerMenuModel(
     title: 'My shop',
     icon: Icons.storefront_outlined,
+    subCategories: [],
+  ),
+  DrawerMenuModel(
+    title: 'My Applications',
+
+    icon: Icons.app_settings_alt_rounded,
+    subCategories: [],
+  ),
+  DrawerMenuModel(
+    title: 'My Participations',
+
+    icon: Icons.paragliding,
+    subCategories: [],
+  ),
+  DrawerMenuModel(
+    title: 'My bids',
+    icon: Icons.bakery_dining,
     subCategories: [],
   ),
   DrawerMenuModel(

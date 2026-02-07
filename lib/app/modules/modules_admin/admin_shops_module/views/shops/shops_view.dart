@@ -42,12 +42,12 @@ class _ShopViewState extends State<ShopView> {
     const expandedStackGradient = LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: [Color(0xFFF97316), Color(0xFFFACC15)],
+      colors: [Colors.teal, Colors.teal],
     );
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF97316),
+        backgroundColor: Colors.teal,
         actions: [const AdminAppBarActionsSimple()],
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
@@ -327,7 +327,7 @@ class _ShopViewState extends State<ShopView> {
             height: 56,
             width: 55,
             decoration: const BoxDecoration(
-              color: Color(0xFFF97316),
+              color: Colors.teal,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(18),
                 bottomLeft: Radius.circular(18),
@@ -422,7 +422,7 @@ class _ShopViewState extends State<ShopView> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: const BoxDecoration(
-        color: Color(0xFFF97316),
+        color: Colors.teal,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
@@ -461,7 +461,7 @@ class _ShopViewState extends State<ShopView> {
             color: Colors.white,
             fontSize: 14,
           ),
-          headingRowColor: WidgetStateProperty.all(const Color(0xFFF97316)),
+          headingRowColor: WidgetStateProperty.all(Colors.teal),
           columns: const [
             DataColumn(label: SizedBox(width: 200, child: Text('Shop'))),
             DataColumn(label: SizedBox(width: 180, child: Text('Owner'))),
@@ -494,10 +494,7 @@ class _ShopViewState extends State<ShopView> {
                               height: 40,
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
-                                  colors: [
-                                    Color(0xFFF97316),
-                                    Color(0xFFFACC15),
-                                  ],
+                                  colors: [Colors.teal, Colors.teal],
                                 ),
                                 borderRadius: BorderRadius.circular(10),
                               ),

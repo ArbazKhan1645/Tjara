@@ -188,17 +188,9 @@ class _AuctionHeader extends StatelessWidget {
               'Auctions',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 24,
+                fontSize: 20,
                 fontWeight: FontWeight.w600,
                 letterSpacing: -0.5,
-              ),
-            ),
-            SizedBox(height: 4),
-            Text(
-              'Manage your auction listings',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 13,
               ),
             ),
           ],
@@ -237,16 +229,14 @@ class _AddAuctionButton extends StatelessWidget {
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
-            boxShadow: AuctionAdminTheme.shadowColored(AuctionAdminTheme.primary),
+            boxShadow: AuctionAdminTheme.shadowColored(
+              AuctionAdminTheme.primary,
+            ),
           ),
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.add_rounded,
-                color: Colors.white,
-                size: 20,
-              ),
+              Icon(Icons.add_rounded, color: Colors.white, size: 20),
               SizedBox(width: AuctionAdminTheme.spacingSm),
               Text(
                 'Add Auction',
@@ -295,7 +285,9 @@ class _FiltersCard extends StatelessWidget {
                   padding: const EdgeInsets.all(AuctionAdminTheme.spacingSm),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusSm),
+                    borderRadius: BorderRadius.circular(
+                      AuctionAdminTheme.radiusSm,
+                    ),
                   ),
                   child: const Icon(
                     Icons.filter_list_rounded,
@@ -451,10 +443,7 @@ class _StatusFilter extends StatelessWidget {
               ),
             ),
             const SizedBox(width: AuctionAdminTheme.spacingMd),
-            const Text(
-              'Status Filter',
-              style: AuctionAdminTheme.headingSmall,
-            ),
+            const Text('Status Filter', style: AuctionAdminTheme.headingSmall),
           ],
         ),
         const SizedBox(height: AuctionAdminTheme.spacingMd),
@@ -462,15 +451,16 @@ class _StatusFilter extends StatelessWidget {
           () => Wrap(
             spacing: AuctionAdminTheme.spacingSm,
             runSpacing: AuctionAdminTheme.spacingSm,
-            children: ProductStatus.values.map((status) {
-              final isSelected =
-                  adminAuctionService.selectedStatus.value == status;
-              return _StatusChip(
-                label: status.name.capitalize ?? status.name,
-                isSelected: isSelected,
-                onTap: () => adminAuctionService.updateStatusFilter(status),
-              );
-            }).toList(),
+            children:
+                ProductStatus.values.map((status) {
+                  final isSelected =
+                      adminAuctionService.selectedStatus.value == status;
+                  return _StatusChip(
+                    label: status.name.capitalize ?? status.name,
+                    isSelected: isSelected,
+                    onTap: () => adminAuctionService.updateStatusFilter(status),
+                  );
+                }).toList(),
           ),
         ),
       ],
@@ -504,14 +494,16 @@ class _StatusChip extends StatelessWidget {
             vertical: AuctionAdminTheme.spacingSm,
           ),
           decoration: BoxDecoration(
-            color: isSelected
-                ? AuctionAdminTheme.accent.withValues(alpha: 0.1)
-                : AuctionAdminTheme.surfaceSecondary,
+            color:
+                isSelected
+                    ? AuctionAdminTheme.accent.withValues(alpha: 0.1)
+                    : AuctionAdminTheme.surfaceSecondary,
             borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
             border: Border.all(
-              color: isSelected
-                  ? AuctionAdminTheme.accent
-                  : AuctionAdminTheme.border,
+              color:
+                  isSelected
+                      ? AuctionAdminTheme.accent
+                      : AuctionAdminTheme.border,
             ),
           ),
           child: Row(
@@ -530,9 +522,10 @@ class _StatusChip extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected
-                      ? AuctionAdminTheme.accent
-                      : AuctionAdminTheme.textSecondary,
+                  color:
+                      isSelected
+                          ? AuctionAdminTheme.accent
+                          : AuctionAdminTheme.textSecondary,
                 ),
               ),
             ],
@@ -576,24 +569,21 @@ class _DateRangeFilter extends StatelessWidget {
             ),
             const SizedBox(width: AuctionAdminTheme.spacingMd),
             const Expanded(
-              child: Text(
-                'Date Range',
-                style: AuctionAdminTheme.headingSmall,
-              ),
+              child: Text('Date Range', style: AuctionAdminTheme.headingSmall),
             ),
             Obx(() {
               final hasDateFilter =
                   adminAuctionService.startDate.value != null ||
-                      adminAuctionService.endDate.value != null;
+                  adminAuctionService.endDate.value != null;
               if (!hasDateFilter) return const SizedBox.shrink();
 
               return Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () =>
-                      adminAuctionService.updateDateRange(null, null),
-                  borderRadius:
-                      BorderRadius.circular(AuctionAdminTheme.radiusSm),
+                  onTap: () => adminAuctionService.updateDateRange(null, null),
+                  borderRadius: BorderRadius.circular(
+                    AuctionAdminTheme.radiusSm,
+                  ),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AuctionAdminTheme.spacingSm,
@@ -601,8 +591,9 @@ class _DateRangeFilter extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: AuctionAdminTheme.errorLight,
-                      borderRadius:
-                          BorderRadius.circular(AuctionAdminTheme.radiusSm),
+                      borderRadius: BorderRadius.circular(
+                        AuctionAdminTheme.radiusSm,
+                      ),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
@@ -697,8 +688,14 @@ class _DatePickerTile extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.vertical(
-          top: isFirst ? const Radius.circular(AuctionAdminTheme.radiusMd) : Radius.zero,
-          bottom: !isFirst ? const Radius.circular(AuctionAdminTheme.radiusMd) : Radius.zero,
+          top:
+              isFirst
+                  ? const Radius.circular(AuctionAdminTheme.radiusMd)
+                  : Radius.zero,
+          bottom:
+              !isFirst
+                  ? const Radius.circular(AuctionAdminTheme.radiusMd)
+                  : Radius.zero,
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(
@@ -710,11 +707,13 @@ class _DatePickerTile extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(AuctionAdminTheme.spacingSm),
                 decoration: BoxDecoration(
-                  color: hasDate
-                      ? accentColor.withValues(alpha: 0.1)
-                      : AuctionAdminTheme.surface,
-                  borderRadius:
-                      BorderRadius.circular(AuctionAdminTheme.radiusSm),
+                  color:
+                      hasDate
+                          ? accentColor.withValues(alpha: 0.1)
+                          : AuctionAdminTheme.surface,
+                  borderRadius: BorderRadius.circular(
+                    AuctionAdminTheme.radiusSm,
+                  ),
                 ),
                 child: Icon(
                   icon,
@@ -743,9 +742,10 @@ class _DatePickerTile extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: hasDate ? FontWeight.w500 : FontWeight.w400,
-                        color: hasDate
-                            ? AuctionAdminTheme.textPrimary
-                            : AuctionAdminTheme.textTertiary,
+                        color:
+                            hasDate
+                                ? AuctionAdminTheme.textPrimary
+                                : AuctionAdminTheme.textTertiary,
                       ),
                     ),
                   ],
@@ -779,9 +779,9 @@ class _ActiveFiltersDisplay extends StatelessWidget {
     return Obx(() {
       final hasFilters =
           adminAuctionService.searchQuery.value.isNotEmpty ||
-              adminAuctionService.selectedStatus.value != ProductStatus.all ||
-              adminAuctionService.activeFilters.isNotEmpty ||
-              adminAuctionService.startDate.value != null;
+          adminAuctionService.selectedStatus.value != ProductStatus.all ||
+          adminAuctionService.activeFilters.isNotEmpty ||
+          adminAuctionService.startDate.value != null;
 
       if (!hasFilters) return const SizedBox.shrink();
 
@@ -790,7 +790,9 @@ class _ActiveFiltersDisplay extends StatelessWidget {
         decoration: BoxDecoration(
           color: AuctionAdminTheme.accentLight,
           borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusSm),
-          border: Border.all(color: AuctionAdminTheme.accent.withValues(alpha: 0.3)),
+          border: Border.all(
+            color: AuctionAdminTheme.accent.withValues(alpha: 0.3),
+          ),
         ),
         child: Row(
           children: [
@@ -816,8 +818,7 @@ class _ActiveFiltersDisplay extends StatelessWidget {
                   adminAuctionService.clearAllFilters();
                   searchController.clear();
                 },
-                borderRadius:
-                    BorderRadius.circular(AuctionAdminTheme.radiusSm),
+                borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusSm),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AuctionAdminTheme.spacingSm,
@@ -825,8 +826,9 @@ class _ActiveFiltersDisplay extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: AuctionAdminTheme.error.withValues(alpha: 0.1),
-                    borderRadius:
-                        BorderRadius.circular(AuctionAdminTheme.radiusSm),
+                    borderRadius: BorderRadius.circular(
+                      AuctionAdminTheme.radiusSm,
+                    ),
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
@@ -945,14 +947,18 @@ class _ResultsSummary extends StatelessWidget {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: adminAuctionService.refreshProducts,
-                    borderRadius:
-                        BorderRadius.circular(AuctionAdminTheme.radiusSm),
+                    borderRadius: BorderRadius.circular(
+                      AuctionAdminTheme.radiusSm,
+                    ),
                     child: Container(
-                      padding: const EdgeInsets.all(AuctionAdminTheme.spacingSm),
+                      padding: const EdgeInsets.all(
+                        AuctionAdminTheme.spacingSm,
+                      ),
                       decoration: BoxDecoration(
                         color: AuctionAdminTheme.surfaceSecondary,
-                        borderRadius:
-                            BorderRadius.circular(AuctionAdminTheme.radiusSm),
+                        borderRadius: BorderRadius.circular(
+                          AuctionAdminTheme.radiusSm,
+                        ),
                       ),
                       child: const Icon(
                         Icons.refresh_rounded,

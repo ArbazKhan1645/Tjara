@@ -59,6 +59,7 @@ class OrderService extends GetxService {
     int page = 1,
     bool refresh = false,
     String userId = '',
+    Map<String, String>? queryOverrides,
   }) async {
     if (_loadingCompleter != null && !_loadingCompleter!.isCompleted) {
       return _loadingCompleter!.future;
@@ -109,26 +110,41 @@ class OrderService extends GetxService {
 
       if (page < 1) page = 1;
 
-      final Map<String, String> queryParams = {
-        'per_page': perPage.toString(),
-        'page': page.toString(),
-      };
+      final Map<String, String> queryParams;
+      if (queryOverrides != null) {
+        queryParams = Map<String, String>.from(queryOverrides);
+        queryParams['per_page'] = perPage.toString();
+        queryParams['page'] = page.toString();
+      } else {
+        queryParams = {
+          'per_page': perPage.toString(),
+          'page': page.toString(),
+        };
 
-      if (userId.isNotEmpty && current?.user?.id != null) {
-        final String targetUserId =
-            (userId == current!.user!.id!) ? current.user!.id! : userId;
-        queryParams.addAll({
-          'filterByColumns[columns][0][column]': 'buyer_id',
-          'filterByColumns[columns][0][value]': targetUserId,
-          'filterByColumns[columns][0][operator]': '=',
-        });
+        if (userId.isNotEmpty &&
+            current?.user?.id != null &&
+            current?.user?.role == 'customer') {
+          final String targetUserId =
+              (userId == current!.user!.id!) ? current.user!.id! : userId;
+          queryParams.addAll({
+            'filterByColumns[columns][0][column]': 'buyer_id',
+            'filterByColumns[columns][0][value]': targetUserId,
+            'filterByColumns[columns][0][operator]': '=',
+          });
+        }
       }
 
       final uri = Uri.parse(_baseApiUrl).replace(queryParameters: queryParams);
 
       final response = await http.get(
         uri,
-        headers: {'X-Request-From': 'Application'},
+        headers: {
+          'X-Request-From': 'Dashboard',
+          if (current?.user?.role != 'customer')
+            'shop-id':
+                AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
+          'user-id': AuthService.instance.authCustomer!.user!.id.toString(),
+        },
       );
 
       if (response.statusCode == 200) {

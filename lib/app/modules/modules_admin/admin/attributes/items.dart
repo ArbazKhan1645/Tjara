@@ -22,6 +22,10 @@ class ProductAttributeItemsService {
     try {
       final response = await http.get(url, headers: defaultHeaders);
 
+      if (response.statusCode == 404) {
+        throw Exception('No products Attibutes Items available');
+      }
+
       if (response.statusCode != 200) {
         throw Exception(
           'Failed to load attribute items: ${response.reasonPhrase}',

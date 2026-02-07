@@ -101,6 +101,119 @@ class OrdersDashboardController extends GetxController {
     }
   }
 
+  // ==========================================
+  // ORDER STATUS OPTIONS
+  // ==========================================
+  static const List<String> orderStatusOptions = [
+    'Pending',
+    'On Hold',
+    'Awaiting Payment',
+    'Cancelled',
+    'Refunded',
+    'Processing / Awaiting Pickup',
+    'Awaiting Fulfillment',
+    'Shipping',
+    'Delivered',
+    'Completed',
+    'Returned',
+    'Reshipping',
+    'Reshipped',
+    'Failed',
+  ];
+
+  // ==========================================
+  // PAYMENT STATUS OPTIONS
+  // ==========================================
+  static const List<String> paymentStatusOptions = [
+    'Pending',
+    'Paid',
+    'Failed',
+  ];
+
+  // Update Order Status with Dialog
+  Future<void> showUpdateOrderStatusDialog(
+    String id,
+    BuildContext context,
+    String currentStatus,
+  ) async {
+    String? selectedStatus = await showDialog<String>(
+      context: context,
+      builder:
+          (context) => _StatusSelectionDialog(
+            title: 'Update Order Status',
+            options: orderStatusOptions,
+            currentValue: currentStatus,
+          ),
+    );
+
+    if (selectedStatus != null && selectedStatus != currentStatus) {
+      await _updateOrderField(id, context, 'status', selectedStatus);
+    }
+  }
+
+  // Update Payment Status with Dialog
+  Future<void> showUpdatePaymentStatusDialog(
+    String id,
+    BuildContext context,
+    String currentStatus,
+  ) async {
+    String? selectedStatus = await showDialog<String>(
+      context: context,
+      builder:
+          (context) => _StatusSelectionDialog(
+            title: 'Update Payment Status',
+            options: paymentStatusOptions,
+            currentValue: currentStatus,
+          ),
+    );
+
+    if (selectedStatus != null && selectedStatus != currentStatus) {
+      await _updateOrderField(id, context, 'payment_status', selectedStatus);
+    }
+  }
+
+  // Generic update method for any field
+  Future<void> _updateOrderField(
+    String id,
+    BuildContext context,
+    String fieldName,
+    String value,
+  ) async {
+    final url = Uri.parse("https://api.libanbuy.com/api/orders/$id/update");
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          "X-Request-From": "Application",
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode({fieldName: value.toLowerCase()}),
+      );
+
+      if (response.statusCode == 200) {
+        if (selectedOrder.value != null) {
+          if (fieldName == 'status') {
+            selectedOrder.value!.status = value.toLowerCase();
+          }
+          // Trigger UI update
+          selectedOrder.refresh();
+        }
+        final data = jsonDecode(response.body);
+        NotificationHelper.showSuccess(context, 'Success', data['message']);
+      } else {
+        NotificationHelper.showError(
+          context,
+          'Failed',
+          'Failed to update $fieldName',
+        );
+      }
+    } catch (e) {
+      NotificationHelper.showError(context, 'Error', e.toString());
+    }
+  }
+
+  // Old method - kept for backward compatibility (Cancel order)
   Future<void> updateOrderStatus(String id, BuildContext context) async {
     final url = Uri.parse("https://api.libanbuy.com/api/orders/$id/update");
 
@@ -115,7 +228,6 @@ class OrdersDashboardController extends GetxController {
       );
 
       if (response.statusCode == 200) {
-        // Add null check before updating
         if (selectedOrder.value != null) {
           selectedOrder.value!.status = 'cancelled';
         }
@@ -268,6 +380,121 @@ class Product {
               ? json['price'].toDouble()
               : double.tryParse(json['price'].toString()) ?? 0.0,
       status: json['status'] ?? 'unknown',
+    );
+  }
+}
+
+// ==========================================
+// STATUS SELECTION DIALOG
+// ==========================================
+class _StatusSelectionDialog extends StatefulWidget {
+  final String title;
+  final List<String> options;
+  final String currentValue;
+
+  const _StatusSelectionDialog({
+    required this.title,
+    required this.options,
+    required this.currentValue,
+  });
+
+  @override
+  State<_StatusSelectionDialog> createState() => _StatusSelectionDialogState();
+}
+
+class _StatusSelectionDialogState extends State<_StatusSelectionDialog> {
+  late String _selectedValue;
+
+  @override
+  void initState() {
+    super.initState();
+    // Match current value with options (case-insensitive)
+    _selectedValue = widget.options.firstWhere(
+      (opt) => opt.toLowerCase() == widget.currentValue.toLowerCase(),
+      orElse: () => widget.options.first,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: Text(
+        widget.title,
+        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+      ),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xFFE91E63)),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: _selectedValue,
+                  isExpanded: true,
+                  icon: const Icon(Icons.keyboard_arrow_down),
+                  items:
+                      widget.options.map((String value) {
+                        final isSelected = value == _selectedValue;
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(
+                            value,
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : Colors.black87,
+                              fontWeight:
+                                  isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                  selectedItemBuilder: (context) {
+                    return widget.options.map((String value) {
+                      return Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          value,
+                          style: const TextStyle(color: Colors.black87),
+                        ),
+                      );
+                    }).toList();
+                  },
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      setState(() => _selectedValue = newValue);
+                    }
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.of(context).pop(_selectedValue),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFE91E63),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          child: const Text('Update Status'),
+        ),
+      ],
     );
   }
 }
