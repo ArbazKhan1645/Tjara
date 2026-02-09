@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:tjara/app/models/categories/categories_model.dart';
+import 'package:tjara/app/modules/modules_customer/app_home/widgets/tjara_videos_section.dart';
 import 'package:tjara/app/modules/modules_customer/customer_dashboard/controllers/dashboard_controller.dart';
 import 'package:tjara/app/modules/modules_customer/product_detail_screen/screens/flash_deal_detail_screen.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/widgets/featurebadge.dart';
@@ -378,6 +379,7 @@ class _PromotionBannerWidgetState extends State<PromotionBannerWidget>
                         width: 180,
                         fit: BoxFit.contain,
                         filterQuality: FilterQuality.low,
+                        gaplessPlayback: true,
                         errorBuilder: (_, __, ___) => const SizedBox.shrink(),
                       ),
                     ),
@@ -387,6 +389,7 @@ class _PromotionBannerWidgetState extends State<PromotionBannerWidget>
             ),
           ),
           const FeatureBadgesWidget(),
+
           const CategorySection(),
         ],
       ),
@@ -499,6 +502,7 @@ class _PromotionBannerWidgetState extends State<PromotionBannerWidget>
                         width: 180,
                         fit: BoxFit.contain,
                         filterQuality: FilterQuality.low,
+                        gaplessPlayback: true,
                         errorBuilder: (_, __, ___) => const SizedBox.shrink(),
                       ),
                     ),
@@ -620,6 +624,7 @@ class _PromotionBannerWidgetState extends State<PromotionBannerWidget>
                         width: 180,
                         fit: BoxFit.contain,
                         filterQuality: FilterQuality.low,
+                        gaplessPlayback: true,
                         errorBuilder: (_, __, ___) => const SizedBox.shrink(),
                       ),
                     ),
@@ -745,6 +750,7 @@ class _PromotionBannerWidgetState extends State<PromotionBannerWidget>
                         width: 180,
                         fit: BoxFit.contain,
                         filterQuality: FilterQuality.low,
+                        gaplessPlayback: true,
                         errorBuilder: (_, __, ___) => const SizedBox.shrink(),
                       ),
                     ),
@@ -754,6 +760,7 @@ class _PromotionBannerWidgetState extends State<PromotionBannerWidget>
             ),
           ),
           const FeatureBadgesWidget(),
+          const TjaraVideosSection(),
           const CategorySection(),
         ],
       ),

@@ -212,7 +212,7 @@ class FlashDealProductsTabs extends GetView<FlashDealController> {
   }
 
   void _showProductSearchDialog() {
-    Get.dialog(const FlashDealProductSearch(), barrierDismissible: true);
+    Get.to(() => const FlashDealProductSearch());
   }
 
   Widget _buildEmptyState(int tabIndex) {

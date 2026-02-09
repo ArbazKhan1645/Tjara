@@ -2306,7 +2306,10 @@ class HeroBannersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const BannerListScreen(postType: 'hero_banners');
+    return const BannerListScreen(
+      postType: 'hero_banners',
+      title: 'Club Page Hero Banners',
+    );
   }
 }
 

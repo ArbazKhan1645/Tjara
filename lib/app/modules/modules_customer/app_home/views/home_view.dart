@@ -408,6 +408,8 @@ class _ParallaxTabViewState extends State<_ParallaxTabView>
                   },
                 ),
 
+                const SizedBox(height: 12),
+
                 const SizedBox(height: 15),
                 // InfoBarWidget(),
                 const Padding(
@@ -452,6 +454,7 @@ class _ParallaxTabViewState extends State<_ParallaxTabView>
             child: Column(
               children: [
                 const TrustBadgesWidget(),
+
                 CategorySection(isCarSection: _currentTab == 3),
                 if (_currentTab == 5 &&
                     widget
@@ -491,10 +494,95 @@ class _ParallaxTabViewState extends State<_ParallaxTabView>
             ),
           ),
 
+          if (_currentTab == 1)
+            _OnSaleSubFilterChips(controller: widget.controller),
+
           const ProductsGridWidget(shownfromcatehoris: false),
           const SizedBox(height: 80),
         ],
       ),
+    );
+  }
+}
+
+/// On Sale sub-filter chips: Phones / Other Items / View All
+class _OnSaleSubFilterChips extends StatelessWidget {
+  final HomeController controller;
+  const _OnSaleSubFilterChips({required this.controller});
+
+  static const _filters = [
+    {'icon': Icons.phone_android, 'label': 'Phones'},
+    {'icon': Icons.shopping_bag_outlined, 'label': 'Other Items'},
+    {'icon': Icons.diamond_outlined, 'label': 'View All'},
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return GetBuilder<HomeController>(
+      id: 'on_sale_sub_filter',
+      builder: (_) {
+        final selected = controller.onSaleSubFilter;
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            children: List.generate(_filters.length, (i) {
+              final isSelected = selected == i;
+              return Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(right: i < 2 ? 4 : 0),
+                  child: GestureDetector(
+                    onTap: () {
+                      if (selected != i) controller.setOnSaleSubFilter(i);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color:
+                            isSelected ? const Color(0xFF009688) : Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color:
+                              isSelected
+                                  ? const Color(0xFF009688)
+                                  : Colors.grey.shade300,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            _filters[i]['icon'] as IconData,
+                            size: 14,
+                            color:
+                                isSelected
+                                    ? Colors.white
+                                    : Colors.grey.shade700,
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              _filters[i]['label'] as String,
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color:
+                                    isSelected
+                                        ? Colors.white
+                                        : Colors.grey.shade700,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+        );
+      },
     );
   }
 }

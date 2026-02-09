@@ -1,4 +1,4 @@
-// ignore_for_file: depend_on_referenced_packages
+// ignore_for_file: depend_on_referenced_packages, avoid_print
 
 import 'dart:convert';
 import 'dart:async';
@@ -110,7 +110,7 @@ class AdminDisputesService extends GetxService {
       }
     } catch (e) {
       if (showLoader) {
-        _handleError('Failed to load disputes', e);
+        print('Failed to load disputes $e');
       }
     } finally {
       isLoading.value = false;

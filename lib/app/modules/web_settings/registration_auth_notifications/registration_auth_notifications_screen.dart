@@ -17,23 +17,24 @@ class RegistrationAuthNotificationsScreen extends StatelessWidget {
         title: 'Registration & Auth',
         actions: [
           Obx(
-            () => controller.isSaving.value
-                ? const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
+            () =>
+                controller.isSaving.value
+                    ? const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       ),
+                    )
+                    : IconButton(
+                      icon: const Icon(Icons.save_rounded),
+                      onPressed: controller.saveSettings,
+                      tooltip: 'Save Settings',
                     ),
-                  )
-                : IconButton(
-                    icon: const Icon(Icons.save_rounded),
-                    onPressed: controller.saveSettings,
-                    tooltip: 'Save Settings',
-                  ),
           ),
         ],
       ),
@@ -79,10 +80,14 @@ class RegistrationAuthNotificationsScreen extends StatelessWidget {
                 _NotificationCard(
                   title: 'Customer Welcome Messages',
                   icon: Icons.person_rounded,
-                  helperText: 'Welcome message sent to customers after registration',
-                  notificationController: controller.customerWelcomeNotificationController,
-                  emailSubjectController: controller.customerWelcomeEmailSubjectController,
-                  emailBodyController: controller.customerWelcomeEmailBodyController,
+                  helperText:
+                      'Welcome message sent to customers after registration',
+                  notificationController:
+                      controller.customerWelcomeNotificationController,
+                  emailSubjectController:
+                      controller.customerWelcomeEmailSubjectController,
+                  emailBodyController:
+                      controller.customerWelcomeEmailBodyController,
                   sendByValue: controller.customerWelcomeSendBy,
                   notificationOptions: controller.notificationOptions,
                   notificationLabel: 'Customer Welcome SMS/Notification',
@@ -92,10 +97,14 @@ class RegistrationAuthNotificationsScreen extends StatelessWidget {
                 _NotificationCard(
                   title: 'Vendor Welcome Messages',
                   icon: Icons.store_rounded,
-                  helperText: 'Welcome message sent to vendors after registration',
-                  notificationController: controller.vendorWelcomeNotificationController,
-                  emailSubjectController: controller.vendorWelcomeEmailSubjectController,
-                  emailBodyController: controller.vendorWelcomeEmailBodyController,
+                  helperText:
+                      'Welcome message sent to vendors after registration',
+                  notificationController:
+                      controller.vendorWelcomeNotificationController,
+                  emailSubjectController:
+                      controller.vendorWelcomeEmailSubjectController,
+                  emailBodyController:
+                      controller.vendorWelcomeEmailBodyController,
                   sendByValue: controller.vendorWelcomeSendBy,
                   notificationOptions: controller.notificationOptions,
                   notificationLabel: 'Vendor Welcome SMS/Notification',
@@ -115,9 +124,14 @@ class RegistrationAuthNotificationsScreen extends StatelessWidget {
                   title: 'Customer Standard Email Verification',
                   icon: Icons.verified_user_rounded,
                   helperText: 'Verification message sent to customers',
-                  notificationController: controller.customerEmailVerificationNotificationController,
-                  emailSubjectController: controller.customerEmailVerificationEmailSubjectController,
-                  emailBodyController: controller.customerEmailVerificationEmailBodyController,
+                  notificationController:
+                      controller
+                          .customerEmailVerificationNotificationController,
+                  emailSubjectController:
+                      controller
+                          .customerEmailVerificationEmailSubjectController,
+                  emailBodyController:
+                      controller.customerEmailVerificationEmailBodyController,
                   sendByValue: controller.customerEmailVerificationSendBy,
                   notificationOptions: controller.notificationOptions,
                   notificationLabel: 'Customer Email Verification',
@@ -128,9 +142,12 @@ class RegistrationAuthNotificationsScreen extends StatelessWidget {
                   title: 'Vendor Email Verification',
                   icon: Icons.storefront_rounded,
                   helperText: 'Verification message sent to vendors',
-                  notificationController: controller.vendorEmailVerificationNotificationController,
-                  emailSubjectController: controller.vendorEmailVerificationEmailSubjectController,
-                  emailBodyController: controller.vendorEmailVerificationEmailBodyController,
+                  notificationController:
+                      controller.vendorEmailVerificationNotificationController,
+                  emailSubjectController:
+                      controller.vendorEmailVerificationEmailSubjectController,
+                  emailBodyController:
+                      controller.vendorEmailVerificationEmailBodyController,
                   sendByValue: controller.vendorEmailVerificationSendBy,
                   notificationOptions: controller.notificationOptions,
                   notificationLabel: 'Vendor Email Verification',
@@ -140,10 +157,17 @@ class RegistrationAuthNotificationsScreen extends StatelessWidget {
                 _NotificationCard(
                   title: 'Customer Quick Registration Verification',
                   icon: Icons.flash_on_rounded,
-                  helperText: 'Quick verification message with discount incentive',
-                  notificationController: controller.quickRegistrationVerificationNotificationController,
-                  emailSubjectController: controller.quickRegistrationVerificationEmailSubjectController,
-                  emailBodyController: controller.quickRegistrationVerificationEmailBodyController,
+                  helperText:
+                      'Quick verification message with discount incentive',
+                  notificationController:
+                      controller
+                          .quickRegistrationVerificationNotificationController,
+                  emailSubjectController:
+                      controller
+                          .quickRegistrationVerificationEmailSubjectController,
+                  emailBodyController:
+                      controller
+                          .quickRegistrationVerificationEmailBodyController,
                   sendByValue: controller.quickRegistrationVerificationSendBy,
                   notificationOptions: controller.notificationOptions,
                   notificationLabel: 'Quick Registration Verification',
@@ -163,9 +187,12 @@ class RegistrationAuthNotificationsScreen extends StatelessWidget {
                   title: 'Seller Phone Verification Code',
                   icon: Icons.pin_rounded,
                   helperText: 'Verification code message sent to user\'s phone',
-                  notificationController: controller.phoneVerificationCodeNotificationController,
-                  emailSubjectController: controller.phoneVerificationCodeEmailSubjectController,
-                  emailBodyController: controller.phoneVerificationCodeEmailBodyController,
+                  notificationController:
+                      controller.phoneVerificationCodeNotificationController,
+                  emailSubjectController:
+                      controller.phoneVerificationCodeEmailSubjectController,
+                  emailBodyController:
+                      controller.phoneVerificationCodeEmailBodyController,
                   sendByValue: controller.phoneVerificationCodeSendBy,
                   notificationOptions: controller.notificationOptions,
                   notificationLabel: 'Phone Verification Code',
@@ -176,9 +203,12 @@ class RegistrationAuthNotificationsScreen extends StatelessWidget {
                   title: 'Phone Verification Resend',
                   icon: Icons.refresh_rounded,
                   helperText: 'Resend verification code message',
-                  notificationController: controller.phoneVerificationResendNotificationController,
-                  emailSubjectController: controller.phoneVerificationResendEmailSubjectController,
-                  emailBodyController: controller.phoneVerificationResendEmailBodyController,
+                  notificationController:
+                      controller.phoneVerificationResendNotificationController,
+                  emailSubjectController:
+                      controller.phoneVerificationResendEmailSubjectController,
+                  emailBodyController:
+                      controller.phoneVerificationResendEmailBodyController,
                   sendByValue: controller.phoneVerificationResendSendBy,
                   notificationOptions: controller.notificationOptions,
                   notificationLabel: 'Phone Verification Resend',
@@ -198,9 +228,12 @@ class RegistrationAuthNotificationsScreen extends StatelessWidget {
                   title: 'Password Reset',
                   icon: Icons.link_rounded,
                   helperText: 'Password reset link message',
-                  notificationController: controller.passwordResetLinkNotificationController,
-                  emailSubjectController: controller.passwordResetLinkEmailSubjectController,
-                  emailBodyController: controller.passwordResetLinkEmailBodyController,
+                  notificationController:
+                      controller.passwordResetLinkNotificationController,
+                  emailSubjectController:
+                      controller.passwordResetLinkEmailSubjectController,
+                  emailBodyController:
+                      controller.passwordResetLinkEmailBodyController,
                   sendByValue: controller.passwordResetLinkSendBy,
                   notificationOptions: controller.notificationOptions,
                   notificationLabel: 'Password Reset Link',
@@ -211,9 +244,12 @@ class RegistrationAuthNotificationsScreen extends StatelessWidget {
                   title: 'Password Reset Success',
                   icon: Icons.check_circle_rounded,
                   helperText: 'Password reset confirmation message',
-                  notificationController: controller.passwordResetSuccessNotificationController,
-                  emailSubjectController: controller.passwordResetSuccessEmailSubjectController,
-                  emailBodyController: controller.passwordResetSuccessEmailBodyController,
+                  notificationController:
+                      controller.passwordResetSuccessNotificationController,
+                  emailSubjectController:
+                      controller.passwordResetSuccessEmailSubjectController,
+                  emailBodyController:
+                      controller.passwordResetSuccessEmailBodyController,
                   sendByValue: controller.passwordResetSuccessSendBy,
                   notificationOptions: controller.notificationOptions,
                   notificationLabel: 'Password Reset Success',
@@ -276,11 +312,7 @@ class RegistrationAuthNotificationsScreen extends StatelessWidget {
               color: WebSettingsTheme.primaryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(
-              icon,
-              color: WebSettingsTheme.primaryColor,
-              size: 22,
-            ),
+            child: Icon(icon, color: WebSettingsTheme.primaryColor, size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -337,7 +369,9 @@ class RegistrationAuthNotificationsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickActionsSection(RegistrationAuthNotificationsController controller) {
+  Widget _buildQuickActionsSection(
+    RegistrationAuthNotificationsController controller,
+  ) {
     return WebSettingsQuickActions(
       title: 'Quick Actions - Auth Notifications',
       actions: [
@@ -363,7 +397,9 @@ class RegistrationAuthNotificationsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaceholdersCard(RegistrationAuthNotificationsController controller) {
+  Widget _buildPlaceholdersCard(
+    RegistrationAuthNotificationsController controller,
+  ) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
@@ -437,15 +473,6 @@ class RegistrationAuthNotificationsScreen extends StatelessWidget {
                         p['description']!,
                       ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              // Other Placeholders
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
                     const Text(
                       'Vendor:',
                       style: TextStyle(
@@ -577,11 +604,7 @@ class _NotificationCard extends StatelessWidget {
               color: WebSettingsTheme.primaryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              icon,
-              color: WebSettingsTheme.primaryColor,
-              size: 20,
-            ),
+            child: Icon(icon, color: WebSettingsTheme.primaryColor, size: 20),
           ),
           title: Text(
             title,
@@ -677,7 +700,9 @@ class _NotificationCard extends StatelessWidget {
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: WebSettingsTheme.dividerColor),
+              borderSide: const BorderSide(
+                color: WebSettingsTheme.dividerColor,
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),

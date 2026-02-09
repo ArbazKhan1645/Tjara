@@ -16,7 +16,7 @@ class ProductReviewScreen extends StatelessWidget {
     const _expandedStackGradient = LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: [Colors.teal, Color(0xFFFACC15)],
+      colors: [Colors.teal, Colors.teal],
     );
 
     return Scaffold(

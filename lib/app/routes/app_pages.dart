@@ -43,6 +43,8 @@ import 'package:tjara/app/modules/modules_customer/product_detail_screen/screens
 import 'package:tjara/app/modules/modules_customer/app_home/bindings/flash_deal_binding.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_flash_deals/bindings/flash_deal_binding.dart' as admin_flash_deal;
 import 'package:tjara/app/modules/admin_products_module/admin_flash_deals/views/flash_deal_settings_view.dart';
+import 'package:tjara/app/modules/admin_products_module/admin_flash_deals_analytics/bindings/flash_deal_analytics_binding.dart';
+import 'package:tjara/app/modules/admin_products_module/admin_flash_deals_analytics/views/flash_deal_analytics_view.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_products_config/views/admin_products_config_view.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_products_config/bindings/admin_products_config_binding.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_products_promotion/views/admin_promotion_view.dart';
@@ -51,6 +53,8 @@ import 'package:tjara/app/modules/admin_products_module/admin_products_templates
 import 'package:tjara/app/modules/admin_products_module/admin_products_templates/bindings/admin_template_binding.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_products_bundles/views/admin_bundle_view.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_products_bundles/bindings/admin_bundle_binding.dart';
+import 'package:tjara/app/modules/modules_customer/tjara_videos/bindings/tjara_videos_binding.dart';
+import 'package:tjara/app/modules/modules_customer/tjara_videos/views/tjara_videos_view.dart';
 
 // ignore_for_file: constant_identifier_names
 
@@ -190,6 +194,11 @@ class AppPages {
       binding: admin_flash_deal.FlashDealBinding(),
     ),
     GetPage(
+      name: _Paths.FLASH_DEAL_ANALYTICS,
+      page: () => const FlashDealAnalyticsView(),
+      binding: FlashDealAnalyticsBinding(),
+    ),
+    GetPage(
       name: _Paths.ADMIN_PRODUCTS_CONFIG,
       page: () => const AdminProductsConfigView(),
       binding: AdminProductsConfigBinding(),
@@ -208,6 +217,11 @@ class AppPages {
       name: _Paths.ADMIN_BUNDLES,
       page: () => const AdminBundleView(),
       binding: AdminBundleBinding(),
+    ),
+    GetPage(
+      name: _Paths.TJARA_VIDEOS,
+      page: () => const TjaraVideosView(),
+      binding: TjaraVideosBinding(),
     ),
   ];
 }

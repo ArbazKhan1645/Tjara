@@ -82,6 +82,7 @@ class HomeController extends GetxController {
   bool isCategorypaginationLoading = false;
   int page = 2;
   int pageFiltered = 2;
+  int onSaleSubFilter = 2; // 0=Phones, 1=Other Items, 2=View All (default)
   int pageCategoryPagination = 2;
   bool hasReachedEndOfPagination = false;
   RxBool iscategoryLoading = false.obs;
@@ -468,22 +469,7 @@ class HomeController extends GetxController {
 
   Future<List<ProductDatum>> _fetchLightningDealsProducts() async {
     const url =
-        "https://api.libanbuy.com/api/products?request_for=LIGHTNING_DEALS_SECTION"
-        "&with=thumbnail,shop"
-        "&includeFlashDeals=true"
-        "&filterByColumns[filterJoin]=AND"
-        "&filterByColumns[columns][0][column]=is_deal"
-        "&filterByColumns[columns][0][value]=1"
-        "&filterByColumns[columns][0][operator]=%3D"
-        "&filterByColumns[columns][1][column]=status"
-        "&filterByColumns[columns][1][operator]=%3D"
-        "&filterByColumns[columns][1][value]=active"
-        "&filterByMetaFields[filterJoin]=AND"
-        "&filterByMetaFields[fields][0][key]=sold"
-        "&filterByMetaFields[fields][0][operator]=%3E"
-        "&filterByMetaFields[fields][0][value]=0"
-        "&orderBy=super_deals_products_sort_order"
-        "&per_page=5";
+        'https://api.libanbuy.com/api/products?request_for=FLASH_DEALS_ENDED_DEALS_SECTION&with=image,shop&includeFlashDeals=true&filterJoin=AND&filterByColumns%5BfilterJoin%5D=AND&filterByColumns%5Bcolumns%5D%5B0%5D%5Bcolumn%5D=is_deal&filterByColumns%5Bcolumns%5D%5B0%5D%5Boperator%5D=%3D&filterByColumns%5Bcolumns%5D%5B0%5D%5Bvalue%5D=1&orderBy=super_deals_products_sort_order&restrictToIds=true&page=1&per_page=6';
 
     final headers = {
       'X-Request-From': 'Application',
@@ -1556,7 +1542,16 @@ class HomeController extends GetxController {
 
     switch (index) {
       case 1: // On Sale
-        return 'https://api.libanbuy.com/api/products?request_for=SHOP_PRODUCTS_SECTION&with=thumbnail,shop,variations,rating&filterJoin=OR&time_info[current_time]=2025-09-25T13:22:36.569Z&time_info[timezone]=Asia%2FKarachi&time_info[timezone_offset]=-300&time_info[timestamp]=1758806556569&page=$pageNumber&per_page=16&customOrder=featured_sale_products_first&filterByColumns[filterJoin]=AND&filterByColumns[columns][0][column]=sale_price&filterByColumns[columns][0][value]=1&filterByColumns[columns][0][operator]=%3E&filterByColumns[columns][1][column]=price&filterByColumns[columns][1][value]=100000000&filterByColumns[columns][1][operator]=%3C%3D&filterByColumns[columns][2][column]=product_group&filterByColumns[columns][2][value]=car&filterByColumns[columns][2][operator]=!%3D&filterByColumns[columns][3][column]=status&filterByColumns[columns][3][value]=active&filterByColumns[columns][3][operator]=%3D';
+        const saleBase =
+            'https://api.libanbuy.com/api/products?request_for=SALE_PRODUCTS_SECTION&with=thumbnail,shop,analytics&include_analytics=true&start_date=2000-01-01+00:00:01&end_date=2100-01-01+00:00:01&filterJoin=AND&filterByColumns%5BfilterJoin%5D=AND&filterByColumns%5Bcolumns%5D%5B0%5D%5Bcolumn%5D=sale_price&filterByColumns%5Bcolumns%5D%5B0%5D%5Boperator%5D=%3E&filterByColumns%5Bcolumns%5D%5B0%5D%5Bvalue%5D=0&filterByColumns%5Bcolumns%5D%5B1%5D%5Bcolumn%5D=product_group&filterByColumns%5Bcolumns%5D%5B1%5D%5Boperator%5D=%3D&filterByColumns%5Bcolumns%5D%5B1%5D%5Bvalue%5D=global&filterByColumns%5Bcolumns%5D%5B2%5D%5Bcolumn%5D=status&filterByColumns%5Bcolumns%5D%5B2%5D%5Boperator%5D=%3D&filterByColumns%5Bcolumns%5D%5B2%5D%5Bvalue%5D=active';
+        switch (onSaleSubFilter) {
+          case 0: // Phones
+            return '$saleBase&filterByColumns%5Bcolumns%5D%5B3%5D%5Bcolumn%5D=shop_id&filterByColumns%5Bcolumns%5D%5B3%5D%5Boperator%5D=%3D&filterByColumns%5Bcolumns%5D%5B3%5D%5Bvalue%5D=f06c6309-9b1c-49fb-a817-e65a76afde13&page=$pageNumber&per_page=12&orderBy=featured_sale_phones_sorting_order';
+          case 1: // Other Items
+            return '$saleBase&filterByColumns%5Bcolumns%5D%5B3%5D%5Bcolumn%5D=shop_id&filterByColumns%5Bcolumns%5D%5B3%5D%5Boperator%5D=%3D&filterByColumns%5Bcolumns%5D%5B3%5D%5Bvalue%5D=76c60862-c355-4238-9f85-a0520c423feb&page=$pageNumber&per_page=12&orderBy=featured_sale_other_products_sorting_order';
+          default: // View All
+            return '$saleBase&page=$pageNumber&per_page=12&orderBy=featured_sale_products_first';
+        }
       case 2: // Featured
         return '$baseUrl$commonParams&filterByColumns[columns][0][column]=is_featured&filterByColumns[columns][0][value]=1&filterByColumns[columns][0][operator]=%3D&filterByColumns[columns][1][column]=status&filterByColumns[columns][1][operator]=%3D&filterByColumns[columns][1][value]=active';
       case 3: // Cars
@@ -1593,6 +1588,13 @@ class HomeController extends GetxController {
       isLoading = false;
       update();
     }
+  }
+
+  void setOnSaleSubFilter(int filter) {
+    onSaleSubFilter = filter;
+    update(['on_sale_sub_filter']);
+    startFilteredLoading();
+    loadFilteredFirstPage(1);
   }
 
   // Prepare UI for filtered loading (clear list and show shimmer)

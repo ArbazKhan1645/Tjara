@@ -1,8 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:tjara/app/modules/admin_products_module/admin_flash_deals/model/flash_deal_model.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_flash_deals/service/flash_deal_api_service.dart';
+import 'package:tjara/app/modules/admin_products_module/admin_products_templates/model/template_model.dart';
+import 'package:tjara/app/modules/admin_products_module/admin_products_templates/service/template_api_service.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/widgets/admin_ui_components.dart';
 
 class FlashDealController extends GetxController {
@@ -20,6 +25,15 @@ class FlashDealController extends GetxController {
 
   // Flag to track if form fields have been initialized (prevents auto-update after first load)
   bool _isFormFieldsInitialized = false;
+
+  // Cooldown: prevent refresh timer from overwriting local product changes before API syncs
+  DateTime? _lastLocalProductChange;
+  static const Duration _localChangeCooldown = Duration(seconds: 15);
+
+  bool get _isLocalChangePending {
+    if (_lastLocalProductChange == null) return false;
+    return DateTime.now().difference(_lastLocalProductChange!) < _localChangeCooldown;
+  }
 
   // Settings
   final Rxn<FlashDealSettings> settings = Rxn<FlashDealSettings>();
@@ -72,6 +86,13 @@ class FlashDealController extends GetxController {
   final Rxn<String> skippingProductId = Rxn<String>();
   final Rxn<String> restoringProductId = Rxn<String>();
   final Rxn<String> removingProductId = Rxn<String>();
+
+  // Templates
+  final TemplateApiService _templateApiService = TemplateApiService();
+  final RxList<Template> templates = <Template>[].obs;
+  final Rxn<String> selectedTemplateId = Rxn<String>();
+  final RxBool isRestoringTemplate = false.obs;
+  final RxBool isLoadingTemplates = false.obs;
 
   // Time units options
   final List<String> timeUnits = ['seconds', 'minutes', 'hours'];
@@ -141,11 +162,14 @@ class FlashDealController extends GetxController {
 
   // Refresh settings (called by timer)
   Future<void> _refreshSettings() async {
-    if (isSaving.value) return; // Don't refresh while saving
+    if (isSaving.value || _isLocalChangePending) return;
 
     try {
       final response = await _apiService.fetchSettings();
       final newSettings = response.flashDealSettings;
+
+      // Re-check after async gap (local change may have happened during fetch)
+      if (_isLocalChangePending) return;
 
       // Check if product lists changed
       final activeChanged =
@@ -374,6 +398,7 @@ class FlashDealController extends GetxController {
     activeProductIds.add(product.id);
     activeProducts.add(product);
     productCache[product.id] = product;
+    _lastLocalProductChange = DateTime.now();
 
     // Update settings immediately
     await _updateSortOrderSettings();
@@ -382,6 +407,7 @@ class FlashDealController extends GetxController {
   // Remove product from any tab
   Future<void> removeProduct(String productId, int tabIndex) async {
     removingProductId.value = productId;
+    _lastLocalProductChange = DateTime.now();
 
     try {
       switch (tabIndex) {
@@ -412,6 +438,7 @@ class FlashDealController extends GetxController {
   // Skip a deal (Active -> Skipped)
   Future<void> skipDeal(String productId) async {
     skippingProductId.value = productId;
+    _lastLocalProductChange = DateTime.now();
 
     try {
       await _apiService.skipFlashDeal(productId);
@@ -437,6 +464,7 @@ class FlashDealController extends GetxController {
   // Restore a deal (Skipped -> Active)
   Future<void> restoreDeal(String productId) async {
     restoringProductId.value = productId;
+    _lastLocalProductChange = DateTime.now();
 
     try {
       await _apiService.restoreFlashDeal(productId);
@@ -493,6 +521,7 @@ class FlashDealController extends GetxController {
     }
 
     // Update settings with new order
+    _lastLocalProductChange = DateTime.now();
     _updateSortOrderSettings();
   }
 
@@ -673,4 +702,59 @@ class FlashDealController extends GetxController {
   bool isSkipping(String productId) => skippingProductId.value == productId;
   bool isRestoring(String productId) => restoringProductId.value == productId;
   bool isRemoving(String productId) => removingProductId.value == productId;
+
+  // --- Templates ---
+
+  Future<void> fetchTemplates() async {
+    isLoadingTemplates.value = true;
+    try {
+      final response = await _templateApiService.fetchTemplates();
+      templates.value = response.templates.data;
+    } catch (e) {
+      debugPrint('fetchTemplates error: $e');
+    } finally {
+      isLoadingTemplates.value = false;
+    }
+  }
+
+  Future<void> restoreTemplate(String templateId) async {
+    isRestoringTemplate.value = true;
+    try {
+      final uri = Uri.parse(
+        '${FlashDealApiService.baseUrl}/product-sorting-templates/$templateId',
+      );
+      final response = await http
+          .post(uri, headers: const {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Request-From': 'Dashboard',
+            'user-id': '121d6d13-a26f-49ff-8786-a3b203dc3068',
+          })
+          .timeout(const Duration(seconds: 30));
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        AdminSnackbar.success('Success', 'Template restored successfully');
+      } else {
+        final msg = _parseErrorMessage(response);
+        AdminSnackbar.error('Failed', msg);
+      }
+    } on SocketException {
+      AdminSnackbar.error('Error', 'No Internet connection');
+    } on TimeoutException {
+      AdminSnackbar.error('Error', 'Connection timeout');
+    } catch (e) {
+      AdminSnackbar.error('Error', 'Failed to restore template');
+    } finally {
+      isRestoringTemplate.value = false;
+    }
+  }
+
+  String _parseErrorMessage(http.Response response) {
+    try {
+      final data = json.decode(response.body);
+      return data['message'] ?? 'Request failed (${response.statusCode})';
+    } catch (_) {
+      return 'Request failed (${response.statusCode})';
+    }
+  }
 }

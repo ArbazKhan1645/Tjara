@@ -22,9 +22,11 @@ import 'package:tjara/app/modules/modules_admin/admin/disputes/view/disputes_vie
 import 'package:tjara/app/modules/modules_admin/admin/emails/emails.dart';
 import 'package:tjara/app/modules/modules_admin/admin/faqs/faqs.dart';
 import 'package:tjara/app/modules/modules_admin/admin/myshop/view.dart';
+import 'package:tjara/app/modules/modules_admin/admin/notification_logs/views/notification_log_view.dart';
 import 'package:tjara/app/modules/modules_admin/admin/notifications/notifications.dart';
 import 'package:tjara/app/modules/modules_admin/admin/popups/popups.dart';
 import 'package:tjara/app/modules/modules_admin/admin/products_admin/views/products_admin_view.dart';
+import 'package:tjara/app/modules/modules_admin/admin/products_attributes_group/view.dart';
 import 'package:tjara/app/modules/modules_admin/admin/products_review/view.dart';
 import 'package:tjara/app/modules/modules_admin/admin/reseller/reseller.dart';
 import 'package:tjara/app/modules/modules_admin/admin/reseller_programs/all_resellers.dart';
@@ -39,6 +41,7 @@ import 'package:tjara/app/modules/modules_admin/admin/users/insert/insert_user.d
 import 'package:tjara/app/modules/modules_admin/admin/users/view/users_view.dart';
 import 'package:tjara/app/modules/modules_admin/admin/websettings/websettings_view.dart';
 import 'package:tjara/app/modules/modules_admin/admin/withdrawel/withdrawel.dart';
+import 'package:tjara/app/modules/modules_admin/admin/surveys/view.dart';
 import 'package:tjara/app/modules/modules_customer/my_account/widgets/orders_screen.dart';
 import 'package:tjara/app/modules/modules_customer/my_account/widgets/placed_orders_screen.dart';
 import 'package:tjara/app/modules/modules_customer/my_activities/my_bids/views/my_bids_view.dart';
@@ -46,6 +49,7 @@ import 'package:tjara/app/modules/modules_customer/my_activities/my_job_applicat
 import 'package:tjara/app/modules/modules_customer/my_activities/my_participations/views/my_participations_view.dart';
 import 'package:tjara/app/modules/modules_customer/orders_dashboard/widgets/chats.dart';
 import 'package:tjara/app/modules/modules_admin/admin_shops_module/views/shops/shops_view.dart';
+import 'package:tjara/app/modules/web_settings/content_management/content_management_screen.dart';
 import 'package:tjara/app/modules/web_settings/web_settings_dashboard/web_settings_dashboard_screen.dart';
 import 'package:tjara/app/routes/app_pages.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
@@ -68,9 +72,13 @@ class _AdminDrawerWidgetState extends State<AdminDrawerWidget> {
 
     final userRole = RoleMenuConfig.getRoleFromString(roleString);
 
-    // Admin ko sab menus
+    // Admin ko sab menus except customer-only ones
     if (userRole == UserRole.admin) {
-      return menusList;
+      return menusList
+          .where(
+            (menu) => !RoleMenuConfig.customerOnlyMenus.contains(menu.title),
+          )
+          .toList();
     }
 
     // Vendor/Customer ko filtered menus
@@ -204,7 +212,7 @@ class TileWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Main menu item with modern card design
+        // Main menu item with modern card a
         Container(
           decoration: BoxDecoration(
             color:
@@ -465,7 +473,7 @@ class TileWidget extends StatelessWidget {
       case 'Home Banners':
         Get.to(() => const homeHeroBannersScreen());
         break;
-      case 'Club Hero Banners':
+      case 'Club Page Banners':
         Get.to(() => const HeroBannersScreen());
         break;
       case 'Sale Banners':
@@ -493,6 +501,9 @@ class TileWidget extends StatelessWidget {
       case 'Attributes':
         Get.to(() => const ProductAttributesScreen());
         break;
+      case 'Attributes Groups':
+        Get.to(() => const AttributeGroupListScreen());
+        break;
       case 'Orders':
         Get.to(() => const OrdersScreen());
         break;
@@ -517,6 +528,15 @@ class TileWidget extends StatelessWidget {
         break;
       case 'Add Coupens':
         Get.to(() => AddCouponPage());
+        break;
+      case 'Content Managment':
+        Get.to(() => ContentManagementScreen());
+        break;
+      case 'Notification Logs':
+        Get.to(() => const NotificationLogView());
+        break;
+      case 'Surveys':
+        Get.to(() => const SurveyListScreen());
         break;
       case 'Years':
         Get.to(
@@ -554,6 +574,15 @@ class DrawerMenuModel {
 enum UserRole { admin, vendor, customer }
 
 class RoleMenuConfig {
+  // ==========================================
+  // CUSTOMER-ONLY MENUS - Yeh sirf customer ko dikhenge
+  // ==========================================
+  static const List<String> customerOnlyMenus = [
+    'My bids',
+    'My Participations',
+    'My Applications',
+  ];
+
   // ==========================================
   // ADMIN CONFIG - Sab kuch allowed
   // ==========================================
@@ -706,6 +735,7 @@ final List<DrawerMenuModel> menusList = [
       {'title': 'Categories', 'icon': Icons.category_outlined},
       {'title': 'Product Reviews', 'icon': Icons.pie_chart_outline},
       {'title': 'Attributes', 'icon': Icons.local_shipping_outlined},
+      {'title': 'Attributes Groups', 'icon': Icons.local_attraction},
     ],
   ),
   DrawerMenuModel(
@@ -857,6 +887,15 @@ final List<DrawerMenuModel> menusList = [
     ],
   ),
   DrawerMenuModel(
+    title: 'Hero Banners',
+    icon: Icons.adjust_sharp,
+    arrowIcon: Icons.keyboard_arrow_down_rounded,
+    subCategories: [
+      {'title': 'Home Banners', 'icon': Icons.label_outlined},
+      {'title': 'Club Page Banners', 'icon': Icons.label_outlined},
+    ],
+  ),
+  DrawerMenuModel(
     title: 'Discount Banners',
     icon: Icons.discount_outlined,
     arrowIcon: Icons.keyboard_arrow_down_rounded,
@@ -894,6 +933,30 @@ final List<DrawerMenuModel> menusList = [
     subCategories: [
       {'title': 'Coupens', 'icon': Icons.local_offer_outlined},
       {'title': 'Add Coupens', 'icon': Icons.add_circle_outline},
+    ],
+  ),
+  DrawerMenuModel(
+    title: 'Notification Logs',
+    icon: Icons.notifications_paused_sharp,
+    arrowIcon: Icons.keyboard_arrow_down_rounded,
+    subCategories: [
+      {'title': 'Notification Logs', 'icon': Icons.notifications_paused_sharp},
+    ],
+  ),
+  DrawerMenuModel(
+    title: 'Content Managment',
+    icon: Icons.confirmation_num,
+    arrowIcon: Icons.keyboard_arrow_down_rounded,
+    subCategories: [
+      {'title': 'Content Managment', 'icon': Icons.confirmation_num},
+    ],
+  ),
+  DrawerMenuModel(
+    title: 'Surveys',
+    icon: Icons.surfing,
+    arrowIcon: Icons.keyboard_arrow_down_rounded,
+    subCategories: [
+      {'title': 'Surveys', 'icon': Icons.surfing},
     ],
   ),
   DrawerMenuModel(

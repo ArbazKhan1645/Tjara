@@ -35,10 +35,12 @@ abstract class Routes {
       _Paths.ADD_AUCTION_PRODUCT_ADMIN_VIEW;
   static const FLASH_DEAL_DETAIL = _Paths.FLASH_DEAL_DETAIL;
   static const FLASH_DEAL_SETTINGS = _Paths.FLASH_DEAL_SETTINGS;
+  static const FLASH_DEAL_ANALYTICS = _Paths.FLASH_DEAL_ANALYTICS;
   static const ADMIN_PRODUCTS_CONFIG = _Paths.ADMIN_PRODUCTS_CONFIG;
   static const ADMIN_PROMOTIONS = _Paths.ADMIN_PROMOTIONS;
   static const ADMIN_TEMPLATES = _Paths.ADMIN_TEMPLATES;
   static const ADMIN_BUNDLES = _Paths.ADMIN_BUNDLES;
+  static const TJARA_VIDEOS = _Paths.TJARA_VIDEOS;
 }
 
 abstract class _Paths {
@@ -73,8 +75,10 @@ abstract class _Paths {
   static const ISOLATE_API_SERVICE = '/isolate-api-service';
   static const FLASH_DEAL_DETAIL = '/flash-deal-detail';
   static const FLASH_DEAL_SETTINGS = '/flash-deal-settings';
+  static const FLASH_DEAL_ANALYTICS = '/flash-deal-analytics';
   static const ADMIN_PRODUCTS_CONFIG = '/admin-products-config';
   static const ADMIN_PROMOTIONS = '/admin-promotions';
   static const ADMIN_TEMPLATES = '/admin-templates';
   static const ADMIN_BUNDLES = '/admin-bundles';
+  static const TJARA_VIDEOS = '/tjara-videos';
 }

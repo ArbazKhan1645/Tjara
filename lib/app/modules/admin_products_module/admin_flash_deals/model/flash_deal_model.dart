@@ -7,6 +7,8 @@ class FlashDealProduct {
   final String? salePrice;
   final String? status;
   final String? is_deal;
+  final int stock;
+  final DateTime? createdAt;
 
   FlashDealProduct({
     required this.id,
@@ -16,6 +18,8 @@ class FlashDealProduct {
     this.salePrice,
     this.status,
     required this.is_deal,
+    this.stock = 0,
+    this.createdAt,
   });
 
   factory FlashDealProduct.fromJson(Map<String, dynamic> json) {
@@ -32,6 +36,10 @@ class FlashDealProduct {
       price: json['price']?.toString(),
       salePrice: json['sale_price']?.toString(),
       status: json['status'],
+      stock: int.tryParse(json['stock']?.toString() ?? '0') ?? 0,
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'].toString())
+          : null,
     );
   }
 }

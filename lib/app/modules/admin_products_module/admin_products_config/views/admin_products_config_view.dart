@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/widgets/admin_ui_components.dart';
+import 'package:tjara/app/routes/app_pages.dart';
 
 class AdminProductsConfigView extends StatelessWidget {
   const AdminProductsConfigView({super.key});
@@ -189,32 +190,39 @@ class AdminProductsConfigView extends StatelessWidget {
 
   Widget _buildMenuGrid() {
     final menuItems = [
-      _MenuItemData(
+      const _MenuItemData(
+        title: 'Products Analyctics',
+        subtitle: 'Configure flash deal settings & products',
+        icon: Icons.flash_on_rounded,
+        color: Color.fromARGB(255, 8, 63, 111),
+        route: Routes.FLASH_DEAL_ANALYTICS,
+      ),
+      const _MenuItemData(
         title: 'Flash Deals',
         subtitle: 'Configure flash deal settings & products',
         icon: Icons.flash_on_rounded,
-        color: const Color(0xFFEF4444),
+        color: Color(0xFFEF4444),
         route: '/flash-deal-settings',
       ),
-      _MenuItemData(
+      const _MenuItemData(
         title: 'Promotions',
         subtitle: 'Manage product promotions & discounts',
         icon: Icons.local_offer_rounded,
-        color: const Color(0xFFF59E0B),
+        color: Color(0xFFF59E0B),
         route: '/admin-promotions',
       ),
-      _MenuItemData(
+      const _MenuItemData(
         title: 'Templates',
         subtitle: 'Create & manage product templates',
         icon: Icons.article_rounded,
-        color: const Color(0xFF8B5CF6),
+        color: Color(0xFF8B5CF6),
         route: '/admin-templates',
       ),
-      _MenuItemData(
+      const _MenuItemData(
         title: 'Bundles',
         subtitle: 'Create product bundles & packages',
         icon: Icons.inventory_rounded,
-        color: const Color(0xFF10B981),
+        color: Color(0xFF10B981),
         route: '/admin-bundles',
       ),
     ];
