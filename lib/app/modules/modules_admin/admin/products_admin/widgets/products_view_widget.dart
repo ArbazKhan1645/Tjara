@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -31,6 +33,12 @@ class _EnhancedProductsViewWidgetState
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _skuController = TextEditingController();
+  final TextEditingController _shopSearchController = TextEditingController();
+  final TextEditingController _categorySearchController =
+      TextEditingController();
+
+  Timer? _shopSearchDebounce;
+  Timer? _categorySearchDebounce;
 
   AdminProductsService get _service => widget.adminProductsService;
 
@@ -43,19 +51,15 @@ class _EnhancedProductsViewWidgetState
   }
 
   void _onSearchChanged() {
-    _service.updateSearchQuery(_searchController.text);
+    _service.updateSearchName(_searchController.text);
   }
 
   void _onIdChanged() {
-    if (_service.searchField.value == 'id') {
-      _service.updateSearchQuery(_idController.text);
-    }
+    _service.updateSearchId(_idController.text);
   }
 
   void _onSkuChanged() {
-    if (_service.searchField.value == 'sku') {
-      _service.updateSearchQuery(_skuController.text);
-    }
+    _service.updateSearchSku(_skuController.text);
   }
 
   @override
@@ -63,6 +67,10 @@ class _EnhancedProductsViewWidgetState
     _searchController.dispose();
     _idController.dispose();
     _skuController.dispose();
+    _shopSearchController.dispose();
+    _categorySearchController.dispose();
+    _shopSearchDebounce?.cancel();
+    _categorySearchDebounce?.cancel();
     super.dispose();
   }
 
@@ -214,12 +222,36 @@ class _EnhancedProductsViewWidgetState
         ),
         const SizedBox(height: AdminProductsTheme.spacingMd),
 
-        // Main search field
-        _buildSearchField(
-          controller: _searchController,
-          hintText: 'Search by product name...',
-          icon: Icons.search,
-          onTap: () => _service.updateSearchField('name'),
+        // Date range and main search in row
+        LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth > 600) {
+              return Row(
+                children: [
+                  Expanded(child: _buildDateRangeFilter()),
+                  const SizedBox(width: AdminProductsTheme.spacingMd),
+                  Expanded(
+                    child: _buildSearchField(
+                      controller: _searchController,
+                      hintText: 'Search by product name...',
+                      icon: Icons.search,
+                    ),
+                  ),
+                ],
+              );
+            }
+            return Column(
+              children: [
+                _buildDateRangeFilter(),
+                const SizedBox(height: AdminProductsTheme.spacingMd),
+                _buildSearchField(
+                  controller: _searchController,
+                  hintText: 'Search by product name...',
+                  icon: Icons.search,
+                ),
+              ],
+            );
+          },
         ),
         const SizedBox(height: AdminProductsTheme.spacingMd),
 
@@ -231,7 +263,6 @@ class _EnhancedProductsViewWidgetState
                 controller: _idController,
                 hintText: 'Search by ID',
                 icon: Icons.tag,
-                onTap: () => _service.updateSearchField('id'),
               ),
             ),
             const SizedBox(width: AdminProductsTheme.spacingMd),
@@ -240,7 +271,6 @@ class _EnhancedProductsViewWidgetState
                 controller: _skuController,
                 hintText: 'Search by SKU',
                 icon: Icons.qr_code_2,
-                onTap: () => _service.updateSearchField('sku'),
               ),
             ),
           ],
@@ -253,11 +283,9 @@ class _EnhancedProductsViewWidgetState
     required TextEditingController controller,
     required String hintText,
     required IconData icon,
-    required VoidCallback onTap,
   }) {
     return TextField(
       controller: controller,
-      onTap: onTap,
       style: AdminProductsTheme.bodyLarge,
       decoration: AdminProductsTheme.inputDecoration(
         hintText: hintText,
@@ -267,7 +295,6 @@ class _EnhancedProductsViewWidgetState
                 ? GestureDetector(
                   onTap: () {
                     controller.clear();
-                    _service.updateSearchQuery('');
                   },
                   child: const Icon(
                     Icons.close,
@@ -302,18 +329,103 @@ class _EnhancedProductsViewWidgetState
         ),
         const SizedBox(height: AdminProductsTheme.spacingMd),
 
-        // Status Filter
-        _buildStatusFilter(),
+        // Row: Sort + Shop
+        LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth > 600) {
+              return Row(
+                children: [
+                  Expanded(child: _buildSortDropdown()),
+                  const SizedBox(width: AdminProductsTheme.spacingMd),
+                  Expanded(child: _buildShopSearchDropdown()),
+                ],
+              );
+            }
+            return Column(
+              children: [
+                _buildSortDropdown(),
+                const SizedBox(height: AdminProductsTheme.spacingMd),
+                _buildShopSearchDropdown(),
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: AdminProductsTheme.spacingMd),
+
+        // Row: Featured + Exclude/Include + Category
+        LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth > 600) {
+              return Row(
+                children: [
+                  Expanded(child: _buildFeaturedDropdown()),
+                  const SizedBox(width: AdminProductsTheme.spacingMd),
+                  SizedBox(width: 130, child: _buildCategoryOperatorDropdown()),
+                  const SizedBox(width: AdminProductsTheme.spacingMd),
+                  Expanded(child: _buildCategorySearchDropdown()),
+                ],
+              );
+            }
+            return Column(
+              children: [
+                _buildFeaturedDropdown(),
+                const SizedBox(height: AdminProductsTheme.spacingMd),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 130,
+                      child: _buildCategoryOperatorDropdown(),
+                    ),
+                    const SizedBox(width: AdminProductsTheme.spacingMd),
+                    Expanded(child: _buildCategorySearchDropdown()),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
         const SizedBox(height: AdminProductsTheme.spacingLg),
 
-        // Date Range and Per Page in row
+        // Row: Group By SKU toggle + Inventory Updated toggle
+        _buildToggleFiltersRow(),
+        const SizedBox(height: AdminProductsTheme.spacingMd),
+
+        // Row: Inventory Updated date range + Status dropdown
         LayoutBuilder(
           builder: (context, constraints) {
             if (constraints.maxWidth > 600) {
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(child: _buildDateRangeFilter()),
+                  Expanded(child: _buildInventoryDateRange()),
+                  const SizedBox(width: AdminProductsTheme.spacingMd),
+                  Expanded(child: _buildStatusDropdown()),
+                ],
+              );
+            }
+            return Column(
+              children: [
+                _buildInventoryDateRange(),
+                const SizedBox(height: AdminProductsTheme.spacingMd),
+                _buildStatusDropdown(),
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: AdminProductsTheme.spacingMd),
+
+        // Row: Flash Deals Added toggle + Flash Deals date range
+        _buildFlashDealsRow(),
+        const SizedBox(height: AdminProductsTheme.spacingLg),
+
+        // Per Page + Quick Filters
+        LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth > 600) {
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: _buildQuickFilters()),
                   const SizedBox(width: AdminProductsTheme.spacingXl),
                   SizedBox(width: 200, child: _buildPerPageSelector()),
                 ],
@@ -321,64 +433,597 @@ class _EnhancedProductsViewWidgetState
             }
             return Column(
               children: [
-                _buildDateRangeFilter(),
+                _buildQuickFilters(),
                 const SizedBox(height: AdminProductsTheme.spacingLg),
                 _buildPerPageSelector(),
               ],
             );
           },
         ),
-        const SizedBox(height: AdminProductsTheme.spacingLg),
-
-        // Quick Filters
-        _buildQuickFilters(),
       ],
     );
   }
 
-  Widget _buildStatusFilter() {
-    return Obx(() {
-      final selectedStatus = _service.selectedStatus.value;
+  // Sort dropdown
+  Widget _buildSortDropdown() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('SORT BY', style: AdminProductsTheme.labelMedium),
+        const SizedBox(height: AdminProductsTheme.spacingSm),
+        Obx(() {
+          return Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AdminProductsTheme.spacingMd,
+            ),
+            decoration: BoxDecoration(
+              color: AdminProductsTheme.surface,
+              borderRadius: BorderRadius.circular(AdminProductsTheme.radiusMd),
+              border: Border.all(color: AdminProductsTheme.border),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<SortOrder>(
+                value: _service.sortOrder.value,
+                isExpanded: true,
+                icon: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: AdminProductsTheme.textSecondary,
+                ),
+                style: AdminProductsTheme.bodyLarge,
+                items: const [
+                  DropdownMenuItem(
+                    value: SortOrder.none,
+                    child: Text('Default'),
+                  ),
+                  DropdownMenuItem(
+                    value: SortOrder.priceAsc,
+                    child: Text('Low to high (Price)'),
+                  ),
+                  DropdownMenuItem(
+                    value: SortOrder.priceDesc,
+                    child: Text('High to low (Price)'),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    _service.updateSortOrder(value);
+                  }
+                },
+              ),
+            ),
+          );
+        }),
+      ],
+    );
+  }
 
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('STATUS', style: AdminProductsTheme.labelMedium),
-          const SizedBox(height: AdminProductsTheme.spacingSm),
-          Wrap(
-            spacing: AdminProductsTheme.spacingSm,
-            runSpacing: AdminProductsTheme.spacingSm,
-            children:
-                ProductStatus.values.map((status) {
-                  final isSelected = selectedStatus == status;
-                  return _buildFilterChip(
-                    label: _formatStatusLabel(status.name),
-                    isSelected: isSelected,
-                    onTap: () => _service.updateStatusFilter(status),
-                    color: _getStatusColor(status),
+  // Shop search dropdown
+  Widget _buildShopSearchDropdown() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('SHOP', style: AdminProductsTheme.labelMedium),
+        const SizedBox(height: AdminProductsTheme.spacingSm),
+        Obx(() {
+          final selectedName = _service.selectedShopName.value;
+          return Column(
+            children: [
+              TextField(
+                controller: _shopSearchController,
+                style: AdminProductsTheme.bodyLarge,
+                decoration: AdminProductsTheme.inputDecoration(
+                  hintText:
+                      selectedName.isNotEmpty
+                          ? selectedName
+                          : 'Search shop...',
+                  prefixIcon: Icons.store,
+                  suffix:
+                      selectedName.isNotEmpty
+                          ? GestureDetector(
+                            onTap: () {
+                              _shopSearchController.clear();
+                              _service.selectShop(null);
+                            },
+                            child: const Icon(
+                              Icons.close,
+                              size: 18,
+                              color: AdminProductsTheme.textTertiary,
+                            ),
+                          )
+                          : null,
+                ),
+                onChanged: (query) {
+                  _shopSearchDebounce?.cancel();
+                  _shopSearchDebounce = Timer(
+                    const Duration(milliseconds: 400),
+                    () => _service.searchShops(query),
                   );
-                }).toList(),
+                },
+              ),
+              if (_service.isSearchingShops.value)
+                const Padding(
+                  padding: EdgeInsets.only(top: 4),
+                  child: LinearProgressIndicator(
+                    minHeight: 2,
+                    color: AdminProductsTheme.primary,
+                  ),
+                ),
+              if (_service.shopSearchResults.isNotEmpty)
+                Container(
+                  constraints: const BoxConstraints(maxHeight: 150),
+                  margin: const EdgeInsets.only(top: 4),
+                  decoration: BoxDecoration(
+                    color: AdminProductsTheme.surface,
+                    borderRadius: BorderRadius.circular(
+                      AdminProductsTheme.radiusMd,
+                    ),
+                    border: Border.all(color: AdminProductsTheme.border),
+                    boxShadow: AdminProductsTheme.shadowSm,
+                  ),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    padding: EdgeInsets.zero,
+                    itemCount: _service.shopSearchResults.length,
+                    itemBuilder: (context, index) {
+                      final shop = _service.shopSearchResults[index];
+                      return ListTile(
+                        dense: true,
+                        title: Text(
+                          shop.name,
+                          style: AdminProductsTheme.bodyMedium,
+                        ),
+                        onTap: () {
+                          _service.selectShop(shop);
+                          _shopSearchController.text = shop.name;
+                          _service.shopSearchResults.clear();
+                        },
+                      );
+                    },
+                  ),
+                ),
+            ],
+          );
+        }),
+      ],
+    );
+  }
+
+  // Featured dropdown
+  Widget _buildFeaturedDropdown() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('FEATURED', style: AdminProductsTheme.labelMedium),
+        const SizedBox(height: AdminProductsTheme.spacingSm),
+        Obx(() {
+          return Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AdminProductsTheme.spacingMd,
+            ),
+            decoration: BoxDecoration(
+              color: AdminProductsTheme.surface,
+              borderRadius: BorderRadius.circular(AdminProductsTheme.radiusMd),
+              border: Border.all(color: AdminProductsTheme.border),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<FeaturedFilter>(
+                value: _service.featuredFilter.value,
+                isExpanded: true,
+                icon: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: AdminProductsTheme.textSecondary,
+                ),
+                style: AdminProductsTheme.bodyLarge,
+                items: const [
+                  DropdownMenuItem(
+                    value: FeaturedFilter.all,
+                    child: Text('All'),
+                  ),
+                  DropdownMenuItem(
+                    value: FeaturedFilter.featured,
+                    child: Text('Featured'),
+                  ),
+                  DropdownMenuItem(
+                    value: FeaturedFilter.notFeatured,
+                    child: Text('Not Featured'),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    _service.updateFeaturedFilter(value);
+                  }
+                },
+              ),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  // Category operator dropdown (Include/Exclude)
+  Widget _buildCategoryOperatorDropdown() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('OPERATOR', style: AdminProductsTheme.labelMedium),
+        const SizedBox(height: AdminProductsTheme.spacingSm),
+        Obx(() {
+          return Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AdminProductsTheme.spacingMd,
+            ),
+            decoration: BoxDecoration(
+              color: AdminProductsTheme.surface,
+              borderRadius: BorderRadius.circular(AdminProductsTheme.radiusMd),
+              border: Border.all(color: AdminProductsTheme.border),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _service.categoryOperator.value,
+                isExpanded: true,
+                icon: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: AdminProductsTheme.textSecondary,
+                ),
+                style: AdminProductsTheme.bodyLarge,
+                items: const [
+                  DropdownMenuItem(value: '=', child: Text('Include')),
+                  DropdownMenuItem(value: '!=', child: Text('Exclude')),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    _service.updateCategoryOperator(value);
+                  }
+                },
+              ),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  // Category search dropdown
+  Widget _buildCategorySearchDropdown() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('CATEGORY', style: AdminProductsTheme.labelMedium),
+        const SizedBox(height: AdminProductsTheme.spacingSm),
+        Obx(() {
+          final selectedName = _service.selectedCategoryName.value;
+          return Column(
+            children: [
+              TextField(
+                controller: _categorySearchController,
+                style: AdminProductsTheme.bodyLarge,
+                decoration: AdminProductsTheme.inputDecoration(
+                  hintText:
+                      selectedName.isNotEmpty
+                          ? selectedName
+                          : 'Search category...',
+                  prefixIcon: Icons.category,
+                  suffix:
+                      selectedName.isNotEmpty
+                          ? GestureDetector(
+                            onTap: () {
+                              _categorySearchController.clear();
+                              _service.selectCategory(null);
+                            },
+                            child: const Icon(
+                              Icons.close,
+                              size: 18,
+                              color: AdminProductsTheme.textTertiary,
+                            ),
+                          )
+                          : null,
+                ),
+                onChanged: (query) {
+                  _categorySearchDebounce?.cancel();
+                  _categorySearchDebounce = Timer(
+                    const Duration(milliseconds: 400),
+                    () => _service.searchCategories(query),
+                  );
+                },
+              ),
+              if (_service.isSearchingCategories.value)
+                const Padding(
+                  padding: EdgeInsets.only(top: 4),
+                  child: LinearProgressIndicator(
+                    minHeight: 2,
+                    color: AdminProductsTheme.primary,
+                  ),
+                ),
+              if (_service.categorySearchResults.isNotEmpty)
+                Container(
+                  constraints: const BoxConstraints(maxHeight: 150),
+                  margin: const EdgeInsets.only(top: 4),
+                  decoration: BoxDecoration(
+                    color: AdminProductsTheme.surface,
+                    borderRadius: BorderRadius.circular(
+                      AdminProductsTheme.radiusMd,
+                    ),
+                    border: Border.all(color: AdminProductsTheme.border),
+                    boxShadow: AdminProductsTheme.shadowSm,
+                  ),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    padding: EdgeInsets.zero,
+                    itemCount: _service.categorySearchResults.length,
+                    itemBuilder: (context, index) {
+                      final cat = _service.categorySearchResults[index];
+                      return ListTile(
+                        dense: true,
+                        title: Text(
+                          cat.name,
+                          style: AdminProductsTheme.bodyMedium,
+                        ),
+                        onTap: () {
+                          _service.selectCategory(cat);
+                          _categorySearchController.text = cat.name;
+                          _service.categorySearchResults.clear();
+                        },
+                      );
+                    },
+                  ),
+                ),
+            ],
+          );
+        }),
+      ],
+    );
+  }
+
+  // Toggle filters row: Group By SKU + Inventory Updated
+  Widget _buildToggleFiltersRow() {
+    return Obx(() {
+      return Wrap(
+        spacing: AdminProductsTheme.spacingXl,
+        runSpacing: AdminProductsTheme.spacingMd,
+        children: [
+          _buildToggleSwitch(
+            label: 'Group By SKU',
+            value: _service.groupBySku.value,
+            onChanged: (val) => _service.toggleGroupBySku(val),
+          ),
+          _buildToggleSwitch(
+            label: 'Inventory Updated',
+            value: _service.inventoryUpdatedEnabled.value,
+            onChanged: (val) => _service.toggleInventoryUpdated(val),
           ),
         ],
       );
     });
   }
 
-  String _formatStatusLabel(String name) {
-    return name.substring(0, 1).toUpperCase() + name.substring(1);
+  Widget _buildToggleSwitch({
+    required String label,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: value ? FontWeight.w600 : FontWeight.w400,
+            color:
+                value
+                    ? AdminProductsTheme.textPrimary
+                    : AdminProductsTheme.textSecondary,
+          ),
+        ),
+        const SizedBox(width: AdminProductsTheme.spacingSm),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeTrackColor: AdminProductsTheme.primary.withValues(alpha: 0.5),
+          activeThumbColor: AdminProductsTheme.primary,
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+      ],
+    );
   }
 
-  Color _getStatusColor(ProductStatus status) {
-    switch (status) {
-      case ProductStatus.all:
-        return AdminProductsTheme.primary;
-      case ProductStatus.active:
-        return AdminProductsTheme.success;
-      case ProductStatus.inactive:
-        return AdminProductsTheme.error;
-      case ProductStatus.deleted:
-        return AdminProductsTheme.textTertiary;
-    }
+  // Inventory Updated date range
+  Widget _buildInventoryDateRange() {
+    return Obx(() {
+      if (!_service.inventoryUpdatedEnabled.value) {
+        return const SizedBox.shrink();
+      }
+
+      final startDate = _service.inventoryStartDate.value;
+      final endDate = _service.inventoryEndDate.value;
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'INVENTORY UPDATED RANGE',
+            style: AdminProductsTheme.labelMedium,
+          ),
+          const SizedBox(height: AdminProductsTheme.spacingSm),
+          Row(
+            children: [
+              Expanded(
+                child: _buildDateButton(
+                  label: 'Start Date',
+                  date: startDate,
+                  onTap: () async {
+                    final picked = await _pickDate(
+                      initial: startDate,
+                      helpText: 'Inventory Start Date',
+                    );
+                    if (picked != null) {
+                      _service.updateInventoryDateRange(picked, endDate);
+                    }
+                  },
+                ),
+              ),
+              Container(
+                margin: const EdgeInsets.symmetric(
+                  horizontal: AdminProductsTheme.spacingSm,
+                ),
+                child: const Icon(
+                  Icons.arrow_forward,
+                  size: 16,
+                  color: AdminProductsTheme.textTertiary,
+                ),
+              ),
+              Expanded(
+                child: _buildDateButton(
+                  label: 'End Date',
+                  date: endDate,
+                  onTap: () async {
+                    final picked = await _pickDate(
+                      initial: endDate,
+                      firstDate: startDate,
+                      helpText: 'Inventory End Date',
+                    );
+                    if (picked != null) {
+                      _service.updateInventoryDateRange(startDate, picked);
+                    }
+                  },
+                ),
+              ),
+              if (startDate != null || endDate != null) ...[
+                const SizedBox(width: AdminProductsTheme.spacingSm),
+                _buildClearDateButton(
+                  onTap: () => _service.updateInventoryDateRange(null, null),
+                ),
+              ],
+            ],
+          ),
+        ],
+      );
+    });
+  }
+
+  // Status dropdown
+  Widget _buildStatusDropdown() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('STATUS', style: AdminProductsTheme.labelMedium),
+        const SizedBox(height: AdminProductsTheme.spacingSm),
+        Obx(() {
+          return Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AdminProductsTheme.spacingMd,
+            ),
+            decoration: BoxDecoration(
+              color: AdminProductsTheme.surface,
+              borderRadius: BorderRadius.circular(AdminProductsTheme.radiusMd),
+              border: Border.all(color: AdminProductsTheme.border),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<ProductStatus>(
+                value: _service.selectedStatus.value,
+                isExpanded: true,
+                icon: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: AdminProductsTheme.textSecondary,
+                ),
+                style: AdminProductsTheme.bodyLarge,
+                items:
+                    ProductStatus.values.map((status) {
+                      return DropdownMenuItem(
+                        value: status,
+                        child: Text(_formatStatusLabel(status.name)),
+                      );
+                    }).toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    _service.updateStatusFilter(value);
+                  }
+                },
+              ),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  // Flash Deals row
+  Widget _buildFlashDealsRow() {
+    return Obx(() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              _buildToggleSwitch(
+                label: 'Flash Deals Added',
+                value: _service.flashDealsAddedEnabled.value,
+                onChanged: (val) => _service.toggleFlashDealsAdded(val),
+              ),
+              if (_service.flashDealsAddedEnabled.value) ...[
+                const SizedBox(width: AdminProductsTheme.spacingLg),
+                Expanded(child: _buildFlashDealsDateRange()),
+              ],
+            ],
+          ),
+        ],
+      );
+    });
+  }
+
+  Widget _buildFlashDealsDateRange() {
+    final startDate = _service.flashDealsStartDate.value;
+    final endDate = _service.flashDealsEndDate.value;
+
+    return Row(
+      children: [
+        Expanded(
+          child: _buildDateButton(
+            label: 'Select date or date range',
+            date: startDate,
+            onTap: () async {
+              final range = await showDateRangePicker(
+                context: context,
+                firstDate: DateTime(2020),
+                lastDate: DateTime(2100),
+                initialDateRange:
+                    startDate != null && endDate != null
+                        ? DateTimeRange(start: startDate, end: endDate)
+                        : null,
+                helpText: 'Flash Deals Date Range',
+                builder: (context, child) {
+                  return Theme(
+                    data: Theme.of(context).copyWith(
+                      colorScheme: const ColorScheme.light(
+                        primary: AdminProductsTheme.primary,
+                        onPrimary: Colors.white,
+                        surface: AdminProductsTheme.surface,
+                        onSurface: AdminProductsTheme.textPrimary,
+                      ),
+                    ),
+                    child: child!,
+                  );
+                },
+              );
+              if (range != null) {
+                _service.updateFlashDealsDateRange(range.start, range.end);
+              }
+            },
+          ),
+        ),
+        if (startDate != null || endDate != null) ...[
+          const SizedBox(width: AdminProductsTheme.spacingSm),
+          _buildClearDateButton(
+            onTap: () => _service.updateFlashDealsDateRange(null, null),
+          ),
+        ],
+      ],
+    );
+  }
+
+  String _formatStatusLabel(String name) {
+    return name.substring(0, 1).toUpperCase() + name.substring(1);
   }
 
   Widget _buildFilterChip({
@@ -469,28 +1114,8 @@ class _EnhancedProductsViewWidgetState
               ),
               if (startDate != null || endDate != null) ...[
                 const SizedBox(width: AdminProductsTheme.spacingSm),
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () => _service.updateDateRange(null, null),
-                    borderRadius: BorderRadius.circular(
-                      AdminProductsTheme.radiusSm,
-                    ),
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AdminProductsTheme.errorLight,
-                        borderRadius: BorderRadius.circular(
-                          AdminProductsTheme.radiusSm,
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.close,
-                        size: 16,
-                        color: AdminProductsTheme.error,
-                      ),
-                    ),
-                  ),
+                _buildClearDateButton(
+                  onTap: () => _service.updateDateRange(null, null),
                 ),
               ],
             ],
@@ -539,7 +1164,7 @@ class _EnhancedProductsViewWidgetState
               Expanded(
                 child: Text(
                   date != null
-                      ? DateFormat('MMM dd, yyyy').format(date)
+                      ? DateFormat('d MMM, yyyy').format(date)
                       : label,
                   style: TextStyle(
                     fontSize: 13,
@@ -552,6 +1177,28 @@ class _EnhancedProductsViewWidgetState
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildClearDateButton({required VoidCallback onTap}) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AdminProductsTheme.radiusSm),
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AdminProductsTheme.errorLight,
+            borderRadius: BorderRadius.circular(AdminProductsTheme.radiusSm),
+          ),
+          child: const Icon(
+            Icons.close,
+            size: 16,
+            color: AdminProductsTheme.error,
           ),
         ),
       ),
@@ -643,10 +1290,19 @@ class _EnhancedProductsViewWidgetState
   Widget _buildActiveFilters() {
     return Obx(() {
       final hasFilters =
-          _service.searchQuery.value.isNotEmpty ||
+          _service.searchName.value.isNotEmpty ||
+          _service.searchId.value.isNotEmpty ||
+          _service.searchSku.value.isNotEmpty ||
           _service.selectedStatus.value != ProductStatus.all ||
           _service.activeFilters.isNotEmpty ||
-          _service.startDate.value != null;
+          _service.startDate.value != null ||
+          _service.sortOrder.value != SortOrder.none ||
+          _service.selectedShopId.value.isNotEmpty ||
+          _service.featuredFilter.value != FeaturedFilter.all ||
+          _service.selectedCategoryId.value.isNotEmpty ||
+          _service.groupBySku.value ||
+          _service.inventoryUpdatedEnabled.value ||
+          _service.flashDealsAddedEnabled.value;
 
       if (!hasFilters) return const SizedBox.shrink();
 
@@ -727,6 +1383,8 @@ class _EnhancedProductsViewWidgetState
     _searchController.clear();
     _idController.clear();
     _skuController.clear();
+    _shopSearchController.clear();
+    _categorySearchController.clear();
   }
 
   Widget _buildResultsSummary() {
@@ -836,14 +1494,17 @@ class _EnhancedProductsViewWidgetState
     });
   }
 
-  Future<void> _selectStartDate() async {
-    final startDate = _service.startDate.value;
-    final DateTime? picked = await showDatePicker(
+  Future<DateTime?> _pickDate({
+    DateTime? initial,
+    DateTime? firstDate,
+    String helpText = 'Select Date',
+  }) async {
+    return showDatePicker(
       context: context,
-      initialDate: startDate ?? DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
-      helpText: 'Select Start Date',
+      initialDate: initial ?? DateTime.now(),
+      firstDate: firstDate ?? DateTime(2020),
+      lastDate: DateTime(2100),
+      helpText: helpText,
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -858,33 +1519,23 @@ class _EnhancedProductsViewWidgetState
         );
       },
     );
+  }
+
+  Future<void> _selectStartDate() async {
+    final picked = await _pickDate(
+      initial: _service.startDate.value,
+      helpText: 'Select Start Date',
+    );
     if (picked != null) {
       _service.updateDateRange(picked, _service.endDate.value);
     }
   }
 
   Future<void> _selectEndDate() async {
-    final startDate = _service.startDate.value;
-    final endDate = _service.endDate.value;
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: endDate ?? DateTime.now(),
-      firstDate: startDate ?? DateTime(2020),
-      lastDate: DateTime.now(),
+    final picked = await _pickDate(
+      initial: _service.endDate.value,
+      firstDate: _service.startDate.value,
       helpText: 'Select End Date',
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AdminProductsTheme.primary,
-              onPrimary: Colors.white,
-              surface: AdminProductsTheme.surface,
-              onSurface: AdminProductsTheme.textPrimary,
-            ),
-          ),
-          child: child!,
-        );
-      },
     );
     if (picked != null) {
       _service.updateDateRange(_service.startDate.value, picked);

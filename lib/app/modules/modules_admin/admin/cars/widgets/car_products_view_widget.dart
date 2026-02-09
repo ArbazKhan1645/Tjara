@@ -6,28 +6,27 @@ import 'package:intl/intl.dart';
 import 'package:tjara/app/core/widgets/admin_app_bar_actions.dart';
 import 'package:tjara/app/core/widgets/admin_header_animated_background_widget.dart';
 import 'package:tjara/app/core/widgets/admin_sliver_app_bar_widget.dart';
-import 'package:tjara/app/modules/modules_admin/admin/add_product_auction_admin/controllers/add_product_auction_admin_controller.dart';
-import 'package:tjara/app/modules/modules_admin/admin/add_product_auction_admin/widgets/auction_admin_theme.dart';
-import 'package:tjara/app/modules/modules_admin/admin/auction_admin/widgets/products_list_widget.dart';
+import 'package:tjara/app/modules/modules_admin/admin/cars/widgets/car_products_list_widget.dart';
+import 'package:tjara/app/modules/modules_admin/admin/cars/widgets/cars_admin_theme.dart';
 import 'package:tjara/app/routes/app_pages.dart';
-import 'package:tjara/app/services/dashbopard_services/admin_auction_service.dart';
+import 'package:tjara/app/services/dashbopard_services/admin_cars_service.dart';
 
-class EnhancedAuctionViewWidget extends StatefulWidget {
+class EnhancedCarsViewWidget extends StatefulWidget {
   final bool isAppBarExpanded;
-  final AdminAuctionService adminAuctionService;
+  final AdminCarsService adminCarsService;
 
-  const EnhancedAuctionViewWidget({
+  const EnhancedCarsViewWidget({
     super.key,
     required this.isAppBarExpanded,
-    required this.adminAuctionService,
+    required this.adminCarsService,
   });
 
   @override
-  State<EnhancedAuctionViewWidget> createState() =>
-      _EnhancedAuctionViewWidgetState();
+  State<EnhancedCarsViewWidget> createState() =>
+      _EnhancedCarsViewWidgetState();
 }
 
-class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
+class _EnhancedCarsViewWidgetState extends State<EnhancedCarsViewWidget> {
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _skuController = TextEditingController();
@@ -38,7 +37,7 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
   Timer? _shopSearchDebounce;
   Timer? _categorySearchDebounce;
 
-  AdminAuctionService get _service => widget.adminAuctionService;
+  AdminCarsService get _service => widget.adminCarsService;
 
   @override
   void initState() {
@@ -89,18 +88,18 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AuctionAdminTheme.spacingLg,
+                  horizontal: CarsAdminTheme.spacingLg,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildHeader(),
-                    const SizedBox(height: AuctionAdminTheme.spacingLg),
+                    const SizedBox(height: CarsAdminTheme.spacingLg),
                     _buildFiltersCard(),
-                    const SizedBox(height: AuctionAdminTheme.spacingLg),
+                    const SizedBox(height: CarsAdminTheme.spacingLg),
                     _buildResultsSummary(),
-                    const SizedBox(height: AuctionAdminTheme.spacingSm),
-                    AdminAuctionList(adminAuctionService: _service),
+                    const SizedBox(height: CarsAdminTheme.spacingSm),
+                    AdminCarsList(adminCarsService: _service),
                   ],
                 ),
               ),
@@ -119,7 +118,7 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Auctions',
+              'Cars',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -129,34 +128,34 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
             ),
           ],
         ),
-        _buildAddAuctionButton(),
+        _buildAddCarButton(),
       ],
     );
   }
 
-  Widget _buildAddAuctionButton() {
+  Widget _buildAddCarButton() {
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          Get.delete<AuctionAddProductAdminController>();
           Get.toNamed(
-            Routes.ADD_AUCTION_PRODUCT_ADMIN_VIEW,
+            Routes.ADD_PRODUCT_ADMIN_VIEW,
+            arguments: {'product_group': 'car'},
             preventDuplicates: false,
           )?.then((value) {
             _service.refreshProducts();
           });
         },
-        borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
+        borderRadius: BorderRadius.circular(CarsAdminTheme.radiusMd),
         child: Container(
           padding: const EdgeInsets.symmetric(
-            horizontal: AuctionAdminTheme.spacingLg,
-            vertical: AuctionAdminTheme.spacingMd,
+            horizontal: CarsAdminTheme.spacingLg,
+            vertical: CarsAdminTheme.spacingMd,
           ),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
-            boxShadow: AuctionAdminTheme.shadowMd,
+            borderRadius: BorderRadius.circular(CarsAdminTheme.radiusMd),
+            boxShadow: CarsAdminTheme.shadowMd,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -164,20 +163,20 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: AuctionAdminTheme.accent,
+                  color: CarsAdminTheme.accent,
                   borderRadius: BorderRadius.circular(
-                    AuctionAdminTheme.radiusSm,
+                    CarsAdminTheme.radiusSm,
                   ),
                 ),
                 child: const Icon(Icons.add, size: 16, color: Colors.white),
               ),
-              const SizedBox(width: AuctionAdminTheme.spacingSm),
+              const SizedBox(width: CarsAdminTheme.spacingSm),
               const Text(
-                'Add New Auction',
+                'Add New Car',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AuctionAdminTheme.textPrimary,
+                  color: CarsAdminTheme.textPrimary,
                 ),
               ),
             ],
@@ -189,13 +188,13 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
 
   Widget _buildFiltersCard() {
     return Container(
-      padding: const EdgeInsets.all(AuctionAdminTheme.spacingXl),
-      decoration: AuctionAdminTheme.cardDecoration,
+      padding: const EdgeInsets.all(CarsAdminTheme.spacingXl),
+      decoration: CarsAdminTheme.cardDecoration,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildSearchSection(),
-          const SizedBox(height: AuctionAdminTheme.spacingXl),
+          const SizedBox(height: CarsAdminTheme.spacingXl),
           _buildFiltersSection(),
           _buildActiveFilters(),
         ],
@@ -212,18 +211,18 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
             const Icon(
               Icons.search_rounded,
               size: 20,
-              color: AuctionAdminTheme.accent,
+              color: CarsAdminTheme.accent,
             ),
-            const SizedBox(width: AuctionAdminTheme.spacingSm),
+            const SizedBox(width: CarsAdminTheme.spacingSm),
             Text(
-              'Search Auctions',
-              style: AuctionAdminTheme.headingSmall.copyWith(
-                color: AuctionAdminTheme.textPrimary,
+              'Search Cars',
+              style: CarsAdminTheme.headingSmall.copyWith(
+                color: CarsAdminTheme.textPrimary,
               ),
             ),
           ],
         ),
-        const SizedBox(height: AuctionAdminTheme.spacingMd),
+        const SizedBox(height: CarsAdminTheme.spacingMd),
 
         // Date range and main search in row
         LayoutBuilder(
@@ -232,11 +231,11 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
               return Row(
                 children: [
                   Expanded(child: _buildDateRangeFilter()),
-                  const SizedBox(width: AuctionAdminTheme.spacingMd),
+                  const SizedBox(width: CarsAdminTheme.spacingMd),
                   Expanded(
                     child: _buildSearchField(
                       controller: _searchController,
-                      hintText: 'Search by auction name...',
+                      hintText: 'Search by car name...',
                       icon: Icons.search,
                     ),
                   ),
@@ -246,17 +245,17 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
             return Column(
               children: [
                 _buildDateRangeFilter(),
-                const SizedBox(height: AuctionAdminTheme.spacingMd),
+                const SizedBox(height: CarsAdminTheme.spacingMd),
                 _buildSearchField(
                   controller: _searchController,
-                  hintText: 'Search by auction name...',
+                  hintText: 'Search by car name...',
                   icon: Icons.search,
                 ),
               ],
             );
           },
         ),
-        const SizedBox(height: AuctionAdminTheme.spacingMd),
+        const SizedBox(height: CarsAdminTheme.spacingMd),
 
         // ID and SKU search in row
         Row(
@@ -268,7 +267,7 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                 icon: Icons.tag,
               ),
             ),
-            const SizedBox(width: AuctionAdminTheme.spacingMd),
+            const SizedBox(width: CarsAdminTheme.spacingMd),
             Expanded(
               child: _buildSearchField(
                 controller: _skuController,
@@ -289,8 +288,8 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
   }) {
     return TextField(
       controller: controller,
-      style: AuctionAdminTheme.bodyLarge,
-      decoration: AuctionAdminTheme.inputDecoration(
+      style: CarsAdminTheme.bodyLarge,
+      decoration: CarsAdminTheme.inputDecoration(
         hintText: hintText,
         prefixIcon: icon,
         suffix:
@@ -302,7 +301,7 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                   child: const Icon(
                     Icons.close,
                     size: 18,
-                    color: AuctionAdminTheme.textTertiary,
+                    color: CarsAdminTheme.textTertiary,
                   ),
                 )
                 : null,
@@ -319,18 +318,18 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
             const Icon(
               Icons.filter_list_rounded,
               size: 20,
-              color: AuctionAdminTheme.accent,
+              color: CarsAdminTheme.accent,
             ),
-            const SizedBox(width: AuctionAdminTheme.spacingSm),
+            const SizedBox(width: CarsAdminTheme.spacingSm),
             Text(
               'Filters',
-              style: AuctionAdminTheme.headingSmall.copyWith(
-                color: AuctionAdminTheme.textPrimary,
+              style: CarsAdminTheme.headingSmall.copyWith(
+                color: CarsAdminTheme.textPrimary,
               ),
             ),
           ],
         ),
-        const SizedBox(height: AuctionAdminTheme.spacingMd),
+        const SizedBox(height: CarsAdminTheme.spacingMd),
 
         // Row: Sort + Shop
         LayoutBuilder(
@@ -339,7 +338,7 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
               return Row(
                 children: [
                   Expanded(child: _buildSortDropdown()),
-                  const SizedBox(width: AuctionAdminTheme.spacingMd),
+                  const SizedBox(width: CarsAdminTheme.spacingMd),
                   Expanded(child: _buildShopSearchDropdown()),
                 ],
               );
@@ -347,13 +346,13 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
             return Column(
               children: [
                 _buildSortDropdown(),
-                const SizedBox(height: AuctionAdminTheme.spacingMd),
+                const SizedBox(height: CarsAdminTheme.spacingMd),
                 _buildShopSearchDropdown(),
               ],
             );
           },
         ),
-        const SizedBox(height: AuctionAdminTheme.spacingMd),
+        const SizedBox(height: CarsAdminTheme.spacingMd),
 
         // Row: Featured + Exclude/Include + Category
         LayoutBuilder(
@@ -362,9 +361,9 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
               return Row(
                 children: [
                   Expanded(child: _buildFeaturedDropdown()),
-                  const SizedBox(width: AuctionAdminTheme.spacingMd),
+                  const SizedBox(width: CarsAdminTheme.spacingMd),
                   SizedBox(width: 130, child: _buildCategoryOperatorDropdown()),
-                  const SizedBox(width: AuctionAdminTheme.spacingMd),
+                  const SizedBox(width: CarsAdminTheme.spacingMd),
                   Expanded(child: _buildCategorySearchDropdown()),
                 ],
               );
@@ -372,14 +371,14 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
             return Column(
               children: [
                 _buildFeaturedDropdown(),
-                const SizedBox(height: AuctionAdminTheme.spacingMd),
+                const SizedBox(height: CarsAdminTheme.spacingMd),
                 Row(
                   children: [
                     SizedBox(
                       width: 130,
                       child: _buildCategoryOperatorDropdown(),
                     ),
-                    const SizedBox(width: AuctionAdminTheme.spacingMd),
+                    const SizedBox(width: CarsAdminTheme.spacingMd),
                     Expanded(child: _buildCategorySearchDropdown()),
                   ],
                 ),
@@ -387,11 +386,11 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
             );
           },
         ),
-        const SizedBox(height: AuctionAdminTheme.spacingLg),
+        const SizedBox(height: CarsAdminTheme.spacingLg),
 
         // Row: Group By SKU toggle + Inventory Updated toggle
         _buildToggleFiltersRow(),
-        const SizedBox(height: AuctionAdminTheme.spacingMd),
+        const SizedBox(height: CarsAdminTheme.spacingMd),
 
         // Row: Inventory Updated date range + Status dropdown
         LayoutBuilder(
@@ -401,7 +400,7 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(child: _buildInventoryDateRange()),
-                  const SizedBox(width: AuctionAdminTheme.spacingMd),
+                  const SizedBox(width: CarsAdminTheme.spacingMd),
                   Expanded(child: _buildStatusDropdown()),
                 ],
               );
@@ -409,17 +408,17 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
             return Column(
               children: [
                 _buildInventoryDateRange(),
-                const SizedBox(height: AuctionAdminTheme.spacingMd),
+                const SizedBox(height: CarsAdminTheme.spacingMd),
                 _buildStatusDropdown(),
               ],
             );
           },
         ),
-        const SizedBox(height: AuctionAdminTheme.spacingMd),
+        const SizedBox(height: CarsAdminTheme.spacingMd),
 
         // Row: Flash Deals Added toggle + Flash Deals date range
         _buildFlashDealsRow(),
-        const SizedBox(height: AuctionAdminTheme.spacingLg),
+        const SizedBox(height: CarsAdminTheme.spacingLg),
 
         // Per Page + Quick Filters
         LayoutBuilder(
@@ -429,7 +428,7 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(child: _buildQuickFilters()),
-                  const SizedBox(width: AuctionAdminTheme.spacingXl),
+                  const SizedBox(width: CarsAdminTheme.spacingXl),
                   SizedBox(width: 200, child: _buildPerPageSelector()),
                 ],
               );
@@ -437,7 +436,7 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
             return Column(
               children: [
                 _buildQuickFilters(),
-                const SizedBox(height: AuctionAdminTheme.spacingLg),
+                const SizedBox(height: CarsAdminTheme.spacingLg),
                 _buildPerPageSelector(),
               ],
             );
@@ -452,38 +451,38 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('SORT BY', style: AuctionAdminTheme.labelMedium),
-        const SizedBox(height: AuctionAdminTheme.spacingSm),
+        const Text('SORT BY', style: CarsAdminTheme.labelMedium),
+        const SizedBox(height: CarsAdminTheme.spacingSm),
         Obx(() {
           return Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AuctionAdminTheme.spacingMd,
+              horizontal: CarsAdminTheme.spacingMd,
             ),
             decoration: BoxDecoration(
-              color: AuctionAdminTheme.surface,
-              borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
-              border: Border.all(color: AuctionAdminTheme.border),
+              color: CarsAdminTheme.surface,
+              borderRadius: BorderRadius.circular(CarsAdminTheme.radiusMd),
+              border: Border.all(color: CarsAdminTheme.border),
             ),
             child: DropdownButtonHideUnderline(
-              child: DropdownButton<SortOrder>(
+              child: DropdownButton<CarSortOrder>(
                 value: _service.sortOrder.value,
                 isExpanded: true,
                 icon: const Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  color: AuctionAdminTheme.textSecondary,
+                  color: CarsAdminTheme.textSecondary,
                 ),
-                style: AuctionAdminTheme.bodyLarge,
+                style: CarsAdminTheme.bodyLarge,
                 items: const [
                   DropdownMenuItem(
-                    value: SortOrder.none,
+                    value: CarSortOrder.none,
                     child: Text('Default'),
                   ),
                   DropdownMenuItem(
-                    value: SortOrder.priceAsc,
+                    value: CarSortOrder.priceAsc,
                     child: Text('Low to high (Price)'),
                   ),
                   DropdownMenuItem(
-                    value: SortOrder.priceDesc,
+                    value: CarSortOrder.priceDesc,
                     child: Text('High to low (Price)'),
                   ),
                 ],
@@ -505,16 +504,16 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('SHOP', style: AuctionAdminTheme.labelMedium),
-        const SizedBox(height: AuctionAdminTheme.spacingSm),
+        const Text('SHOP', style: CarsAdminTheme.labelMedium),
+        const SizedBox(height: CarsAdminTheme.spacingSm),
         Obx(() {
           final selectedName = _service.selectedShopName.value;
           return Column(
             children: [
               TextField(
                 controller: _shopSearchController,
-                style: AuctionAdminTheme.bodyLarge,
-                decoration: AuctionAdminTheme.inputDecoration(
+                style: CarsAdminTheme.bodyLarge,
+                decoration: CarsAdminTheme.inputDecoration(
                   hintText:
                       selectedName.isNotEmpty
                           ? selectedName
@@ -530,7 +529,7 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                             child: const Icon(
                               Icons.close,
                               size: 18,
-                              color: AuctionAdminTheme.textTertiary,
+                              color: CarsAdminTheme.textTertiary,
                             ),
                           )
                           : null,
@@ -548,7 +547,7 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                   padding: EdgeInsets.only(top: 4),
                   child: LinearProgressIndicator(
                     minHeight: 2,
-                    color: AuctionAdminTheme.accent,
+                    color: CarsAdminTheme.accent,
                   ),
                 ),
               if (_service.shopSearchResults.isNotEmpty)
@@ -556,12 +555,12 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                   constraints: const BoxConstraints(maxHeight: 150),
                   margin: const EdgeInsets.only(top: 4),
                   decoration: BoxDecoration(
-                    color: AuctionAdminTheme.surface,
+                    color: CarsAdminTheme.surface,
                     borderRadius: BorderRadius.circular(
-                      AuctionAdminTheme.radiusMd,
+                      CarsAdminTheme.radiusMd,
                     ),
-                    border: Border.all(color: AuctionAdminTheme.border),
-                    boxShadow: AuctionAdminTheme.shadowSm,
+                    border: Border.all(color: CarsAdminTheme.border),
+                    boxShadow: CarsAdminTheme.shadowSm,
                   ),
                   child: ListView.builder(
                     shrinkWrap: true,
@@ -573,7 +572,7 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                         dense: true,
                         title: Text(
                           shop.name,
-                          style: AuctionAdminTheme.bodyMedium,
+                          style: CarsAdminTheme.bodyMedium,
                         ),
                         onTap: () {
                           _service.selectShop(shop);
@@ -596,38 +595,38 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('FEATURED', style: AuctionAdminTheme.labelMedium),
-        const SizedBox(height: AuctionAdminTheme.spacingSm),
+        const Text('FEATURED', style: CarsAdminTheme.labelMedium),
+        const SizedBox(height: CarsAdminTheme.spacingSm),
         Obx(() {
           return Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AuctionAdminTheme.spacingMd,
+              horizontal: CarsAdminTheme.spacingMd,
             ),
             decoration: BoxDecoration(
-              color: AuctionAdminTheme.surface,
-              borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
-              border: Border.all(color: AuctionAdminTheme.border),
+              color: CarsAdminTheme.surface,
+              borderRadius: BorderRadius.circular(CarsAdminTheme.radiusMd),
+              border: Border.all(color: CarsAdminTheme.border),
             ),
             child: DropdownButtonHideUnderline(
-              child: DropdownButton<FeaturedFilter>(
+              child: DropdownButton<CarFeaturedFilter>(
                 value: _service.featuredFilter.value,
                 isExpanded: true,
                 icon: const Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  color: AuctionAdminTheme.textSecondary,
+                  color: CarsAdminTheme.textSecondary,
                 ),
-                style: AuctionAdminTheme.bodyLarge,
+                style: CarsAdminTheme.bodyLarge,
                 items: const [
                   DropdownMenuItem(
-                    value: FeaturedFilter.all,
+                    value: CarFeaturedFilter.all,
                     child: Text('All'),
                   ),
                   DropdownMenuItem(
-                    value: FeaturedFilter.featured,
+                    value: CarFeaturedFilter.featured,
                     child: Text('Featured'),
                   ),
                   DropdownMenuItem(
-                    value: FeaturedFilter.notFeatured,
+                    value: CarFeaturedFilter.notFeatured,
                     child: Text('Not Featured'),
                   ),
                 ],
@@ -649,17 +648,17 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('OPERATOR', style: AuctionAdminTheme.labelMedium),
-        const SizedBox(height: AuctionAdminTheme.spacingSm),
+        const Text('OPERATOR', style: CarsAdminTheme.labelMedium),
+        const SizedBox(height: CarsAdminTheme.spacingSm),
         Obx(() {
           return Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AuctionAdminTheme.spacingMd,
+              horizontal: CarsAdminTheme.spacingMd,
             ),
             decoration: BoxDecoration(
-              color: AuctionAdminTheme.surface,
-              borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
-              border: Border.all(color: AuctionAdminTheme.border),
+              color: CarsAdminTheme.surface,
+              borderRadius: BorderRadius.circular(CarsAdminTheme.radiusMd),
+              border: Border.all(color: CarsAdminTheme.border),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
@@ -667,9 +666,9 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                 isExpanded: true,
                 icon: const Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  color: AuctionAdminTheme.textSecondary,
+                  color: CarsAdminTheme.textSecondary,
                 ),
-                style: AuctionAdminTheme.bodyLarge,
+                style: CarsAdminTheme.bodyLarge,
                 items: const [
                   DropdownMenuItem(value: '=', child: Text('Include')),
                   DropdownMenuItem(value: '!=', child: Text('Exclude')),
@@ -692,20 +691,20 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('CATEGORY', style: AuctionAdminTheme.labelMedium),
-        const SizedBox(height: AuctionAdminTheme.spacingSm),
+        const Text('MAKE', style: CarsAdminTheme.labelMedium),
+        const SizedBox(height: CarsAdminTheme.spacingSm),
         Obx(() {
           final selectedName = _service.selectedCategoryName.value;
           return Column(
             children: [
               TextField(
                 controller: _categorySearchController,
-                style: AuctionAdminTheme.bodyLarge,
-                decoration: AuctionAdminTheme.inputDecoration(
+                style: CarsAdminTheme.bodyLarge,
+                decoration: CarsAdminTheme.inputDecoration(
                   hintText:
                       selectedName.isNotEmpty
                           ? selectedName
-                          : 'Search category...',
+                          : 'Search make...',
                   prefixIcon: Icons.category,
                   suffix:
                       selectedName.isNotEmpty
@@ -717,7 +716,7 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                             child: const Icon(
                               Icons.close,
                               size: 18,
-                              color: AuctionAdminTheme.textTertiary,
+                              color: CarsAdminTheme.textTertiary,
                             ),
                           )
                           : null,
@@ -735,7 +734,7 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                   padding: EdgeInsets.only(top: 4),
                   child: LinearProgressIndicator(
                     minHeight: 2,
-                    color: AuctionAdminTheme.accent,
+                    color: CarsAdminTheme.accent,
                   ),
                 ),
               if (_service.categorySearchResults.isNotEmpty)
@@ -743,12 +742,12 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                   constraints: const BoxConstraints(maxHeight: 150),
                   margin: const EdgeInsets.only(top: 4),
                   decoration: BoxDecoration(
-                    color: AuctionAdminTheme.surface,
+                    color: CarsAdminTheme.surface,
                     borderRadius: BorderRadius.circular(
-                      AuctionAdminTheme.radiusMd,
+                      CarsAdminTheme.radiusMd,
                     ),
-                    border: Border.all(color: AuctionAdminTheme.border),
-                    boxShadow: AuctionAdminTheme.shadowSm,
+                    border: Border.all(color: CarsAdminTheme.border),
+                    boxShadow: CarsAdminTheme.shadowSm,
                   ),
                   child: ListView.builder(
                     shrinkWrap: true,
@@ -760,7 +759,7 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                         dense: true,
                         title: Text(
                           cat.name,
-                          style: AuctionAdminTheme.bodyMedium,
+                          style: CarsAdminTheme.bodyMedium,
                         ),
                         onTap: () {
                           _service.selectCategory(cat);
@@ -782,8 +781,8 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
   Widget _buildToggleFiltersRow() {
     return Obx(() {
       return Wrap(
-        spacing: AuctionAdminTheme.spacingXl,
-        runSpacing: AuctionAdminTheme.spacingMd,
+        spacing: CarsAdminTheme.spacingXl,
+        runSpacing: CarsAdminTheme.spacingMd,
         children: [
           _buildToggleSwitch(
             label: 'Group By SKU',
@@ -815,16 +814,16 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
             fontWeight: value ? FontWeight.w600 : FontWeight.w400,
             color:
                 value
-                    ? AuctionAdminTheme.textPrimary
-                    : AuctionAdminTheme.textSecondary,
+                    ? CarsAdminTheme.textPrimary
+                    : CarsAdminTheme.textSecondary,
           ),
         ),
-        const SizedBox(width: AuctionAdminTheme.spacingSm),
+        const SizedBox(width: CarsAdminTheme.spacingSm),
         Switch(
           value: value,
           onChanged: onChanged,
-          activeTrackColor: AuctionAdminTheme.accent.withValues(alpha: 0.5),
-          activeThumbColor: AuctionAdminTheme.accent,
+          activeTrackColor: CarsAdminTheme.accent.withValues(alpha: 0.5),
+          activeThumbColor: CarsAdminTheme.accent,
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
       ],
@@ -846,9 +845,9 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
         children: [
           const Text(
             'INVENTORY UPDATED RANGE',
-            style: AuctionAdminTheme.labelMedium,
+            style: CarsAdminTheme.labelMedium,
           ),
-          const SizedBox(height: AuctionAdminTheme.spacingSm),
+          const SizedBox(height: CarsAdminTheme.spacingSm),
           Row(
             children: [
               Expanded(
@@ -868,12 +867,12 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
               ),
               Container(
                 margin: const EdgeInsets.symmetric(
-                  horizontal: AuctionAdminTheme.spacingSm,
+                  horizontal: CarsAdminTheme.spacingSm,
                 ),
                 child: const Icon(
                   Icons.arrow_forward,
                   size: 16,
-                  color: AuctionAdminTheme.textTertiary,
+                  color: CarsAdminTheme.textTertiary,
                 ),
               ),
               Expanded(
@@ -893,7 +892,7 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                 ),
               ),
               if (startDate != null || endDate != null) ...[
-                const SizedBox(width: AuctionAdminTheme.spacingSm),
+                const SizedBox(width: CarsAdminTheme.spacingSm),
                 _buildClearDateButton(
                   onTap: () => _service.updateInventoryDateRange(null, null),
                 ),
@@ -910,29 +909,29 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('STATUS', style: AuctionAdminTheme.labelMedium),
-        const SizedBox(height: AuctionAdminTheme.spacingSm),
+        const Text('STATUS', style: CarsAdminTheme.labelMedium),
+        const SizedBox(height: CarsAdminTheme.spacingSm),
         Obx(() {
           return Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AuctionAdminTheme.spacingMd,
+              horizontal: CarsAdminTheme.spacingMd,
             ),
             decoration: BoxDecoration(
-              color: AuctionAdminTheme.surface,
-              borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
-              border: Border.all(color: AuctionAdminTheme.border),
+              color: CarsAdminTheme.surface,
+              borderRadius: BorderRadius.circular(CarsAdminTheme.radiusMd),
+              border: Border.all(color: CarsAdminTheme.border),
             ),
             child: DropdownButtonHideUnderline(
-              child: DropdownButton<ProductStatus>(
+              child: DropdownButton<CarProductStatus>(
                 value: _service.selectedStatus.value,
                 isExpanded: true,
                 icon: const Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  color: AuctionAdminTheme.textSecondary,
+                  color: CarsAdminTheme.textSecondary,
                 ),
-                style: AuctionAdminTheme.bodyLarge,
+                style: CarsAdminTheme.bodyLarge,
                 items:
-                    ProductStatus.values.map((status) {
+                    CarProductStatus.values.map((status) {
                       return DropdownMenuItem(
                         value: status,
                         child: Text(_formatStatusLabel(status.name)),
@@ -965,7 +964,7 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                 onChanged: (val) => _service.toggleFlashDealsAdded(val),
               ),
               if (_service.flashDealsAddedEnabled.value) ...[
-                const SizedBox(width: AuctionAdminTheme.spacingLg),
+                const SizedBox(width: CarsAdminTheme.spacingLg),
                 Expanded(child: _buildFlashDealsDateRange()),
               ],
             ],
@@ -999,10 +998,10 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                   return Theme(
                     data: Theme.of(context).copyWith(
                       colorScheme: const ColorScheme.light(
-                        primary: AuctionAdminTheme.accent,
+                        primary: CarsAdminTheme.accent,
                         onPrimary: Colors.white,
-                        surface: AuctionAdminTheme.surface,
-                        onSurface: AuctionAdminTheme.textPrimary,
+                        surface: CarsAdminTheme.surface,
+                        onSurface: CarsAdminTheme.textPrimary,
                       ),
                     ),
                     child: child!,
@@ -1016,7 +1015,7 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
           ),
         ),
         if (startDate != null || endDate != null) ...[
-          const SizedBox(width: AuctionAdminTheme.spacingSm),
+          const SizedBox(width: CarsAdminTheme.spacingSm),
           _buildClearDateButton(
             onTap: () => _service.updateFlashDealsDateRange(null, null),
           ),
@@ -1039,21 +1038,21 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusLg),
+        borderRadius: BorderRadius.circular(CarsAdminTheme.radiusLg),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(
-            horizontal: AuctionAdminTheme.spacingMd,
-            vertical: AuctionAdminTheme.spacingSm,
+            horizontal: CarsAdminTheme.spacingMd,
+            vertical: CarsAdminTheme.spacingSm,
           ),
           decoration: BoxDecoration(
             color:
                 isSelected
                     ? color.withValues(alpha: 0.1)
-                    : AuctionAdminTheme.surface,
-            borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusLg),
+                    : CarsAdminTheme.surface,
+            borderRadius: BorderRadius.circular(CarsAdminTheme.radiusLg),
             border: Border.all(
-              color: isSelected ? color : AuctionAdminTheme.border,
+              color: isSelected ? color : CarsAdminTheme.border,
               width: isSelected ? 1.5 : 1,
             ),
           ),
@@ -1069,7 +1068,7 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  color: isSelected ? color : AuctionAdminTheme.textSecondary,
+                  color: isSelected ? color : CarsAdminTheme.textSecondary,
                 ),
               ),
             ],
@@ -1087,8 +1086,8 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('DATE RANGE', style: AuctionAdminTheme.labelMedium),
-          const SizedBox(height: AuctionAdminTheme.spacingSm),
+          const Text('DATE RANGE', style: CarsAdminTheme.labelMedium),
+          const SizedBox(height: CarsAdminTheme.spacingSm),
           Row(
             children: [
               Expanded(
@@ -1100,12 +1099,12 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
               ),
               Container(
                 margin: const EdgeInsets.symmetric(
-                  horizontal: AuctionAdminTheme.spacingSm,
+                  horizontal: CarsAdminTheme.spacingSm,
                 ),
                 child: const Icon(
                   Icons.arrow_forward,
                   size: 16,
-                  color: AuctionAdminTheme.textTertiary,
+                  color: CarsAdminTheme.textTertiary,
                 ),
               ),
               Expanded(
@@ -1116,7 +1115,7 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                 ),
               ),
               if (startDate != null || endDate != null) ...[
-                const SizedBox(width: AuctionAdminTheme.spacingSm),
+                const SizedBox(width: CarsAdminTheme.spacingSm),
                 _buildClearDateButton(
                   onTap: () => _service.updateDateRange(null, null),
                 ),
@@ -1137,20 +1136,20 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
+        borderRadius: BorderRadius.circular(CarsAdminTheme.radiusMd),
         child: Container(
           padding: const EdgeInsets.symmetric(
-            horizontal: AuctionAdminTheme.spacingMd,
-            vertical: AuctionAdminTheme.spacingMd,
+            horizontal: CarsAdminTheme.spacingMd,
+            vertical: CarsAdminTheme.spacingMd,
           ),
           decoration: BoxDecoration(
-            color: AuctionAdminTheme.surface,
-            borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
+            color: CarsAdminTheme.surface,
+            borderRadius: BorderRadius.circular(CarsAdminTheme.radiusMd),
             border: Border.all(
               color:
                   date != null
-                      ? AuctionAdminTheme.accent
-                      : AuctionAdminTheme.border,
+                      ? CarsAdminTheme.accent
+                      : CarsAdminTheme.border,
             ),
           ),
           child: Row(
@@ -1160,10 +1159,10 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                 size: 16,
                 color:
                     date != null
-                        ? AuctionAdminTheme.accent
-                        : AuctionAdminTheme.textTertiary,
+                        ? CarsAdminTheme.accent
+                        : CarsAdminTheme.textTertiary,
               ),
-              const SizedBox(width: AuctionAdminTheme.spacingSm),
+              const SizedBox(width: CarsAdminTheme.spacingSm),
               Expanded(
                 child: Text(
                   date != null
@@ -1173,8 +1172,8 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                     fontSize: 13,
                     color:
                         date != null
-                            ? AuctionAdminTheme.textPrimary
-                            : AuctionAdminTheme.textTertiary,
+                            ? CarsAdminTheme.textPrimary
+                            : CarsAdminTheme.textTertiary,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -1191,17 +1190,17 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusSm),
+        borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
         child: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AuctionAdminTheme.errorLight,
-            borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusSm),
+            color: CarsAdminTheme.errorLight,
+            borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
           ),
           child: const Icon(
             Icons.close,
             size: 16,
-            color: AuctionAdminTheme.error,
+            color: CarsAdminTheme.error,
           ),
         ),
       ),
@@ -1212,13 +1211,13 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('QUICK FILTERS', style: AuctionAdminTheme.labelMedium),
-        const SizedBox(height: AuctionAdminTheme.spacingSm),
+        const Text('QUICK FILTERS', style: CarsAdminTheme.labelMedium),
+        const SizedBox(height: CarsAdminTheme.spacingSm),
         Obx(() {
           final filters = _service.getPredefinedFilters();
           return Wrap(
-            spacing: AuctionAdminTheme.spacingSm,
-            runSpacing: AuctionAdminTheme.spacingSm,
+            spacing: CarsAdminTheme.spacingSm,
+            runSpacing: CarsAdminTheme.spacingSm,
             children:
                 filters.map((filter) {
                   final isActive = _service.activeFilters.any(
@@ -1234,7 +1233,7 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                         _service.addColumnFilter(filter);
                       }
                     },
-                    color: AuctionAdminTheme.accent,
+                    color: CarsAdminTheme.accent,
                   );
                 }).toList(),
           );
@@ -1247,18 +1246,18 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('ITEMS PER PAGE', style: AuctionAdminTheme.labelMedium),
-        const SizedBox(height: AuctionAdminTheme.spacingSm),
+        const Text('ITEMS PER PAGE', style: CarsAdminTheme.labelMedium),
+        const SizedBox(height: CarsAdminTheme.spacingSm),
         Obx(() {
           final perPage = _service.perPage.value;
           return Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AuctionAdminTheme.spacingMd,
+              horizontal: CarsAdminTheme.spacingMd,
             ),
             decoration: BoxDecoration(
-              color: AuctionAdminTheme.surface,
-              borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
-              border: Border.all(color: AuctionAdminTheme.border),
+              color: CarsAdminTheme.surface,
+              borderRadius: BorderRadius.circular(CarsAdminTheme.radiusMd),
+              border: Border.all(color: CarsAdminTheme.border),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<int>(
@@ -1266,9 +1265,9 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                 isExpanded: true,
                 icon: const Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  color: AuctionAdminTheme.textSecondary,
+                  color: CarsAdminTheme.textSecondary,
                 ),
-                style: AuctionAdminTheme.bodyLarge,
+                style: CarsAdminTheme.bodyLarge,
                 items:
                     [10, 20, 40, 60, 100].map((value) {
                       return DropdownMenuItem<int>(
@@ -1296,12 +1295,12 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
           _service.searchName.value.isNotEmpty ||
           _service.searchId.value.isNotEmpty ||
           _service.searchSku.value.isNotEmpty ||
-          _service.selectedStatus.value != ProductStatus.all ||
+          _service.selectedStatus.value != CarProductStatus.all ||
           _service.activeFilters.isNotEmpty ||
           _service.startDate.value != null ||
-          _service.sortOrder.value != SortOrder.none ||
+          _service.sortOrder.value != CarSortOrder.none ||
           _service.selectedShopId.value.isNotEmpty ||
-          _service.featuredFilter.value != FeaturedFilter.all ||
+          _service.featuredFilter.value != CarFeaturedFilter.all ||
           _service.selectedCategoryId.value.isNotEmpty ||
           _service.groupBySku.value ||
           _service.inventoryUpdatedEnabled.value ||
@@ -1310,7 +1309,7 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
       if (!hasFilters) return const SizedBox.shrink();
 
       return Padding(
-        padding: const EdgeInsets.only(top: AuctionAdminTheme.spacingXl),
+        padding: const EdgeInsets.only(top: CarsAdminTheme.spacingXl),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1322,12 +1321,12 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                     Icon(
                       Icons.filter_alt,
                       size: 18,
-                      color: AuctionAdminTheme.accent,
+                      color: CarsAdminTheme.accent,
                     ),
-                    SizedBox(width: AuctionAdminTheme.spacingSm),
+                    SizedBox(width: CarsAdminTheme.spacingSm),
                     Text(
                       'Active Filters',
-                      style: AuctionAdminTheme.headingSmall,
+                      style: CarsAdminTheme.headingSmall,
                     ),
                   ],
                 ),
@@ -1336,24 +1335,24 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                   icon: const Icon(Icons.clear_all, size: 18),
                   label: const Text('Clear All'),
                   style: TextButton.styleFrom(
-                    foregroundColor: AuctionAdminTheme.error,
+                    foregroundColor: CarsAdminTheme.error,
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AuctionAdminTheme.spacingMd,
+                      horizontal: CarsAdminTheme.spacingMd,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: AuctionAdminTheme.spacingSm),
+            const SizedBox(height: CarsAdminTheme.spacingSm),
             Container(
-              padding: const EdgeInsets.all(AuctionAdminTheme.spacingMd),
+              padding: const EdgeInsets.all(CarsAdminTheme.spacingMd),
               decoration: BoxDecoration(
-                color: AuctionAdminTheme.accentLight,
+                color: CarsAdminTheme.accentLight,
                 borderRadius: BorderRadius.circular(
-                  AuctionAdminTheme.radiusMd,
+                  CarsAdminTheme.radiusMd,
                 ),
                 border: Border.all(
-                  color: AuctionAdminTheme.accent.withValues(alpha: 0.2),
+                  color: CarsAdminTheme.accent.withValues(alpha: 0.2),
                 ),
               ),
               child: Row(
@@ -1361,14 +1360,14 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                   const Icon(
                     Icons.info_outline,
                     size: 16,
-                    color: AuctionAdminTheme.accent,
+                    color: CarsAdminTheme.accent,
                   ),
-                  const SizedBox(width: AuctionAdminTheme.spacingSm),
+                  const SizedBox(width: CarsAdminTheme.spacingSm),
                   Expanded(
                     child: Text(
                       _service.getFilterSummary(),
-                      style: AuctionAdminTheme.bodySmall.copyWith(
-                        color: AuctionAdminTheme.textPrimary,
+                      style: CarsAdminTheme.bodySmall.copyWith(
+                        color: CarsAdminTheme.textPrimary,
                       ),
                     ),
                   ),
@@ -1398,13 +1397,13 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
 
       return Container(
         padding: const EdgeInsets.symmetric(
-          horizontal: AuctionAdminTheme.spacingLg,
-          vertical: AuctionAdminTheme.spacingMd,
+          horizontal: CarsAdminTheme.spacingLg,
+          vertical: CarsAdminTheme.spacingMd,
         ),
         decoration: BoxDecoration(
-          color: AuctionAdminTheme.surfaceSecondary,
-          borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
-          border: Border.all(color: AuctionAdminTheme.border),
+          color: CarsAdminTheme.surfaceSecondary,
+          borderRadius: BorderRadius.circular(CarsAdminTheme.radiusMd),
+          border: Border.all(color: CarsAdminTheme.border),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1414,28 +1413,28 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: AuctionAdminTheme.accentLight,
+                    color: CarsAdminTheme.accentLight,
                     borderRadius: BorderRadius.circular(
-                      AuctionAdminTheme.radiusSm,
+                      CarsAdminTheme.radiusSm,
                     ),
                   ),
                   child: const Icon(
-                    Icons.gavel_rounded,
+                    Icons.directions_car_rounded,
                     size: 16,
-                    color: AuctionAdminTheme.accent,
+                    color: CarsAdminTheme.accent,
                   ),
                 ),
-                const SizedBox(width: AuctionAdminTheme.spacingMd),
+                const SizedBox(width: CarsAdminTheme.spacingMd),
                 RichText(
                   text: TextSpan(
-                    style: AuctionAdminTheme.bodyMedium,
+                    style: CarsAdminTheme.bodyMedium,
                     children: [
                       const TextSpan(text: 'Showing '),
                       TextSpan(
                         text: '$productCount',
                         style: const TextStyle(
                           fontWeight: FontWeight.w600,
-                          color: AuctionAdminTheme.accent,
+                          color: CarsAdminTheme.accent,
                         ),
                       ),
                       const TextSpan(text: ' of '),
@@ -1443,7 +1442,7 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                         text: '$totalItems',
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
-                      const TextSpan(text: ' auctions'),
+                      const TextSpan(text: ' cars'),
                     ],
                   ),
                 ),
@@ -1454,14 +1453,14 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                 if (isRefreshing)
                   const Padding(
                     padding: EdgeInsets.only(
-                      right: AuctionAdminTheme.spacingSm,
+                      right: CarsAdminTheme.spacingSm,
                     ),
                     child: SizedBox(
                       width: 16,
                       height: 16,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: AuctionAdminTheme.accent,
+                        color: CarsAdminTheme.accent,
                       ),
                     ),
                   ),
@@ -1470,21 +1469,21 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
                   child: InkWell(
                     onTap: _service.refreshProducts,
                     borderRadius: BorderRadius.circular(
-                      AuctionAdminTheme.radiusSm,
+                      CarsAdminTheme.radiusSm,
                     ),
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AuctionAdminTheme.surface,
+                        color: CarsAdminTheme.surface,
                         borderRadius: BorderRadius.circular(
-                          AuctionAdminTheme.radiusSm,
+                          CarsAdminTheme.radiusSm,
                         ),
-                        border: Border.all(color: AuctionAdminTheme.border),
+                        border: Border.all(color: CarsAdminTheme.border),
                       ),
                       child: const Icon(
                         Icons.refresh_rounded,
                         size: 18,
-                        color: AuctionAdminTheme.textSecondary,
+                        color: CarsAdminTheme.textSecondary,
                       ),
                     ),
                   ),
@@ -1512,10 +1511,10 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: AuctionAdminTheme.accent,
+              primary: CarsAdminTheme.accent,
               onPrimary: Colors.white,
-              surface: AuctionAdminTheme.surface,
-              onSurface: AuctionAdminTheme.textPrimary,
+              surface: CarsAdminTheme.surface,
+              onSurface: CarsAdminTheme.textPrimary,
             ),
           ),
           child: child!,

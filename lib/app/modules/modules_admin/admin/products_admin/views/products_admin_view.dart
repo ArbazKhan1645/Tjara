@@ -18,16 +18,12 @@ class _ProductsAdminViewState extends State<ProductsAdminView> {
   void initState() {
     super.initState();
 
-    _adminProductsService = Get.find<AdminProductsService>();
+    _adminProductsService = Get.put(AdminProductsService());
     _adminProductsService.fetchProducts(refresh: true, showLoader: true);
-    _adminProductsService.refreshProducts();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade100,
-      body: const AdminProductsPage(),
-    );
+    return const AdminProductsPage();
   }
 }

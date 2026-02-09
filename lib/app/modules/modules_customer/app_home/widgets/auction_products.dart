@@ -260,6 +260,7 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
   Timer? _countdownTimer;
   Duration? _remainingTime;
   bool _isExpired = false;
+  bool _isComingSoon = false;
 
   @override
   void initState() {
@@ -274,6 +275,13 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
   }
 
   void _initializeAuctionTimer() {
+    // Check if this is a future-scheduled auction
+    if (widget.product.meta?.auctionScheduleType == 'future') {
+      _isComingSoon = true;
+      _isExpired = false;
+      return;
+    }
+
     if (widget.product.auctionEndTime == null) {
       _isExpired = true;
       return;
@@ -366,7 +374,7 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
                     ),
                     child: ColorFiltered(
                       colorFilter:
-                          _isExpired
+                          (_isExpired && !_isComingSoon)
                               ? ColorFilter.mode(
                                 Colors.grey.withOpacity(0.5),
                                 BlendMode.saturation,
@@ -395,7 +403,7 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
-                      color: _isExpired ? Colors.grey.shade600 : Colors.black,
+                      color: (_isExpired && !_isComingSoon) ? Colors.grey.shade600 : Colors.black,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -409,10 +417,10 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
                           color:
-                              _isExpired ? Colors.grey.shade500 : Colors.teal,
+                              (_isExpired && !_isComingSoon) ? Colors.grey.shade500 : Colors.teal,
                         ),
                       ),
-                      if (!_isExpired) ...[
+                      if (!_isExpired && !_isComingSoon) ...[
                         const SizedBox(width: 4),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -445,6 +453,41 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
   }
 
   Widget _buildStatusBadge() {
+    if (_isComingSoon) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF00897B), Color(0xFF26A69A)],
+          ),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.teal.withValues(alpha: 0.4),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.schedule_rounded, size: 10, color: Colors.white),
+            SizedBox(width: 3),
+            Text(
+              'COMING SOON',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 9,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     if (_isExpired) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -506,63 +549,91 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
   }
 
   Widget _buildBiddingStatus() {
+    final bool isEnded = _isExpired && !_isComingSoon;
+
     return Container(
       height: 46,
       width: double.infinity,
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         gradient:
-            _isExpired
-                ? null
-                : const LinearGradient(
-                  colors: [Color(0xFFFFF3E0), Color(0xFFFFE0B2)],
+            _isComingSoon
+                ? const LinearGradient(
+                  colors: [Color(0xFFE0F2F1), Color(0xFFB2DFDB)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                ),
-        color: _isExpired ? Colors.grey.shade200 : null,
+                )
+                : isEnded
+                    ? null
+                    : const LinearGradient(
+                      colors: [Color(0xFFFFF3E0), Color(0xFFFFE0B2)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+        color: isEnded ? Colors.grey.shade200 : null,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: _isExpired ? Colors.grey.shade300 : Colors.orange.shade200,
+          color: _isComingSoon
+              ? Colors.teal.shade200
+              : isEnded
+                  ? Colors.grey.shade300
+                  : Colors.orange.shade200,
           width: 1,
         ),
       ),
       child: Center(
         child:
-            _isExpired
+            _isComingSoon
                 ? Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.block, size: 14, color: Colors.grey.shade600),
+                    Icon(Icons.schedule_rounded, size: 14, color: Colors.teal.shade600),
                     const SizedBox(width: 4),
                     Text(
-                      'Auction Ended',
+                      'Coming Soon',
                       style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade600,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.teal.shade700,
                       ),
                     ),
                   ],
                 )
-                : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.local_fire_department,
-                      size: 16,
-                      color: Colors.orange.shade700,
+                : isEnded
+                    ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.block, size: 14, color: Colors.grey.shade600),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Auction Ended',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    )
+                    : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.local_fire_department,
+                          size: 16,
+                          color: Colors.orange.shade700,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Bidding Active',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.orange.shade800,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Bidding Active',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.orange.shade800,
-                      ),
-                    ),
-                  ],
-                ),
       ),
     );
   }

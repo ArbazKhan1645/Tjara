@@ -135,6 +135,7 @@ class AdminProducts {
   final ProductMeta? meta;
   final bool? isDiscountProduct;
   final Video? video;
+  final ProductAnalytics? analytics;
 
   AdminProducts({
     this.id,
@@ -168,6 +169,7 @@ class AdminProducts {
     this.meta,
     this.isDiscountProduct,
     this.video,
+    this.analytics,
   });
 
   factory AdminProducts.fromJson(Map<String, dynamic> json) {
@@ -223,6 +225,10 @@ class AdminProducts {
       meta: json['meta'] != null ? ProductMeta.fromJson(json['meta']) : null,
       isDiscountProduct: json['is_discount_product'] as bool?,
       video: json['video'] != null ? Video.fromJson(json['video']) : null,
+      analytics:
+          json['analytics'] != null
+              ? ProductAnalytics.fromJson(json['analytics'])
+              : null,
     );
   }
 }
@@ -612,6 +618,10 @@ class ProductMeta {
   final String? fuelType;
   final String? engine;
   final String? hidePrice;
+  final String? inventoryUpdatedAt;
+  final String? isPinnedSale;
+  final String? isSold;
+  final String? auctionScheduleType;
 
   ProductMeta({
     this.videoId,
@@ -646,6 +656,10 @@ class ProductMeta {
     this.fuelType,
     this.engine,
     this.hidePrice,
+    this.inventoryUpdatedAt,
+    this.isPinnedSale,
+    this.isSold,
+    this.auctionScheduleType,
   });
 
   factory ProductMeta.fromJson(Map<String, dynamic> json) {
@@ -682,7 +696,52 @@ class ProductMeta {
       fuelType: json['fuel_type'] as String?,
       engine: json['engine']?.toString(),
       hidePrice: json['hide_price']?.toString(),
+      inventoryUpdatedAt: json['inventory_updated_at']?.toString(),
+      isPinnedSale: json['is_pinned_sale']?.toString(),
+      isSold: json['is_sold']?.toString(),
+      auctionScheduleType: json['auction_schedule_type'] as String?,
     );
+  }
+}
+
+class ProductAnalytics {
+  final int views;
+  final int clicks;
+  final int likes;
+  final int shares;
+  final int addToCart;
+  final int purchase;
+  final int wishlist;
+  final int comments;
+
+  ProductAnalytics({
+    this.views = 0,
+    this.clicks = 0,
+    this.likes = 0,
+    this.shares = 0,
+    this.addToCart = 0,
+    this.purchase = 0,
+    this.wishlist = 0,
+    this.comments = 0,
+  });
+
+  factory ProductAnalytics.fromJson(Map<String, dynamic> json) {
+    return ProductAnalytics(
+      views: _parseInt(json['views']),
+      clicks: _parseInt(json['clicks']),
+      likes: _parseInt(json['likes']),
+      shares: _parseInt(json['shares']),
+      addToCart: _parseInt(json['add_to_cart']),
+      purchase: _parseInt(json['purchase']),
+      wishlist: _parseInt(json['wishlist']),
+      comments: _parseInt(json['comments']),
+    );
+  }
+
+  static int _parseInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    return int.tryParse(value.toString()) ?? 0;
   }
 }
 

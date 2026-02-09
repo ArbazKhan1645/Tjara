@@ -573,8 +573,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     showContactDialog(context, const LoginUi());
   }
 
+  bool _isFutureAuction() {
+    return widget.product.meta?.auctionScheduleType == 'future' ||
+        _freshProductNotifier.value?.product?.meta?.auctionScheduleType == 'future';
+  }
+
   bool _issinleAuctionExpired(Product? productData) {
     if (productData == null) return false;
+    if (productData.meta?.auctionScheduleType == 'future') return false;
 
     final auctionEndTime = productData.auctionEndTime;
     if (auctionEndTime == null ||
@@ -606,6 +612,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
 
   bool _isAuctionExpired(ProductDatum? productData) {
     if (productData == null) return false;
+    if (productData.meta?.auctionScheduleType == 'future') return false;
 
     final auctionEndTime = productData.auctionEndTime;
     if (auctionEndTime == null ||
@@ -637,6 +644,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
 
   bool _isAuctionProduct(dynamic productData) {
     if (productData == null) return false;
+    // Check by product type (covers future-scheduled auctions with no times)
+    if (productData.productType == 'auction') return true;
     final auctionStartTime = productData.auctionStartTime;
     final auctionEndTime = productData.auctionEndTime;
     return auctionStartTime != null &&
@@ -828,6 +837,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
   void _initializeTimerofAuction() {
     try {
       if (!_isAuctionProduct(_freshProductNotifier.value?.product)) {
+        return;
+      }
+      // Skip timer for future-scheduled auctions
+      if (_isFutureAuction()) {
         return;
       }
 
@@ -1274,7 +1287,31 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                 ),
               ),
 
-            if (product?.product?.bids != null)
+            if (_isFutureAuction())
+              Container(
+                margin: const EdgeInsets.only(top: 8),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: Colors.teal.shade100),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.schedule_rounded, size: 20, color: Colors.teal.shade600),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Coming Soon',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.teal.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else if (product?.product?.bids != null)
               BidderTable(
                 key: Key(product.hashCode.toString()),
                 auction_start_time: product?.product?.auctionStartTime ?? '',
@@ -2124,6 +2161,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
       if (isOutOfStock) {
         buttonText = 'Out of Stock';
       }
+    } else if (isAuction && _isFutureAuction()) {
+      buttonText = 'Coming Soon';
+      canPurchase = false;
     } else if (isAuction && isAuctionExpired) {
       buttonText = 'Auction Expired';
       canPurchase = false;
@@ -2301,6 +2341,55 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
               ),
             ),
           ],
+        ),
+      );
+    }
+
+    if (isAuction && _isFutureAuction()) {
+      return Positioned(
+        bottom: 0,
+        left: 0,
+        right: 0,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 10,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: SafeArea(
+            top: false,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF00897B), Color(0xFF26A69A)],
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.schedule_rounded, size: 18, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text(
+                    'Coming Soon',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       );
     }

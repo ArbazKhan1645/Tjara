@@ -389,6 +389,7 @@ class _PromotionBannerWidgetState extends State<PromotionBannerWidget>
             ),
           ),
           const FeatureBadgesWidget(),
+          const TjaraVideosSection(),
 
           const CategorySection(),
         ],
@@ -512,6 +513,7 @@ class _PromotionBannerWidgetState extends State<PromotionBannerWidget>
             ),
           ),
           const FeatureBadgesWidget(),
+          const TjaraVideosSection(),
           const CategorySection(),
         ],
       ),
@@ -634,6 +636,7 @@ class _PromotionBannerWidgetState extends State<PromotionBannerWidget>
             ),
           ),
           const FeatureBadgesWidget(),
+          const TjaraVideosSection(),
           const CategorySection(),
         ],
       ),

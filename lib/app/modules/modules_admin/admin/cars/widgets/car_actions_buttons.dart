@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:tjara/app/modules/modules_admin/admin/products_admin/widgets/admin_products_theme.dart';
+import 'package:tjara/app/modules/modules_admin/admin/cars/widgets/cars_admin_theme.dart';
 
-class ProductActionButtons extends StatelessWidget {
+class CarActionButtons extends StatelessWidget {
   final String productId;
   final String productName;
   final String productSku;
@@ -13,17 +13,19 @@ class ProductActionButtons extends StatelessWidget {
   final bool hasInventory;
   final bool isPinnedSale;
   final bool isPrivate;
+  final bool isSold;
   final VoidCallback? onActiveChanged;
   final VoidCallback? onFeaturedChanged;
   final VoidCallback? onDealChanged;
   final VoidCallback? onInventoryChanged;
   final VoidCallback? onPinSaleChanged;
   final VoidCallback? onPrivateChanged;
+  final VoidCallback? onSoldChanged;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
   final VoidCallback? onDuplicate;
 
-  const ProductActionButtons({
+  const CarActionButtons({
     super.key,
     required this.productId,
     required this.productName,
@@ -34,12 +36,14 @@ class ProductActionButtons extends StatelessWidget {
     this.hasInventory = false,
     this.isPinnedSale = false,
     this.isPrivate = false,
+    this.isSold = false,
     this.onActiveChanged,
     this.onFeaturedChanged,
     this.onDealChanged,
     this.onInventoryChanged,
     this.onPinSaleChanged,
     this.onPrivateChanged,
+    this.onSoldChanged,
     this.onEdit,
     this.onDelete,
     this.onDuplicate,
@@ -50,69 +54,83 @@ class ProductActionButtons extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // QR Code Button
         _buildActionButton(
           icon: Icons.qr_code_2_rounded,
           tooltip: 'Show QR Code',
           onTap: () => _showQRCodeDialog(context),
-          color: AdminProductsTheme.textSecondary,
+          color: CarsAdminTheme.textSecondary,
         ),
-
-        // Active Status Button
         _buildActionButton(
-          icon: isActive ? Icons.visibility_rounded : Icons.visibility_off_rounded,
+          icon: isActive
+              ? Icons.visibility_rounded
+              : Icons.visibility_off_rounded,
           tooltip: isActive ? 'Product Active' : 'Product Inactive',
           onTap: () => _showActiveDialog(context),
-          color: isActive ? AdminProductsTheme.success : AdminProductsTheme.textTertiary,
-          backgroundColor: isActive ? AdminProductsTheme.successLight : null,
+          color: isActive
+              ? CarsAdminTheme.success
+              : CarsAdminTheme.textTertiary,
+          backgroundColor: isActive
+              ? CarsAdminTheme.success.withValues(alpha: 0.1)
+              : null,
         ),
-
-        // Featured Button
         _buildActionButton(
           icon: Icons.star_rounded,
           tooltip: isFeatured ? 'Featured Product' : 'Not Featured',
           onTap: () => _showFeaturedDialog(context),
-          color: isFeatured ? AdminProductsTheme.featured : AdminProductsTheme.textTertiary,
-          backgroundColor: isFeatured ? AdminProductsTheme.featuredLight : null,
+          color: isFeatured
+              ? CarsAdminTheme.primary
+              : CarsAdminTheme.textTertiary,
+          backgroundColor: isFeatured
+              ? CarsAdminTheme.primaryLight
+              : null,
         ),
-
-        // Deal Button
         _buildActionButton(
           icon: Icons.local_offer_rounded,
           tooltip: isDeal ? 'Deal Product' : 'Not on Deal',
           onTap: () => _showDealDialog(context),
-          color: isDeal ? AdminProductsTheme.deal : AdminProductsTheme.textTertiary,
-          backgroundColor: isDeal ? AdminProductsTheme.dealLight : null,
+          color: isDeal
+              ? CarsAdminTheme.error
+              : CarsAdminTheme.textTertiary,
+          backgroundColor: isDeal
+              ? CarsAdminTheme.errorLight
+              : null,
         ),
-
-        // Inventory Button
         _buildActionButton(
           icon: Icons.inventory_2_rounded,
           tooltip: hasInventory ? 'Inventory Assigned' : 'No Inventory',
           onTap: () => _showInventoryDialog(context),
-          color: hasInventory ? const Color(0xFF8B5CF6) : AdminProductsTheme.textTertiary,
+          color: hasInventory
+              ? const Color(0xFF8B5CF6)
+              : CarsAdminTheme.textTertiary,
           backgroundColor: hasInventory ? const Color(0xFFEDE9FE) : null,
         ),
-
-        // Pin Sale Button
         _buildActionButton(
           icon: Icons.push_pin_rounded,
           tooltip: isPinnedSale ? 'Pinned Sale' : 'Not Pinned',
           onTap: () => _showPinSaleDialog(context),
-          color: isPinnedSale ? const Color(0xFFEC4899) : AdminProductsTheme.textTertiary,
+          color: isPinnedSale
+              ? const Color(0xFFEC4899)
+              : CarsAdminTheme.textTertiary,
           backgroundColor: isPinnedSale ? const Color(0xFFFCE7F3) : null,
         ),
-
-        // Private Button
         _buildActionButton(
           icon: isPrivate ? Icons.lock_rounded : Icons.lock_open_rounded,
           tooltip: isPrivate ? 'Private Product' : 'Public Product',
           onTap: () => _showPrivateDialog(context),
-          color: isPrivate ? const Color(0xFF6366F1) : AdminProductsTheme.textTertiary,
+          color: isPrivate
+              ? const Color(0xFF6366F1)
+              : CarsAdminTheme.textTertiary,
           backgroundColor: isPrivate ? const Color(0xFFE0E7FF) : null,
         ),
-
-        // More Options Button
+        _buildActionButton(
+          icon: isSold ? Icons.sell_rounded : Icons.sell_outlined,
+          tooltip: isSold ? 'Sold' : 'Not Sold',
+          onTap: () => _showSoldDialog(context),
+          color: isSold
+              ? const Color(0xFFD97706)
+              : CarsAdminTheme.textTertiary,
+          backgroundColor: isSold ? const Color(0xFFFEF3C7) : null,
+        ),
         _buildPopupMenu(),
       ],
     );
@@ -131,13 +149,13 @@ class ProductActionButtons extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(AdminProductsTheme.radiusSm),
+          borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 150),
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: backgroundColor ?? Colors.transparent,
-              borderRadius: BorderRadius.circular(AdminProductsTheme.radiusSm),
+              borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
             ),
             child: Icon(icon, size: 20, color: color),
           ),
@@ -151,7 +169,7 @@ class ProductActionButtons extends StatelessWidget {
       onSelected: _handleMenuSelection,
       offset: const Offset(0, 40),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AdminProductsTheme.radiusMd),
+        borderRadius: BorderRadius.circular(CarsAdminTheme.radiusMd),
       ),
       elevation: 8,
       child: Container(
@@ -159,7 +177,7 @@ class ProductActionButtons extends StatelessWidget {
         child: const Icon(
           Icons.more_vert_rounded,
           size: 20,
-          color: AdminProductsTheme.textSecondary,
+          color: CarsAdminTheme.textSecondary,
         ),
       ),
       itemBuilder: (BuildContext context) => [
@@ -167,20 +185,20 @@ class ProductActionButtons extends StatelessWidget {
           value: 'duplicate',
           icon: Icons.copy_rounded,
           label: 'Duplicate',
-          color: AdminProductsTheme.info,
+          color: CarsAdminTheme.info,
         ),
         _buildPopupMenuItem(
           value: 'edit',
           icon: Icons.edit_rounded,
           label: 'Edit',
-          color: AdminProductsTheme.primary,
+          color: CarsAdminTheme.accent,
         ),
         const PopupMenuDivider(),
         _buildPopupMenuItem(
           value: 'delete',
           icon: Icons.delete_outline_rounded,
           label: 'Delete',
-          color: AdminProductsTheme.error,
+          color: CarsAdminTheme.error,
         ),
       ],
     );
@@ -200,7 +218,7 @@ class ProductActionButtons extends StatelessWidget {
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AdminProductsTheme.radiusSm),
+              borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
             ),
             child: Icon(icon, size: 16, color: color),
           ),
@@ -210,7 +228,7 @@ class ProductActionButtons extends StatelessWidget {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: value == 'delete' ? color : AdminProductsTheme.textPrimary,
+              color: value == 'delete' ? color : CarsAdminTheme.textPrimary,
             ),
           ),
         ],
@@ -224,15 +242,14 @@ class ProductActionButtons extends StatelessWidget {
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AdminProductsTheme.radiusLg),
+            borderRadius: BorderRadius.circular(CarsAdminTheme.radiusLg),
           ),
           child: Container(
-            padding: const EdgeInsets.all(AdminProductsTheme.spacingXl),
+            padding: const EdgeInsets.all(CarsAdminTheme.spacingXl),
             constraints: const BoxConstraints(maxWidth: 380),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Header
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -241,21 +258,25 @@ class ProductActionButtons extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: AdminProductsTheme.primaryLight,
+                            color: CarsAdminTheme.accentLight,
                             borderRadius: BorderRadius.circular(
-                              AdminProductsTheme.radiusSm,
+                              CarsAdminTheme.radiusSm,
                             ),
                           ),
                           child: const Icon(
                             Icons.qr_code_2_rounded,
                             size: 20,
-                            color: AdminProductsTheme.primary,
+                            color: CarsAdminTheme.accent,
                           ),
                         ),
                         const SizedBox(width: 12),
                         const Text(
                           'Inventory QR Code',
-                          style: AdminProductsTheme.headingMedium,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: CarsAdminTheme.textPrimary,
+                          ),
                         ),
                       ],
                     ),
@@ -264,37 +285,37 @@ class ProductActionButtons extends StatelessWidget {
                       child: InkWell(
                         onTap: () => Navigator.of(context).pop(),
                         borderRadius: BorderRadius.circular(
-                          AdminProductsTheme.radiusSm,
+                          CarsAdminTheme.radiusSm,
                         ),
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           child: const Icon(
                             Icons.close_rounded,
                             size: 20,
-                            color: AdminProductsTheme.textSecondary,
+                            color: CarsAdminTheme.textSecondary,
                           ),
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: AdminProductsTheme.spacingXl),
-
-                // Product info
+                const SizedBox(height: CarsAdminTheme.spacingXl),
                 Container(
-                  padding: const EdgeInsets.all(AdminProductsTheme.spacingMd),
+                  padding: const EdgeInsets.all(CarsAdminTheme.spacingMd),
                   decoration: BoxDecoration(
-                    color: AdminProductsTheme.surfaceSecondary,
+                    color: CarsAdminTheme.surfaceSecondary,
                     borderRadius: BorderRadius.circular(
-                      AdminProductsTheme.radiusMd,
+                      CarsAdminTheme.radiusMd,
                     ),
                   ),
                   child: Column(
                     children: [
                       Text(
                         productName,
-                        style: AdminProductsTheme.bodyLarge.copyWith(
+                        style: const TextStyle(
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
+                          color: CarsAdminTheme.textPrimary,
                         ),
                         textAlign: TextAlign.center,
                         maxLines: 2,
@@ -303,22 +324,23 @@ class ProductActionButtons extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         'SKU: $productSku',
-                        style: AdminProductsTheme.bodySmall,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: CarsAdminTheme.textSecondary,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: AdminProductsTheme.spacingXl),
-
-                // QR Code
+                const SizedBox(height: CarsAdminTheme.spacingXl),
                 Container(
-                  padding: const EdgeInsets.all(AdminProductsTheme.spacingLg),
+                  padding: const EdgeInsets.all(CarsAdminTheme.spacingLg),
                   decoration: BoxDecoration(
-                    color: AdminProductsTheme.surface,
+                    color: CarsAdminTheme.surface,
                     borderRadius: BorderRadius.circular(
-                      AdminProductsTheme.radiusMd,
+                      CarsAdminTheme.radiusMd,
                     ),
-                    border: Border.all(color: AdminProductsTheme.border),
+                    border: Border.all(color: CarsAdminTheme.border),
                   ),
                   child: QrImageView(
                     data: productId,
@@ -326,33 +348,33 @@ class ProductActionButtons extends StatelessWidget {
                     size: 180.0,
                     eyeStyle: const QrEyeStyle(
                       eyeShape: QrEyeShape.square,
-                      color: AdminProductsTheme.textPrimary,
+                      color: CarsAdminTheme.textPrimary,
                     ),
                     dataModuleStyle: const QrDataModuleStyle(
                       dataModuleShape: QrDataModuleShape.square,
-                      color: AdminProductsTheme.textPrimary,
+                      color: CarsAdminTheme.textPrimary,
                     ),
                   ),
                 ),
-                const SizedBox(height: AdminProductsTheme.spacingXl),
-
-                // Actions
+                const SizedBox(height: CarsAdminTheme.spacingXl),
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => Navigator.of(context).pop(),
-                        style: AdminProductsTheme.outlineButtonStyle,
                         child: const Text('Close'),
                       ),
                     ),
-                    const SizedBox(width: AdminProductsTheme.spacingMd),
+                    const SizedBox(width: CarsAdminTheme.spacingMd),
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: _printQRCode,
                         icon: const Icon(Icons.print_rounded, size: 18),
                         label: const Text('Print'),
-                        style: AdminProductsTheme.primaryButtonStyle,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: CarsAdminTheme.accent,
+                          foregroundColor: Colors.white,
+                        ),
                       ),
                     ),
                   ],
@@ -370,10 +392,11 @@ class ProductActionButtons extends StatelessWidget {
       context: context,
       title: 'Product Status',
       message: isActive
-          ? 'Do you want to make this product inactive?'
-          : 'Do you want to make this product active?',
+          ? 'Do you want to make this car inactive?'
+          : 'Do you want to make this car active?',
       confirmLabel: isActive ? 'Make Inactive' : 'Make Active',
-      confirmColor: isActive ? AdminProductsTheme.warning : AdminProductsTheme.success,
+      confirmColor:
+          isActive ? CarsAdminTheme.warning : CarsAdminTheme.success,
       icon: isActive ? Icons.visibility_off_rounded : Icons.visibility_rounded,
       onConfirm: () {
         Navigator.of(context).pop();
@@ -387,10 +410,10 @@ class ProductActionButtons extends StatelessWidget {
       context: context,
       title: 'Featured Product',
       message: isFeatured
-          ? 'Do you want to remove this product from featured?'
-          : 'Do you want to make this product featured?',
+          ? 'Do you want to remove this car from featured?'
+          : 'Do you want to make this car featured?',
       confirmLabel: isFeatured ? 'Remove Featured' : 'Make Featured',
-      confirmColor: AdminProductsTheme.featured,
+      confirmColor: CarsAdminTheme.primary,
       icon: Icons.star_rounded,
       onConfirm: () {
         Navigator.of(context).pop();
@@ -404,10 +427,10 @@ class ProductActionButtons extends StatelessWidget {
       context: context,
       title: 'Deal Product',
       message: isDeal
-          ? 'Do you want to remove this product from deals?'
-          : 'Do you want to add this product to deals?',
+          ? 'Do you want to remove this car from deals?'
+          : 'Do you want to add this car to deals?',
       confirmLabel: isDeal ? 'Remove from Deal' : 'Add to Deal',
-      confirmColor: AdminProductsTheme.deal,
+      confirmColor: CarsAdminTheme.error,
       icon: Icons.local_offer_rounded,
       onConfirm: () {
         Navigator.of(context).pop();
@@ -421,8 +444,8 @@ class ProductActionButtons extends StatelessWidget {
       context: context,
       title: 'Inventory Status',
       message: hasInventory
-          ? 'Do you want to unassign inventory from this product?'
-          : 'Do you want to mark this product as inventory assigned?',
+          ? 'Do you want to unassign inventory from this car?'
+          : 'Do you want to mark this car as inventory assigned?',
       confirmLabel: hasInventory ? 'Unassign Inventory' : 'Assign Inventory',
       confirmColor: const Color(0xFF8B5CF6),
       icon: Icons.inventory_2_rounded,
@@ -438,8 +461,8 @@ class ProductActionButtons extends StatelessWidget {
       context: context,
       title: 'Pin Sale',
       message: isPinnedSale
-          ? 'Do you want to unpin this product from sale?'
-          : 'Do you want to pin this product to sale?',
+          ? 'Do you want to unpin this car from sale?'
+          : 'Do you want to pin this car to sale?',
       confirmLabel: isPinnedSale ? 'Unpin Sale' : 'Pin Sale',
       confirmColor: const Color(0xFFEC4899),
       icon: Icons.push_pin_rounded,
@@ -455,14 +478,31 @@ class ProductActionButtons extends StatelessWidget {
       context: context,
       title: 'Product Visibility',
       message: isPrivate
-          ? 'Do you want to make this product public?'
-          : 'Do you want to make this product private?',
+          ? 'Do you want to make this car public?'
+          : 'Do you want to make this car private?',
       confirmLabel: isPrivate ? 'Make Public' : 'Make Private',
       confirmColor: const Color(0xFF6366F1),
       icon: isPrivate ? Icons.lock_open_rounded : Icons.lock_rounded,
       onConfirm: () {
         Navigator.of(context).pop();
         onPrivateChanged?.call();
+      },
+    );
+  }
+
+  void _showSoldDialog(BuildContext context) {
+    _showConfirmationDialog(
+      context: context,
+      title: 'Sold Status',
+      message: isSold
+          ? 'Mark as unsold?'
+          : 'Mark as sold?',
+      confirmLabel: isSold ? 'Mark Unsold' : 'Mark Sold',
+      confirmColor: const Color(0xFFD97706),
+      icon: isSold ? Icons.sell_outlined : Icons.sell_rounded,
+      onConfirm: () {
+        Navigator.of(context).pop();
+        onSoldChanged?.call();
       },
     );
   }
@@ -481,15 +521,14 @@ class ProductActionButtons extends StatelessWidget {
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AdminProductsTheme.radiusLg),
+            borderRadius: BorderRadius.circular(CarsAdminTheme.radiusLg),
           ),
           child: Container(
-            padding: const EdgeInsets.all(AdminProductsTheme.spacingXl),
+            padding: const EdgeInsets.all(CarsAdminTheme.spacingXl),
             constraints: const BoxConstraints(maxWidth: 400),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Icon
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -498,34 +537,34 @@ class ProductActionButtons extends StatelessWidget {
                   ),
                   child: Icon(icon, size: 32, color: confirmColor),
                 ),
-                const SizedBox(height: AdminProductsTheme.spacingLg),
-
-                // Title
+                const SizedBox(height: CarsAdminTheme.spacingLg),
                 Text(
                   title,
-                  style: AdminProductsTheme.headingMedium,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: CarsAdminTheme.textPrimary,
+                  ),
                 ),
-                const SizedBox(height: AdminProductsTheme.spacingSm),
-
-                // Message
+                const SizedBox(height: CarsAdminTheme.spacingSm),
                 Text(
                   message,
-                  style: AdminProductsTheme.bodyMedium,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: CarsAdminTheme.textSecondary,
+                  ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: AdminProductsTheme.spacingXl),
-
-                // Actions
+                const SizedBox(height: CarsAdminTheme.spacingXl),
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => Navigator.of(context).pop(),
-                        style: AdminProductsTheme.outlineButtonStyle,
                         child: const Text('Cancel'),
                       ),
                     ),
-                    const SizedBox(width: AdminProductsTheme.spacingMd),
+                    const SizedBox(width: CarsAdminTheme.spacingMd),
                     Expanded(
                       child: ElevatedButton(
                         onPressed: onConfirm,
@@ -534,12 +573,12 @@ class ProductActionButtons extends StatelessWidget {
                           foregroundColor: Colors.white,
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(
-                            horizontal: AdminProductsTheme.spacingLg,
-                            vertical: AdminProductsTheme.spacingMd,
+                            horizontal: CarsAdminTheme.spacingLg,
+                            vertical: CarsAdminTheme.spacingMd,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(
-                              AdminProductsTheme.radiusMd,
+                              CarsAdminTheme.radiusMd,
                             ),
                           ),
                         ),
@@ -574,55 +613,54 @@ class ProductActionButtons extends StatelessWidget {
     Get.dialog(
       Dialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AdminProductsTheme.radiusLg),
+          borderRadius: BorderRadius.circular(CarsAdminTheme.radiusLg),
         ),
         child: Container(
-          padding: const EdgeInsets.all(AdminProductsTheme.spacingXl),
+          padding: const EdgeInsets.all(CarsAdminTheme.spacingXl),
           constraints: const BoxConstraints(maxWidth: 400),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Warning Icon
               Container(
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AdminProductsTheme.errorLight,
+                decoration: const BoxDecoration(
+                  color: CarsAdminTheme.errorLight,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.warning_amber_rounded,
                   size: 32,
-                  color: AdminProductsTheme.error,
+                  color: CarsAdminTheme.error,
                 ),
               ),
-              const SizedBox(height: AdminProductsTheme.spacingLg),
-
-              // Title
+              const SizedBox(height: CarsAdminTheme.spacingLg),
               const Text(
-                'Delete Product',
-                style: AdminProductsTheme.headingMedium,
+                'Delete Car',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: CarsAdminTheme.textPrimary,
+                ),
               ),
-              const SizedBox(height: AdminProductsTheme.spacingSm),
-
-              // Message
+              const SizedBox(height: CarsAdminTheme.spacingSm),
               Text(
                 'Are you sure you want to delete "$productName"? This action cannot be undone.',
-                style: AdminProductsTheme.bodyMedium,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: CarsAdminTheme.textSecondary,
+                ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: AdminProductsTheme.spacingXl),
-
-              // Actions
+              const SizedBox(height: CarsAdminTheme.spacingXl),
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => Get.back(),
-                      style: AdminProductsTheme.outlineButtonStyle,
                       child: const Text('Cancel'),
                     ),
                   ),
-                  const SizedBox(width: AdminProductsTheme.spacingMd),
+                  const SizedBox(width: CarsAdminTheme.spacingMd),
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () {
@@ -632,16 +670,16 @@ class ProductActionButtons extends StatelessWidget {
                       icon: const Icon(Icons.delete_outline_rounded, size: 18),
                       label: const Text('Delete'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AdminProductsTheme.error,
+                        backgroundColor: CarsAdminTheme.error,
                         foregroundColor: Colors.white,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(
-                          horizontal: AdminProductsTheme.spacingLg,
-                          vertical: AdminProductsTheme.spacingMd,
+                          horizontal: CarsAdminTheme.spacingLg,
+                          vertical: CarsAdminTheme.spacingMd,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(
-                            AdminProductsTheme.radiusMd,
+                            CarsAdminTheme.radiusMd,
                           ),
                         ),
                       ),
@@ -661,11 +699,11 @@ class ProductActionButtons extends StatelessWidget {
       'Print QR Code',
       'QR Code sent to printer',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: AdminProductsTheme.success,
+      backgroundColor: CarsAdminTheme.success,
       colorText: Colors.white,
       duration: const Duration(seconds: 3),
       margin: const EdgeInsets.all(16),
-      borderRadius: AdminProductsTheme.radiusMd,
+      borderRadius: CarsAdminTheme.radiusMd,
       icon: const Icon(Icons.print_rounded, color: Colors.white),
     );
   }

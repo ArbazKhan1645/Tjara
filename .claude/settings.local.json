@@ -5,7 +5,8 @@
       "Bash(dart run:*)",
       "Bash(flutter analyze:*)",
       "Bash(dir /b \"c:\\\\Users\\\\dell\\\\Documents\\\\GitHub\\\\TJARA-new\\\\lib\\\\app\\\\modules\\\\web_settings\")",
-      "Bash(dart analyze:*)"
+      "Bash(dart analyze:*)",
+      "Bash(find:*)"
     ],
     "additionalDirectories": [
       "c:\\Users\\dell\\Documents\\GitHub\\TJARA-new\\lib\\app\\modules\\web_settings"

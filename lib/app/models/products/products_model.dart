@@ -281,6 +281,7 @@ class DatumMeta {
   final String? shipping_time_from;
   final String? shipping_time_unit;
   final String? shipping_method;
+  final String? auctionScheduleType;
 
   DatumMeta({
     this.productId,
@@ -297,6 +298,7 @@ class DatumMeta {
     this.shipping_time_from,
     this.shipping_time_unit,
     this.shipping_method,
+    this.auctionScheduleType,
   });
 
   factory DatumMeta.fromJson(Map<String, dynamic>? json) {
@@ -322,6 +324,7 @@ class DatumMeta {
       shipping_time_from: json?['shipping_time_from']?.toString(),
       shipping_time_unit: json?['shipping_time_unit']?.toString(),
       shipping_method: json?['shipping_method']?.toString(),
+      auctionScheduleType: json?['auction_schedule_type']?.toString(),
     );
   }
 
@@ -342,6 +345,7 @@ class DatumMeta {
     'shipping_time_from': shipping_time_from,
     'shipping_time_unit': shipping_time_unit,
     'shipping_method': shipping_method,
+    'auction_schedule_type': auctionScheduleType,
   };
 }
 

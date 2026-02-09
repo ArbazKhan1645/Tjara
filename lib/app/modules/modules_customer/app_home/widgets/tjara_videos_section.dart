@@ -23,10 +23,11 @@ class _TjaraVideosSectionState extends State<TjaraVideosSection> {
     return Padding(
       padding: const EdgeInsets.only(left: 12, right: 12, top: 10),
       child: GestureDetector(
-        onTap: () => Get.toNamed(
-          Routes.TJARA_VIDEOS,
-          arguments: TjaraVideosService.preloadedVideos,
-        ),
+        onTap:
+            () => Get.toNamed(
+              Routes.TJARA_VIDEOS,
+              arguments: TjaraVideosService.preloadedVideos,
+            ),
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.all(14),
@@ -127,12 +128,6 @@ class _TjaraVideosSectionState extends State<TjaraVideosSection> {
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    color: Colors.white54,
-                    size: 16,
                   ),
                 ],
               ),

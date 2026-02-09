@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:tjara/app/modules/modules_admin/admin/auction_admin/widgets/products_list_widget.dart';
 import 'package:tjara/app/modules/modules_admin/admin/auction_admin/widgets/products_view_widget.dart';
 import 'package:tjara/app/modules/modules_admin/admin/products_admin/controllers/ut.dart';
 import 'package:tjara/app/services/dashbopard_services/admin_auction_service.dart';
@@ -19,9 +20,8 @@ class AuctionAdminController extends GetxController {
 
   Future<void> _initializeService() async {
     try {
-      loadingManager.startLoading('Initializing products...');
-      _productsService = Get.put(AdminAuctionService());
-      await _productsService.init();
+      loadingManager.startLoading('Initializing auctions...');
+      _productsService = Get.find<AdminAuctionService>();
       loadingManager.stopLoading();
     } catch (error, stackTrace) {
       loadingManager.stopLoading();
@@ -175,11 +175,29 @@ class AdminAuctionPage extends StatelessWidget {
       init: AuctionAdminController(),
       builder: (controller) {
         return Scaffold(
-          body: controller.loadingManager.buildLoadingOverlay(
-            child: EnhancedAuctionViewWidget(
-              isAppBarExpanded: true, // Manage this with scroll controller
-              adminAuctionService: controller.auctionService,
-            ),
+          body: Stack(
+            children: [
+              controller.loadingManager.buildLoadingOverlay(
+                child: EnhancedAuctionViewWidget(
+                  isAppBarExpanded: true,
+                  adminAuctionService: controller.auctionService,
+                ),
+              ),
+              // Floating bulk action bar - fixed at screen bottom
+              Obx(() {
+                if (controller.auctionService.selectedProductIds.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+                return Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: AuctionBulkActionBar(
+                    adminAuctionService: controller.auctionService,
+                  ),
+                );
+              }),
+            ],
           ),
         );
       },

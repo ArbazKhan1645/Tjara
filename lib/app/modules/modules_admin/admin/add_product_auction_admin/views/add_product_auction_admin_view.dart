@@ -241,17 +241,20 @@ class _AuctionActionButtonsState extends State<_AuctionActionButtons> {
     if (ctrl.priceController.text.trim().isEmpty) {
       return 'Auction price is required';
     }
-    if (ctrl.selectedEndTime.value == null) {
-      return 'Auction end time is required';
-    }
-    if (ctrl.selectedStartTime.value == null) {
-      return 'Auction start time is required';
-    }
-    if (ctrl.selectedEndTime.value!.isBefore(ctrl.selectedStartTime.value!)) {
-      return 'Auction end time must be after start time';
-    }
-    if (ctrl.selectedEndTime.value!.isBefore(DateTime.now())) {
-      return 'Auction end time must be in the future';
+    // Only validate times when schedule type is 'now'
+    if (ctrl.auctionScheduleType.value == 'now') {
+      if (ctrl.selectedEndTime.value == null) {
+        return 'Auction end time is required';
+      }
+      if (ctrl.selectedStartTime.value == null) {
+        return 'Auction start time is required';
+      }
+      if (ctrl.selectedEndTime.value!.isBefore(ctrl.selectedStartTime.value!)) {
+        return 'Auction end time must be after start time';
+      }
+      if (ctrl.selectedEndTime.value!.isBefore(DateTime.now())) {
+        return 'Auction end time must be in the future';
+      }
     }
     if (ctrl.bidsIncrementBy.text.isEmpty) {
       return 'Bids increment by is required';

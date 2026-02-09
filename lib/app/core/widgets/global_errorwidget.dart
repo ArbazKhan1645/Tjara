@@ -110,22 +110,22 @@ class GlobalErrorWidget extends StatelessWidget {
               const SizedBox(height: 16),
 
               // Report Issue Button (optional secondary action)
-              TextButton(
-                onPressed: () {
-                  // Optional: Add report functionality
-                },
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.grey.shade600,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                ),
-                child: const Text(
-                  "Report Issue",
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                ),
-              ),
+              // TextButton(
+              //   onPressed: () {
+              //     // Optional: Add report functionality
+              //   },
+              //   style: TextButton.styleFrom(
+              //     foregroundColor: Colors.grey.shade600,
+              //     padding: const EdgeInsets.symmetric(
+              //       horizontal: 24,
+              //       vertical: 12,
+              //     ),
+              //   ),
+              //   child: const Text(
+              //     "Report Issue",
+              //     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              //   ),
+              // ),
             ],
           ),
         ),

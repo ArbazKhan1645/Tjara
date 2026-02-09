@@ -23,6 +23,7 @@ class AuctionAddProductAdminController extends GetxController {
   TextEditingController selectedStartTimeController = TextEditingController();
   TextEditingController selectedEndTimeController = TextEditingController();
   RxString timeError = RxString('');
+  RxString auctionScheduleType = 'now'.obs; // 'now' or 'future'
 
   // Add these methods to your controller class
   Future<void> selectStartTime(BuildContext context) async {
@@ -252,14 +253,20 @@ class AuctionAddProductAdminController extends GetxController {
       shiPPingNoticeController.text = editProduct?.meta?.productNotice ?? '';
       upcNameController.text = editProduct?.meta?.upcCode ?? '';
 
-      selectedStartTime.value =
-          DateTime.tryParse(editProduct?.auctionStartTime ?? '--') ??
-          DateTime.now();
-      selectedEndTime.value =
-          DateTime.tryParse(editProduct?.auctionEndTime ?? '--') ??
-          DateTime.now();
-      selectedEndTimeController.text = editProduct?.auctionEndTime ?? '-';
-      selectedStartTimeController.text = editProduct?.auctionStartTime ?? '-';
+      // Check if auction is scheduled for future
+      if (editProduct?.meta?.auctionScheduleType == 'future') {
+        auctionScheduleType.value = 'future';
+      } else {
+        auctionScheduleType.value = 'now';
+        selectedStartTime.value =
+            DateTime.tryParse(editProduct?.auctionStartTime ?? '--') ??
+            DateTime.now();
+        selectedEndTime.value =
+            DateTime.tryParse(editProduct?.auctionEndTime ?? '--') ??
+            DateTime.now();
+        selectedEndTimeController.text = editProduct?.auctionEndTime ?? '-';
+        selectedStartTimeController.text = editProduct?.auctionStartTime ?? '-';
+      }
 
       // Populate shipping info
       shippingTimeFrom.value = editProduct?.meta?.shippingTimeFrom ?? '3';
@@ -788,10 +795,14 @@ class AuctionAddProductAdminController extends GetxController {
 
       request.fields['reserved_price'] = (salePrice ?? 0).toString();
 
-      request.fields['auction_start_time'] =
-          auctionStartTime!.toIso8601String();
-
-      request.fields['auction_end_time'] = auctionEndTime!.toIso8601String();
+      // Schedule type: 'now' passes times, 'future' passes meta instead
+      if (auctionScheduleType.value == 'future') {
+        request.fields['meta[][auction_schedule_type]'] = 'future';
+      } else {
+        request.fields['auction_start_time'] =
+            auctionStartTime!.toIso8601String();
+        request.fields['auction_end_time'] = auctionEndTime!.toIso8601String();
+      }
 
       if ((galleryIds ?? []).isNotEmpty) {
         request.fields['gallery_ids'] = jsonEncode(galleryIds);
@@ -929,12 +940,17 @@ class AuctionAddProductAdminController extends GetxController {
         requestBody['reserved_price'] = salePrice.toString();
       }
 
-      if (auctionStartTime != null) {
-        requestBody['auction_start_time'] = auctionStartTime.toIso8601String();
-      }
-
-      if (auctionEndTime != null) {
-        requestBody['auction_end_time'] = auctionEndTime.toIso8601String();
+      // Schedule type: 'now' passes times, 'future' passes meta instead
+      if (auctionScheduleType.value == 'future') {
+        // Don't pass auction_start_time / auction_end_time keys at all
+      } else {
+        if (auctionStartTime != null) {
+          requestBody['auction_start_time'] =
+              auctionStartTime.toIso8601String();
+        }
+        if (auctionEndTime != null) {
+          requestBody['auction_end_time'] = auctionEndTime.toIso8601String();
+        }
       }
 
       // Add meta data as array of objects (matches expected format)
@@ -953,6 +969,11 @@ class AuctionAddProductAdminController extends GetxController {
         'bid_increment_by':
             bidsIncrementBy.text.isEmpty ? '0' : bidsIncrementBy.text,
       });
+
+      // Add schedule type meta if future
+      if (auctionScheduleType.value == 'future') {
+        metaArray.add({'auction_schedule_type': 'future'});
+      }
 
       // Add any additional meta data passed as parameter
       if (meta != null) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/modules/modules_admin/admin/products_admin/controllers/ut.dart';
+import 'package:tjara/app/modules/modules_admin/admin/products_admin/widgets/products_list_widget.dart';
 import 'package:tjara/app/modules/modules_admin/admin/products_admin/widgets/products_view_widget.dart';
 import 'package:tjara/app/services/dashbopard_services/admin_products_service.dart';
 
@@ -18,8 +19,7 @@ class AdminProductsController extends GetxController with ErrorHandlingMixin {
   Future<void> _initializeService() async {
     try {
       loadingManager.startLoading('Initializing products...');
-      _productsService = Get.put(AdminProductsService());
-      await _productsService.init();
+      _productsService = Get.find<AdminProductsService>();
       loadingManager.stopLoading();
     } catch (error, stackTrace) {
       loadingManager.stopLoading();
@@ -87,11 +87,29 @@ class AdminProductsPage extends StatelessWidget {
       init: AdminProductsController(),
       builder: (controller) {
         return Scaffold(
-          body: controller.loadingManager.buildLoadingOverlay(
-            child: EnhancedProductsViewWidget(
-              isAppBarExpanded: true, // Manage this with scroll controller
-              adminProductsService: controller.productsService,
-            ),
+          body: Stack(
+            children: [
+              controller.loadingManager.buildLoadingOverlay(
+                child: EnhancedProductsViewWidget(
+                  isAppBarExpanded: true,
+                  adminProductsService: controller.productsService,
+                ),
+              ),
+              // Floating bulk action bar - fixed at screen bottom
+              Obx(() {
+                if (controller.productsService.selectedProductIds.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+                return Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: BulkActionBar(
+                    adminProductsService: controller.productsService,
+                  ),
+                );
+              }),
+            ],
           ),
         );
       },

@@ -189,28 +189,72 @@ class _TimingSection extends StatelessWidget {
         _buildSectionHeader(),
         const SizedBox(height: AuctionAdminTheme.spacingLg),
 
-        // Start Time
-        _TimePickerField(
-          label: 'Start Time',
-          description: 'When the auction will begin accepting bids',
-          icon: Icons.play_circle_outline_rounded,
-          controller: controller.selectedStartTimeController,
-          onTap: () => controller.selectStartTime(context),
-          isRequired: true,
-          accentColor: AuctionAdminTheme.success,
-        ),
+        // Schedule Type Selector
+        _ScheduleTypeSelector(controller: controller),
         const SizedBox(height: AuctionAdminTheme.spacingLg),
 
-        // End Time
-        _TimePickerField(
-          label: 'End Time',
-          description: 'When the auction will close',
-          icon: Icons.stop_circle_outlined,
-          controller: controller.selectedEndTimeController,
-          onTap: () => controller.selectEndTime(context),
-          isRequired: true,
-          accentColor: AuctionAdminTheme.error,
-        ),
+        // Time pickers only visible when "Schedule Now" is selected
+        Obx(() {
+          if (controller.auctionScheduleType.value == 'future') {
+            return Container(
+              padding: const EdgeInsets.all(AuctionAdminTheme.spacingLg),
+              decoration: BoxDecoration(
+                color: AuctionAdminTheme.accentLight,
+                borderRadius:
+                    BorderRadius.circular(AuctionAdminTheme.radiusMd),
+                border: Border.all(
+                  color: AuctionAdminTheme.accent.withValues(alpha: 0.3),
+                ),
+              ),
+              child: const Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: 18,
+                    color: AuctionAdminTheme.accent,
+                  ),
+                  SizedBox(width: AuctionAdminTheme.spacingSm),
+                  Expanded(
+                    child: Text(
+                      'Auction will be scheduled for future. Start and end times will be set later.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AuctionAdminTheme.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return Column(
+            children: [
+              // Start Time
+              _TimePickerField(
+                label: 'Start Time',
+                description: 'When the auction will begin accepting bids',
+                icon: Icons.play_circle_outline_rounded,
+                controller: controller.selectedStartTimeController,
+                onTap: () => controller.selectStartTime(context),
+                isRequired: true,
+                accentColor: AuctionAdminTheme.success,
+              ),
+              const SizedBox(height: AuctionAdminTheme.spacingLg),
+
+              // End Time
+              _TimePickerField(
+                label: 'End Time',
+                description: 'When the auction will close',
+                icon: Icons.stop_circle_outlined,
+                controller: controller.selectedEndTimeController,
+                onTap: () => controller.selectEndTime(context),
+                isRequired: true,
+                accentColor: AuctionAdminTheme.error,
+              ),
+            ],
+          );
+        }),
       ],
     );
   }
@@ -248,6 +292,134 @@ class _TimingSection extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Schedule Type Selector Widget
+class _ScheduleTypeSelector extends StatelessWidget {
+  final AuctionAddProductAdminController controller;
+
+  const _ScheduleTypeSelector({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const FieldLabel(
+          label: 'Schedule Type',
+          description: 'Choose when to start the auction',
+        ),
+        const SizedBox(height: AuctionAdminTheme.spacingSm),
+        Obx(() {
+          final isNow = controller.auctionScheduleType.value == 'now';
+          return Row(
+            children: [
+              Expanded(
+                child: _buildOption(
+                  label: 'Schedule Now',
+                  icon: Icons.play_arrow_rounded,
+                  description: 'Set start & end time now',
+                  isSelected: isNow,
+                  onTap: () {
+                    controller.auctionScheduleType.value = 'now';
+                  },
+                ),
+              ),
+              const SizedBox(width: AuctionAdminTheme.spacingMd),
+              Expanded(
+                child: _buildOption(
+                  label: 'Schedule Later',
+                  icon: Icons.schedule_rounded,
+                  description: 'Set timing later',
+                  isSelected: !isNow,
+                  onTap: () {
+                    controller.auctionScheduleType.value = 'future';
+                    controller.selectedStartTime.value = null;
+                    controller.selectedEndTime.value = null;
+                    controller.selectedStartTimeController.clear();
+                    controller.selectedEndTimeController.clear();
+                  },
+                ),
+              ),
+            ],
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildOption({
+    required String label,
+    required IconData icon,
+    required String description,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(AuctionAdminTheme.spacingMd),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AuctionAdminTheme.accentLight
+                : AuctionAdminTheme.surfaceSecondary,
+            borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
+            border: Border.all(
+              color: isSelected
+                  ? AuctionAdminTheme.accent
+                  : AuctionAdminTheme.border,
+              width: isSelected ? 1.5 : 1,
+            ),
+          ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(AuctionAdminTheme.spacingSm),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AuctionAdminTheme.accent.withValues(alpha: 0.1)
+                      : AuctionAdminTheme.surface,
+                  borderRadius:
+                      BorderRadius.circular(AuctionAdminTheme.radiusSm),
+                ),
+                child: Icon(
+                  icon,
+                  size: 22,
+                  color: isSelected
+                      ? AuctionAdminTheme.accent
+                      : AuctionAdminTheme.textTertiary,
+                ),
+              ),
+              const SizedBox(height: AuctionAdminTheme.spacingSm),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color: isSelected
+                      ? AuctionAdminTheme.accent
+                      : AuctionAdminTheme.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                description,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AuctionAdminTheme.textTertiary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

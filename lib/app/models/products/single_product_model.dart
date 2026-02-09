@@ -1596,6 +1596,7 @@ class ProductMeta {
     this.shippingCompany,
     this.shippingTimeTo,
     this.shippingFees,
+    this.auctionScheduleType,
   });
 
   final String productId;
@@ -1618,6 +1619,7 @@ class ProductMeta {
   final String? shippingCompany;
   final String? shippingTimeTo;
   final String? shippingFees;
+  final String? auctionScheduleType;
 
   ProductMeta copyWith({
     String? productId,
@@ -1638,6 +1640,7 @@ class ProductMeta {
     String? shippingCompany,
     String? shippingTimeTo,
     String? shippingFees,
+    String? auctionScheduleType,
   }) {
     return ProductMeta(
       productId: productId ?? this.productId,
@@ -1658,6 +1661,7 @@ class ProductMeta {
       shippingCompany: shippingCompany ?? this.shippingCompany,
       shippingTimeTo: shippingTimeTo ?? this.shippingTimeTo,
       shippingFees: shippingFees ?? this.shippingFees,
+      auctionScheduleType: auctionScheduleType ?? this.auctionScheduleType,
     );
   }
 
@@ -1681,6 +1685,7 @@ class ProductMeta {
       shippingCompany: json["shipping_company"]?.toString(),
       shippingTimeTo: json["shipping_time_to"]?.toString(),
       shippingFees: json["shipping_fees"]?.toString(),
+      auctionScheduleType: json["auction_schedule_type"]?.toString(),
     );
   }
 
@@ -1703,6 +1708,7 @@ class ProductMeta {
     "shipping_company": shippingCompany,
     "shipping_time_to": shippingTimeTo,
     "shipping_fees": shippingFees,
+    "auction_schedule_type": auctionScheduleType,
   };
 
   @override

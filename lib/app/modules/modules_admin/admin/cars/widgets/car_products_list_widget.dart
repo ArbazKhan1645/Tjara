@@ -1,30 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tjara/app/modules/modules_admin/admin/products_admin/widgets/admin_products_theme.dart';
-import 'package:tjara/app/modules/modules_admin/admin/products_admin/widgets/order_item_widget.dart';
+import 'package:tjara/app/modules/modules_admin/admin/cars/widgets/car_order_item_widget.dart';
+import 'package:tjara/app/modules/modules_admin/admin/cars/widgets/cars_admin_theme.dart';
 import 'package:tjara/app/modules/modules_admin/admin/products_admin/widgets/service.dart';
 import 'package:tjara/app/modules/modules_admin/admin/products_admin/widgets/shimmer.dart';
-import 'package:tjara/app/services/dashbopard_services/admin_products_service.dart';
+import 'package:tjara/app/services/dashbopard_services/admin_cars_service.dart';
 
-class AdminProductsList extends StatelessWidget {
-  final AdminProductsService adminProductsService;
+class AdminCarsList extends StatelessWidget {
+  final AdminCarsService adminCarsService;
 
-  const AdminProductsList({super.key, required this.adminProductsService});
+  const AdminCarsList({super.key, required this.adminCarsService});
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
       return Padding(
         padding: EdgeInsets.only(
-          bottom: adminProductsService.selectedProductIds.isNotEmpty ? 140 : 80,
+          bottom: adminCarsService.selectedProductIds.isNotEmpty ? 140 : 80,
         ),
         child: Column(
           children: [
             _buildContent(context),
-            if (!adminProductsService.isLoading.value &&
-                adminProductsService.adminProducts.isNotEmpty)
+            if (!adminCarsService.isLoading.value &&
+                adminCarsService.adminProducts.isNotEmpty)
               _buildPagination(),
-            if (adminProductsService.isPaginationLoading.value)
+            if (adminCarsService.isPaginationLoading.value)
               _buildLoadMoreIndicator(),
           ],
         ),
@@ -33,23 +33,25 @@ class AdminProductsList extends StatelessWidget {
   }
 
   Widget _buildContent(BuildContext context) {
-    // Initial loading state
-    if (adminProductsService.isLoading.value &&
-        adminProductsService.adminProducts.isEmpty) {
+    // Initial loading state (check both isLoading and isRefreshing)
+    if ((adminCarsService.isLoading.value ||
+            adminCarsService.isRefreshing.value) &&
+        adminCarsService.adminProducts.isEmpty) {
       return const ProductsShimmerList(itemCount: 8);
     }
 
-    // Empty state
-    if (!adminProductsService.isLoading.value &&
-        adminProductsService.adminProducts.isEmpty) {
+    // Empty state (only when not loading AND not refreshing)
+    if (!adminCarsService.isLoading.value &&
+        !adminCarsService.isRefreshing.value &&
+        adminCarsService.adminProducts.isEmpty) {
       return _buildEmptyState();
     }
 
-    // Products list with smooth horizontal scrolling
+    // Cars list with smooth horizontal scrolling
     return RefreshIndicator(
-      onRefresh: adminProductsService.refreshProducts,
-      color: AdminProductsTheme.primary,
-      backgroundColor: AdminProductsTheme.surface,
+      onRefresh: adminCarsService.refreshProducts,
+      color: CarsAdminTheme.accent,
+      backgroundColor: CarsAdminTheme.surface,
       child: LayoutBuilder(
         builder: (context, constraints) {
           return Scrollbar(
@@ -64,20 +66,20 @@ class AdminProductsList extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildTableHeader(),
-                    const SizedBox(height: AdminProductsTheme.spacingSm),
-                    ...adminProductsService.adminProducts.map((product) {
+                    const SizedBox(height: CarsAdminTheme.spacingSm),
+                    ...adminCarsService.adminProducts.map((product) {
                       final productId = product.id ?? '';
                       return Padding(
                         padding: const EdgeInsets.only(
-                          bottom: AdminProductsTheme.spacingSm,
+                          bottom: CarsAdminTheme.spacingSm,
                         ),
                         child: Obx(
-                          () => ProductItemCard(
+                          () => CarOrderItemCard(
                             product: product,
-                            isSelected: adminProductsService.selectedProductIds
+                            isSelected: adminCarsService.selectedProductIds
                                 .contains(productId),
                             onSelectionChanged: (selected) {
-                              adminProductsService.toggleProductSelection(
+                              adminCarsService.toggleProductSelection(
                                 productId,
                               );
                             },
@@ -85,9 +87,9 @@ class AdminProductsList extends StatelessWidget {
                         ),
                       );
                     }),
-                    if (adminProductsService.isPaginationLoading.value)
+                    if (adminCarsService.isPaginationLoading.value)
                       const Padding(
-                        padding: EdgeInsets.all(AdminProductsTheme.spacingLg),
+                        padding: EdgeInsets.all(CarsAdminTheme.spacingLg),
                         child: ProductShimmerCard(),
                       ),
                   ],
@@ -103,10 +105,14 @@ class AdminProductsList extends StatelessWidget {
   Widget _buildTableHeader() {
     return Container(
       height: 48,
-      decoration: AdminProductsTheme.tableHeaderDecoration,
+      decoration: BoxDecoration(
+        color: CarsAdminTheme.surfaceSecondary,
+        borderRadius: BorderRadius.circular(CarsAdminTheme.radiusMd),
+        border: Border.all(color: CarsAdminTheme.border),
+      ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          horizontal: AdminProductsTheme.spacingLg,
+          horizontal: CarsAdminTheme.spacingLg,
         ),
         child: Row(
           children: [
@@ -115,9 +121,9 @@ class AdminProductsList extends StatelessWidget {
               width: 40,
               child: Obx(
                 () => Checkbox(
-                  value: adminProductsService.isAllSelected,
-                  onChanged: (_) => adminProductsService.toggleSelectAll(),
-                  activeColor: AdminProductsTheme.primary,
+                  value: adminCarsService.isAllSelected,
+                  onChanged: (_) => adminCarsService.toggleSelectAll(),
+                  activeColor: CarsAdminTheme.accent,
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   visualDensity: VisualDensity.compact,
                   tristate: false,
@@ -129,9 +135,11 @@ class AdminProductsList extends StatelessWidget {
             _buildHeaderCell('Product Name', 180),
             _buildHeaderCell('Shop', 150),
             _buildHeaderCell('Price', 100),
+            _buildHeaderCell('Sold', 135),
             _buildHeaderCell('Stock', 80),
             _buildHeaderCell('Published', 120),
             _buildHeaderCell('Status', 100),
+            _buildHeaderCell('Analytics', 200),
             _buildHeaderCell('Actions', 200),
           ],
         ),
@@ -143,15 +151,15 @@ class AdminProductsList extends StatelessWidget {
     return Container(
       width: width,
       padding: const EdgeInsets.symmetric(
-        horizontal: AdminProductsTheme.spacingSm,
+        horizontal: CarsAdminTheme.spacingSm,
       ),
       child: Text(
         title.toUpperCase(),
-        style: AdminProductsTheme.labelMedium.copyWith(
+        style: CarsAdminTheme.labelMedium.copyWith(
           fontSize: 11,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.5,
-          color: AdminProductsTheme.textSecondary,
+          color: CarsAdminTheme.textSecondary,
         ),
         overflow: TextOverflow.ellipsis,
       ),
@@ -160,51 +168,50 @@ class AdminProductsList extends StatelessWidget {
 
   Widget _buildEmptyState() {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AdminProductsTheme.spacing2Xl),
-      decoration: AdminProductsTheme.cardDecoration,
+      padding: const EdgeInsets.all(CarsAdminTheme.spacing2Xl),
+      decoration: CarsAdminTheme.cardDecoration,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(AdminProductsTheme.spacingXl),
+            padding: const EdgeInsets.all(CarsAdminTheme.spacingXl),
             decoration: const BoxDecoration(
-              color: AdminProductsTheme.primaryLight,
+              color: CarsAdminTheme.accentLight,
               shape: BoxShape.circle,
             ),
             child: const Icon(
-              Icons.inventory_2_outlined,
+              Icons.directions_car_outlined,
               size: 48,
-              color: AdminProductsTheme.primary,
+              color: CarsAdminTheme.accent,
             ),
           ),
-          const SizedBox(height: AdminProductsTheme.spacingXl),
+          const SizedBox(height: CarsAdminTheme.spacingXl),
           const Text(
-            'No Products Found',
-            style: AdminProductsTheme.headingMedium,
+            'No Cars Found',
+            style: CarsAdminTheme.headingMedium,
           ),
-          const SizedBox(height: AdminProductsTheme.spacingSm),
+          const SizedBox(height: CarsAdminTheme.spacingSm),
           Text(
             _getEmptyStateMessage(),
             textAlign: TextAlign.center,
-            style: AdminProductsTheme.bodyMedium,
+            style: CarsAdminTheme.bodyMedium,
           ),
-          const SizedBox(height: AdminProductsTheme.spacingXl),
+          const SizedBox(height: CarsAdminTheme.spacingXl),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               OutlinedButton.icon(
-                onPressed: () => adminProductsService.clearAllFilters(),
+                onPressed: () => adminCarsService.clearAllFilters(),
                 icon: const Icon(Icons.filter_alt_off_outlined, size: 18),
                 label: const Text('Clear Filters'),
-                style: AdminProductsTheme.outlineButtonStyle,
+                style: CarsAdminTheme.outlineButtonStyle,
               ),
-              const SizedBox(width: AdminProductsTheme.spacingMd),
+              const SizedBox(width: CarsAdminTheme.spacingMd),
               ElevatedButton.icon(
-                onPressed: () => adminProductsService.refreshProducts(),
+                onPressed: () => adminCarsService.refreshProducts(),
                 icon: const Icon(Icons.refresh, size: 18),
                 label: const Text('Refresh'),
-                style: AdminProductsTheme.primaryButtonStyle,
+                style: CarsAdminTheme.primaryButtonStyle,
               ),
             ],
           ),
@@ -214,60 +221,60 @@ class AdminProductsList extends StatelessWidget {
   }
 
   String _getEmptyStateMessage() {
-    final searchQuery = adminProductsService.searchQuery.value;
+    final searchQuery = adminCarsService.searchQuery.value;
     if (searchQuery.isNotEmpty) {
-      return 'No products found matching "$searchQuery".\nTry adjusting your search terms or filters.';
+      return 'No cars found matching "$searchQuery".\nTry adjusting your search terms or filters.';
     }
 
-    final selectedStatus = adminProductsService.selectedStatus.value;
-    final activeFilters = adminProductsService.activeFilters;
-    final startDate = adminProductsService.startDate.value;
+    final selectedStatus = adminCarsService.selectedStatus.value;
+    final activeFilters = adminCarsService.activeFilters;
+    final startDate = adminCarsService.startDate.value;
 
-    if (selectedStatus != ProductStatus.all ||
+    if (selectedStatus != CarProductStatus.all ||
         activeFilters.isNotEmpty ||
         startDate != null) {
-      return 'No products found with the current filters applied.\nTry removing some filters to see more results.';
+      return 'No cars found with the current filters applied.\nTry removing some filters to see more results.';
     }
 
-    return 'No products have been added yet.\nClick "Add New Product" to get started.';
+    return 'No cars have been added yet.\nClick "Add New Car" to get started.';
   }
 
   Widget _buildPagination() {
     return Obx(() {
-      final totalPages = adminProductsService.totalPages.value;
+      final totalPages = adminCarsService.totalPages.value;
       if (totalPages <= 1) {
         return const SizedBox.shrink();
       }
 
-      final currentPage = adminProductsService.currentPage.value;
+      final currentPage = adminCarsService.currentPage.value;
 
       return Container(
         margin: const EdgeInsets.symmetric(
-          vertical: AdminProductsTheme.spacingLg,
+          vertical: CarsAdminTheme.spacingLg,
         ),
-        padding: const EdgeInsets.all(AdminProductsTheme.spacingLg),
-        decoration: AdminProductsTheme.cardDecoration,
+        padding: const EdgeInsets.all(CarsAdminTheme.spacingLg),
+        decoration: CarsAdminTheme.cardDecoration,
         child: Column(
           children: [
             Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: AdminProductsTheme.spacingMd,
-                vertical: AdminProductsTheme.spacingXs,
+                horizontal: CarsAdminTheme.spacingMd,
+                vertical: CarsAdminTheme.spacingXs,
               ),
               decoration: BoxDecoration(
-                color: AdminProductsTheme.surfaceSecondary,
+                color: CarsAdminTheme.surfaceSecondary,
                 borderRadius: BorderRadius.circular(
-                  AdminProductsTheme.radiusSm,
+                  CarsAdminTheme.radiusSm,
                 ),
               ),
               child: Text(
                 'Page $currentPage of $totalPages',
-                style: AdminProductsTheme.bodySmall.copyWith(
+                style: CarsAdminTheme.bodySmall.copyWith(
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-            const SizedBox(height: AdminProductsTheme.spacingMd),
+            const SizedBox(height: CarsAdminTheme.spacingMd),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -275,23 +282,23 @@ class AdminProductsList extends StatelessWidget {
                   icon: Icons.chevron_left_rounded,
                   onPressed:
                       currentPage > 1
-                          ? adminProductsService.previousPage
+                          ? adminCarsService.previousPage
                           : null,
                   tooltip: 'Previous Page',
                 ),
-                const SizedBox(width: AdminProductsTheme.spacingSm),
-                ...adminProductsService.visiblePageNumbers().map(
+                const SizedBox(width: CarsAdminTheme.spacingSm),
+                ...adminCarsService.visiblePageNumbers().map(
                   (page) => Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 3),
                     child: _buildPageNumberButton(page, currentPage),
                   ),
                 ),
-                const SizedBox(width: AdminProductsTheme.spacingSm),
+                const SizedBox(width: CarsAdminTheme.spacingSm),
                 _buildPaginationButton(
                   icon: Icons.chevron_right_rounded,
                   onPressed:
                       currentPage < totalPages
-                          ? adminProductsService.nextPage
+                          ? adminCarsService.nextPage
                           : null,
                   tooltip: 'Next Page',
                 ),
@@ -300,7 +307,7 @@ class AdminProductsList extends StatelessWidget {
             if (totalPages > 10)
               Padding(
                 padding: const EdgeInsets.only(
-                  top: AdminProductsTheme.spacingMd,
+                  top: CarsAdminTheme.spacingMd,
                 ),
                 child: _buildJumpToPage(),
               ),
@@ -323,21 +330,21 @@ class AdminProductsList extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onPressed,
-          borderRadius: BorderRadius.circular(AdminProductsTheme.radiusSm),
+          borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 150),
-            padding: const EdgeInsets.all(AdminProductsTheme.spacingSm),
+            padding: const EdgeInsets.all(CarsAdminTheme.spacingSm),
             decoration: BoxDecoration(
               color:
                   isEnabled
-                      ? AdminProductsTheme.surfaceSecondary
+                      ? CarsAdminTheme.surfaceSecondary
                       : Colors.transparent,
-              borderRadius: BorderRadius.circular(AdminProductsTheme.radiusSm),
+              borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
               border: Border.all(
                 color:
                     isEnabled
-                        ? AdminProductsTheme.border
-                        : AdminProductsTheme.borderLight,
+                        ? CarsAdminTheme.border
+                        : CarsAdminTheme.borderLight,
               ),
             ),
             child: Icon(
@@ -345,8 +352,8 @@ class AdminProductsList extends StatelessWidget {
               size: 20,
               color:
                   isEnabled
-                      ? AdminProductsTheme.textPrimary
-                      : AdminProductsTheme.textTertiary,
+                      ? CarsAdminTheme.textPrimary
+                      : CarsAdminTheme.textTertiary,
             ),
           ),
         ),
@@ -360,8 +367,8 @@ class AdminProductsList extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => adminProductsService.goToPage(page),
-        borderRadius: BorderRadius.circular(AdminProductsTheme.radiusSm),
+        onTap: () => adminCarsService.goToPage(page),
+        borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           width: 36,
@@ -370,16 +377,16 @@ class AdminProductsList extends StatelessWidget {
           decoration: BoxDecoration(
             color:
                 isCurrentPage
-                    ? AdminProductsTheme.primary
-                    : AdminProductsTheme.surface,
-            borderRadius: BorderRadius.circular(AdminProductsTheme.radiusSm),
+                    ? CarsAdminTheme.accent
+                    : CarsAdminTheme.surface,
+            borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
             border: Border.all(
               color:
                   isCurrentPage
-                      ? AdminProductsTheme.primary
-                      : AdminProductsTheme.border,
+                      ? CarsAdminTheme.accent
+                      : CarsAdminTheme.border,
             ),
-            boxShadow: isCurrentPage ? AdminProductsTheme.shadowSm : null,
+            boxShadow: isCurrentPage ? CarsAdminTheme.shadowSm : null,
           ),
           child: Text(
             page.toString(),
@@ -388,8 +395,8 @@ class AdminProductsList extends StatelessWidget {
               fontWeight: isCurrentPage ? FontWeight.w600 : FontWeight.w400,
               color:
                   isCurrentPage
-                      ? AdminProductsTheme.textOnPrimary
-                      : AdminProductsTheme.textPrimary,
+                      ? CarsAdminTheme.textOnPrimary
+                      : CarsAdminTheme.textPrimary,
             ),
           ),
         ),
@@ -399,13 +406,13 @@ class AdminProductsList extends StatelessWidget {
 
   Widget _buildJumpToPage() {
     final TextEditingController controller = TextEditingController();
-    final totalPages = adminProductsService.totalPages.value;
+    final totalPages = adminCarsService.totalPages.value;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text('Go to page:', style: AdminProductsTheme.bodySmall),
-        const SizedBox(width: AdminProductsTheme.spacingSm),
+        const Text('Go to page:', style: CarsAdminTheme.bodySmall),
+        const SizedBox(width: CarsAdminTheme.spacingSm),
         SizedBox(
           width: 64,
           height: 36,
@@ -413,64 +420,64 @@ class AdminProductsList extends StatelessWidget {
             controller: controller,
             keyboardType: TextInputType.number,
             textAlign: TextAlign.center,
-            style: AdminProductsTheme.bodyMedium,
+            style: CarsAdminTheme.bodyMedium,
             decoration: InputDecoration(
               contentPadding: const EdgeInsets.symmetric(
-                horizontal: AdminProductsTheme.spacingSm,
-                vertical: AdminProductsTheme.spacingXs,
+                horizontal: CarsAdminTheme.spacingSm,
+                vertical: CarsAdminTheme.spacingXs,
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(
-                  AdminProductsTheme.radiusSm,
+                  CarsAdminTheme.radiusSm,
                 ),
-                borderSide: const BorderSide(color: AdminProductsTheme.border),
+                borderSide: const BorderSide(color: CarsAdminTheme.border),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(
-                  AdminProductsTheme.radiusSm,
+                  CarsAdminTheme.radiusSm,
                 ),
-                borderSide: const BorderSide(color: AdminProductsTheme.border),
+                borderSide: const BorderSide(color: CarsAdminTheme.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(
-                  AdminProductsTheme.radiusSm,
+                  CarsAdminTheme.radiusSm,
                 ),
-                borderSide: const BorderSide(color: AdminProductsTheme.primary),
+                borderSide: const BorderSide(color: CarsAdminTheme.accent),
               ),
             ),
             onSubmitted: (value) {
               final page = int.tryParse(value) ?? 0;
               if (page >= 1 && page <= totalPages) {
-                adminProductsService.goToPage(page);
+                adminCarsService.goToPage(page);
                 controller.clear();
               }
             },
           ),
         ),
-        const SizedBox(width: AdminProductsTheme.spacingXs),
+        const SizedBox(width: CarsAdminTheme.spacingXs),
         Material(
           color: Colors.transparent,
           child: InkWell(
             onTap: () {
               final page = int.tryParse(controller.text) ?? 0;
               if (page >= 1 && page <= totalPages) {
-                adminProductsService.goToPage(page);
+                adminCarsService.goToPage(page);
                 controller.clear();
               }
             },
-            borderRadius: BorderRadius.circular(AdminProductsTheme.radiusSm),
+            borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
             child: Container(
-              padding: const EdgeInsets.all(AdminProductsTheme.spacingSm),
+              padding: const EdgeInsets.all(CarsAdminTheme.spacingSm),
               decoration: BoxDecoration(
-                color: AdminProductsTheme.primary,
+                color: CarsAdminTheme.accent,
                 borderRadius: BorderRadius.circular(
-                  AdminProductsTheme.radiusSm,
+                  CarsAdminTheme.radiusSm,
                 ),
               ),
               child: const Icon(
                 Icons.arrow_forward_rounded,
                 size: 16,
-                color: AdminProductsTheme.textOnPrimary,
+                color: CarsAdminTheme.textOnPrimary,
               ),
             ),
           ),
@@ -481,7 +488,7 @@ class AdminProductsList extends StatelessWidget {
 
   Widget _buildLoadMoreIndicator() {
     return Container(
-      padding: const EdgeInsets.all(AdminProductsTheme.spacingLg),
+      padding: const EdgeInsets.all(CarsAdminTheme.spacingLg),
       child: const Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -490,37 +497,37 @@ class AdminProductsList extends StatelessWidget {
             height: 18,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              color: AdminProductsTheme.primary,
+              color: CarsAdminTheme.accent,
             ),
           ),
-          SizedBox(width: AdminProductsTheme.spacingMd),
-          Text('Loading more products...', style: AdminProductsTheme.bodySmall),
+          SizedBox(width: CarsAdminTheme.spacingMd),
+          Text('Loading more cars...', style: CarsAdminTheme.bodySmall),
         ],
       ),
     );
   }
 }
 
-/// Floating bulk action bar - use at Scaffold level for true floating effect
-class BulkActionBar extends StatelessWidget {
-  final AdminProductsService adminProductsService;
+/// Floating bulk action bar for cars admin - use at Scaffold level for true floating effect
+class CarsBulkActionBar extends StatelessWidget {
+  final AdminCarsService adminCarsService;
 
-  const BulkActionBar({super.key, required this.adminProductsService});
+  const CarsBulkActionBar({super.key, required this.adminCarsService});
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final selectedCount = adminProductsService.selectedProductIds.length;
-      final isRunning = adminProductsService.isBulkOperationRunning.value;
-      final progress = adminProductsService.bulkOperationProgress.value;
-      final total = adminProductsService.bulkOperationTotal.value;
+      final selectedCount = adminCarsService.selectedProductIds.length;
+      final isRunning = adminCarsService.isBulkOperationRunning.value;
+      final progress = adminCarsService.bulkOperationProgress.value;
+      final total = adminCarsService.bulkOperationTotal.value;
 
       return SafeArea(
         child: Container(
           margin: const EdgeInsets.all(8),
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: const Color(0xFF015c5d),
+            color: const Color(0xFF0D4F4F),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
@@ -570,7 +577,7 @@ class BulkActionBar extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: total > 0 ? progress / total : 0,
                   backgroundColor: Colors.white.withValues(alpha: 0.2),
-                  color: AdminProductsTheme.success,
+                  color: CarsAdminTheme.success,
                   minHeight: 4,
                 ),
               ),
@@ -591,7 +598,7 @@ class BulkActionBar extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: AdminProductsTheme.primary,
+                color: CarsAdminTheme.accent,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -607,7 +614,7 @@ class BulkActionBar extends StatelessWidget {
             Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: adminProductsService.clearSelection,
+                onTap: adminCarsService.clearSelection,
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
@@ -648,14 +655,14 @@ class BulkActionBar extends StatelessWidget {
               context: context,
               icon: Icons.visibility_rounded,
               label: 'Activate',
-              color: AdminProductsTheme.success,
+              color: CarsAdminTheme.success,
               onTap:
                   () => _showBulkConfirmation(
                     context: context,
-                    title: 'Activate Products',
-                    message: 'Make $selectedCount selected products active?',
+                    title: 'Activate Cars',
+                    message: 'Make $selectedCount selected cars active?',
                     confirmLabel: 'Activate All',
-                    confirmColor: AdminProductsTheme.success,
+                    confirmColor: CarsAdminTheme.success,
                     icon: Icons.visibility_rounded,
                     onConfirm: () => _executeBulkActive(true),
                   ),
@@ -664,14 +671,14 @@ class BulkActionBar extends StatelessWidget {
               context: context,
               icon: Icons.visibility_off_rounded,
               label: 'Deactivate',
-              color: AdminProductsTheme.warning,
+              color: CarsAdminTheme.warning,
               onTap:
                   () => _showBulkConfirmation(
                     context: context,
-                    title: 'Deactivate Products',
-                    message: 'Make $selectedCount selected products inactive?',
+                    title: 'Deactivate Cars',
+                    message: 'Make $selectedCount selected cars inactive?',
                     confirmLabel: 'Deactivate All',
-                    confirmColor: AdminProductsTheme.warning,
+                    confirmColor: CarsAdminTheme.warning,
                     icon: Icons.visibility_off_rounded,
                     onConfirm: () => _executeBulkActive(false),
                   ),
@@ -680,14 +687,14 @@ class BulkActionBar extends StatelessWidget {
               context: context,
               icon: Icons.star_rounded,
               label: 'Feature',
-              color: AdminProductsTheme.featured,
+              color: CarsAdminTheme.warning,
               onTap:
                   () => _showBulkConfirmation(
                     context: context,
-                    title: 'Feature Products',
-                    message: 'Make $selectedCount selected products featured?',
+                    title: 'Feature Cars',
+                    message: 'Make $selectedCount selected cars featured?',
                     confirmLabel: 'Feature All',
-                    confirmColor: AdminProductsTheme.featured,
+                    confirmColor: CarsAdminTheme.warning,
                     icon: Icons.star_rounded,
                     onConfirm: () => _executeBulkFeatured(true),
                   ),
@@ -700,27 +707,59 @@ class BulkActionBar extends StatelessWidget {
               onTap:
                   () => _showBulkConfirmation(
                     context: context,
-                    title: 'Unfeature Products',
+                    title: 'Unfeature Cars',
                     message:
-                        'Remove $selectedCount selected products from featured?',
+                        'Remove $selectedCount selected cars from featured?',
                     confirmLabel: 'Unfeature All',
-                    confirmColor: AdminProductsTheme.warning,
+                    confirmColor: CarsAdminTheme.warning,
                     icon: Icons.star_outline_rounded,
                     onConfirm: () => _executeBulkFeatured(false),
                   ),
             ),
             _buildActionChip(
               context: context,
+              icon: Icons.sell_rounded,
+              label: 'Mark Sold',
+              color: const Color(0xFFD97706),
+              onTap:
+                  () => _showBulkConfirmation(
+                    context: context,
+                    title: 'Mark Cars as Sold',
+                    message: 'Mark $selectedCount selected cars as sold?',
+                    confirmLabel: 'Mark Sold',
+                    confirmColor: const Color(0xFFD97706),
+                    icon: Icons.sell_rounded,
+                    onConfirm: () => _executeBulkSold(true),
+                  ),
+            ),
+            _buildActionChip(
+              context: context,
+              icon: Icons.sell_outlined,
+              label: 'Mark Unsold',
+              color: const Color(0xFF94A3B8),
+              onTap:
+                  () => _showBulkConfirmation(
+                    context: context,
+                    title: 'Mark Cars as Unsold',
+                    message: 'Mark $selectedCount selected cars as unsold?',
+                    confirmLabel: 'Mark Unsold',
+                    confirmColor: const Color(0xFF94A3B8),
+                    icon: Icons.sell_outlined,
+                    onConfirm: () => _executeBulkSold(false),
+                  ),
+            ),
+            _buildActionChip(
+              context: context,
               icon: Icons.local_offer_rounded,
               label: 'Add Deal',
-              color: AdminProductsTheme.deal,
+              color: const Color(0xFFEC4899),
               onTap:
                   () => _showBulkConfirmation(
                     context: context,
                     title: 'Add to Deals',
-                    message: 'Add $selectedCount selected products to deals?',
+                    message: 'Add $selectedCount selected cars to deals?',
                     confirmLabel: 'Add to Deals',
-                    confirmColor: AdminProductsTheme.deal,
+                    confirmColor: const Color(0xFFEC4899),
                     icon: Icons.local_offer_rounded,
                     onConfirm: () => _executeBulkDeal(true),
                   ),
@@ -735,9 +774,9 @@ class BulkActionBar extends StatelessWidget {
                     context: context,
                     title: 'Remove from Deals',
                     message:
-                        'Remove $selectedCount selected products from deals?',
+                        'Remove $selectedCount selected cars from deals?',
                     confirmLabel: 'Remove from Deals',
-                    confirmColor: AdminProductsTheme.warning,
+                    confirmColor: CarsAdminTheme.warning,
                     icon: Icons.local_offer_outlined,
                     onConfirm: () => _executeBulkDeal(false),
                   ),
@@ -752,7 +791,7 @@ class BulkActionBar extends StatelessWidget {
                     context: context,
                     title: 'Assign Inventory',
                     message:
-                        'Mark $selectedCount selected products as inventory assigned?',
+                        'Mark $selectedCount selected cars as inventory assigned?',
                     confirmLabel: 'Assign All',
                     confirmColor: const Color(0xFF8B5CF6),
                     icon: Icons.inventory_2_rounded,
@@ -769,9 +808,9 @@ class BulkActionBar extends StatelessWidget {
                     context: context,
                     title: 'Unassign Inventory',
                     message:
-                        'Unassign inventory from $selectedCount selected products?',
+                        'Unassign inventory from $selectedCount selected cars?',
                     confirmLabel: 'Unassign All',
-                    confirmColor: AdminProductsTheme.warning,
+                    confirmColor: CarsAdminTheme.warning,
                     icon: Icons.inventory_2_outlined,
                     onConfirm: () => _executeBulkInventory(false),
                   ),
@@ -786,7 +825,7 @@ class BulkActionBar extends StatelessWidget {
                     context: context,
                     title: 'Pin Sale',
                     message:
-                        'Pin $selectedCount selected products to sale?',
+                        'Pin $selectedCount selected cars to sale?',
                     confirmLabel: 'Pin All',
                     confirmColor: const Color(0xFFEC4899),
                     icon: Icons.push_pin_rounded,
@@ -803,9 +842,9 @@ class BulkActionBar extends StatelessWidget {
                     context: context,
                     title: 'Unpin Sale',
                     message:
-                        'Unpin $selectedCount selected products from sale?',
+                        'Unpin $selectedCount selected cars from sale?',
                     confirmLabel: 'Unpin All',
-                    confirmColor: AdminProductsTheme.warning,
+                    confirmColor: CarsAdminTheme.warning,
                     icon: Icons.push_pin_outlined,
                     onConfirm: () => _executeBulkPinSale(false),
                   ),
@@ -820,7 +859,7 @@ class BulkActionBar extends StatelessWidget {
                     context: context,
                     title: 'Make Private',
                     message:
-                        'Make $selectedCount selected products private?',
+                        'Make $selectedCount selected cars private?',
                     confirmLabel: 'Make Private',
                     confirmColor: const Color(0xFF6366F1),
                     icon: Icons.lock_rounded,
@@ -837,9 +876,9 @@ class BulkActionBar extends StatelessWidget {
                     context: context,
                     title: 'Make Public',
                     message:
-                        'Make $selectedCount selected products public?',
+                        'Make $selectedCount selected cars public?',
                     confirmLabel: 'Make Public',
-                    confirmColor: AdminProductsTheme.success,
+                    confirmColor: CarsAdminTheme.success,
                     icon: Icons.lock_open_rounded,
                     onConfirm: () => _executeBulkPrivate(false),
                   ),
@@ -848,15 +887,15 @@ class BulkActionBar extends StatelessWidget {
               context: context,
               icon: Icons.delete_outline_rounded,
               label: 'Delete',
-              color: AdminProductsTheme.error,
+              color: CarsAdminTheme.error,
               onTap:
                   () => _showBulkConfirmation(
                     context: context,
-                    title: 'Delete Products',
+                    title: 'Delete Cars',
                     message:
-                        'Delete $selectedCount selected products? This cannot be undone.',
+                        'Delete $selectedCount selected cars? This cannot be undone.',
                     confirmLabel: 'Delete All',
-                    confirmColor: AdminProductsTheme.error,
+                    confirmColor: CarsAdminTheme.error,
                     icon: Icons.delete_outline_rounded,
                     onConfirm: () => _executeBulkDelete(),
                   ),
@@ -920,10 +959,10 @@ class BulkActionBar extends StatelessWidget {
       builder:
           (ctx) => Dialog(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AdminProductsTheme.radiusLg),
+              borderRadius: BorderRadius.circular(CarsAdminTheme.radiusLg),
             ),
             child: Container(
-              padding: const EdgeInsets.all(AdminProductsTheme.spacingXl),
+              padding: const EdgeInsets.all(CarsAdminTheme.spacingXl),
               constraints: const BoxConstraints(maxWidth: 400),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -936,25 +975,25 @@ class BulkActionBar extends StatelessWidget {
                     ),
                     child: Icon(icon, size: 32, color: confirmColor),
                   ),
-                  const SizedBox(height: AdminProductsTheme.spacingLg),
-                  Text(title, style: AdminProductsTheme.headingMedium),
-                  const SizedBox(height: AdminProductsTheme.spacingSm),
+                  const SizedBox(height: CarsAdminTheme.spacingLg),
+                  Text(title, style: CarsAdminTheme.headingMedium),
+                  const SizedBox(height: CarsAdminTheme.spacingSm),
                   Text(
                     message,
-                    style: AdminProductsTheme.bodyMedium,
+                    style: CarsAdminTheme.bodyMedium,
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: AdminProductsTheme.spacingXl),
+                  const SizedBox(height: CarsAdminTheme.spacingXl),
                   Row(
                     children: [
                       Expanded(
                         child: OutlinedButton(
                           onPressed: () => Navigator.of(ctx).pop(),
-                          style: AdminProductsTheme.outlineButtonStyle,
+                          style: CarsAdminTheme.outlineButtonStyle,
                           child: const Text('Cancel'),
                         ),
                       ),
-                      const SizedBox(width: AdminProductsTheme.spacingMd),
+                      const SizedBox(width: CarsAdminTheme.spacingMd),
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () {
@@ -966,12 +1005,12 @@ class BulkActionBar extends StatelessWidget {
                             foregroundColor: Colors.white,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(
-                              horizontal: AdminProductsTheme.spacingLg,
-                              vertical: AdminProductsTheme.spacingMd,
+                              horizontal: CarsAdminTheme.spacingLg,
+                              vertical: CarsAdminTheme.spacingMd,
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(
-                                AdminProductsTheme.radiusMd,
+                                CarsAdminTheme.radiusMd,
                               ),
                             ),
                           ),
@@ -988,214 +1027,236 @@ class BulkActionBar extends StatelessWidget {
   }
 
   String _getShopId(String productId) {
-    final product = adminProductsService.adminProducts.firstWhereOrNull(
+    final product = adminCarsService.adminProducts.firstWhereOrNull(
       (p) => p.id == productId,
     );
     return product?.shop?.shop?.id ?? product?.shopId ?? '';
   }
 
   Future<void> _executeBulkActive(bool setActive) async {
-    final ids = adminProductsService.selectedProductIds.toList();
+    final ids = adminCarsService.selectedProductIds.toList();
     final shopId = _getShopId(ids.first);
 
-    adminProductsService.isBulkOperationRunning.value = true;
-    adminProductsService.bulkOperationProgress.value = 0;
-    adminProductsService.bulkOperationTotal.value = ids.length;
+    adminCarsService.isBulkOperationRunning.value = true;
+    adminCarsService.bulkOperationProgress.value = 0;
+    adminCarsService.bulkOperationTotal.value = ids.length;
 
     final result = await ProductService.bulkUpdateActiveStatus(
       productIds: ids,
       shopId: shopId,
       setActive: setActive,
       onProgress: (completed, total) {
-        adminProductsService.bulkOperationProgress.value = completed;
+        adminCarsService.bulkOperationProgress.value = completed;
       },
     );
 
-    adminProductsService.isBulkOperationRunning.value = false;
-    adminProductsService.clearSelection();
+    adminCarsService.isBulkOperationRunning.value = false;
+    adminCarsService.clearSelection();
     _showBulkResultSnackbar(result, setActive ? 'activated' : 'deactivated');
-    await adminProductsService.refreshProducts();
-    await adminProductsService.fetchProducts(refresh: true);
+    await adminCarsService.refreshProducts();
+    await adminCarsService.fetchProducts(refresh: true);
   }
 
   Future<void> _executeBulkFeatured(bool setFeatured) async {
-    final ids = adminProductsService.selectedProductIds.toList();
+    final ids = adminCarsService.selectedProductIds.toList();
     final shopId = _getShopId(ids.first);
 
-    adminProductsService.isBulkOperationRunning.value = true;
-    adminProductsService.bulkOperationProgress.value = 0;
-    adminProductsService.bulkOperationTotal.value = ids.length;
+    adminCarsService.isBulkOperationRunning.value = true;
+    adminCarsService.bulkOperationProgress.value = 0;
+    adminCarsService.bulkOperationTotal.value = ids.length;
 
     final result = await ProductService.bulkUpdateFeaturedStatus(
       productIds: ids,
       shopId: shopId,
       setFeatured: setFeatured,
       onProgress: (completed, total) {
-        adminProductsService.bulkOperationProgress.value = completed;
+        adminCarsService.bulkOperationProgress.value = completed;
       },
     );
 
-    adminProductsService.isBulkOperationRunning.value = false;
-    adminProductsService.clearSelection();
+    adminCarsService.isBulkOperationRunning.value = false;
+    adminCarsService.clearSelection();
     _showBulkResultSnackbar(result, setFeatured ? 'featured' : 'unfeatured');
-    await adminProductsService.refreshProducts();
-    await adminProductsService.fetchProducts(refresh: true);
+    await adminCarsService.refreshProducts();
+    await adminCarsService.fetchProducts(refresh: true);
+  }
+
+  Future<void> _executeBulkSold(bool setSold) async {
+    final ids = adminCarsService.selectedProductIds.toList();
+
+    adminCarsService.isBulkOperationRunning.value = true;
+    adminCarsService.bulkOperationProgress.value = 0;
+    adminCarsService.bulkOperationTotal.value = ids.length;
+
+    final result = await ProductService.bulkUpdateSoldStatus(
+      productIds: ids,
+      setSold: setSold,
+      onProgress: (completed, total) {
+        adminCarsService.bulkOperationProgress.value = completed;
+      },
+    );
+
+    adminCarsService.isBulkOperationRunning.value = false;
+    adminCarsService.clearSelection();
+    _showBulkResultSnackbar(result, setSold ? 'marked as sold' : 'marked as unsold');
+    await adminCarsService.refreshProducts();
+    await adminCarsService.fetchProducts(refresh: true);
   }
 
   Future<void> _executeBulkDeal(bool setDeal) async {
-    final ids = adminProductsService.selectedProductIds.toList();
+    final ids = adminCarsService.selectedProductIds.toList();
     final shopId = _getShopId(ids.first);
 
-    adminProductsService.isBulkOperationRunning.value = true;
-    adminProductsService.bulkOperationProgress.value = 0;
-    adminProductsService.bulkOperationTotal.value = ids.length;
+    adminCarsService.isBulkOperationRunning.value = true;
+    adminCarsService.bulkOperationProgress.value = 0;
+    adminCarsService.bulkOperationTotal.value = ids.length;
 
     final result = await ProductService.bulkUpdateDealStatus(
       productIds: ids,
       shopId: shopId,
       setDeal: setDeal,
       onProgress: (completed, total) {
-        adminProductsService.bulkOperationProgress.value = completed;
+        adminCarsService.bulkOperationProgress.value = completed;
       },
     );
 
-    adminProductsService.isBulkOperationRunning.value = false;
-    adminProductsService.clearSelection();
+    adminCarsService.isBulkOperationRunning.value = false;
+    adminCarsService.clearSelection();
     _showBulkResultSnackbar(
       result,
       setDeal ? 'added to deals' : 'removed from deals',
     );
-    await adminProductsService.refreshProducts();
-    await adminProductsService.fetchProducts(refresh: true);
+    await adminCarsService.refreshProducts();
+    await adminCarsService.fetchProducts(refresh: true);
   }
 
   Future<void> _executeBulkInventory(bool setInventory) async {
-    final ids = adminProductsService.selectedProductIds.toList();
+    final ids = adminCarsService.selectedProductIds.toList();
     final shopId = _getShopId(ids.first);
 
-    adminProductsService.isBulkOperationRunning.value = true;
-    adminProductsService.bulkOperationProgress.value = 0;
-    adminProductsService.bulkOperationTotal.value = ids.length;
+    adminCarsService.isBulkOperationRunning.value = true;
+    adminCarsService.bulkOperationProgress.value = 0;
+    adminCarsService.bulkOperationTotal.value = ids.length;
 
     final result = await ProductService.bulkUpdateInventoryStatus(
       productIds: ids,
       shopId: shopId,
       setInventory: setInventory,
       onProgress: (completed, total) {
-        adminProductsService.bulkOperationProgress.value = completed;
+        adminCarsService.bulkOperationProgress.value = completed;
       },
     );
 
-    adminProductsService.isBulkOperationRunning.value = false;
-    adminProductsService.clearSelection();
+    adminCarsService.isBulkOperationRunning.value = false;
+    adminCarsService.clearSelection();
     _showBulkResultSnackbar(
       result,
       setInventory ? 'inventory assigned' : 'inventory unassigned',
     );
-    await adminProductsService.refreshProducts();
-    await adminProductsService.fetchProducts(refresh: true);
+    await adminCarsService.refreshProducts();
+    await adminCarsService.fetchProducts(refresh: true);
   }
 
   Future<void> _executeBulkPinSale(bool setPinned) async {
-    final ids = adminProductsService.selectedProductIds.toList();
+    final ids = adminCarsService.selectedProductIds.toList();
     final shopId = _getShopId(ids.first);
 
-    adminProductsService.isBulkOperationRunning.value = true;
-    adminProductsService.bulkOperationProgress.value = 0;
-    adminProductsService.bulkOperationTotal.value = ids.length;
+    adminCarsService.isBulkOperationRunning.value = true;
+    adminCarsService.bulkOperationProgress.value = 0;
+    adminCarsService.bulkOperationTotal.value = ids.length;
 
     final result = await ProductService.bulkUpdatePinSaleStatus(
       productIds: ids,
       shopId: shopId,
       setPinned: setPinned,
       onProgress: (completed, total) {
-        adminProductsService.bulkOperationProgress.value = completed;
+        adminCarsService.bulkOperationProgress.value = completed;
       },
     );
 
-    adminProductsService.isBulkOperationRunning.value = false;
-    adminProductsService.clearSelection();
+    adminCarsService.isBulkOperationRunning.value = false;
+    adminCarsService.clearSelection();
     _showBulkResultSnackbar(
       result,
       setPinned ? 'pinned to sale' : 'unpinned from sale',
     );
-    await adminProductsService.refreshProducts();
-    await adminProductsService.fetchProducts(refresh: true);
+    await adminCarsService.refreshProducts();
+    await adminCarsService.fetchProducts(refresh: true);
   }
 
   Future<void> _executeBulkPrivate(bool setPrivate) async {
-    final ids = adminProductsService.selectedProductIds.toList();
+    final ids = adminCarsService.selectedProductIds.toList();
     final shopId = _getShopId(ids.first);
 
-    adminProductsService.isBulkOperationRunning.value = true;
-    adminProductsService.bulkOperationProgress.value = 0;
-    adminProductsService.bulkOperationTotal.value = ids.length;
+    adminCarsService.isBulkOperationRunning.value = true;
+    adminCarsService.bulkOperationProgress.value = 0;
+    adminCarsService.bulkOperationTotal.value = ids.length;
 
     final result = await ProductService.bulkUpdatePrivateStatus(
       productIds: ids,
       shopId: shopId,
       setPrivate: setPrivate,
       onProgress: (completed, total) {
-        adminProductsService.bulkOperationProgress.value = completed;
+        adminCarsService.bulkOperationProgress.value = completed;
       },
     );
 
-    adminProductsService.isBulkOperationRunning.value = false;
-    adminProductsService.clearSelection();
+    adminCarsService.isBulkOperationRunning.value = false;
+    adminCarsService.clearSelection();
     _showBulkResultSnackbar(
       result,
       setPrivate ? 'made private' : 'made public',
     );
-    await adminProductsService.refreshProducts();
-    await adminProductsService.fetchProducts(refresh: true);
+    await adminCarsService.refreshProducts();
+    await adminCarsService.fetchProducts(refresh: true);
   }
 
   Future<void> _executeBulkDelete() async {
-    final ids = adminProductsService.selectedProductIds.toList();
+    final ids = adminCarsService.selectedProductIds.toList();
     final shopId = _getShopId(ids.first);
 
-    adminProductsService.isBulkOperationRunning.value = true;
-    adminProductsService.bulkOperationProgress.value = 0;
-    adminProductsService.bulkOperationTotal.value = ids.length;
+    adminCarsService.isBulkOperationRunning.value = true;
+    adminCarsService.bulkOperationProgress.value = 0;
+    adminCarsService.bulkOperationTotal.value = ids.length;
 
     final result = await ProductService.bulkDeleteProducts(
       productIds: ids,
       shopId: shopId,
       onProgress: (completed, total) {
-        adminProductsService.bulkOperationProgress.value = completed;
+        adminCarsService.bulkOperationProgress.value = completed;
       },
     );
 
-    adminProductsService.isBulkOperationRunning.value = false;
-    adminProductsService.clearSelection();
+    adminCarsService.isBulkOperationRunning.value = false;
+    adminCarsService.clearSelection();
     _showBulkResultSnackbar(result, 'deleted');
-    await adminProductsService.refreshProducts();
-    await adminProductsService.fetchProducts(refresh: true);
+    await adminCarsService.refreshProducts();
+    await adminCarsService.fetchProducts(refresh: true);
   }
 
   void _showBulkResultSnackbar(BulkOperationResult result, String action) {
     if (result.allSucceeded) {
       Get.snackbar(
         'Success',
-        '${result.total} products $action successfully',
+        '${result.total} cars $action successfully',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AdminProductsTheme.success,
+        backgroundColor: CarsAdminTheme.success,
         colorText: Colors.white,
         duration: const Duration(seconds: 3),
         margin: const EdgeInsets.all(16),
-        borderRadius: AdminProductsTheme.radiusMd,
+        borderRadius: CarsAdminTheme.radiusMd,
         icon: const Icon(Icons.check_circle, color: Colors.white),
       );
     } else if (result.allFailed) {
       Get.snackbar(
         'Error',
-        'Failed to $action ${result.total} products',
+        'Failed to $action ${result.total} cars',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AdminProductsTheme.error,
+        backgroundColor: CarsAdminTheme.error,
         colorText: Colors.white,
         duration: const Duration(seconds: 5),
         margin: const EdgeInsets.all(16),
-        borderRadius: AdminProductsTheme.radiusMd,
+        borderRadius: CarsAdminTheme.radiusMd,
         icon: const Icon(Icons.error_outline, color: Colors.white),
       );
     } else {
@@ -1203,11 +1264,11 @@ class BulkActionBar extends StatelessWidget {
         'Partial Success',
         '${result.successCount} $action, ${result.failCount} failed',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AdminProductsTheme.warning,
+        backgroundColor: CarsAdminTheme.warning,
         colorText: Colors.white,
         duration: const Duration(seconds: 5),
         margin: const EdgeInsets.all(16),
-        borderRadius: AdminProductsTheme.radiusMd,
+        borderRadius: CarsAdminTheme.radiusMd,
         icon: const Icon(Icons.info_outline, color: Colors.white),
       );
     }
