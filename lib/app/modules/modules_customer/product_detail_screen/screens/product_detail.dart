@@ -13,8 +13,8 @@ import 'package:tjara/app/core/dialogs/payment_security.dart';
 import 'package:tjara/app/core/utils/helpers/alerts.dart';
 import 'package:tjara/app/models/users_model.dart/customer_models.dart';
 import 'package:tjara/app/models/wishlists/wishlist_model.dart';
-import 'package:tjara/app/modules/authentication/dialogs/contact_us.dart';
-import 'package:tjara/app/modules/authentication/dialogs/login.dart';
+import 'package:tjara/app/modules/authentication/screens/contact_us.dart';
+import 'package:tjara/app/modules/authentication/screens/login.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/widgets/attributes.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/widgets/bids.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/service/customer_service.dart';
@@ -575,7 +575,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
 
   bool _isFutureAuction() {
     return widget.product.meta?.auctionScheduleType == 'future' ||
-        _freshProductNotifier.value?.product?.meta?.auctionScheduleType == 'future';
+        _freshProductNotifier.value?.product?.meta?.auctionScheduleType ==
+            'future';
   }
 
   bool _issinleAuctionExpired(Product? productData) {
@@ -1174,7 +1175,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
 
                   if (product?.product?.bids == null)
                     // Price Section
-                    _buildPriceSection(),
+                    _buildPriceSection(product),
                   if (product?.product?.bids == null) const SizedBox(height: 6),
 
                   // Product Name
@@ -1298,7 +1299,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.schedule_rounded, size: 20, color: Colors.teal.shade600),
+                    Icon(
+                      Icons.schedule_rounded,
+                      size: 20,
+                      color: Colors.teal.shade600,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'Coming Soon',
@@ -1514,7 +1519,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
   // ══════════════════════════════════════════════════════════════════════════
   // PRICE SECTION
   // ══════════════════════════════════════════════════════════════════════════
-  Widget _buildPriceSection() {
+  Widget _buildPriceSection(SingleModelClass? product) {
     // Sale price available
     if (widget.product.salePrice != null &&
         widget.product.salePrice != 0 &&
@@ -1552,11 +1557,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     if (widget.product.minPrice != null &&
         widget.product.maxPrice != null &&
         widget.product.minPrice != 0 &&
-        widget.product.maxPrice != 0) {
-      return const Text(
-        '',
-        // '\$${widget.product.maxPrice!.toStringAsFixed(2)}',
-        style: TextStyle(
+        widget.product.maxPrice != 0 &&
+        (product?.product?.variation?.shop?.isEmpty ?? false)) {
+      return Text(
+        '\$${widget.product.maxPrice!.toStringAsFixed(2)}',
+        style: const TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.bold,
           color: _primaryColor,
@@ -1574,6 +1579,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
           color: _primaryColor,
         ),
       );
+    }
+
+    if ((product?.product?.variation?.shop?.isNotEmpty ?? true) &&
+        (product?.product?.productGroup != 'car')) {
+      return const SizedBox.shrink();
     }
 
     // Ask dealer

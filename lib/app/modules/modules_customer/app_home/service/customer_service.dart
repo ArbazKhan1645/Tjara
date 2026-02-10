@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:tjara/app/models/chat_messages/insert_chat.dart';
 import 'package:tjara/app/models/users_model.dart/customer_models.dart';
-import 'package:tjara/app/modules/authentication/dialogs/contact_us.dart';
-import 'package:tjara/app/modules/authentication/dialogs/login.dart';
+import 'package:tjara/app/modules/authentication/screens/contact_us.dart';
+import 'package:tjara/app/modules/authentication/screens/login.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:tjara/app/core/utils/thems/theme.dart';

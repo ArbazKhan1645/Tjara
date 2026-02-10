@@ -7,7 +7,7 @@ abstract class Routes {
   Routes._();
   static const HOME = _Paths.HOME;
   static const CATEGORIES = _Paths.CATEGORIES;
-  static const MY_ACCOUNT = _Paths.MY_ACCOUNT;
+
   static const MY_CART = _Paths.MY_CART;
   static const DASHBOARD = _Paths.DASHBOARD;
   static const ShoppingCartScreen = _Paths.ShoppingCartScreen;

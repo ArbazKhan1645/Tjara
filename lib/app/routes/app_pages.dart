@@ -9,8 +9,6 @@ import 'package:tjara/app/modules/modules_admin/admin/dashboard_admin/bindings/d
 import 'package:tjara/app/modules/modules_admin/admin/dashboard_admin/views/dashboard_admin_view.dart';
 import 'package:tjara/app/modules/modules_admin/admin/products_admin/bindings/products_admin_binding.dart';
 import 'package:tjara/app/modules/modules_admin/admin/products_admin/views/products_admin_view.dart';
-import 'package:tjara/app/modules/authentication/bindings/authentication_binding.dart';
-import 'package:tjara/app/modules/authentication/views/authentication_view.dart';
 import 'package:tjara/app/modules/modules_customer/order_checkout/bindings/checkout_binding.dart';
 import 'package:tjara/app/modules/modules_customer/order_checkout/views/checkout_view.dart';
 import 'package:tjara/app/modules/modules_customer/tjara_contests/bindings/contests_binding.dart';
@@ -41,7 +39,8 @@ import 'package:tjara/app/modules/modules_customer/user_wishlist/bindings/wishli
 import 'package:tjara/app/modules/modules_customer/user_wishlist/views/wishlist_view.dart';
 import 'package:tjara/app/modules/modules_customer/product_detail_screen/screens/flash_deal_detail_screen.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/bindings/flash_deal_binding.dart';
-import 'package:tjara/app/modules/admin_products_module/admin_flash_deals/bindings/flash_deal_binding.dart' as admin_flash_deal;
+import 'package:tjara/app/modules/admin_products_module/admin_flash_deals/bindings/flash_deal_binding.dart'
+    as admin_flash_deal;
 import 'package:tjara/app/modules/admin_products_module/admin_flash_deals/views/flash_deal_settings_view.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_flash_deals_analytics/bindings/flash_deal_analytics_binding.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_flash_deals_analytics/views/flash_deal_analytics_view.dart';
@@ -126,11 +125,11 @@ class AppPages {
       page: () => const MoreView(),
       binding: MoreBinding(),
     ),
-    GetPage(
-      name: _Paths.AUTHENTICATION,
-      page: () => const AuthenticationView(),
-      binding: AuthenticationBinding(),
-    ),
+    // GetPage(
+    //   name: _Paths.AUTHENTICATION,
+    //   page: () => const AuthenticationView(),
+    //   binding: AuthenticationBinding(),
+    // ),
     GetPage(
       name: _Paths.SPLASH_SCREEN,
       page: () => const SplashScreenView(),

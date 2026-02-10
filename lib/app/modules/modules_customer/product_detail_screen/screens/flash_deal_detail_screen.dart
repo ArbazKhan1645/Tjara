@@ -13,8 +13,8 @@ import 'package:tjara/app/models/media_model/media_model.dart';
 import 'package:tjara/app/models/users_model.dart/customer_models.dart'
     hide Thumbnail;
 import 'package:tjara/app/models/wishlists/wishlist_model.dart';
-import 'package:tjara/app/modules/authentication/dialogs/contact_us.dart';
-import 'package:tjara/app/modules/authentication/dialogs/login.dart';
+import 'package:tjara/app/modules/authentication/screens/contact_us.dart';
+import 'package:tjara/app/modules/authentication/screens/login.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/widgets/deal_section.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/widgets/attributes.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/widgets/bids.dart';
@@ -1745,7 +1745,11 @@ class _FlashDealDetailScreenState extends State<FlashDealDetailScreen>
                   padding: const EdgeInsets.all(16),
                   child: ProductVariationDisplay(
                     variation: product!.product!.variation!,
-                    onAttributesSelected: (attributesData, variationId, thumbnailUrl) {
+                    onAttributesSelected: (
+                      attributesData,
+                      variationId,
+                      thumbnailUrl,
+                    ) {
                       if (variationId == null) return;
                       selectedVariationId = variationId;
                       if (attributesData.isNotEmpty) {
@@ -1769,8 +1773,12 @@ class _FlashDealDetailScreenState extends State<FlashDealDetailScreen>
                         setState(() {
                           _selectedVariationStock = selectedVariation.stock;
                           // Reset quantity if it exceeds variation stock
-                          final currentQty = int.tryParse(_quantityController?.text ?? '1') ?? 1;
-                          final maxStock = _selectedVariationStock ?? (_currentProduct?.stock ?? 999).toInt();
+                          final currentQty =
+                              int.tryParse(_quantityController?.text ?? '1') ??
+                              1;
+                          final maxStock =
+                              _selectedVariationStock ??
+                              (_currentProduct?.stock ?? 999).toInt();
                           if (currentQty > maxStock) {
                             _quantityController?.text = maxStock.toString();
                           }
@@ -1799,7 +1807,9 @@ class _FlashDealDetailScreenState extends State<FlashDealDetailScreen>
                     const Spacer(),
                     QuantitySelector(
                       controller: _quantityController!,
-                      maxQuantity: _selectedVariationStock ?? (_currentProduct?.stock ?? 999).toInt(),
+                      maxQuantity:
+                          _selectedVariationStock ??
+                          (_currentProduct?.stock ?? 999).toInt(),
                       minQuantity: 1,
                       onQuantityChanged: (quantity) {},
                     ),

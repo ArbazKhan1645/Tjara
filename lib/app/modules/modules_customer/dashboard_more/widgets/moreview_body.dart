@@ -1,18 +1,20 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 import 'package:tjara/app/core/utils/helpers/alerts.dart';
 import 'package:tjara/app/models/users_model.dart/customer_models.dart';
-import 'package:tjara/app/modules/admin_products_module/admin_products_config/views/admin_products_config_view.dart';
-import 'package:tjara/app/modules/authentication/dialogs/contact_us.dart';
+import 'package:tjara/app/modules/authentication/screens/contact_us.dart';
 import 'package:tjara/app/modules/modules_customer/customer_dashboard/controllers/dashboard_controller.dart';
 import 'package:tjara/app/modules/modules_customer/customer_cart/controllers/my_cart_controller.dart';
 import 'package:tjara/app/modules/modules_customer/tjara_surveys/view/survey_view.dart';
 import 'package:tjara/app/modules/modules_customer/user_wishlist/service/wishlist_service.dart';
-import 'package:tjara/app/modules/web_settings/web_settings_dashboard/web_settings_dashboard_screen.dart';
 import 'package:tjara/app/routes/app_pages.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
 import 'package:tjara/app/services/dashbopard_services/balance_service.dart';
@@ -183,187 +185,195 @@ class ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final LoginResponse? currentUser = AuthService.instance.authCustomer;
+    return Obx(() {
+      final LoginResponse? currentUser =
+          AuthService.instance.authCustomerRx.value;
 
-    if (currentUser == null) {
-      return _GuestProfileCard();
-    }
+      if (currentUser == null) {
+        return _GuestProfileCard();
+      }
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              // Avatar with gradient border
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFfea52d), Color(0xFFf97316)],
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFfea52d).withOpacity(0.3),
-                      blurRadius: 15,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Container(
-                  margin: const EdgeInsets.all(3),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                // Avatar with gradient border
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
                     shape: BoxShape.circle,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFfea52d), Color(0xFFf97316)],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFfea52d).withOpacity(0.3),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
                   ),
-                  child: Center(
-                    child: Text(
-                      '${currentUser.user?.firstName?[0] ?? 'F'}${currentUser.user?.lastName?[0] ?? 'L'}',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFFfea52d),
+                  child: Container(
+                    margin: const EdgeInsets.all(3),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        '${currentUser.user?.firstName?[0] ?? 'F'}${currentUser.user?.lastName?[0] ?? 'L'}',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFfea52d),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
 
-              const SizedBox(width: 16),
+                const SizedBox(width: 16),
 
-              // User Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${currentUser.user?.firstName ?? 'First'} ${currentUser.user?.lastName ?? 'Last'}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.email_outlined,
-                          size: 14,
-                          color: Colors.grey.shade600,
+                // User Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${currentUser.user?.firstName ?? 'First'} ${currentUser.user?.lastName ?? 'Last'}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
                         ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            currentUser.user?.email ?? 'N/A',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey.shade600,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.email_outlined,
+                            size: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              currentUser.user?.email ?? 'N/A',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey.shade600,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFfea52d), Color(0xFFf97316)],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          (currentUser.user?.role ?? 'Customer').toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
                       ),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFfea52d), Color(0xFFf97316)],
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        (currentUser.user?.role ?? 'Customer').toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            // Verify Email Banner
+            _VerifyEmailBanner(currentUser: currentUser),
+
+            const SizedBox(height: 12),
+
+            // Dashboard Button (if admin)
+            if (AuthService.instance.authCustomer?.user?.role == 'admin')
+              _PremiumButton(
+                icon: Icons.dashboard_outlined,
+                label: 'Admin Dashboard',
+                onTap: () async {
+                  await Get.putAsync(() => BalanceService().init());
+                  Get.toNamed(Routes.DASHBOARD_ADMIN);
+                },
+                gradient: const LinearGradient(
+                  colors: [Colors.teal, Colors.teal],
+                ),
+              )
+            else if (AuthService.instance.authCustomer?.user?.role == 'vendor')
+              _PremiumButton(
+                icon: Icons.dashboard_outlined,
+                label: 'Vendor Dashboard',
+                onTap: () async {
+                  await Get.putAsync(() => BalanceService().init());
+                  Get.toNamed(Routes.DASHBOARD_ADMIN);
+                },
+                gradient: const LinearGradient(
+                  colors: [Colors.teal, Colors.teal],
+                ),
+              )
+            else
+              _PremiumButton(
+                icon: Icons.dashboard_outlined,
+                label: 'Dashboard',
+                onTap: () async {
+                  await Get.putAsync(() => BalanceService().init());
+                  Get.toNamed(Routes.DASHBOARD_ADMIN);
+                },
+                gradient: const LinearGradient(
+                  colors: [Colors.teal, Colors.teal],
                 ),
               ),
-            ],
-          ),
 
-          const SizedBox(height: 20),
+            const SizedBox(height: 12),
 
-          // Dashboard Button (if admin)
-          if (AuthService.instance.authCustomer?.user?.role == 'admin')
+            // Sign Out Button
             _PremiumButton(
-              icon: Icons.dashboard_outlined,
-              label: 'Admin Dashboard',
-              onTap: () async {
-                await Get.putAsync(() => BalanceService().init());
-                Get.toNamed(Routes.DASHBOARD_ADMIN);
-              },
+              icon: Icons.logout,
+              label: 'Sign Out',
+              onTap: () => _handleSignOut(context),
               gradient: const LinearGradient(
-                colors: [Colors.teal, Colors.teal],
-              ),
-            )
-          else if (AuthService.instance.authCustomer?.user?.role == 'vendor')
-            _PremiumButton(
-              icon: Icons.dashboard_outlined,
-              label: 'Vendor Dashboard',
-              onTap: () async {
-                await Get.putAsync(() => BalanceService().init());
-                Get.toNamed(Routes.DASHBOARD_ADMIN);
-              },
-              gradient: const LinearGradient(
-                colors: [Colors.teal, Colors.teal],
-              ),
-            )
-          else
-            _PremiumButton(
-              icon: Icons.dashboard_outlined,
-              label: 'Dashboard',
-              onTap: () async {
-                await Get.putAsync(() => BalanceService().init());
-                Get.toNamed(Routes.DASHBOARD_ADMIN);
-              },
-              gradient: const LinearGradient(
-                colors: [Colors.teal, Colors.teal],
+                colors: [Color(0xFFfea52d), Color(0xFFf97316)],
               ),
             ),
-
-          const SizedBox(height: 12),
-
-          // Sign Out Button
-          _PremiumButton(
-            icon: Icons.logout,
-            label: 'Sign Out',
-            onTap: () => _handleSignOut(context),
-            gradient: const LinearGradient(
-              colors: [Color(0xFFfea52d), Color(0xFFf97316)],
-            ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 
   Future<void> _handleSignOut(BuildContext context) async {
@@ -876,6 +886,472 @@ class _LinkItem extends StatelessWidget {
               ),
             ),
             Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ========================================
+// Verify Email Banner
+// ========================================
+class _VerifyEmailBanner extends StatefulWidget {
+  final LoginResponse? currentUser;
+  const _VerifyEmailBanner({required this.currentUser});
+
+  @override
+  State<_VerifyEmailBanner> createState() => _VerifyEmailBannerState();
+}
+
+class _VerifyEmailBannerState extends State<_VerifyEmailBanner> {
+  Future<bool>? _checkFuture;
+  bool _isVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkFuture = _checkEmailVerification();
+  }
+
+  Future<bool> _checkEmailVerification() async {
+    final userId = widget.currentUser?.user?.id;
+    if (userId == null) return true; // verified (hide banner)
+
+    try {
+      final res = await http.get(
+        Uri.parse('https://api.libanbuy.com/api/users/$userId'),
+        headers: {
+          'user-id': userId,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Request-From': 'Dashboard',
+        },
+      );
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        // API may return user directly or nested under 'user' key
+        final userData =
+            data is Map<String, dynamic>
+                ? (data.containsKey('user') ? data['user'] : data)
+                : data;
+        final emailVerifiedAt = userData['email_verified_at'];
+        return emailVerifiedAt != null; // true = verified
+      }
+    } catch (e) {
+      debugPrint('Error checking email verification: $e');
+    }
+    // Default: check local data
+    return widget.currentUser?.user?.emailVerifiedAt != null;
+  }
+
+  void _refreshCheck() {
+    setState(() {
+      _checkFuture = _checkEmailVerification();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.currentUser == null) return const SizedBox.shrink();
+
+    return VisibilityDetector(
+      key: const Key('verify-email-banner'),
+      onVisibilityChanged: (info) {
+        final nowVisible = info.visibleFraction > 0;
+        if (nowVisible && !_isVisible) {
+          _refreshCheck();
+        }
+        _isVisible = nowVisible;
+      },
+      child: FutureBuilder<bool>(
+        future: _checkFuture,
+        builder: (context, snapshot) {
+          // While loading or if verified, hide the banner
+          if (!snapshot.hasData || snapshot.data == true) {
+            return const SizedBox.shrink();
+          }
+
+          // Email NOT verified - show banner
+          return GestureDetector(
+            onTap: () => _showVerifyEmailDialog(context),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF3E0),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFFfea52d).withOpacity(0.4),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFfea52d).withOpacity(0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.mark_email_unread_outlined,
+                      color: Color(0xFFf97316),
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Verify Your Email',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Tap to verify your email address',
+                          style: TextStyle(fontSize: 12, color: Colors.black54),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right,
+                    color: Color(0xFFf97316),
+                    size: 22,
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showVerifyEmailDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder:
+          (ctx) => _VerifyEmailDialog(
+            currentUser: widget.currentUser!,
+            onDone: _refreshCheck,
+          ),
+    );
+  }
+}
+
+// ========================================
+// Verify Email Dialog
+// ========================================
+class _VerifyEmailDialog extends StatefulWidget {
+  final LoginResponse currentUser;
+  final VoidCallback onDone;
+
+  const _VerifyEmailDialog({required this.currentUser, required this.onDone});
+
+  @override
+  State<_VerifyEmailDialog> createState() => _VerifyEmailDialogState();
+}
+
+class _VerifyEmailDialogState extends State<_VerifyEmailDialog> {
+  late TextEditingController _emailController;
+  bool _isUpdatingEmail = false;
+  bool _isSendingVerification = false;
+  bool _emailEdited = false;
+  String? _originalEmail;
+
+  @override
+  void initState() {
+    super.initState();
+    _originalEmail = widget.currentUser.user?.email ?? '';
+    _emailController = TextEditingController(text: _originalEmail);
+    _emailController.addListener(() {
+      final edited = _emailController.text.trim() != _originalEmail;
+      if (edited != _emailEdited) {
+        setState(() => _emailEdited = edited);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _updateEmail() async {
+    final newEmail = _emailController.text.trim();
+    if (newEmail.isEmpty || !GetUtils.isEmail(newEmail)) {
+      NotificationHelper.showError(
+        context,
+        'Invalid Email',
+        'Please enter a valid email address',
+      );
+      return;
+    }
+
+    setState(() => _isUpdatingEmail = true);
+
+    try {
+      final userId = widget.currentUser.user?.id ?? '';
+      final res = await http.put(
+        Uri.parse('https://api.libanbuy.com/api/users/$userId/update'),
+        headers: {
+          'user-id': userId,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Request-From': 'Website',
+        },
+        body: jsonEncode({'email': newEmail}),
+      );
+
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        // Update local auth data
+        final updatedUser = widget.currentUser.user?.copyWith(
+          email: newEmail,
+          emailVerifiedAt: null, // Reset since email changed
+        );
+        final updatedResponse = widget.currentUser.copyWith(user: updatedUser);
+        AuthService.instance.saveAuthState(updatedResponse);
+
+        _originalEmail = newEmail;
+        setState(() => _emailEdited = false);
+
+        if (mounted) {
+          NotificationHelper.showSuccess(
+            context,
+            'Success',
+            'Email updated successfully',
+          );
+        }
+      } else {
+        if (mounted) {
+          var msgs = jsonDecode(res.body);
+          NotificationHelper.showError(
+            context,
+            'Alert',
+            msgs['message'] ?? 'Failed to update',
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        NotificationHelper.showError(context, 'Error', 'Something went wrong');
+      }
+    } finally {
+      if (mounted) setState(() => _isUpdatingEmail = false);
+    }
+  }
+
+  Future<void> _resendVerification() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) return;
+
+    setState(() => _isSendingVerification = true);
+
+    try {
+      final userId = widget.currentUser.user?.id ?? '';
+      final res = await http.post(
+        Uri.parse('https://api.libanbuy.com/api/email/resend'),
+        headers: {
+          'user-id': userId,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Request-From': 'Website',
+        },
+        body: jsonEncode({'email': email}),
+      );
+
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        if (mounted) {
+          NotificationHelper.showSuccess(context, 'Email Sent to', email);
+          Navigator.of(context).pop();
+          widget.onDone();
+        }
+      } else {
+        if (mounted) {
+          NotificationHelper.showError(
+            context,
+            'Failed',
+            'Failed to send verification email',
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        NotificationHelper.showError(context, 'Error', 'Something went wrong');
+      }
+    } finally {
+      if (mounted) setState(() => _isSendingVerification = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header icon
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: const Color(0xFFfea52d).withOpacity(0.12),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.mark_email_unread_outlined,
+                color: Color(0xFFfea52d),
+                size: 30,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Verify Your Email',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'We\'ll send a verification link to your email',
+              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+
+            // Email field
+            TextField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                labelText: 'Email Address',
+                hintText: 'Enter your email',
+                prefixIcon: const Icon(
+                  Icons.email_outlined,
+                  color: Color(0xFFfea52d),
+                ),
+                suffixIcon:
+                    _emailEdited
+                        ? IconButton(
+                          onPressed: _isUpdatingEmail ? null : _updateEmail,
+                          icon:
+                              _isUpdatingEmail
+                                  ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Color(0xFFfea52d),
+                                    ),
+                                  )
+                                  : const Icon(
+                                    Icons.save_outlined,
+                                    color: Color(0xFFfea52d),
+                                  ),
+                        )
+                        : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: Color(0xFFfea52d),
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+              ),
+            ),
+
+            if (_emailEdited) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Save the new email first, then verify',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.orange.shade700,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ],
+
+            const SizedBox(height: 20),
+
+            // Send Verification Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed:
+                    (_isSendingVerification || _emailEdited)
+                        ? null
+                        : _resendVerification,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFfea52d),
+                  disabledBackgroundColor: Colors.grey.shade300,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
+                child:
+                    _isSendingVerification
+                        ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                        : const Text(
+                          'Send Verification Email',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            // Cancel
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                widget.onDone();
+              },
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+              ),
+            ),
           ],
         ),
       ),

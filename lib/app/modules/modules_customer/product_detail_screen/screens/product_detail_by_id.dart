@@ -11,8 +11,8 @@ import 'package:tjara/app/core/dialogs/payment_security.dart';
 import 'package:tjara/app/core/utils/helpers/alerts.dart';
 import 'package:tjara/app/models/users_model.dart/customer_models.dart';
 import 'package:tjara/app/models/wishlists/wishlist_model.dart';
-import 'package:tjara/app/modules/authentication/dialogs/contact_us.dart';
-import 'package:tjara/app/modules/authentication/dialogs/login.dart';
+import 'package:tjara/app/modules/authentication/screens/contact_us.dart';
+import 'package:tjara/app/modules/authentication/screens/login.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/widgets/attributes.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/widgets/bids.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/service/customer_service.dart'
@@ -1541,8 +1541,12 @@ class _ProductDetailByIdScreenState extends State<ProductDetailByIdScreen>
                         setState(() {
                           _selectedVariationStock = selectedVariation.stock;
                           // Reset quantity if it exceeds variation stock
-                          final currentQty = int.tryParse(_quantityController?.text ?? '1') ?? 1;
-                          final maxStock = _selectedVariationStock ?? productData.stock.toInt();
+                          final currentQty =
+                              int.tryParse(_quantityController?.text ?? '1') ??
+                              1;
+                          final maxStock =
+                              _selectedVariationStock ??
+                              productData.stock.toInt();
                           if (currentQty > maxStock) {
                             _quantityController?.text = maxStock.toString();
                           }
@@ -1571,7 +1575,9 @@ class _ProductDetailByIdScreenState extends State<ProductDetailByIdScreen>
                     const Spacer(),
                     QuantitySelector(
                       controller: _quantityController!,
-                      maxQuantity: _selectedVariationStock ?? (productData?.stock ?? 999).toInt(),
+                      maxQuantity:
+                          _selectedVariationStock ??
+                          (productData?.stock ?? 999).toInt(),
                       minQuantity: 1,
                       onQuantityChanged: (quantity) {},
                     ),
@@ -1744,10 +1750,17 @@ class _ProductDetailByIdScreenState extends State<ProductDetailByIdScreen>
     if (product.minPrice != null &&
         product.maxPrice != null &&
         product.minPrice != 0 &&
-        product.maxPrice != 0) {
-      return Container();
+        product.maxPrice != 0 &&
+        (product.variation?.shop?.isEmpty ?? false)) {
+      return Text(
+        '\$${product.maxPrice!.toStringAsFixed(2)}',
+        style: const TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: _primaryColor,
+        ),
+      );
     }
-
     // Single price
     if (product.price != 0.0) {
       return Text(

@@ -6,9 +6,9 @@ import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart'; // Add this package
 import 'package:tjara/app/core/widgets/appbar.dart';
 import 'package:tjara/app/models/categories/categories_model.dart';
-import 'package:tjara/app/modules/authentication/dialogs/auth_wrapper.dart';
-import 'package:tjara/app/modules/authentication/dialogs/contact_us.dart';
-import 'package:tjara/app/modules/authentication/dialogs/login.dart';
+import 'package:tjara/app/modules/authentication/view/auth_wrapper.dart';
+import 'package:tjara/app/modules/authentication/screens/contact_us.dart';
+import 'package:tjara/app/modules/authentication/screens/login.dart';
 import 'package:tjara/app/modules/modules_customer/tjara_blogs/blogs.dart';
 import 'package:tjara/app/modules/modules_customer/tjara_faqs/faqs.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/controllers/home_controller.dart';

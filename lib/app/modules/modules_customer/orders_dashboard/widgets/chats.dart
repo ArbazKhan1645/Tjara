@@ -8,11 +8,11 @@ import 'package:tjara/app/models/chat_messages/chat_messages_model.dart';
 import 'package:tjara/app/models/chat_messages/insert_chat.dart';
 import 'package:tjara/app/services/notifications/notification_service.dart';
 import 'package:tjara/app/services/orders_service.dart';
-import 'package:tjara/app/modules/authentication/dialogs/contact_us.dart';
+import 'package:tjara/app/modules/authentication/screens/contact_us.dart';
 import 'package:tjara/app/modules/modules_customer/orders_dashboard/controllers/orders_dashboard_controller.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
 import 'package:tjara/app/services/chat_messages/chat_messages_service.dart';
-import 'package:tjara/app/modules/authentication/dialogs/login.dart';
+import 'package:tjara/app/modules/authentication/screens/login.dart';
 
 class ChatsScreenView extends StatefulWidget {
   const ChatsScreenView({super.key});

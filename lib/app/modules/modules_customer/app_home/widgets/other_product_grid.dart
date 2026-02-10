@@ -9,8 +9,8 @@ import 'package:get/get.dart';
 import 'package:tjara/app/core/utils/helpers/alerts.dart';
 import 'package:tjara/app/models/products/products_model.dart';
 import 'package:tjara/app/models/users_model.dart/customer_models.dart';
-import 'package:tjara/app/modules/authentication/dialogs/contact_us.dart';
-import 'package:tjara/app/modules/authentication/dialogs/login.dart';
+import 'package:tjara/app/modules/authentication/screens/contact_us.dart';
+import 'package:tjara/app/modules/authentication/screens/login.dart';
 import 'package:tjara/app/modules/modules_customer/customer_dashboard/controllers/dashboard_controller.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/controllers/home_controller.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/widgets/auction_products.dart';
@@ -266,25 +266,46 @@ class TemuProductCard extends StatelessWidget {
           Positioned(
             top: 4,
             right: 4,
-            child: GestureDetector(
-              onTap: () => _removeFromWishlist(),
-              child: Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 3,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
+            child: Obx(() {
+              final controller = Get.put(WishlistServiceController());
+              final isThisRemoving =
+                  controller.removingWishlistId.value == wishlistId;
+              final isAnyRemoving =
+                  controller.removingWishlistId.value != null;
+              return GestureDetector(
+                onTap: isAnyRemoving ? null : () => _removeFromWishlist(),
+                child: Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 3,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  child: isThisRemoving
+                      ? const Padding(
+                          padding: EdgeInsets.all(4),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.grey,
+                          ),
+                        )
+                      : Icon(
+                          Icons.close,
+                          color: isAnyRemoving
+                              ? Colors.grey.shade300
+                              : Colors.grey,
+                          size: 14,
+                        ),
                 ),
-                child: const Icon(Icons.close, color: Colors.grey, size: 14),
-              ),
-            ),
+              );
+            }),
           ),
       ],
     );
@@ -442,7 +463,7 @@ class TemuProductCard extends StatelessWidget {
         minPrice != 0 &&
         maxPrice != 0) {
       return Text(
-        '\$${minPrice.toStringAsFixed(2)}-${maxPrice.toStringAsFixed(2)}',
+        '\$${maxPrice.toStringAsFixed(2)}',
         maxLines: 1,
         style: TextStyle(
           fontSize: 11,

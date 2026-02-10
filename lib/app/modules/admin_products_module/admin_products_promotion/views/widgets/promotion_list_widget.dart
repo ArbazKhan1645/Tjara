@@ -47,11 +47,7 @@ class PromotionListWidget extends StatelessWidget {
             );
           }),
         ),
-        Positioned(
-          bottom: 24,
-          right: 20,
-          child: _buildFloatingButton(context),
-        ),
+        Positioned(bottom: 24, right: 20, child: _buildFloatingButton(context)),
       ],
     );
   }
@@ -188,10 +184,7 @@ class PromotionListWidget extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               controller.error.value,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade500,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -200,7 +193,10 @@ class PromotionListWidget extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryTeal,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 14,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -262,8 +258,12 @@ class PromotionListWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildPromotionCard(BuildContext context, Promotion promotion, int index) {
-    final bool isActive = promotion.status == 'active';
+  Widget _buildPromotionCard(
+    BuildContext context,
+    Promotion promotion,
+    int index,
+  ) {
+    final bool isActive = promotion.isCurrentlyActive;
 
     return Obx(() {
       final isDeleting = controller.isDeleting(promotion.id);
@@ -289,7 +289,10 @@ class PromotionListWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             child: InkWell(
               borderRadius: BorderRadius.circular(16),
-              onTap: isDeleting ? null : () => _showEditPromotionDialog(context, promotion),
+              onTap:
+                  isDeleting
+                      ? null
+                      : () => _showEditPromotionDialog(context, promotion),
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -378,7 +381,10 @@ class PromotionListWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 14),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade50,
                         borderRadius: BorderRadius.circular(10),
@@ -428,15 +434,28 @@ class PromotionListWidget extends StatelessWidget {
                           icon: Icons.edit_outlined,
                           label: 'Edit',
                           color: primaryTeal,
-                          onTap: isDeleting ? null : () => _showEditPromotionDialog(context, promotion),
+                          onTap:
+                              isDeleting
+                                  ? null
+                                  : () => _showEditPromotionDialog(
+                                    context,
+                                    promotion,
+                                  ),
                         ),
                         const SizedBox(width: 8),
                         _buildActionButton(
-                          icon: isDeleting ? null : Icons.delete_outline_rounded,
+                          icon:
+                              isDeleting ? null : Icons.delete_outline_rounded,
                           label: isDeleting ? '' : 'Delete',
                           color: Colors.red,
                           isLoading: isDeleting,
-                          onTap: isDeleting ? null : () => _showDeleteConfirmation(context, promotion),
+                          onTap:
+                              isDeleting
+                                  ? null
+                                  : () => _showDeleteConfirmation(
+                                    context,
+                                    promotion,
+                                  ),
                         ),
                       ],
                     ),
@@ -533,32 +552,33 @@ class PromotionListWidget extends StatelessWidget {
             color: color.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: isLoading
-              ? SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: color,
-                  ),
-                )
-              : Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (icon != null) ...[
-                      Icon(icon, size: 18, color: color),
-                      const SizedBox(width: 6),
-                    ],
-                    Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: color,
-                      ),
+          child:
+              isLoading
+                  ? SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: color,
                     ),
-                  ],
-                ),
+                  )
+                  : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (icon != null) ...[
+                        Icon(icon, size: 18, color: color),
+                        const SizedBox(width: 6),
+                      ],
+                      Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: color,
+                        ),
+                      ),
+                    ],
+                  ),
         ),
       ),
     );
@@ -613,93 +633,93 @@ class PromotionListWidget extends StatelessWidget {
   void _showDeleteConfirmation(BuildContext context, Promotion promotion) {
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        contentPadding: const EdgeInsets.all(24),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.delete_outline_rounded,
-                size: 32,
-                color: Colors.red.shade400,
-              ),
+      builder:
+          (dialogContext) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-            const SizedBox(height: 20),
-            const Text(
-              'Delete Promotion?',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Are you sure you want to delete "${promotion.name}"? This action cannot be undone.',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-                height: 1.5,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            Row(
+            contentPadding: const EdgeInsets.all(24),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(dialogContext),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      side: BorderSide(color: Colors.grey.shade300),
-                    ),
-                    child: Text(
-                      'Cancel',
-                      style: TextStyle(
-                        color: Colors.grey.shade700,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.delete_outline_rounded,
+                    size: 32,
+                    color: Colors.red.shade400,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(dialogContext);
-                      controller.deletePromotion(context, promotion.id);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      'Delete',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Delete Promotion?',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Are you sure you want to delete "${promotion.name}"? This action cannot be undone.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                    height: 1.5,
                   ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(dialogContext),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          side: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(dialogContext);
+                          controller.deletePromotion(context, promotion.id);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: const Text(
+                          'Delete',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 }

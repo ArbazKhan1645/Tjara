@@ -6,7 +6,7 @@ import 'package:tjara/app/core/widgets/searchable_dropdown.dart';
 import 'package:tjara/app/models/cart/cart_model.dart';
 import 'package:tjara/app/models/others/country_model.dart';
 import 'package:tjara/app/models/others/state_model.dart';
-import 'package:tjara/app/modules/authentication/dialogs/contact_us.dart';
+import 'package:tjara/app/modules/authentication/screens/contact_us.dart';
 import 'package:tjara/app/modules/modules_customer/order_checkout/pages/success.dart';
 import 'package:tjara/app/modules/modules_customer/product_detail_screen/screens/product_detail_by_id.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';

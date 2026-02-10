@@ -8,8 +8,8 @@ import 'package:http/http.dart' as http;
 import 'package:get_storage/get_storage.dart';
 import 'package:tjara/app/models/users_model.dart/customer_models.dart'
     hide User;
-import 'package:tjara/app/modules/authentication/dialogs/contact_us.dart';
-import 'package:tjara/app/modules/authentication/dialogs/login.dart';
+import 'package:tjara/app/modules/authentication/screens/contact_us.dart';
+import 'package:tjara/app/modules/authentication/screens/login.dart';
 import 'package:tjara/app/modules/modules_customer/tjara_contests/model/contest_model.dart';
 import 'package:tjara/app/modules/modules_customer/tjara_contests/model/fd.dart';
 import 'package:tjara/app/modules/modules_customer/tjara_contests/service/context_share.dart';

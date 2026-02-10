@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:tjara/app/modules/authentication/dialogs/contact_us.dart';
-import 'package:tjara/app/modules/authentication/dialogs/login.dart';
+import 'package:tjara/app/modules/authentication/screens/contact_us.dart';
+import 'package:tjara/app/modules/authentication/screens/login.dart';
 import 'package:tjara/app/modules/modules_customer/tjara_contests/controllers/contests_controller.dart';
 import 'package:tjara/app/modules/modules_customer/tjara_contests/model/contest_model.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
@@ -156,7 +156,11 @@ class _CommentsSectionState extends State<CommentsSection> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.reply_rounded, size: 18, color: primaryTeal),
+                      const Icon(
+                        Icons.reply_rounded,
+                        size: 18,
+                        color: primaryTeal,
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(

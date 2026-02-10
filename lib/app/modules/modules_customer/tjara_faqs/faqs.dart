@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:latlong2/latlong.dart';
 import 'package:tjara/app/models/posts/posts_model.dart';
 import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
@@ -78,7 +80,14 @@ class HelpCenterController extends GetxController {
     await launchUrl(launchUri);
   }
 
-  Future<void> openLocation() async {}
+  Future<void> openLocation() async {
+    final url = Uri.parse(
+      'https://www.google.com/maps/dir//Tjara.com+76G8%2BR62,+Al-Sahili+center+Tyre+Lebanon/@33.2770174,35.2155233,16z',
+    );
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
+  }
 }
 
 // Main Screen
@@ -182,6 +191,133 @@ class _HelpCenterScreenState extends State<HelpCenterScreen>
                 subtitle: '76G8+R62 Al-Sahil center',
                 description: 'Tyre, Lebanon',
                 onTap: () => controller.openLocation(),
+              ),
+              const SizedBox(height: 16),
+
+              // Map Section
+              GestureDetector(
+                onTap: () => controller.openLocation(),
+                child: Container(
+                  height: 200,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey[200]!),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Stack(
+                    children: [
+                      AbsorbPointer(
+                        child: FlutterMap(
+                          options: const MapOptions(
+                            initialCenter: LatLng(33.2770174, 35.2155233),
+                            initialZoom: 15.5,
+                            interactionOptions: InteractionOptions(
+                              flags: InteractiveFlag.none,
+                            ),
+                          ),
+                          children: [
+                            TileLayer(
+                              urlTemplate:
+                                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                              userAgentPackageName: 'com.tjara.app',
+                            ),
+                            const MarkerLayer(
+                              markers: [
+                                Marker(
+                                  point: LatLng(33.2770174, 35.2155233),
+                                  width: 40,
+                                  height: 40,
+                                  child: Icon(
+                                    Icons.location_on,
+                                    color: Colors.red,
+                                    size: 40,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Bottom overlay with address
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.9),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.location_on,
+                                color: Colors.green,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Tjara.com - Al-Sahili Center',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 13,
+                                        color: Colors.grey[800],
+                                      ),
+                                    ),
+                                    Text(
+                                      'Tyre, Lebanon',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[500],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.green,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.directions,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'Directions',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
               const SizedBox(height: 32),
 
@@ -732,6 +868,528 @@ class _FAQVideoCardState extends State<FAQVideoCard> {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ========================================
+// Dashboard Help Center Screen (Tabbed)
+// ========================================
+class DashboardHelpCenterScreen extends StatefulWidget {
+  const DashboardHelpCenterScreen({super.key});
+
+  @override
+  State<DashboardHelpCenterScreen> createState() =>
+      _DashboardHelpCenterScreenState();
+}
+
+class _DashboardHelpCenterScreenState extends State<DashboardHelpCenterScreen>
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
+  final HelpCenterController controller = Get.put(HelpCenterController());
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      controller.stopAllVideos();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FA),
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            SliverAppBar(
+              expandedHeight: 180,
+              floating: false,
+              pinned: true,
+              backgroundColor: Colors.teal,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => Get.back(),
+              ),
+              flexibleSpace: FlexibleSpaceBar(
+                background: Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF00897B), Color(0xFF004D40)],
+                    ),
+                  ),
+                  child: SafeArea(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.support_agent_rounded,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Help Center',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'We\'re here to help you',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white.withValues(alpha: 0.8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(52),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF5F7FA),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(24),
+                      topRight: Radius.circular(24),
+                    ),
+                  ),
+                  child: TabBar(
+                    controller: _tabController,
+                    labelColor: Colors.teal[700],
+                    unselectedLabelColor: Colors.grey[500],
+                    labelStyle: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                    ),
+                    unselectedLabelStyle: const TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 15,
+                    ),
+                    indicatorColor: Colors.teal,
+                    indicatorWeight: 3,
+                    indicatorSize: TabBarIndicatorSize.label,
+                    tabs: const [
+                      Tab(
+                        icon: Icon(Icons.quiz_outlined, size: 20),
+                        text: 'FAQs',
+                      ),
+                      Tab(
+                        icon: Icon(Icons.info_outline, size: 20),
+                        text: 'Details',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ];
+        },
+        body: TabBarView(
+          controller: _tabController,
+          children: [_buildFAQsTab(), _buildDetailsTab()],
+        ),
+      ),
+    );
+  }
+
+  // ── FAQs Tab ──
+  Widget _buildFAQsTab() {
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return const Center(
+          child: Padding(
+            padding: EdgeInsets.all(48),
+            child: CircularProgressIndicator(
+              color: Colors.teal,
+              strokeWidth: 3,
+            ),
+          ),
+        );
+      }
+
+      if (controller.faqs.isEmpty) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(48),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.teal.withValues(alpha: 0.08),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.help_outline_rounded,
+                    size: 56,
+                    color: Colors.teal[300],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'No FAQs available',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[700],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Please check back later',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
+      return ListView.builder(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+        itemCount: controller.faqs.length,
+        itemBuilder: (context, index) {
+          final faq = controller.faqs[index];
+          return FAQVideoCard(
+            key: ValueKey(faq.id),
+            faq: faq,
+            controller: controller,
+          );
+        },
+      );
+    });
+  }
+
+  // ── Details Tab ──
+  Widget _buildDetailsTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 120),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Contact section title
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 16),
+            child: Text(
+              'Get in Touch',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[800],
+              ),
+            ),
+          ),
+
+          // Contact cards in a row
+          Row(
+            children: [
+              Expanded(
+                child: _buildDetailContactCard(
+                  icon: Icons.email_outlined,
+                  title: 'Email Us',
+                  subtitle: 'support@tjara.com',
+                  onTap: () => controller.sendEmail('support@tjara.com'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildDetailContactCard(
+                  icon: Icons.phone_outlined,
+                  title: 'Call Us',
+                  subtitle: '81915454',
+                  onTap: () => controller.makePhoneCall('81915454'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Visit us card (full width)
+          _buildDetailContactCard(
+            icon: Icons.location_on_outlined,
+            title: 'Visit Us',
+            subtitle: '76G8+R62 Al-Sahil center, Tyre, Lebanon',
+            onTap: () => controller.openLocation(),
+            fullWidth: true,
+          ),
+          const SizedBox(height: 20),
+
+          // Map section title
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 12),
+            child: Text(
+              'Our Location',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[800],
+              ),
+            ),
+          ),
+
+          // Map
+          GestureDetector(
+            onTap: () => controller.openLocation(),
+            child: Container(
+              height: 220,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.teal.withValues(alpha: 0.12),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Stack(
+                children: [
+                  AbsorbPointer(
+                    child: FlutterMap(
+                      options: const MapOptions(
+                        initialCenter: LatLng(33.2770174, 35.2155233),
+                        initialZoom: 15.5,
+                        interactionOptions: InteractionOptions(
+                          flags: InteractiveFlag.none,
+                        ),
+                      ),
+                      children: [
+                        TileLayer(
+                          urlTemplate:
+                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'com.tjara.app',
+                        ),
+                        const MarkerLayer(
+                          markers: [
+                            Marker(
+                              point: LatLng(33.2770174, 35.2155233),
+                              width: 40,
+                              height: 40,
+                              child: Icon(
+                                Icons.location_on,
+                                color: Colors.teal,
+                                size: 40,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            Colors.black.withValues(alpha: 0.6),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Tjara.com - Al-Sahili Center',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                Text(
+                                  'Tyre, Lebanon',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.teal,
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.directions,
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Directions',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailContactCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    bool fullWidth = false,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: fullWidth ? double.infinity : null,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey[200]!),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withValues(alpha: 0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment:
+              fullWidth ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.teal.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: Colors.teal, size: 22),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: Colors.grey[800],
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.teal[600],
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: fullWidth ? TextAlign.start : TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHoursRow(String day, String hours) {
+    final isClosed = hours == 'Closed';
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(day, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color:
+                isClosed
+                    ? Colors.red.withValues(alpha: 0.08)
+                    : Colors.teal.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            hours,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: isClosed ? Colors.red[400] : Colors.teal[700],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

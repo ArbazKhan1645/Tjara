@@ -24,6 +24,9 @@ class WishlistServiceController extends GetxService {
   final RxBool _isDataLoaded = false.obs;
   bool get isDataLoaded => _isDataLoaded.value;
 
+  // Track which wishlist item is currently being removed
+  var removingWishlistId = RxnString();
+
   Future<WishlistServiceController> init() async {
     // await initCall();
     return this;
@@ -132,11 +135,14 @@ class WishlistServiceController extends GetxService {
     String wishlistId,
     BuildContext context,
   ) async {
+    if (removingWishlistId.value != null) return;
     final LoginResponse? userCurrent = AuthService.instance.authCustomer;
     try {
       if (userCurrent?.user?.id == null) {
         return;
       }
+
+      removingWishlistId.value = wishlistId;
 
       final res = await http.delete(
         Uri.parse('https://api.libanbuy.com/api/wishlist/$wishlistId/delete'),
@@ -167,6 +173,8 @@ class WishlistServiceController extends GetxService {
         'Failed',
         'Product Failed to remove from wishlist',
       );
+    } finally {
+      removingWishlistId.value = null;
     }
   }
 

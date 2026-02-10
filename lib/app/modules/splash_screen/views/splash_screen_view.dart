@@ -54,7 +54,7 @@ class _SplashbodyState extends State<Splashbody> {
 class SplashService {
   // Method to handle the splash screen duration and navigation
   void startSplashScreen() {
-    Future.delayed(const Duration(seconds: 4), () {
+    Future.delayed(const Duration(seconds: 5), () {
       Get.offAllNamed(Routes.DASHBOARD);
     });
   }

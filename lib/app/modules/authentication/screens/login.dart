@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/modules/authentication/controllers/device_activation_controller.dart';
-import 'package:tjara/app/modules/authentication/dialogs/forget_password.dart';
-import 'package:tjara/app/modules/authentication/new/sign_in.dart';
-import 'package:tjara/app/modules/authentication/new/signup.dart';
+import 'package:tjara/app/modules/authentication/screens/forget_password.dart';
+import 'package:tjara/app/modules/authentication/controllers/auth_controller.dart';
+import 'package:tjara/app/modules/authentication/screens/signup.dart';
 import 'package:flutter/gestures.dart';
 
 class LoginUi extends StatefulWidget {

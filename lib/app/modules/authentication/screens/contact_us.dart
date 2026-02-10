@@ -1,5 +1,10 @@
+// ignore_for_file: avoid_print
+
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:tjara/app/core/utils/helpers/alerts.dart';
 import 'package:tjara/app/services/websettings_service/websetting_service.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -16,21 +21,73 @@ class _ContactFormDialogState extends State<ContactFormDialog> {
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _messageController = TextEditingController();
+  bool _isSubmitting = false;
 
-  void _submitForm() {
-    if (_nameController.text.isEmpty ||
-        _phoneController.text.isEmpty ||
-        _emailController.text.isEmpty ||
-        _messageController.text.isEmpty) {
+  Future<void> _submitForm() async {
+    if (_nameController.text.trim().isEmpty ||
+        _phoneController.text.trim().isEmpty ||
+        _emailController.text.trim().isEmpty ||
+        _messageController.text.trim().isEmpty) {
       NotificationHelper.showError(context, 'Error', 'Please fill all fields');
-    } else {
-      NotificationHelper.showSuccess(
-        context,
-        'Success',
-        'Form submitted successfully!',
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      final res = await http.post(
+        Uri.parse('https://api.libanbuy.com/api/enquiries/insert'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Request-From': 'Dashboard',
+        },
+        body: jsonEncode({
+          'name': _nameController.text.trim(),
+          'phone': _phoneController.text.trim(),
+          'email': _emailController.text.trim(),
+          'message': _messageController.text.trim(),
+        }),
       );
 
-      Navigator.pop(context);
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        final data = jsonDecode(res.body);
+        if (mounted) {
+          NotificationHelper.showSuccess(
+            context,
+            'Success',
+            data['message'] ?? 'Enquiry submitted successfully!',
+          );
+          Navigator.pop(context);
+        }
+      } else {
+        if (mounted) {
+          try {
+            final data = jsonDecode(res.body);
+            NotificationHelper.showError(
+              context,
+              'Alert',
+              data['message'] ?? 'Failed to submit enquiry',
+            );
+          } catch (_) {
+            NotificationHelper.showError(
+              context,
+              'Error',
+              'Failed to submit enquiry',
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        NotificationHelper.showError(
+          context,
+          'Error',
+          'Something went wrong. Please try again.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
@@ -239,7 +296,7 @@ class _ContactFormDialogState extends State<ContactFormDialog> {
       children: [
         const SizedBox(height: 4),
         Material(
-          color: const Color(0xffF97316),
+          color: _isSubmitting ? Colors.grey.shade400 : const Color(0xffF97316),
           borderRadius: BorderRadius.circular(11),
           child: MaterialButton(
             height: 52,
@@ -247,8 +304,21 @@ class _ContactFormDialogState extends State<ContactFormDialog> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
-            onPressed: _submitForm,
-            child: const Text("Submit", style: TextStyle(color: Colors.white)),
+            onPressed: _isSubmitting ? null : _submitForm,
+            child:
+                _isSubmitting
+                    ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white,
+                      ),
+                    )
+                    : const Text(
+                      "Submit",
+                      style: TextStyle(color: Colors.white),
+                    ),
           ),
         ),
       ],

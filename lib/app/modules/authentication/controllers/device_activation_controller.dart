@@ -352,7 +352,7 @@ class DeviceActivationController extends GetxController {
 
       // Navigate back or to login
       Get.back();
-        } on SocketException catch (e) {
+    } on SocketException catch (e) {
       print('Network error during registration: $e');
       _showError(
         'Network error. Please check your internet connection and try again.',

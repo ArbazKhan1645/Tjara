@@ -39,7 +39,6 @@ import 'package:tjara/app/modules/modules_admin/admin/stories/view/stories_view.
 import 'package:tjara/app/modules/modules_admin/admin/transactions/transaction_page.dart';
 import 'package:tjara/app/modules/modules_admin/admin/users/insert/insert_user.dart';
 import 'package:tjara/app/modules/modules_admin/admin/users/view/users_view.dart';
-import 'package:tjara/app/modules/modules_admin/admin/websettings/websettings_view.dart';
 import 'package:tjara/app/modules/modules_admin/admin/withdrawel/withdrawel.dart';
 import 'package:tjara/app/modules/modules_admin/admin/surveys/view.dart';
 import 'package:tjara/app/modules/modules_customer/my_account/widgets/orders_screen.dart';
@@ -49,6 +48,7 @@ import 'package:tjara/app/modules/modules_customer/my_activities/my_job_applicat
 import 'package:tjara/app/modules/modules_customer/my_activities/my_participations/views/my_participations_view.dart';
 import 'package:tjara/app/modules/modules_customer/orders_dashboard/widgets/chats.dart';
 import 'package:tjara/app/modules/modules_admin/admin_shops_module/views/shops/shops_view.dart';
+import 'package:tjara/app/modules/modules_customer/tjara_faqs/faqs.dart';
 import 'package:tjara/app/modules/web_settings/content_management/content_management_screen.dart';
 import 'package:tjara/app/modules/web_settings/web_settings_dashboard/web_settings_dashboard_screen.dart';
 import 'package:tjara/app/routes/app_pages.dart';
@@ -335,6 +335,9 @@ class TileWidget extends StatelessWidget {
       case 'Bulk Notifications':
         Get.to(() => NotificationFormScreen());
         break;
+      case 'Help & Center':
+        Get.to(() => const DashboardHelpCenterScreen());
+        break;
     }
   }
 
@@ -605,6 +608,7 @@ class RoleMenuConfig {
     'My Withdrawals',
     'Jobs',
     'Stories',
+    'Help & Center',
   ];
 
   // Vendor ke allowed sub-menus - yahan add/remove karo
@@ -652,6 +656,7 @@ class RoleMenuConfig {
     'My bids',
     'My Tjara Reseller Club',
     'Product Inquiry Chats',
+    'Help & Center',
   ];
 
   // Customer ke allowed sub-menus
@@ -989,4 +994,5 @@ final List<DrawerMenuModel> menusList = [
     icon: Icons.chat_bubble_outline,
     subCategories: [],
   ),
+  DrawerMenuModel(title: 'Help & Center', icon: Icons.help, subCategories: []),
 ];

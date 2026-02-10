@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:country_code_picker/country_code_picker.dart';
-import 'package:tjara/app/modules/authentication/new/sign_in.dart';
+import 'package:tjara/app/modules/authentication/controllers/auth_controller.dart';
 
 class SignupScreen extends StatelessWidget {
   const SignupScreen({
@@ -212,6 +212,37 @@ class SignupScreen extends StatelessWidget {
 
                             const SizedBox(height: 20),
 
+                            // Store Name (only for Seller)
+                            Obx(() {
+                              if (authController.userType.value != 'Seller') {
+                                return const SizedBox.shrink();
+                              }
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildLabel('Store Name'),
+                                  const SizedBox(height: 8),
+                                  TextFormField(
+                                    controller:
+                                        authController.storeNameController,
+                                    validator: (value) {
+                                      if (authController.userType.value ==
+                                              'Seller' &&
+                                          (value == null || value.isEmpty)) {
+                                        return 'Store name is required for sellers';
+                                      }
+                                      return null;
+                                    },
+                                    decoration: _buildInputDecoration(
+                                      hintText: 'Your store name',
+                                      prefixIcon: Icons.storefront_outlined,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                ],
+                              );
+                            }),
+
                             // Email
                             _buildLabel('Email Address'),
                             const SizedBox(height: 8),
@@ -385,6 +416,66 @@ class SignupScreen extends StatelessWidget {
                                         authController
                                             .toggleConfirmPasswordVisibility,
                                   ),
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 20),
+
+                            // Referral Code (Optional)
+                            _buildLabel('Referral Code (Optional)'),
+                            const SizedBox(height: 8),
+                            Obx(
+                              () => TextFormField(
+                                controller:
+                                    authController.referralCodeController,
+                                onChanged:
+                                    authController.onReferralCodeChanged,
+                                decoration: _buildInputDecoration(
+                                  hintText: 'Enter your referral code here',
+                                  prefixIcon: Icons.card_giftcard_outlined,
+                                  suffixIcon: authController
+                                              .referralStatus
+                                              .value ==
+                                          'validating'
+                                      ? const Padding(
+                                        padding: EdgeInsets.all(14.0),
+                                        child: SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Color(0xFFfea52d),
+                                          ),
+                                        ),
+                                      )
+                                      : authController
+                                              .referralStatus
+                                              .value ==
+                                          'valid'
+                                      ? const Icon(
+                                        Icons.check_circle,
+                                        color: Colors.green,
+                                      )
+                                      : authController
+                                              .referralStatus
+                                              .value ==
+                                          'invalid'
+                                      ? const Icon(
+                                        Icons.error_outline,
+                                        color: Colors.red,
+                                      )
+                                      : null,
+                                ).copyWith(
+                                  errorText:
+                                      authController
+                                              .referralErrorMessage
+                                              .value
+                                              .isNotEmpty
+                                          ? authController
+                                              .referralErrorMessage
+                                              .value
+                                          : null,
                                 ),
                               ),
                             ),

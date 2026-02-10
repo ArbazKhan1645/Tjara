@@ -1,10 +1,13 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/core/widgets/appbar.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/widgets/other_product_grid.dart';
+import 'package:tjara/app/modules/modules_customer/app_home/widgets/related_products_grid.dart';
 import 'package:tjara/app/modules/modules_customer/customer_dashboard/controllers/dashboard_controller.dart';
 import 'package:tjara/app/modules/modules_customer/user_wishlist/controllers/wishlist_controller.dart';
 
@@ -70,6 +73,10 @@ class WishlistScreen extends GetView<WishlistController> {
     );
   }
 
+  static final String _randomLetter = String.fromCharCode(
+    65 + Random().nextInt(26),
+  );
+
   Widget _buildWishlistContent(WishlistController controller) {
     return CustomScrollView(
       slivers: [
@@ -81,13 +88,16 @@ class WishlistScreen extends GetView<WishlistController> {
           final isDataLoaded = controller.wishlistController.isDataLoaded;
 
           if (isLoading && !isDataLoaded) {
-            return const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator()),
+            return const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 60),
+                child: Center(child: CircularProgressIndicator()),
+              ),
             );
           }
 
           if (wishlistItems == null || wishlistItems.isEmpty) {
-            return SliverFillRemaining(child: _buildEmptyState());
+            return SliverToBoxAdapter(child: _buildEmptyState());
           }
 
           return SliverPadding(
@@ -113,64 +123,94 @@ class WishlistScreen extends GetView<WishlistController> {
           );
         }),
 
-        const SliverToBoxAdapter(child: SizedBox(height: 100)),
+        // Section header for related products
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 16, 14, 4),
+            child: Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFfea52d),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'Recommended for you',
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Related Products (always visible)
+        const SliverToBoxAdapter(
+          child: RelatedProductGrid(isdealsection: false, search: 'a'),
+        ),
+
+        const SliverToBoxAdapter(child: SizedBox(height: 300)),
       ],
     );
   }
 
-  // ✨ Better Empty State
   Widget _buildEmptyState() {
-    return Center(
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 32),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 120,
-            height: 120,
+            width: 80,
+            height: 80,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  const Color(0xFFfea52d).withOpacity(0.2),
-                  const Color(0xFFf97316).withOpacity(0.1),
-                ],
-              ),
+              color: const Color(0xFFfea52d).withOpacity(0.12),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.favorite_border,
-              size: 60,
+              size: 40,
               color: Color(0xFFfea52d),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           const Text(
             'Your wishlist is empty',
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
               color: Colors.black87,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
             'Save items you love to find them later',
-            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           ElevatedButton.icon(
             onPressed: () {
               DashboardController.instance.reset();
             },
-            icon: const Icon(Icons.shopping_bag_outlined),
+            icon: const Icon(Icons.shopping_bag_outlined, size: 18),
             label: const Text('Start Shopping'),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFfea52d),
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              textStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
