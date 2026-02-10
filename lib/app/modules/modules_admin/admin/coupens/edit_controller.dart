@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:tjara/app/models/coupens/coupens_model.dart';
 import 'package:tjara/app/models/products/products_model.dart';
 import 'package:tjara/app/modules/modules_admin/admin/coupens/edit_model.dart';
 import 'package:tjara/app/modules/modules_admin/admin/coupens/edit_service.dart';
@@ -45,11 +46,61 @@ class EditCouponController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxBool isCreatingCoupon = false.obs;
 
+  // Edit mode
+  final Rxn<Coupon> editingCoupon = Rxn<Coupon>();
+  bool get isEditMode => editingCoupon.value != null;
+
   @override
   void onInit() {
     super.onInit();
     _initializeDates();
     _setupShopSearch();
+    _handleArguments();
+  }
+
+  void _handleArguments() {
+    final args = Get.arguments;
+    if (args != null && args is Coupon) {
+      _loadCouponForEdit(args);
+    }
+  }
+
+  void _loadCouponForEdit(Coupon coupon) {
+    editingCoupon.value = coupon;
+
+    // Pre-fill form fields
+    nameController.text = coupon.name;
+    descriptionController.text = coupon.description ?? '';
+    selectedCouponType.value = coupon.couponType;
+    selectedDiscountType.value = coupon.discountType;
+    discountValueController.text = coupon.discountValue;
+    startDate.value = coupon.startDate;
+    expiryDate.value = coupon.expiryDate;
+    isGlobal.value = coupon.isGlobal;
+    selectedStatus.value = coupon.status;
+
+    if (coupon.minimumAmount != null && coupon.minimumAmount!.isNotEmpty) {
+      minimumAmountController.text = coupon.minimumAmount!;
+    }
+    if (coupon.maximumDiscount != null && coupon.maximumDiscount!.isNotEmpty) {
+      maximumDiscountController.text = coupon.maximumDiscount!;
+    }
+    if (coupon.usageLimit != null) {
+      usageLimitController.text = coupon.usageLimit.toString();
+    }
+    if (coupon.usageLimitPerUser != null) {
+      usageLimitPerUserController.text = coupon.usageLimitPerUser.toString();
+    }
+
+    // Load existing codes
+    for (var code in coupon.codes) {
+      generatedCodes.add(code.code);
+    }
+
+    // Load shop selections if not global
+    if (!coupon.isGlobal && coupon.shops.isNotEmpty) {
+      fetchShops();
+    }
   }
 
   void _initializeDates() {
@@ -289,7 +340,7 @@ class EditCouponController extends GetxController {
       return false;
     }
 
-    if (generatedCodes.isEmpty) {
+    if (!isEditMode && generatedCodes.isEmpty) {
       _showError('Please generate or add at least one coupon code');
       return false;
     }
@@ -297,60 +348,91 @@ class EditCouponController extends GetxController {
     return true;
   }
 
-  // Create coupon
+  String _formatDateTimeForApi(DateTime dt) {
+    return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} '
+        '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}:00';
+  }
+
+  // Create or Update coupon
   Future<void> createCoupon() async {
     if (!_validateForm()) return;
 
     try {
       isCreatingCoupon.value = true;
 
-      final request = CouponInsertRequest(
-        name: nameController.text.trim(),
-        description:
-            descriptionController.text.trim().isNotEmpty
-                ? descriptionController.text.trim()
-                : null,
-        couponType: selectedCouponType.value,
-        discountType:
-            selectedCouponType.value == 'discount'
-                ? selectedDiscountType.value
-                : null,
-        discountValue: double.parse(discountValueController.text),
-        startDate: startDate.value!,
-        expiryDate: expiryDate.value!,
-        isGlobal: isGlobal.value,
-        shopIds:
-            isGlobal.value
-                ? null
-                : selectedShops.map((s) => s.id ?? '').toList(),
-        codes: generatedCodes.toList(),
-        usageLimit:
-            usageLimitController.text.trim().isNotEmpty
-                ? int.parse(usageLimitController.text)
-                : null,
-        usageLimitPerUser:
-            usageLimitPerUserController.text.trim().isNotEmpty
-                ? int.parse(usageLimitPerUserController.text)
-                : null,
-        minimumAmount:
-            minimumAmountController.text.trim().isNotEmpty
-                ? double.parse(minimumAmountController.text)
-                : null,
-        maximumDiscount:
-            maximumDiscountController.text.trim().isNotEmpty
-                ? double.parse(maximumDiscountController.text)
-                : null,
-        status: selectedStatus.value,
-      );
-      await CouponEditService.insertCoupon(request);
+      if (isEditMode) {
+        // Update mode
+        final payload = {
+          'name': nameController.text.trim(),
+          'description': descriptionController.text.trim(),
+          'coupon_type': selectedCouponType.value,
+          'discount_type': selectedCouponType.value == 'discount'
+              ? selectedDiscountType.value
+              : null,
+          'discount_value': discountValueController.text.trim(),
+          'start_date': _formatDateTimeForApi(startDate.value!),
+          'expiry_date': _formatDateTimeForApi(expiryDate.value!),
+          'is_global': isGlobal.value ? '1' : '0',
+          'status': selectedStatus.value,
+          'minimum_amount': minimumAmountController.text.trim(),
+          'maximum_discount': maximumDiscountController.text.trim(),
+          'usage_limit': usageLimitController.text.trim(),
+          'usage_limit_per_user': usageLimitPerUserController.text.trim(),
+        };
 
-      _resetForm();
-      Get.back(); // Navigate back or to success page
+        await CouponEditService.updateCoupon(editingCoupon.value!.id, payload);
+        _showSuccess('Coupon updated successfully');
+        Get.back(result: true);
+      } else {
+        // Create mode
+        final request = CouponInsertRequest(
+          name: nameController.text.trim(),
+          description:
+              descriptionController.text.trim().isNotEmpty
+                  ? descriptionController.text.trim()
+                  : null,
+          couponType: selectedCouponType.value,
+          discountType:
+              selectedCouponType.value == 'discount'
+                  ? selectedDiscountType.value
+                  : null,
+          discountValue: double.parse(discountValueController.text),
+          startDate: startDate.value!,
+          expiryDate: expiryDate.value!,
+          isGlobal: isGlobal.value,
+          shopIds:
+              isGlobal.value
+                  ? null
+                  : selectedShops.map((s) => s.id ?? '').toList(),
+          codes: generatedCodes.toList(),
+          usageLimit:
+              usageLimitController.text.trim().isNotEmpty
+                  ? int.parse(usageLimitController.text)
+                  : null,
+          usageLimitPerUser:
+              usageLimitPerUserController.text.trim().isNotEmpty
+                  ? int.parse(usageLimitPerUserController.text)
+                  : null,
+          minimumAmount:
+              minimumAmountController.text.trim().isNotEmpty
+                  ? double.parse(minimumAmountController.text)
+                  : null,
+          maximumDiscount:
+              maximumDiscountController.text.trim().isNotEmpty
+                  ? double.parse(maximumDiscountController.text)
+                  : null,
+          status: selectedStatus.value,
+        );
+        await CouponEditService.insertCoupon(request);
+        _showSuccess('Coupon created successfully');
+        _resetForm();
+        Get.back();
+      }
     } catch (e) {
       if (e is ApiException) {
         _showError(e.message);
       } else {
-        _showError('Failed to create coupon: ${e.toString()}');
+        _showError('Failed to ${isEditMode ? 'update' : 'create'} coupon: ${e.toString()}');
       }
     } finally {
       isCreatingCoupon.value = false;

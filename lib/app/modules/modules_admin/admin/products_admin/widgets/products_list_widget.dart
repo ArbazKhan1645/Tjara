@@ -52,46 +52,42 @@ class AdminProductsList extends StatelessWidget {
       backgroundColor: AdminProductsTheme.surface,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          return Scrollbar(
-            thumbVisibility: true,
-            trackVisibility: true,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildTableHeader(),
-                    const SizedBox(height: AdminProductsTheme.spacingSm),
-                    ...adminProductsService.adminProducts.map((product) {
-                      final productId = product.id ?? '';
-                      return Padding(
-                        padding: const EdgeInsets.only(
-                          bottom: AdminProductsTheme.spacingSm,
-                        ),
-                        child: Obx(
-                          () => ProductItemCard(
-                            product: product,
-                            isSelected: adminProductsService.selectedProductIds
-                                .contains(productId),
-                            onSelectionChanged: (selected) {
-                              adminProductsService.toggleProductSelection(
-                                productId,
-                              );
-                            },
-                          ),
-                        ),
-                      );
-                    }),
-                    if (adminProductsService.isPaginationLoading.value)
-                      const Padding(
-                        padding: EdgeInsets.all(AdminProductsTheme.spacingLg),
-                        child: ProductShimmerCard(),
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minWidth: constraints.maxWidth),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildTableHeader(),
+                  const SizedBox(height: AdminProductsTheme.spacingSm),
+                  ...adminProductsService.adminProducts.map((product) {
+                    final productId = product.id ?? '';
+                    return Padding(
+                      padding: const EdgeInsets.only(
+                        bottom: AdminProductsTheme.spacingSm,
                       ),
-                  ],
-                ),
+                      child: Obx(
+                        () => ProductItemCard(
+                          product: product,
+                          isSelected: adminProductsService.selectedProductIds
+                              .contains(productId),
+                          onSelectionChanged: (selected) {
+                            adminProductsService.toggleProductSelection(
+                              productId,
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  }),
+                  if (adminProductsService.isPaginationLoading.value)
+                    const Padding(
+                      padding: EdgeInsets.all(AdminProductsTheme.spacingLg),
+                      child: ProductShimmerCard(),
+                    ),
+                ],
               ),
             ),
           );
@@ -994,9 +990,21 @@ class BulkActionBar extends StatelessWidget {
     return product?.shop?.shop?.id ?? product?.shopId ?? '';
   }
 
+  Map<String, String> _getProductTypes(List<String> productIds) {
+    final map = <String, String>{};
+    for (final id in productIds) {
+      final product = adminProductsService.adminProducts.firstWhereOrNull(
+        (p) => p.id == id,
+      );
+      map[id] = product?.productType ?? 'simple';
+    }
+    return map;
+  }
+
   Future<void> _executeBulkActive(bool setActive) async {
     final ids = adminProductsService.selectedProductIds.toList();
     final shopId = _getShopId(ids.first);
+    final productTypes = _getProductTypes(ids);
 
     adminProductsService.isBulkOperationRunning.value = true;
     adminProductsService.bulkOperationProgress.value = 0;
@@ -1006,6 +1014,7 @@ class BulkActionBar extends StatelessWidget {
       productIds: ids,
       shopId: shopId,
       setActive: setActive,
+      productTypes: productTypes,
       onProgress: (completed, total) {
         adminProductsService.bulkOperationProgress.value = completed;
       },
@@ -1021,6 +1030,7 @@ class BulkActionBar extends StatelessWidget {
   Future<void> _executeBulkFeatured(bool setFeatured) async {
     final ids = adminProductsService.selectedProductIds.toList();
     final shopId = _getShopId(ids.first);
+    final productTypes = _getProductTypes(ids);
 
     adminProductsService.isBulkOperationRunning.value = true;
     adminProductsService.bulkOperationProgress.value = 0;
@@ -1030,6 +1040,7 @@ class BulkActionBar extends StatelessWidget {
       productIds: ids,
       shopId: shopId,
       setFeatured: setFeatured,
+      productTypes: productTypes,
       onProgress: (completed, total) {
         adminProductsService.bulkOperationProgress.value = completed;
       },
@@ -1045,6 +1056,7 @@ class BulkActionBar extends StatelessWidget {
   Future<void> _executeBulkDeal(bool setDeal) async {
     final ids = adminProductsService.selectedProductIds.toList();
     final shopId = _getShopId(ids.first);
+    final productTypes = _getProductTypes(ids);
 
     adminProductsService.isBulkOperationRunning.value = true;
     adminProductsService.bulkOperationProgress.value = 0;
@@ -1054,6 +1066,7 @@ class BulkActionBar extends StatelessWidget {
       productIds: ids,
       shopId: shopId,
       setDeal: setDeal,
+      productTypes: productTypes,
       onProgress: (completed, total) {
         adminProductsService.bulkOperationProgress.value = completed;
       },
@@ -1072,6 +1085,7 @@ class BulkActionBar extends StatelessWidget {
   Future<void> _executeBulkInventory(bool setInventory) async {
     final ids = adminProductsService.selectedProductIds.toList();
     final shopId = _getShopId(ids.first);
+    final productTypes = _getProductTypes(ids);
 
     adminProductsService.isBulkOperationRunning.value = true;
     adminProductsService.bulkOperationProgress.value = 0;
@@ -1081,6 +1095,7 @@ class BulkActionBar extends StatelessWidget {
       productIds: ids,
       shopId: shopId,
       setInventory: setInventory,
+      productTypes: productTypes,
       onProgress: (completed, total) {
         adminProductsService.bulkOperationProgress.value = completed;
       },
@@ -1099,6 +1114,7 @@ class BulkActionBar extends StatelessWidget {
   Future<void> _executeBulkPinSale(bool setPinned) async {
     final ids = adminProductsService.selectedProductIds.toList();
     final shopId = _getShopId(ids.first);
+    final productTypes = _getProductTypes(ids);
 
     adminProductsService.isBulkOperationRunning.value = true;
     adminProductsService.bulkOperationProgress.value = 0;
@@ -1108,6 +1124,7 @@ class BulkActionBar extends StatelessWidget {
       productIds: ids,
       shopId: shopId,
       setPinned: setPinned,
+      productTypes: productTypes,
       onProgress: (completed, total) {
         adminProductsService.bulkOperationProgress.value = completed;
       },
@@ -1126,6 +1143,7 @@ class BulkActionBar extends StatelessWidget {
   Future<void> _executeBulkPrivate(bool setPrivate) async {
     final ids = adminProductsService.selectedProductIds.toList();
     final shopId = _getShopId(ids.first);
+    final productTypes = _getProductTypes(ids);
 
     adminProductsService.isBulkOperationRunning.value = true;
     adminProductsService.bulkOperationProgress.value = 0;
@@ -1135,6 +1153,7 @@ class BulkActionBar extends StatelessWidget {
       productIds: ids,
       shopId: shopId,
       setPrivate: setPrivate,
+      productTypes: productTypes,
       onProgress: (completed, total) {
         adminProductsService.bulkOperationProgress.value = completed;
       },

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_products_promotion/controller/admin_promotion_controller.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_products_promotion/model/promotion_model.dart';
+import 'package:tjara/app/modules/admin_products_module/admin_products_promotion/model/store_product_model.dart';
 
 class ApplyPromotionWidget extends StatelessWidget {
   final AdminPromotionController controller;
@@ -234,6 +235,12 @@ class ApplyPromotionWidget extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             _buildSelectedProductsOption(),
+            // Product search section when selected_products is active
+            if (controller.applyToOption.value == 'selected_products' &&
+                controller.selectedShop.value != null) ...[
+              const SizedBox(height: 16),
+              _buildProductSearchSection(),
+            ],
           ],
         ));
   }
@@ -241,11 +248,8 @@ class ApplyPromotionWidget extends StatelessWidget {
   Widget _buildSelectedProductsOption() {
     return Obx(() {
       final isSelected = controller.applyToOption.value == 'selected_products';
-      final isLoading = controller.isLoadingStoreProducts.value;
       final productCount = controller.selectedStoreProductIds.length;
       final hasProducts = productCount > 0;
-      final shopSelected = controller.selectedShop.value != null;
-      final fetched = controller.storeProductsFetched.value;
 
       return InkWell(
         onTap: () => controller.onApplyToOptionChanged('selected_products'),
@@ -290,51 +294,35 @@ class ApplyPromotionWidget extends StatelessWidget {
                             color: isSelected ? darkTeal : Colors.grey.shade800,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        if (isLoading)
-                          const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: primaryTeal,
-                            ),
-                          )
-                        else if (isSelected && shopSelected && fetched)
+                        if (isSelected && hasProducts) ...[
+                          const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8,
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: hasProducts
-                                  ? primaryTeal.withValues(alpha: 0.1)
-                                  : Colors.red.shade50,
+                              color: primaryTeal.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              hasProducts ? '$productCount' : '0',
-                              style: TextStyle(
+                              '$productCount selected',
+                              style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
-                                color: hasProducts
-                                    ? primaryTeal
-                                    : Colors.red.shade700,
+                                color: primaryTeal,
                               ),
                             ),
                           ),
+                        ],
                       ],
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      isSelected && shopSelected && fetched && !hasProducts
-                          ? 'No products found for this store'
-                          : 'Apply to top 10 products of the selected store',
+                      'Search and select products from the store',
                       style: TextStyle(
                         fontSize: 12,
-                        color: isSelected && fetched && !hasProducts
-                            ? Colors.red.shade600
-                            : Colors.grey.shade500,
+                        color: Colors.grey.shade500,
                       ),
                     ),
                   ],
@@ -357,6 +345,201 @@ class ApplyPromotionWidget extends StatelessWidget {
                     : null,
               ),
             ],
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildProductSearchSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            controller: controller.productSearchController,
+            onChanged: (value) => controller.searchStoreProducts(value),
+            decoration: InputDecoration(
+              hintText: 'Search products...',
+              hintStyle: TextStyle(
+                color: Colors.grey.shade400,
+                fontSize: 14,
+              ),
+              prefixIcon: Obx(() => controller.isSearchingProducts.value
+                  ? const Padding(
+                      padding: EdgeInsets.all(14),
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: primaryTeal,
+                        ),
+                      ),
+                    )
+                  : const Icon(Icons.search_rounded, color: primaryTeal)),
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade200),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: primaryTeal, width: 1.5),
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Obx(() {
+            if (controller.isSearchingProducts.value &&
+                controller.searchedProducts.isEmpty) {
+              return _buildShimmerList(3);
+            }
+
+            if (controller.searchedProducts.isEmpty) {
+              if (controller.productSearchController.text.isEmpty) {
+                return _buildEmptyState(
+                  icon: Icons.search_rounded,
+                  message: 'Search for products to select',
+                );
+              }
+              return _buildEmptyState(
+                icon: Icons.inventory_2_outlined,
+                message: 'No products found',
+              );
+            }
+
+            return Container(
+              constraints: const BoxConstraints(maxHeight: 280),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade200),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  padding: EdgeInsets.zero,
+                  itemCount: controller.searchedProducts.length,
+                  separatorBuilder: (_, __) => Divider(
+                    height: 1,
+                    color: Colors.grey.shade100,
+                  ),
+                  itemBuilder: (context, index) {
+                    final product = controller.searchedProducts[index];
+                    return _buildProductItem(product);
+                  },
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProductItem(StoreProduct product) {
+    return Obx(() {
+      final isSelected =
+          controller.selectedStoreProductIds.contains(product.id);
+      return Material(
+        color: isSelected ? lightTeal : Colors.white,
+        child: InkWell(
+          onTap: () => controller.toggleProductSelection(product.id),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                // Product thumbnail
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.grey.shade200,
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: product.thumbnailUrl != null &&
+                          product.thumbnailUrl!.isNotEmpty
+                      ? Image.network(
+                          product.thumbnailUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Icon(
+                            Icons.image_outlined,
+                            color: Colors.grey.shade400,
+                            size: 24,
+                          ),
+                        )
+                      : Icon(
+                          Icons.image_outlined,
+                          color: Colors.grey.shade400,
+                          size: 24,
+                        ),
+                ),
+                const SizedBox(width: 12),
+                // Product info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        product.name,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.w500,
+                          color: isSelected ? darkTeal : Colors.grey.shade800,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (product.price != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          '\$${product.price}',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: isSelected ? primaryTeal : Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                // Checkbox
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: isSelected ? primaryTeal : Colors.white,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: isSelected ? primaryTeal : Colors.grey.shade400,
+                      width: 2,
+                    ),
+                  ),
+                  child: isSelected
+                      ? const Icon(Icons.check_rounded,
+                          color: Colors.white, size: 16)
+                      : null,
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -841,9 +1024,7 @@ class ApplyPromotionWidget extends StatelessWidget {
 
       // Selected products validation
       if (controller.applyToOption.value == 'selected_products') {
-        canApply = canApply &&
-            !controller.isLoadingStoreProducts.value &&
-            controller.selectedStoreProductIds.isNotEmpty;
+        canApply = canApply && controller.selectedStoreProductIds.isNotEmpty;
       }
 
       return Container(

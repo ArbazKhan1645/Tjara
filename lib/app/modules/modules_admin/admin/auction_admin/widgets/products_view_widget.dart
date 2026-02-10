@@ -419,6 +419,10 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
 
         // Row: Flash Deals Added toggle + Flash Deals date range
         _buildFlashDealsRow(),
+        const SizedBox(height: AuctionAdminTheme.spacingMd),
+
+        // Analytics date range
+        _buildAnalyticsDateRange(),
         const SizedBox(height: AuctionAdminTheme.spacingLg),
 
         // Per Page + Quick Filters
@@ -447,56 +451,224 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
     );
   }
 
-  // Sort dropdown
+  // Sort dropdown - opens bottom sheet with categorized options
   Widget _buildSortDropdown() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('SORT BY', style: AuctionAdminTheme.labelMedium),
+        const Text('SORT BY : COLUMNS', style: AuctionAdminTheme.labelMedium),
         const SizedBox(height: AuctionAdminTheme.spacingSm),
         Obx(() {
-          return Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AuctionAdminTheme.spacingMd,
-            ),
-            decoration: BoxDecoration(
-              color: AuctionAdminTheme.surface,
+          final currentSort = _service.sortOrder.value;
+          final displayName =
+              AdminAuctionService.getSortOrderDisplayName(currentSort);
+          return Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => _showSortBottomSheet(context),
               borderRadius: BorderRadius.circular(AuctionAdminTheme.radiusMd),
-              border: Border.all(color: AuctionAdminTheme.border),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<SortOrder>(
-                value: _service.sortOrder.value,
-                isExpanded: true,
-                icon: const Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: AuctionAdminTheme.textSecondary,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AuctionAdminTheme.spacingMd,
+                  vertical: 14,
                 ),
-                style: AuctionAdminTheme.bodyLarge,
-                items: const [
-                  DropdownMenuItem(
-                    value: SortOrder.none,
-                    child: Text('Default'),
+                decoration: BoxDecoration(
+                  color: AuctionAdminTheme.surface,
+                  borderRadius:
+                      BorderRadius.circular(AuctionAdminTheme.radiusMd),
+                  border: Border.all(
+                    color:
+                        currentSort != SortOrder.none
+                            ? AuctionAdminTheme.accent
+                            : AuctionAdminTheme.border,
                   ),
-                  DropdownMenuItem(
-                    value: SortOrder.priceAsc,
-                    child: Text('Low to high (Price)'),
-                  ),
-                  DropdownMenuItem(
-                    value: SortOrder.priceDesc,
-                    child: Text('High to low (Price)'),
-                  ),
-                ],
-                onChanged: (value) {
-                  if (value != null) {
-                    _service.updateSortOrder(value);
-                  }
-                },
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        displayName,
+                        style: AuctionAdminTheme.bodyLarge.copyWith(
+                          color:
+                              currentSort != SortOrder.none
+                                  ? AuctionAdminTheme.accent
+                                  : null,
+                          fontWeight:
+                              currentSort != SortOrder.none
+                                  ? FontWeight.w600
+                                  : null,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: AuctionAdminTheme.textSecondary,
+                    ),
+                  ],
+                ),
               ),
             ),
           );
         }),
       ],
+    );
+  }
+
+  void _showSortBottomSheet(BuildContext context) {
+    final sortCategories = <String, List<SortOrder>>{
+      'Price & Date': [
+        SortOrder.priceAsc,
+        SortOrder.priceDesc,
+        SortOrder.recentUpdatedAll,
+        SortOrder.recentUpdatedPrice,
+        SortOrder.recentUpdatedSalePrice,
+        SortOrder.recentUpdatedStock,
+      ],
+      'Analytics - Views': [SortOrder.mostViews, SortOrder.leastViews],
+      'Analytics - Cart': [
+        SortOrder.mostAddedToCart,
+        SortOrder.leastAddedToCart,
+      ],
+      'Analytics - Engagement': [
+        SortOrder.mostEnquired,
+        SortOrder.leastEnquired,
+        SortOrder.mostAddedToWishlist,
+        SortOrder.leastAddedToWishlist,
+      ],
+      'Analytics - Contact': [
+        SortOrder.mostCalled,
+        SortOrder.leastCalled,
+        SortOrder.mostWhatsAppContacted,
+        SortOrder.leastWhatsAppContacted,
+      ],
+      'Analytics - Performance': [
+        SortOrder.mostTotalInteractions,
+        SortOrder.leastTotalInteractions,
+        SortOrder.bestConversionRate,
+        SortOrder.worstConversionRate,
+        SortOrder.bestContactRate,
+        SortOrder.worstContactRate,
+      ],
+    };
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.4,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (_, scrollController) {
+            return Obx(() {
+              final currentSort = _service.sortOrder.value;
+              return Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 8),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Sort by : Columns',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        if (currentSort != SortOrder.none)
+                          TextButton(
+                            onPressed: () {
+                              _service.updateSortOrder(SortOrder.none);
+                              Navigator.pop(ctx);
+                            },
+                            child: const Text('Reset'),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  Expanded(
+                    child: ListView(
+                      controller: scrollController,
+                      padding: EdgeInsets.zero,
+                      children: [
+                        for (final entry in sortCategories.entries) ...[
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                            child: Text(
+                              entry.key,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: AuctionAdminTheme.accent,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ),
+                          ...entry.value.map((order) {
+                            final isSelected = currentSort == order;
+                            return ListTile(
+                              dense: true,
+                              selected: isSelected,
+                              selectedTileColor:
+                                  AuctionAdminTheme.accent.withValues(
+                                    alpha: 0.08,
+                                  ),
+                              title: Text(
+                                AdminAuctionService
+                                    .getSortOrderDisplayName(order),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight:
+                                      isSelected
+                                          ? FontWeight.w600
+                                          : FontWeight.w400,
+                                  color:
+                                      isSelected
+                                          ? AuctionAdminTheme.accent
+                                          : AuctionAdminTheme.textPrimary,
+                                ),
+                              ),
+                              trailing:
+                                  isSelected
+                                      ? const Icon(
+                                        Icons.check,
+                                        color: AuctionAdminTheme.accent,
+                                        size: 20,
+                                      )
+                                      : null,
+                              onTap: () {
+                                _service.updateSortOrder(order);
+                                Navigator.pop(ctx);
+                              },
+                            );
+                          }),
+                        ],
+                        const SizedBox(height: 16),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            });
+          },
+        );
+      },
     );
   }
 
@@ -1025,6 +1197,76 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
     );
   }
 
+  // Analytics date range
+  Widget _buildAnalyticsDateRange() {
+    return Obx(() {
+      final startDate = _service.analyticsStartDate.value;
+      final endDate = _service.analyticsEndDate.value;
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'ANALYTICS DATE RANGE',
+            style: AuctionAdminTheme.labelMedium,
+          ),
+          const SizedBox(height: AuctionAdminTheme.spacingSm),
+          Row(
+            children: [
+              Expanded(
+                child: _buildDateButton(
+                  label: 'Start Date',
+                  date: startDate,
+                  onTap: () async {
+                    final picked = await _pickDate(
+                      initial: startDate,
+                      helpText: 'Analytics Start Date',
+                    );
+                    if (picked != null) {
+                      _service.updateAnalyticsDateRange(picked, endDate);
+                    }
+                  },
+                ),
+              ),
+              Container(
+                margin: const EdgeInsets.symmetric(
+                  horizontal: AuctionAdminTheme.spacingSm,
+                ),
+                child: const Icon(
+                  Icons.arrow_forward,
+                  size: 16,
+                  color: AuctionAdminTheme.textTertiary,
+                ),
+              ),
+              Expanded(
+                child: _buildDateButton(
+                  label: 'End Date',
+                  date: endDate,
+                  onTap: () async {
+                    final picked = await _pickDate(
+                      initial: endDate,
+                      firstDate: startDate,
+                      helpText: 'Analytics End Date',
+                    );
+                    if (picked != null) {
+                      _service.updateAnalyticsDateRange(startDate, picked);
+                    }
+                  },
+                ),
+              ),
+              if (startDate != null || endDate != null) ...[
+                const SizedBox(width: AuctionAdminTheme.spacingSm),
+                _buildClearDateButton(
+                  onTap: () => _service.updateAnalyticsDateRange(null, null),
+                ),
+              ],
+            ],
+          ),
+        ],
+      );
+    });
+  }
+
   String _formatStatusLabel(String name) {
     return name.substring(0, 1).toUpperCase() + name.substring(1);
   }
@@ -1216,27 +1458,53 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
         const SizedBox(height: AuctionAdminTheme.spacingSm),
         Obx(() {
           final filters = _service.getPredefinedFilters();
+          final skuFilter = _service.skuFilter.value;
           return Wrap(
             spacing: AuctionAdminTheme.spacingSm,
             runSpacing: AuctionAdminTheme.spacingSm,
-            children:
-                filters.map((filter) {
-                  final isActive = _service.activeFilters.any(
-                    (f) => f.column == filter.column,
+            children: [
+              ...filters.map((filter) {
+                final isActive = _service.activeFilters.any(
+                  (f) => f.column == filter.column,
+                );
+                return _buildFilterChip(
+                  label: filter.name,
+                  isSelected: isActive,
+                  onTap: () {
+                    if (isActive) {
+                      _service.removeColumnFilter(filter.column);
+                    } else {
+                      _service.addColumnFilter(filter);
+                    }
+                  },
+                  color: AuctionAdminTheme.accent,
+                );
+              }),
+              _buildFilterChip(
+                label: 'Existing SKU',
+                isSelected: skuFilter == SkuFilter.existing,
+                onTap: () {
+                  _service.updateSkuFilter(
+                    skuFilter == SkuFilter.existing
+                        ? SkuFilter.all
+                        : SkuFilter.existing,
                   );
-                  return _buildFilterChip(
-                    label: filter.name,
-                    isSelected: isActive,
-                    onTap: () {
-                      if (isActive) {
-                        _service.removeColumnFilter(filter.column);
-                      } else {
-                        _service.addColumnFilter(filter);
-                      }
-                    },
-                    color: AuctionAdminTheme.accent,
+                },
+                color: AuctionAdminTheme.accent,
+              ),
+              _buildFilterChip(
+                label: 'Without SKU',
+                isSelected: skuFilter == SkuFilter.withoutSku,
+                onTap: () {
+                  _service.updateSkuFilter(
+                    skuFilter == SkuFilter.withoutSku
+                        ? SkuFilter.all
+                        : SkuFilter.withoutSku,
                   );
-                }).toList(),
+                },
+                color: AuctionAdminTheme.accent,
+              ),
+            ],
           );
         }),
       ],
@@ -1305,7 +1573,9 @@ class _EnhancedAuctionViewWidgetState extends State<EnhancedAuctionViewWidget> {
           _service.selectedCategoryId.value.isNotEmpty ||
           _service.groupBySku.value ||
           _service.inventoryUpdatedEnabled.value ||
-          _service.flashDealsAddedEnabled.value;
+          _service.flashDealsAddedEnabled.value ||
+          _service.analyticsStartDate.value != null ||
+          _service.skuFilter.value != SkuFilter.all;
 
       if (!hasFilters) return const SizedBox.shrink();
 

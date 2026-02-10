@@ -50,6 +50,20 @@ class ProductActionButtons extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        _buildActionButton(
+          icon:
+              isActive
+                  ? Icons.visibility_rounded
+                  : Icons.visibility_off_rounded,
+          tooltip: isActive ? 'Product Active' : 'Product Inactive',
+          onTap: () => _showActiveDialog(context),
+          color:
+              isActive
+                  ? AdminProductsTheme.success
+                  : AdminProductsTheme.textTertiary,
+          backgroundColor: isActive ? AdminProductsTheme.successLight : null,
+        ),
+
         // QR Code Button
         _buildActionButton(
           icon: Icons.qr_code_2_rounded,
@@ -59,20 +73,16 @@ class ProductActionButtons extends StatelessWidget {
         ),
 
         // Active Status Button
-        _buildActionButton(
-          icon: isActive ? Icons.visibility_rounded : Icons.visibility_off_rounded,
-          tooltip: isActive ? 'Product Active' : 'Product Inactive',
-          onTap: () => _showActiveDialog(context),
-          color: isActive ? AdminProductsTheme.success : AdminProductsTheme.textTertiary,
-          backgroundColor: isActive ? AdminProductsTheme.successLight : null,
-        ),
 
         // Featured Button
         _buildActionButton(
           icon: Icons.star_rounded,
           tooltip: isFeatured ? 'Featured Product' : 'Not Featured',
           onTap: () => _showFeaturedDialog(context),
-          color: isFeatured ? AdminProductsTheme.featured : AdminProductsTheme.textTertiary,
+          color:
+              isFeatured
+                  ? AdminProductsTheme.featured
+                  : AdminProductsTheme.textTertiary,
           backgroundColor: isFeatured ? AdminProductsTheme.featuredLight : null,
         ),
 
@@ -81,7 +91,10 @@ class ProductActionButtons extends StatelessWidget {
           icon: Icons.local_offer_rounded,
           tooltip: isDeal ? 'Deal Product' : 'Not on Deal',
           onTap: () => _showDealDialog(context),
-          color: isDeal ? AdminProductsTheme.deal : AdminProductsTheme.textTertiary,
+          color:
+              isDeal
+                  ? AdminProductsTheme.deal
+                  : AdminProductsTheme.textTertiary,
           backgroundColor: isDeal ? AdminProductsTheme.dealLight : null,
         ),
 
@@ -90,7 +103,10 @@ class ProductActionButtons extends StatelessWidget {
           icon: Icons.inventory_2_rounded,
           tooltip: hasInventory ? 'Inventory Assigned' : 'No Inventory',
           onTap: () => _showInventoryDialog(context),
-          color: hasInventory ? const Color(0xFF8B5CF6) : AdminProductsTheme.textTertiary,
+          color:
+              hasInventory
+                  ? const Color(0xFF8B5CF6)
+                  : AdminProductsTheme.textTertiary,
           backgroundColor: hasInventory ? const Color(0xFFEDE9FE) : null,
         ),
 
@@ -99,7 +115,10 @@ class ProductActionButtons extends StatelessWidget {
           icon: Icons.push_pin_rounded,
           tooltip: isPinnedSale ? 'Pinned Sale' : 'Not Pinned',
           onTap: () => _showPinSaleDialog(context),
-          color: isPinnedSale ? const Color(0xFFEC4899) : AdminProductsTheme.textTertiary,
+          color:
+              isPinnedSale
+                  ? const Color(0xFFEC4899)
+                  : AdminProductsTheme.textTertiary,
           backgroundColor: isPinnedSale ? const Color(0xFFFCE7F3) : null,
         ),
 
@@ -108,7 +127,10 @@ class ProductActionButtons extends StatelessWidget {
           icon: isPrivate ? Icons.lock_rounded : Icons.lock_open_rounded,
           tooltip: isPrivate ? 'Private Product' : 'Public Product',
           onTap: () => _showPrivateDialog(context),
-          color: isPrivate ? const Color(0xFF6366F1) : AdminProductsTheme.textTertiary,
+          color:
+              isPrivate
+                  ? const Color(0xFF6366F1)
+                  : AdminProductsTheme.textTertiary,
           backgroundColor: isPrivate ? const Color(0xFFE0E7FF) : null,
         ),
 
@@ -162,27 +184,28 @@ class ProductActionButtons extends StatelessWidget {
           color: AdminProductsTheme.textSecondary,
         ),
       ),
-      itemBuilder: (BuildContext context) => [
-        _buildPopupMenuItem(
-          value: 'duplicate',
-          icon: Icons.copy_rounded,
-          label: 'Duplicate',
-          color: AdminProductsTheme.info,
-        ),
-        _buildPopupMenuItem(
-          value: 'edit',
-          icon: Icons.edit_rounded,
-          label: 'Edit',
-          color: AdminProductsTheme.primary,
-        ),
-        const PopupMenuDivider(),
-        _buildPopupMenuItem(
-          value: 'delete',
-          icon: Icons.delete_outline_rounded,
-          label: 'Delete',
-          color: AdminProductsTheme.error,
-        ),
-      ],
+      itemBuilder:
+          (BuildContext context) => [
+            _buildPopupMenuItem(
+              value: 'duplicate',
+              icon: Icons.copy_rounded,
+              label: 'Duplicate',
+              color: AdminProductsTheme.info,
+            ),
+            _buildPopupMenuItem(
+              value: 'edit',
+              icon: Icons.edit_rounded,
+              label: 'Edit',
+              color: AdminProductsTheme.primary,
+            ),
+            const PopupMenuDivider(),
+            _buildPopupMenuItem(
+              value: 'delete',
+              icon: Icons.delete_outline_rounded,
+              label: 'Delete',
+              color: AdminProductsTheme.error,
+            ),
+          ],
     );
   }
 
@@ -369,11 +392,13 @@ class ProductActionButtons extends StatelessWidget {
     _showConfirmationDialog(
       context: context,
       title: 'Product Status',
-      message: isActive
-          ? 'Do you want to make this product inactive?'
-          : 'Do you want to make this product active?',
+      message:
+          isActive
+              ? 'Do you want to make this product inactive?'
+              : 'Do you want to make this product active?',
       confirmLabel: isActive ? 'Make Inactive' : 'Make Active',
-      confirmColor: isActive ? AdminProductsTheme.warning : AdminProductsTheme.success,
+      confirmColor:
+          isActive ? AdminProductsTheme.warning : AdminProductsTheme.success,
       icon: isActive ? Icons.visibility_off_rounded : Icons.visibility_rounded,
       onConfirm: () {
         Navigator.of(context).pop();
@@ -386,9 +411,10 @@ class ProductActionButtons extends StatelessWidget {
     _showConfirmationDialog(
       context: context,
       title: 'Featured Product',
-      message: isFeatured
-          ? 'Do you want to remove this product from featured?'
-          : 'Do you want to make this product featured?',
+      message:
+          isFeatured
+              ? 'Do you want to remove this product from featured?'
+              : 'Do you want to make this product featured?',
       confirmLabel: isFeatured ? 'Remove Featured' : 'Make Featured',
       confirmColor: AdminProductsTheme.featured,
       icon: Icons.star_rounded,
@@ -403,9 +429,10 @@ class ProductActionButtons extends StatelessWidget {
     _showConfirmationDialog(
       context: context,
       title: 'Deal Product',
-      message: isDeal
-          ? 'Do you want to remove this product from deals?'
-          : 'Do you want to add this product to deals?',
+      message:
+          isDeal
+              ? 'Do you want to remove this product from deals?'
+              : 'Do you want to add this product to deals?',
       confirmLabel: isDeal ? 'Remove from Deal' : 'Add to Deal',
       confirmColor: AdminProductsTheme.deal,
       icon: Icons.local_offer_rounded,
@@ -420,9 +447,10 @@ class ProductActionButtons extends StatelessWidget {
     _showConfirmationDialog(
       context: context,
       title: 'Inventory Status',
-      message: hasInventory
-          ? 'Do you want to unassign inventory from this product?'
-          : 'Do you want to mark this product as inventory assigned?',
+      message:
+          hasInventory
+              ? 'Do you want to unassign inventory from this product?'
+              : 'Do you want to mark this product as inventory assigned?',
       confirmLabel: hasInventory ? 'Unassign Inventory' : 'Assign Inventory',
       confirmColor: const Color(0xFF8B5CF6),
       icon: Icons.inventory_2_rounded,
@@ -437,9 +465,10 @@ class ProductActionButtons extends StatelessWidget {
     _showConfirmationDialog(
       context: context,
       title: 'Pin Sale',
-      message: isPinnedSale
-          ? 'Do you want to unpin this product from sale?'
-          : 'Do you want to pin this product to sale?',
+      message:
+          isPinnedSale
+              ? 'Do you want to unpin this product from sale?'
+              : 'Do you want to pin this product to sale?',
       confirmLabel: isPinnedSale ? 'Unpin Sale' : 'Pin Sale',
       confirmColor: const Color(0xFFEC4899),
       icon: Icons.push_pin_rounded,
@@ -454,9 +483,10 @@ class ProductActionButtons extends StatelessWidget {
     _showConfirmationDialog(
       context: context,
       title: 'Product Visibility',
-      message: isPrivate
-          ? 'Do you want to make this product public?'
-          : 'Do you want to make this product private?',
+      message:
+          isPrivate
+              ? 'Do you want to make this product public?'
+              : 'Do you want to make this product private?',
       confirmLabel: isPrivate ? 'Make Public' : 'Make Private',
       confirmColor: const Color(0xFF6366F1),
       icon: isPrivate ? Icons.lock_open_rounded : Icons.lock_rounded,
@@ -501,10 +531,7 @@ class ProductActionButtons extends StatelessWidget {
                 const SizedBox(height: AdminProductsTheme.spacingLg),
 
                 // Title
-                Text(
-                  title,
-                  style: AdminProductsTheme.headingMedium,
-                ),
+                Text(title, style: AdminProductsTheme.headingMedium),
                 const SizedBox(height: AdminProductsTheme.spacingSm),
 
                 // Message

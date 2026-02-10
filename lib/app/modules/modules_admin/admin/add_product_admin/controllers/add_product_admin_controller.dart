@@ -13,6 +13,10 @@ import 'package:tjara/app/models/categories/categories_model.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/widgets/attributes/attributes_manage.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/widgets/car_location_data_widget.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/widgets/admin_ui_components.dart';
+import 'package:tjara/app/modules/modules_admin/admin/products_attributes_group/model.dart';
+import 'package:tjara/app/modules/modules_admin/admin/products_attributes_group/service.dart';
+import 'package:tjara/app/models/product_attributes/products_attributes_model.dart'
+    as prod_attr;
 import 'package:tjara/app/services/auth/auth_service.dart';
 import 'package:tjara/main.dart';
 
@@ -74,6 +78,20 @@ class AddProductAdminController extends GetxController {
   // Variants
   final RxList<VariantData> variants = <VariantData>[].obs;
   String mainattributeId = '';
+
+  // Group Attributes
+  RxBool useGroupAttributes = false.obs;
+  Rx<AttributeGroupModel?> selectedAttributeGroup =
+      Rx<AttributeGroupModel?>(null);
+  final RxList<AttributeGroupModel> attributeGroups =
+      <AttributeGroupModel>[].obs;
+  final RxBool isLoadingGroups = false.obs;
+
+  // Car product check
+  bool get isCarProduct {
+    final group = selectedProductgroup.value.toLowerCase();
+    return group == 'car' || group == 'cars';
+  }
 
   // Edit mode variables
   AdminProducts? editProduct;
@@ -139,6 +157,11 @@ class AddProductAdminController extends GetxController {
         if (args is String) {
           selectedProductgroup.value = args;
         }
+      }
+
+      // Force Simple type for car products
+      if (isCarProduct) {
+        selectedProductType.value = 'Simple';
       }
     } catch (e) {
       _showErrorSnackbar('Error initializing product form', e.toString());
@@ -434,6 +457,91 @@ class AddProductAdminController extends GetxController {
 
   void setProductType(String type) {
     selectedProductType.value = type;
+    // Reset group attributes when switching type
+    if (type != 'Variants') {
+      useGroupAttributes.value = false;
+      selectedAttributeGroup.value = null;
+    }
+    update();
+  }
+
+  // Group Attributes Methods
+  Future<void> fetchAttributeGroups() async {
+    try {
+      isLoadingGroups.value = true;
+      final service = AttributeGroupService();
+      final groups = await service.getAttributeGroups();
+      attributeGroups.value = groups;
+    } catch (e) {
+      _showErrorSnackbar('Error', 'Failed to load attribute groups');
+    } finally {
+      isLoadingGroups.value = false;
+    }
+  }
+
+  void toggleGroupAttributes(bool value) {
+    useGroupAttributes.value = value;
+    if (!value) {
+      // Switching back to manual mode - clear group selection and variants
+      selectedAttributeGroup.value = null;
+      variants.clear();
+      mainattributeId = '';
+    } else {
+      // Switching to group mode - clear manual variants and fetch groups
+      variants.clear();
+      mainattributeId = '';
+      if (attributeGroups.isEmpty) {
+        fetchAttributeGroups();
+      }
+    }
+    update();
+  }
+
+  void selectAttributeGroup(AttributeGroupModel? group) {
+    selectedAttributeGroup.value = group;
+    variants.clear();
+    mainattributeId = '';
+
+    if (group == null || group.attributes.isEmpty) {
+      update();
+      return;
+    }
+
+    // Populate variants from all items in the group
+    for (final attribute in group.attributes) {
+      // Create a ProductAttributes object from AttributeData
+      final productAttr = prod_attr.ProductAttributes(
+        id: attribute.id,
+        name: attribute.name,
+      );
+
+      for (final item in attribute.items) {
+        // Create a ProductAttributeItems from AttributeItem
+        final productItem = prod_attr.ProductAttributeItems(
+          id: item.id,
+          name: item.name,
+          attributeId: attribute.id,
+        );
+
+        final variantData = VariantData(
+          item: productItem,
+          primaryAttribute: productAttr,
+          price: 0.0,
+          stock: 0,
+          salePrice: 0.0,
+          sku: '',
+          upcCode: '',
+        );
+
+        variants.add(variantData);
+
+        // Set mainattributeId from the first variant
+        if (mainattributeId.isEmpty) {
+          mainattributeId = attribute.id;
+        }
+      }
+    }
+    update();
   }
 
   // Media Management

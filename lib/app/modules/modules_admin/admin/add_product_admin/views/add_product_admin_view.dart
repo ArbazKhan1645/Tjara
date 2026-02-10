@@ -248,6 +248,13 @@ class AddAdminProductWidget extends StatelessWidget {
         controller.variants.isEmpty) {
       return 'Variants are required';
     }
+    if (controller.selectedProductType.value == 'Variants') {
+      for (int i = 0; i < controller.variants.length; i++) {
+        if (controller.variants[i].price <= 0) {
+          return 'Price is required for variant "${controller.variants[i].item.name ?? 'Variant ${i + 1}'}"';
+        }
+      }
+    }
     if (controller.selectedProductType.value == 'Simple' &&
         controller.priceController.text.trim().isEmpty) {
       return 'Product price is required';

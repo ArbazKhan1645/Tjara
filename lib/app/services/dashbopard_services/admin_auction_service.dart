@@ -13,7 +13,35 @@ enum ProductStatus { all, active, inactive, deleted }
 
 enum FilterColumn { salePrice, featured, productGroup, productType, status }
 
-enum SortOrder { none, priceAsc, priceDesc }
+enum SortOrder {
+  none,
+  priceAsc,
+  priceDesc,
+  recentUpdatedAll,
+  recentUpdatedPrice,
+  recentUpdatedSalePrice,
+  recentUpdatedStock,
+  mostViews,
+  leastViews,
+  mostAddedToCart,
+  leastAddedToCart,
+  mostEnquired,
+  leastEnquired,
+  mostAddedToWishlist,
+  leastAddedToWishlist,
+  mostCalled,
+  leastCalled,
+  mostWhatsAppContacted,
+  leastWhatsAppContacted,
+  mostTotalInteractions,
+  leastTotalInteractions,
+  bestConversionRate,
+  worstConversionRate,
+  bestContactRate,
+  worstContactRate,
+}
+
+enum SkuFilter { all, existing, withoutSku }
 
 enum FeaturedFilter { all, featured, notFeatured }
 
@@ -109,6 +137,13 @@ class AdminAuctionService extends GetxService {
   final RxBool flashDealsAddedEnabled = false.obs;
   final Rx<DateTime?> flashDealsStartDate = Rxn<DateTime>();
   final Rx<DateTime?> flashDealsEndDate = Rxn<DateTime>();
+
+  // Analytics date range
+  final Rx<DateTime?> analyticsStartDate = Rxn<DateTime>();
+  final Rx<DateTime?> analyticsEndDate = Rxn<DateTime>();
+
+  // SKU filter
+  final Rx<SkuFilter> skuFilter = SkuFilter.all.obs;
 
   // Multi-select
   final RxSet<String> selectedProductIds = <String>{}.obs;
@@ -515,6 +550,21 @@ class AdminAuctionService extends GetxService {
     }
   }
 
+  // Analytics date range
+  void updateAnalyticsDateRange(DateTime? start, DateTime? end) {
+    analyticsStartDate.value = start;
+    analyticsEndDate.value = end;
+    currentPage.value = 1;
+    fetchProducts(refresh: true);
+  }
+
+  // SKU filter
+  void updateSkuFilter(SkuFilter filter) {
+    skuFilter.value = filter;
+    currentPage.value = 1;
+    fetchProducts(refresh: true);
+  }
+
   // Date range filter
   void updateDateRange(DateTime? start, DateTime? end) {
     startDate.value = start;
@@ -561,6 +611,9 @@ class AdminAuctionService extends GetxService {
     flashDealsAddedEnabled.value = false;
     flashDealsStartDate.value = null;
     flashDealsEndDate.value = null;
+    analyticsStartDate.value = null;
+    analyticsEndDate.value = null;
+    skuFilter.value = SkuFilter.all;
     currentPage.value = 1;
     fetchProducts(refresh: true);
   }
@@ -596,10 +649,19 @@ class AdminAuctionService extends GetxService {
     }
 
     // Sorting
-    if (sortOrder.value != SortOrder.none) {
+    if (sortOrder.value == SortOrder.priceAsc) {
       queryParams['orderBy'] = 'price';
-      queryParams['order'] =
-          sortOrder.value == SortOrder.priceAsc ? 'asc' : 'desc';
+      queryParams['order'] = 'asc';
+    } else if (sortOrder.value == SortOrder.priceDesc) {
+      queryParams['orderBy'] = 'price';
+      queryParams['order'] = 'desc';
+    } else if (sortOrder.value == SortOrder.recentUpdatedAll) {
+      queryParams['orderBy'] = 'created_at';
+      queryParams['order'] = 'desc';
+    } else if (sortOrder.value != SortOrder.none) {
+      queryParams['orderBy'] = 'price';
+      queryParams['order'] = 'asc';
+      queryParams['customOrder'] = _getCustomOrderValue(sortOrder.value);
     }
 
     // Group by SKU
@@ -732,8 +794,35 @@ class AdminAuctionService extends GetxService {
       metaFieldIndex++;
     }
 
+    // SKU filter
+    if (skuFilter.value == SkuFilter.existing) {
+      hasMetaFields = true;
+      queryParams['filterByMetaFields[fields][$metaFieldIndex][key]'] = 'sku';
+      queryParams['filterByMetaFields[fields][$metaFieldIndex][value]'] =
+          'NOT_EMPTY';
+      queryParams['filterByMetaFields[fields][$metaFieldIndex][operator]'] =
+          'IS_NOT_EMPTY';
+      metaFieldIndex++;
+    } else if (skuFilter.value == SkuFilter.withoutSku) {
+      hasMetaFields = true;
+      queryParams['filterByMetaFields[fields][$metaFieldIndex][key]'] = 'sku';
+      queryParams['filterByMetaFields[fields][$metaFieldIndex][value]'] =
+          'EMPTY';
+      queryParams['filterByMetaFields[fields][$metaFieldIndex][operator]'] =
+          'IS_EMPTY';
+      metaFieldIndex++;
+    }
+
     if (hasMetaFields) {
       queryParams['filterByMetaFields[filterJoin]'] = 'AND';
+    }
+
+    // Analytics date range
+    if (analyticsStartDate.value != null && analyticsEndDate.value != null) {
+      queryParams['analytics_date_range[start_date]'] =
+          analyticsStartDate.value!.toIso8601String();
+      queryParams['analytics_date_range[end_date]'] =
+          analyticsEndDate.value!.toIso8601String();
     }
 
     return Uri.parse(_baseUrl).replace(queryParameters: queryParams);
@@ -751,6 +840,110 @@ class AdminAuctionService extends GetxService {
         return 'product_type';
       case FilterColumn.status:
         return 'status';
+    }
+  }
+
+  String _getCustomOrderValue(SortOrder order) {
+    switch (order) {
+      case SortOrder.recentUpdatedPrice:
+        return 'recent_price_updated_products_first';
+      case SortOrder.recentUpdatedSalePrice:
+        return 'recent_sale_price_updated_products_first';
+      case SortOrder.recentUpdatedStock:
+        return 'recent_stock_updated_products_first';
+      case SortOrder.mostViews:
+        return 'analytics_views_desc';
+      case SortOrder.leastViews:
+        return 'analytics_views_asc';
+      case SortOrder.mostAddedToCart:
+        return 'analytics_add_to_cart_desc';
+      case SortOrder.leastAddedToCart:
+        return 'analytics_add_to_cart_asc';
+      case SortOrder.mostEnquired:
+        return 'analytics_enquire_now_desc';
+      case SortOrder.leastEnquired:
+        return 'analytics_enquire_now_asc';
+      case SortOrder.mostAddedToWishlist:
+        return 'analytics_add_to_wishlist_desc';
+      case SortOrder.leastAddedToWishlist:
+        return 'analytics_add_to_wishlist_asc';
+      case SortOrder.mostCalled:
+        return 'analytics_call_desc';
+      case SortOrder.leastCalled:
+        return 'analytics_call_asc';
+      case SortOrder.mostWhatsAppContacted:
+        return 'analytics_whatsapp_desc';
+      case SortOrder.leastWhatsAppContacted:
+        return 'analytics_whatsapp_asc';
+      case SortOrder.mostTotalInteractions:
+        return 'analytics_total_interactions_desc';
+      case SortOrder.leastTotalInteractions:
+        return 'analytics_total_interactions_asc';
+      case SortOrder.bestConversionRate:
+        return 'analytics_conversion_rate_desc';
+      case SortOrder.worstConversionRate:
+        return 'analytics_conversion_rate_asc';
+      case SortOrder.bestContactRate:
+        return 'analytics_contact_rate_desc';
+      case SortOrder.worstContactRate:
+        return 'analytics_contact_rate_asc';
+      default:
+        return '';
+    }
+  }
+
+  static String getSortOrderDisplayName(SortOrder order) {
+    switch (order) {
+      case SortOrder.none:
+        return 'Default';
+      case SortOrder.priceAsc:
+        return 'Low to high (Price)';
+      case SortOrder.priceDesc:
+        return 'High to low (Price)';
+      case SortOrder.recentUpdatedAll:
+        return 'Recent Updated (All Fields)';
+      case SortOrder.recentUpdatedPrice:
+        return 'Recent Updated (Price)';
+      case SortOrder.recentUpdatedSalePrice:
+        return 'Recent Updated (Sale Price)';
+      case SortOrder.recentUpdatedStock:
+        return 'Recent Updated (Stock)';
+      case SortOrder.mostViews:
+        return 'Most Views';
+      case SortOrder.leastViews:
+        return 'Least Views';
+      case SortOrder.mostAddedToCart:
+        return 'Most Added to Cart';
+      case SortOrder.leastAddedToCart:
+        return 'Least Added to Cart';
+      case SortOrder.mostEnquired:
+        return 'Most Enquired';
+      case SortOrder.leastEnquired:
+        return 'Least Enquired';
+      case SortOrder.mostAddedToWishlist:
+        return 'Most Added to Wishlist';
+      case SortOrder.leastAddedToWishlist:
+        return 'Least Added to Wishlist';
+      case SortOrder.mostCalled:
+        return 'Most Called';
+      case SortOrder.leastCalled:
+        return 'Least Called';
+      case SortOrder.mostWhatsAppContacted:
+        return 'Most WhatsApp Contacted';
+      case SortOrder.leastWhatsAppContacted:
+        return 'Least WhatsApp Contacted';
+      case SortOrder.mostTotalInteractions:
+        return 'Most Total Interactions';
+      case SortOrder.leastTotalInteractions:
+        return 'Least Total Interactions';
+      case SortOrder.bestConversionRate:
+        return 'Best Conversion Rate';
+      case SortOrder.worstConversionRate:
+        return 'Worst Conversion Rate';
+      case SortOrder.bestContactRate:
+        return 'Best Contact Rate';
+      case SortOrder.worstContactRate:
+        return 'Worst Contact Rate';
     }
   }
 
@@ -843,11 +1036,7 @@ class AdminAuctionService extends GetxService {
     }
 
     if (sortOrder.value != SortOrder.none) {
-      filters.add(
-        sortOrder.value == SortOrder.priceAsc
-            ? 'Sort: Low to High'
-            : 'Sort: High to Low',
-      );
+      filters.add('Sort: ${getSortOrderDisplayName(sortOrder.value)}');
     }
 
     if (selectedShopName.value.isNotEmpty) {
@@ -881,6 +1070,16 @@ class AdminAuctionService extends GetxService {
 
     if (flashDealsAddedEnabled.value) {
       filters.add('Flash Deals Added');
+    }
+
+    if (analyticsStartDate.value != null && analyticsEndDate.value != null) {
+      filters.add('Analytics Date Range Applied');
+    }
+
+    if (skuFilter.value == SkuFilter.existing) {
+      filters.add('Existing SKU');
+    } else if (skuFilter.value == SkuFilter.withoutSku) {
+      filters.add('Without SKU');
     }
 
     filters.addAll(activeFilters.map((f) => f.name));

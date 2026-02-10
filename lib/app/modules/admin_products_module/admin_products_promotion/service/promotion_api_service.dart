@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:tjara/app/modules/admin_products_module/admin_products_promotion/model/promotion_model.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_products_promotion/model/shop_model.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_products_promotion/model/category_model.dart';
+import 'package:tjara/app/modules/admin_products_module/admin_products_promotion/model/store_product_model.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
 
 class PromotionApiException implements Exception {
@@ -225,10 +226,11 @@ class PromotionApiService {
     }
   }
 
-  // Fetch products of a specific store (for "Selected Products of Store" option)
-  Future<List<String>> fetchStoreProducts({
+  // Fetch/search products of a specific store
+  Future<List<StoreProduct>> fetchStoreProducts({
     required String shopId,
-    int perPage = 10,
+    String search = '',
+    int perPage = 20,
   }) async {
     try {
       final uri = Uri.parse('$baseUrl/products').replace(
@@ -238,7 +240,7 @@ class PromotionApiService {
           'start_date': '2000-01-01 00:00:01',
           'end_date': '2100-01-01 00:00:01',
           'filterJoin': 'OR',
-          'search': '',
+          'search': search,
           'search_by_id': '',
           'sku': '',
           'orderBy': 'created_at',
@@ -262,19 +264,17 @@ class PromotionApiService {
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
-        final List<String> productIds = [];
+        final List<StoreProduct> productList = [];
 
         if (jsonData['products'] != null &&
             jsonData['products']['data'] != null) {
           final List<dynamic> products = jsonData['products']['data'];
           for (var product in products) {
-            if (product['id'] != null) {
-              productIds.add(product['id'].toString());
-            }
+            productList.add(StoreProduct.fromJson(product));
           }
         }
 
-        return productIds;
+        return productList;
       } else {
         throw PromotionApiException(
           _getErrorMessage(response),

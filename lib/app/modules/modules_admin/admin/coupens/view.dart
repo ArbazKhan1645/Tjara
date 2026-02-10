@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/core/widgets/admin_app_bar_actions.dart';
 import 'package:tjara/app/models/coupens/coupens_model.dart';
+import 'package:tjara/app/modules/modules_admin/admin/coupens/add_coupen.dart';
 import 'package:tjara/app/modules/modules_admin/admin/coupens/controller.dart';
+import 'package:tjara/app/modules/modules_admin/admin/coupens/edit_controller.dart';
 import 'package:tjara/app/modules/modules_admin/admin/coupens/shimmer.dart';
 
 class CouponScreen extends StatelessWidget {
@@ -16,12 +18,12 @@ class CouponScreen extends StatelessWidget {
     const expandedStackGradient = LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: [Color(0xFFF97316), Color(0xFFFACC15)],
+      colors: [Colors.teal, Colors.teal],
     );
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF97316),
+        backgroundColor: Colors.teal,
         actions: [const AdminAppBarActionsSimple()],
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
@@ -639,15 +641,15 @@ class CouponScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                onPressed: () {
-                  // TODO: Navigate to edit coupon screen
-                  Get.snackbar(
-                    'Info',
-                    'Edit coupon feature will be implemented later',
-                    snackPosition: SnackPosition.BOTTOM,
-                    backgroundColor: Colors.blue,
-                    colorText: Colors.white,
+                onPressed: () async {
+                  Get.delete<EditCouponController>(force: true);
+                  final result = await Get.to(
+                    () => AddCouponPage(),
+                    arguments: coupon,
                   );
+                  if (result == true) {
+                    controller.fetchCoupons(refresh: true);
+                  }
                 },
                 icon: const Icon(Icons.edit_outlined, size: 16),
                 tooltip: 'Edit',

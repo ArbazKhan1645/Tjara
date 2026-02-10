@@ -8,13 +8,13 @@ class ContentManagementService {
 
   static Map<String, String> get _headers => {
     'Accept': 'application/json',
-    'X-Request-From': 'Website',
+    'X-Request-From': 'Dashboard',
   };
 
   static Map<String, String> get _headersWithJson => {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'X-Request-From': 'Website',
+    'X-Request-From': 'Dashboard',
   };
 
   /// Fetch content management settings
@@ -242,6 +242,78 @@ class ContentManagementService {
     }
   }
 
+  // ============================================
+  // Products
+  // ============================================
+
+  /// Search products by query
+  static Future<ProductsResponse> searchProducts(String query) async {
+    try {
+      final uri = Uri.parse('$_baseUrl/products?search=$query');
+      final response = await http.get(uri, headers: _headers);
+      print(response.body);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final productsMap = data['products'] as Map<String, dynamic>? ?? {};
+        final productsData = productsMap['data'] as List? ?? [];
+
+        final products =
+            productsData.map((p) {
+              return ProductItem(
+                id: p['id']?.toString() ?? '',
+                name: p['name']?.toString() ?? '',
+                isFeatured: p['is_featured'],
+                isDeal: p['is_deal'],
+                salePrice: p['sale_price'],
+                productGroup: p['product_group']?.toString() ?? '',
+              );
+            }).toList();
+
+        return ProductsResponse(success: true, products: products);
+      } else {
+        return ProductsResponse(
+          success: false,
+          error: 'Failed to search products. Status: ${response.statusCode}',
+          products: [],
+        );
+      }
+    } catch (e) {
+      return ProductsResponse(
+        success: false,
+        error: 'Network error: $e',
+        products: [],
+      );
+    }
+  }
+
+  /// Fetch a single product by ID (returns name)
+  static Future<ProductItem?> fetchProductById(String id) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/products/$id'),
+        headers: _headers,
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final p = data['product'] as Map<String, dynamic>? ?? {};
+
+        return ProductItem(
+          id: p['id']?.toString() ?? '',
+          name: p['name']?.toString() ?? '',
+          isFeatured: p['is_featured'],
+          isDeal: p['is_deal'],
+          salePrice: p['sale_price'],
+          productGroup: p['product_group']?.toString() ?? '',
+        );
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   /// Upload media and return URL
   static Future<MediaUploadResponse> uploadMediaAndGetUrl(
     List<File> files, {
@@ -331,6 +403,10 @@ class ContentManagementSettings {
   final String allProductsNoticeDir;
   final String headerCategories;
   final String shopDiscounts;
+  final String featuredProductsSortOrder;
+  final String featuredCarsSortOrder;
+  final String saleProductsSortOrder;
+  final String superDealsProductsSortOrder;
 
   ContentManagementSettings({
     required this.allCategoriesImageUrl,
@@ -344,6 +420,10 @@ class ContentManagementSettings {
     required this.allProductsNoticeDir,
     required this.headerCategories,
     required this.shopDiscounts,
+    required this.featuredProductsSortOrder,
+    required this.featuredCarsSortOrder,
+    required this.saleProductsSortOrder,
+    required this.superDealsProductsSortOrder,
   });
 
   factory ContentManagementSettings.fromJson(Map<String, dynamic> json) {
@@ -361,6 +441,12 @@ class ContentManagementSettings {
           json['all_products_notice_dir']?.toString() ?? 'ltr',
       headerCategories: json['header_categories']?.toString() ?? '',
       shopDiscounts: json['shop_discounts']?.toString() ?? '[]',
+      featuredProductsSortOrder:
+          json['featured_products_sort_order']?.toString() ?? '',
+      featuredCarsSortOrder: json['featured_cars_sort_order']?.toString() ?? '',
+      saleProductsSortOrder: json['sale_products_sort_order']?.toString() ?? '',
+      superDealsProductsSortOrder:
+          json['super_deals_products_sort_order']?.toString() ?? '',
     );
   }
 }
@@ -378,6 +464,24 @@ class ShopItem {
   final String name;
 
   ShopItem({required this.id, required this.name});
+}
+
+class ProductItem {
+  final String id;
+  final String name;
+  final dynamic isFeatured;
+  final dynamic isDeal;
+  final dynamic salePrice;
+  final String productGroup;
+
+  ProductItem({
+    required this.id,
+    required this.name,
+    this.isFeatured,
+    this.isDeal,
+    this.salePrice,
+    required this.productGroup,
+  });
 }
 
 class ShopDiscount {
@@ -455,6 +559,14 @@ class ShopsResponse {
   final String? error;
 
   ShopsResponse({required this.success, required this.shops, this.error});
+}
+
+class ProductsResponse {
+  final bool success;
+  final List<ProductItem> products;
+  final String? error;
+
+  ProductsResponse({required this.success, required this.products, this.error});
 }
 
 class MediaUploadResponse {

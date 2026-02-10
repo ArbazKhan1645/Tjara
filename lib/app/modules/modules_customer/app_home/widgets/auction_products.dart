@@ -293,23 +293,24 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
       return;
     }
 
-    final endTimeLocal = endTime.toLocal();
-    final now = DateTime.now();
-    _remainingTime = endTimeLocal.difference(now);
+    // UTC + offset approach (same as detail screen and timer callback)
+    final nowUtc = DateTime.now().toUtc();
+    final offset = DateTime.now().timeZoneOffset;
+    final difference = endTime.toUtc().difference(nowUtc) + offset;
 
-    if (_remainingTime! <= Duration.zero) {
+    if (difference <= Duration.zero) {
       _isExpired = true;
+      _remainingTime = Duration.zero;
       return;
     }
 
-    // Sirf agar auction active hai to timer start karo
+    _remainingTime = difference;
     _startCountdownTimer();
   }
 
   void _startCountdownTimer() {
     _countdownTimer?.cancel();
 
-    // Har minute update karo (ya har 30 seconds agar chahiye)
     _countdownTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       if (!mounted) {
         _countdownTimer?.cancel();
@@ -319,11 +320,12 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
       final endTime = DateTime.tryParse(widget.product.auctionEndTime!);
       if (endTime == null) return;
 
-      final endTimeLocal = endTime.toLocal();
-      final now = DateTime.now();
-      final remaining = endTimeLocal.difference(now);
+      // 🔥 SAME APPROACH (UTC + offset)
+      final nowUtc = DateTime.now().toUtc();
+      final offset = DateTime.now().timeZoneOffset;
+      final difference = endTime.toUtc().difference(nowUtc) + offset;
 
-      if (remaining <= Duration.zero) {
+      if (difference <= Duration.zero) {
         setState(() {
           _isExpired = true;
           _remainingTime = Duration.zero;
@@ -331,7 +333,8 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
         _countdownTimer?.cancel();
       } else {
         setState(() {
-          _remainingTime = remaining;
+          _remainingTime = difference;
+          _isExpired = false;
         });
       }
     });
@@ -403,7 +406,10 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
-                      color: (_isExpired && !_isComingSoon) ? Colors.grey.shade600 : Colors.black,
+                      color:
+                          (_isExpired && !_isComingSoon)
+                              ? Colors.grey.shade600
+                              : Colors.black,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -417,7 +423,9 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
                           color:
-                              (_isExpired && !_isComingSoon) ? Colors.grey.shade500 : Colors.teal,
+                              (_isExpired && !_isComingSoon)
+                                  ? Colors.grey.shade500
+                                  : Colors.teal,
                         ),
                       ),
                       if (!_isExpired && !_isComingSoon) ...[
@@ -564,18 +572,19 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
                   end: Alignment.bottomRight,
                 )
                 : isEnded
-                    ? null
-                    : const LinearGradient(
-                      colors: [Color(0xFFFFF3E0), Color(0xFFFFE0B2)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                ? null
+                : const LinearGradient(
+                  colors: [Color(0xFFFFF3E0), Color(0xFFFFE0B2)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
         color: isEnded ? Colors.grey.shade200 : null,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: _isComingSoon
-              ? Colors.teal.shade200
-              : isEnded
+          color:
+              _isComingSoon
+                  ? Colors.teal.shade200
+                  : isEnded
                   ? Colors.grey.shade300
                   : Colors.orange.shade200,
           width: 1,
@@ -587,7 +596,11 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
                 ? Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.schedule_rounded, size: 14, color: Colors.teal.shade600),
+                    Icon(
+                      Icons.schedule_rounded,
+                      size: 14,
+                      color: Colors.teal.shade600,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       'Coming Soon',
@@ -600,40 +613,40 @@ class _AuctionProductCardState extends State<AuctionProductCard> {
                   ],
                 )
                 : isEnded
-                    ? Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.block, size: 14, color: Colors.grey.shade600),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Auction Ended',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    )
-                    : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.local_fire_department,
-                          size: 16,
-                          color: Colors.orange.shade700,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Bidding Active',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.orange.shade800,
-                          ),
-                        ),
-                      ],
+                ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.block, size: 14, color: Colors.grey.shade600),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Auction Ended',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
+                  ],
+                )
+                : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.local_fire_department,
+                      size: 16,
+                      color: Colors.orange.shade700,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Bidding Active',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange.shade800,
+                      ),
+                    ),
+                  ],
+                ),
       ),
     );
   }

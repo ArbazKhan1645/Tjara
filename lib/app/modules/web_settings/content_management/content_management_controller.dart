@@ -54,6 +54,24 @@ class ContentManagementController extends GetxController {
   int _lastHeaderCategoryIdsLength = 0;
 
   // ============================================
+  // Product Sort Orders
+  // ============================================
+  var featuredProductIds = <String>[].obs;
+  var featuredCarIds = <String>[].obs;
+  var saleProductIds = <String>[].obs;
+  var superDealsProductIds = <String>[].obs;
+
+  /// Cache: product ID → name
+  var productNameCache = <String, String>{}.obs;
+
+  /// Live search results for product search
+  var productSearchResults = <ProductItem>[].obs;
+  var isSearchingProducts = false.obs;
+
+  /// Cache for product details futures
+  final Map<String, Future<ProductItem?>> _productDetailsFutureCache = {};
+
+  // ============================================
   // Shop Discounts
   // ============================================
   var shopDiscounts = <ShopDiscount>[].obs;
@@ -154,9 +172,18 @@ class ContentManagementController extends GetxController {
           }
         }
 
+        // Load product sort orders
+        _loadSortOrder(s.featuredProductsSortOrder, featuredProductIds);
+        _loadSortOrder(s.featuredCarsSortOrder, featuredCarIds);
+        _loadSortOrder(s.saleProductsSortOrder, saleProductIds);
+        _loadSortOrder(s.superDealsProductsSortOrder, superDealsProductIds);
+
         // For every shopId already saved in discounts, fetch its name by ID
         // so getShopName() can display it without a search.
         await _fetchShopNamesForExistingDiscounts();
+
+        // Fetch product names for all saved sort order IDs
+        await _fetchProductNamesForSortOrders();
       } else {
         errorMessage.value = settingsResponse.error;
       }
@@ -364,6 +391,195 @@ class ContentManagementController extends GetxController {
   }
 
   // ============================================
+  // Product Sort Order Methods
+  // ============================================
+
+  void _loadSortOrder(String csvIds, RxList<String> target) {
+    if (csvIds.isNotEmpty) {
+      target.value = csvIds.split(',').where((id) => id.isNotEmpty).toList();
+    }
+  }
+
+  /// Fetch product names for all saved sort order IDs
+  Future<void> _fetchProductNamesForSortOrders() async {
+    final allIds = <String>{
+      ...featuredProductIds,
+      ...featuredCarIds,
+      ...saleProductIds,
+      ...superDealsProductIds,
+    };
+
+    // Only fetch IDs not already cached
+    final idsToFetch = allIds.where((id) => !productNameCache.containsKey(id));
+    if (idsToFetch.isEmpty) return;
+
+    await Future.wait(
+      idsToFetch.map((id) async {
+        final product = await ContentManagementService.fetchProductById(id);
+        if (product != null) {
+          productNameCache[product.id] = product.name;
+        }
+      }),
+    );
+  }
+
+  /// Get product name from cache or fetch from API
+  String getProductName(String id) {
+    return productNameCache[id] ?? 'Loading...';
+  }
+
+  /// Get product details - checks cache first, then fetches
+  Future<ProductItem?> getProductDetails(String id) async {
+    if (id.isEmpty) return null;
+
+    // Check name cache
+    if (productNameCache.containsKey(id)) {
+      return ProductItem(
+        id: id,
+        name: productNameCache[id]!,
+        productGroup: '',
+      );
+    }
+
+    // Check pending future cache
+    if (_productDetailsFutureCache.containsKey(id)) {
+      return _productDetailsFutureCache[id];
+    }
+
+    final future = ContentManagementService.fetchProductById(id).then((product) {
+      if (product != null) {
+        productNameCache[product.id] = product.name;
+      }
+      return product;
+    });
+
+    _productDetailsFutureCache[id] = future;
+    return future;
+  }
+
+  /// Get the list for a given sort type
+  RxList<String> _getListForType(String type) {
+    switch (type) {
+      case 'featured_products':
+        return featuredProductIds;
+      case 'featured_cars':
+        return featuredCarIds;
+      case 'sale_products':
+        return saleProductIds;
+      case 'super_deals':
+        return superDealsProductIds;
+      default:
+        return featuredProductIds;
+    }
+  }
+
+  /// Get the settings key for a given sort type
+  String _getKeyForType(String type) {
+    switch (type) {
+      case 'featured_products':
+        return 'featured_products_sort_order';
+      case 'featured_cars':
+        return 'featured_cars_sort_order';
+      case 'sale_products':
+        return 'sale_products_sort_order';
+      case 'super_deals':
+        return 'super_deals_products_sort_order';
+      default:
+        return 'featured_products_sort_order';
+    }
+  }
+
+  Future<void> addProductToSort(String type, String productId) async {
+    final list = _getListForType(type);
+    if (list.contains(productId)) return;
+    list.add(productId);
+    await _saveSortOrder(type);
+  }
+
+  Future<void> removeProductFromSort(String type, String productId) async {
+    final list = _getListForType(type);
+    list.remove(productId);
+    await _saveSortOrder(type);
+  }
+
+  Future<void> reorderProducts(String type, int oldIndex, int newIndex) async {
+    final list = _getListForType(type);
+    if (newIndex > oldIndex) newIndex--;
+    final item = list.removeAt(oldIndex);
+    list.insert(newIndex, item);
+    await _saveSortOrder(type);
+  }
+
+  Future<void> _saveSortOrder(String type) async {
+    final list = _getListForType(type);
+    final key = _getKeyForType(type);
+    try {
+      await ContentManagementService.updateSettings({
+        key: list.join(','),
+      });
+    } catch (e) {
+      _showError('Failed to save sort order: $e');
+    }
+  }
+
+  /// Search products and filter by type
+  Future<void> searchProducts(String query, String type) async {
+    if (query.trim().isEmpty) {
+      productSearchResults.value = [];
+      return;
+    }
+
+    isSearchingProducts.value = true;
+    try {
+      final response = await ContentManagementService.searchProducts(query.trim());
+      if (response.success) {
+        // Cache names
+        for (final p in response.products) {
+          productNameCache[p.id] = p.name;
+        }
+
+        // Filter by type & exclude already added
+        final list = _getListForType(type);
+        final existingIds = list.toSet();
+
+        productSearchResults.value = response.products.where((p) {
+          if (existingIds.contains(p.id)) return false;
+          return _matchesType(p, type);
+        }).toList();
+      } else {
+        productSearchResults.value = [];
+      }
+    } catch (e) {
+      productSearchResults.value = [];
+    } finally {
+      isSearchingProducts.value = false;
+    }
+  }
+
+  bool _matchesType(ProductItem product, String type) {
+    switch (type) {
+      case 'featured_products':
+        final val = product.isFeatured;
+        return val == 1 || val == '1';
+      case 'featured_cars':
+        return product.productGroup == 'car';
+      case 'sale_products':
+        if (product.salePrice == null) return false;
+        final sp = num.tryParse(product.salePrice.toString()) ?? 0;
+        return sp > 0;
+      case 'super_deals':
+        final val = product.isDeal;
+        return val == 1 || val == '1';
+      default:
+        return true;
+    }
+  }
+
+  void clearProductSearch() {
+    productSearchResults.value = [];
+  }
+
+  // ============================================
   // Shop Search (used by the shop-picker in UI)
   // ============================================
 
@@ -500,6 +716,10 @@ class ContentManagementController extends GetxController {
         'all_products_notice_dir': allProductsNoticeDir.value,
         'header_categories': headerCategoryIds.join(','),
         'shop_discounts': discountsJson,
+        'featured_products_sort_order': featuredProductIds.join(','),
+        'featured_cars_sort_order': featuredCarIds.join(','),
+        'sale_products_sort_order': saleProductIds.join(','),
+        'super_deals_products_sort_order': superDealsProductIds.join(','),
       });
 
       if (response.success) {

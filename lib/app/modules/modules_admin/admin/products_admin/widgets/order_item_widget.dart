@@ -46,6 +46,7 @@ class _ProductItemCardState extends State<ProductItemCard> {
   bool get hasInventory => widget.product.meta?.inventoryUpdatedAt != null;
   bool get isPinnedSale => widget.product.meta?.isPinnedSale == '1';
   bool get isPrivate => status.toLowerCase() == 'private';
+  String? get productType => widget.product.productType;
 
   String get imageUrl {
     final media = widget.product.thumbnail?.media;
@@ -667,6 +668,7 @@ class _ProductItemCardState extends State<ProductItemCard> {
                                   productId: id,
                                   shopId: shopId,
                                   name: newName,
+                                  productType: productType,
                                 );
                             if (response.success) {
                               _showSuccessMessage(response.message);
@@ -836,6 +838,7 @@ class _ProductItemCardState extends State<ProductItemCard> {
                                       shopId: shopId,
                                       price: newPrice,
                                       isSalePrice: tabIndex == 1,
+                                      productType: productType,
                                     );
                                 if (response.success) {
                                   _showSuccessMessage(response.message);
@@ -1024,6 +1027,7 @@ class _ProductItemCardState extends State<ProductItemCard> {
                                       productId: id,
                                       shopId: shopId,
                                       stock: finalStock,
+                                      productType: productType,
                                     );
                                 if (response.success) {
                                   _showSuccessMessage(response.message);
@@ -1137,7 +1141,8 @@ class _ProductItemCardState extends State<ProductItemCard> {
     final response = await ProductService.updateActiveStatus(
       shopId: shopId,
       productId: id,
-      isActive: isActive,
+      isActive: !isActive,
+      productType: productType,
     );
 
     if (response.success) {
@@ -1152,7 +1157,8 @@ class _ProductItemCardState extends State<ProductItemCard> {
     final response = await ProductService.updateFeaturedStatus(
       shopId: shopId,
       productId: id,
-      isFeatured: isFeatured,
+      isFeatured: !isFeatured,
+      productType: productType,
     );
 
     if (response.success) {
@@ -1167,7 +1173,8 @@ class _ProductItemCardState extends State<ProductItemCard> {
     final response = await ProductService.updateDealStatus(
       shopId: shopId,
       productId: id,
-      isDeal: isDeal,
+      isDeal: !isDeal,
+      productType: productType,
     );
 
     if (response.success) {
@@ -1183,6 +1190,7 @@ class _ProductItemCardState extends State<ProductItemCard> {
       shopId: shopId,
       productId: id,
       hasInventory: hasInventory,
+      productType: productType,
     );
 
     if (response.success) {
@@ -1198,6 +1206,7 @@ class _ProductItemCardState extends State<ProductItemCard> {
       shopId: shopId,
       productId: id,
       isPinned: isPinnedSale,
+      productType: productType,
     );
 
     if (response.success) {
@@ -1213,6 +1222,7 @@ class _ProductItemCardState extends State<ProductItemCard> {
       shopId: shopId,
       productId: id,
       isPrivate: isPrivate,
+      productType: productType,
     );
 
     if (response.success) {

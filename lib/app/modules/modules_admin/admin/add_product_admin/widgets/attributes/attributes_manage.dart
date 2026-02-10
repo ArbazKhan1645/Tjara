@@ -243,26 +243,39 @@ class _AttributesManageState extends State<AttributesManage> {
             ),
             const SizedBox(height: 24),
 
-            // Attributes Dropdown
-            _buildAttributesDropdown(),
-            const SizedBox(height: 20),
+            // Manual mode: Attributes Dropdown & Available Items
+            Obx(() {
+              if (variantController.useGroupAttributes.value) {
+                return const SizedBox.shrink();
+              }
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildAttributesDropdown(),
+                  const SizedBox(height: 20),
+                  if (selectedAttribute != null) ...[
+                    _buildAvailableItemsSection(),
+                    const SizedBox(height: 20),
+                  ],
+                ],
+              );
+            }),
 
-            // Available Items Section
-            if (selectedAttribute != null) ...[
-              _buildAvailableItemsSection(),
-              const SizedBox(height: 20),
-            ],
-
-            // Selected Variants Section
-            if (selectedItems.isNotEmpty) ...[_buildSelectedVariantsSection()],
-            ElevatedButton(
-              onPressed: () {
-                final variations = variantController.getVariantsJson();
-                print(variations);
-                // Now you can use this data to send to your API
-              },
-              child: const Text('Save'),
-            ),
+            // Selected Variants Section (both manual and group modes)
+            Obx(() {
+              if (variantController.variants.isNotEmpty) {
+                return _buildSelectedVariantsSection();
+              }
+              return const SizedBox.shrink();
+            }),
+            // ElevatedButton(
+            //   onPressed: () {
+            //     final variations = variantController.getVariantsJson();
+            //     print(variations);
+            //     // Now you can use this data to send to your API
+            //   },
+            //   child: const Text('Save'),
+            // ),
           ],
         ),
       ),
@@ -414,7 +427,7 @@ class _AttributesManageState extends State<AttributesManage> {
             ),
             const SizedBox(width: 8),
             Text(
-              'Selected Variants (${selectedItems.length})',
+              'Selected Variants (${variantController.variants.length})',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -496,14 +509,15 @@ class _AttributesManageState extends State<AttributesManage> {
                   ),
                 ),
                 const Spacer(),
-                IconButton(
-                  icon: const Icon(
-                    Icons.delete_outline,
-                    color: Colors.red,
-                    size: 20,
+                if (!variantController.useGroupAttributes.value)
+                  IconButton(
+                    icon: const Icon(
+                      Icons.delete_outline,
+                      color: Colors.red,
+                      size: 20,
+                    ),
+                    onPressed: () => removeItemFromList(variantData.item),
                   ),
-                  onPressed: () => removeItemFromList(variantData.item),
-                ),
               ],
             ),
             Row(
@@ -659,7 +673,8 @@ class _AttributesManageState extends State<AttributesManage> {
             const SizedBox(height: 16),
 
             // Secondary Attribute Section
-            _buildSecondaryAttributeSection(variantData, index),
+            if (!variantController.useGroupAttributes.value)
+              _buildSecondaryAttributeSection(variantData, index),
           ],
         ),
       ),

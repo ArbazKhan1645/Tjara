@@ -529,7 +529,7 @@ class TileWidget extends StatelessWidget {
       case 'Add Coupens':
         Get.to(() => AddCouponPage());
         break;
-      case 'Content Managment':
+      case 'Website Content':
         Get.to(() => ContentManagementScreen());
         break;
       case 'Notification Logs':
@@ -948,7 +948,7 @@ final List<DrawerMenuModel> menusList = [
     icon: Icons.confirmation_num,
     arrowIcon: Icons.keyboard_arrow_down_rounded,
     subCategories: [
-      {'title': 'Content Managment', 'icon': Icons.confirmation_num},
+      {'title': 'Website Content', 'icon': Icons.confirmation_num},
     ],
   ),
   DrawerMenuModel(

@@ -13,11 +13,16 @@ class ProductService {
     required String productId,
     required String shopId,
     required bool isActive,
+    String? productType,
   }) async {
     try {
       final url = Uri.parse('$baseUrl/products/$productId/update');
 
-      final body = json.encode({'status': isActive ? 'active' : 'inactive'});
+      final body = json.encode({
+        'status': isActive ? 'active' : 'inactive',
+        if (productType != null) 'product_type': productType,
+      });
+
       final Map<String, String> headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -43,11 +48,16 @@ class ProductService {
     required String productId,
     required String shopId,
     required bool isFeatured,
+    String? productType,
   }) async {
     try {
       final url = Uri.parse('$baseUrl/products/$productId/update');
 
-      final body = json.encode({'is_featured': isFeatured});
+      final body = json.encode({
+        'is_featured': isFeatured,
+        if (productType != null) 'product_type': productType,
+      });
+
       final Map<String, String> headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -76,11 +86,15 @@ class ProductService {
     required String productId,
     required String shopId,
     required bool isDeal,
+    String? productType,
   }) async {
     try {
       final url = Uri.parse('$baseUrl/products/$productId/update');
 
-      final body = json.encode({'is_deal': isDeal});
+      final body = json.encode({
+        'is_deal': isDeal,
+        if (productType != null) 'product_type': productType,
+      });
       final Map<String, String> headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -109,6 +123,7 @@ class ProductService {
     required String productId,
     required String shopId,
     required bool hasInventory,
+    String? productType,
   }) async {
     try {
       final url = Uri.parse('$baseUrl/products/$productId/update');
@@ -120,6 +135,7 @@ class ProductService {
                 hasInventory ? null : DateTime.now().toUtc().toIso8601String(),
           },
         ],
+        if (productType != null) 'product_type': productType,
       });
       final Map<String, String> headers = {
         'Content-Type': 'application/json',
@@ -149,6 +165,7 @@ class ProductService {
     required String productId,
     required String shopId,
     required bool isPinned,
+    String? productType,
   }) async {
     try {
       final url = Uri.parse('$baseUrl/products/$productId/update');
@@ -157,6 +174,7 @@ class ProductService {
         'meta': [
           {'is_pinned_sale': isPinned ? '0' : '1'},
         ],
+        if (productType != null) 'product_type': productType,
       });
       final Map<String, String> headers = {
         'Content-Type': 'application/json',
@@ -186,11 +204,15 @@ class ProductService {
     required String productId,
     required String shopId,
     required bool isPrivate,
+    String? productType,
   }) async {
     try {
       final url = Uri.parse('$baseUrl/products/$productId/update');
 
-      final body = json.encode({'status': isPrivate ? 'active' : 'private'});
+      final body = json.encode({
+        'status': isPrivate ? 'active' : 'private',
+        if (productType != null) 'product_type': productType,
+      });
       final Map<String, String> headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -219,10 +241,14 @@ class ProductService {
     required String productId,
     required String shopId,
     required String name,
+    String? productType,
   }) async {
     try {
       final url = Uri.parse('$baseUrl/products/$productId/update');
-      final body = json.encode({'name': name});
+      final body = json.encode({
+        'name': name,
+        if (productType != null) 'product_type': productType,
+      });
       final Map<String, String> headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -248,12 +274,13 @@ class ProductService {
     required String shopId,
     required double price,
     bool isSalePrice = false,
+    String? productType,
   }) async {
     try {
       final url = Uri.parse('$baseUrl/products/$productId/update');
       final body = json.encode({
         isSalePrice ? 'sale_price' : 'price': price,
-        'product_type': 'simple',
+        if (productType != null) 'product_type': productType,
       });
       final Map<String, String> headers = {
         'Content-Type': 'application/json',
@@ -279,10 +306,14 @@ class ProductService {
     required String productId,
     required String shopId,
     required int stock,
+    String? productType,
   }) async {
     try {
       final url = Uri.parse('$baseUrl/products/$productId/update');
-      final body = json.encode({'stock': stock, 'product_type': 'simple'});
+      final body = json.encode({
+        'stock': stock,
+        if (productType != null) 'product_type': productType,
+      });
       final Map<String, String> headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -310,10 +341,7 @@ class ProductService {
   }) async {
     try {
       final url = Uri.parse('$baseUrl/products/$productId/meta/update');
-      final body = json.encode({
-        'key': 'is_sold',
-        'value': isSold ? '1' : '0',
-      });
+      final body = json.encode({'key': 'is_sold', 'value': isSold ? '1' : '0'});
       final Map<String, String> headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -324,7 +352,10 @@ class ProductService {
       };
 
       final response = await http.put(url, headers: headers, body: body);
-      return _handleResponse(response, 'Product sold status updated successfully');
+      return _handleResponse(
+        response,
+        'Product sold status updated successfully',
+      );
     } catch (e) {
       return ApiResponse(
         success: false,
@@ -365,6 +396,7 @@ class ProductService {
     required List<String> productIds,
     required String shopId,
     required bool setActive,
+    Map<String, String>? productTypes,
     void Function(int completed, int total)? onProgress,
   }) async {
     int successCount = 0;
@@ -376,6 +408,7 @@ class ProductService {
         productId: productIds[i],
         shopId: shopId,
         isActive: !setActive,
+        productType: productTypes?[productIds[i]],
       );
       if (response.success) {
         successCount++;
@@ -397,6 +430,7 @@ class ProductService {
     required List<String> productIds,
     required String shopId,
     required bool setFeatured,
+    Map<String, String>? productTypes,
     void Function(int completed, int total)? onProgress,
   }) async {
     int successCount = 0;
@@ -408,6 +442,7 @@ class ProductService {
         productId: productIds[i],
         shopId: shopId,
         isFeatured: !setFeatured,
+        productType: productTypes?[productIds[i]],
       );
       if (response.success) {
         successCount++;
@@ -429,6 +464,7 @@ class ProductService {
     required List<String> productIds,
     required String shopId,
     required bool setDeal,
+    Map<String, String>? productTypes,
     void Function(int completed, int total)? onProgress,
   }) async {
     int successCount = 0;
@@ -440,6 +476,7 @@ class ProductService {
         productId: productIds[i],
         shopId: shopId,
         isDeal: !setDeal,
+        productType: productTypes?[productIds[i]],
       );
       if (response.success) {
         successCount++;
@@ -491,6 +528,7 @@ class ProductService {
     required List<String> productIds,
     required String shopId,
     required bool setInventory,
+    Map<String, String>? productTypes,
     void Function(int completed, int total)? onProgress,
   }) async {
     int successCount = 0;
@@ -502,6 +540,7 @@ class ProductService {
         productId: productIds[i],
         shopId: shopId,
         hasInventory: !setInventory,
+        productType: productTypes?[productIds[i]],
       );
       if (response.success) {
         successCount++;
@@ -523,6 +562,7 @@ class ProductService {
     required List<String> productIds,
     required String shopId,
     required bool setPinned,
+    Map<String, String>? productTypes,
     void Function(int completed, int total)? onProgress,
   }) async {
     int successCount = 0;
@@ -534,6 +574,7 @@ class ProductService {
         productId: productIds[i],
         shopId: shopId,
         isPinned: !setPinned,
+        productType: productTypes?[productIds[i]],
       );
       if (response.success) {
         successCount++;
@@ -555,6 +596,7 @@ class ProductService {
     required List<String> productIds,
     required String shopId,
     required bool setPrivate,
+    Map<String, String>? productTypes,
     void Function(int completed, int total)? onProgress,
   }) async {
     int successCount = 0;
@@ -566,6 +608,7 @@ class ProductService {
         productId: productIds[i],
         shopId: shopId,
         isPrivate: !setPrivate,
+        productType: productTypes?[productIds[i]],
       );
       if (response.success) {
         successCount++;

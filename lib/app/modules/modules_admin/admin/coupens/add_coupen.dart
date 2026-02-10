@@ -14,8 +14,8 @@ class AddCouponPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text('Add New Coupon'),
-        backgroundColor: const Color(0xFFF97316),
+        title: Text(controller.isEditMode ? 'Edit Coupon' : 'Add New Coupon'),
+        backgroundColor: Colors.teal,
         foregroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
@@ -37,8 +37,10 @@ class AddCouponPage extends StatelessWidget {
               const SizedBox(height: 16),
               _buildStoreAvailabilityCard(),
               const SizedBox(height: 16),
-              _buildCouponCodeGenerationCard(),
-              const SizedBox(height: 16),
+              if (!controller.isEditMode) ...[
+                _buildCouponCodeGenerationCard(),
+                const SizedBox(height: 16),
+              ],
               _buildUsageLimitsCard(),
               const SizedBox(height: 16),
               _buildCouponStatusCard(),
@@ -920,9 +922,9 @@ class AddCouponPage extends StatelessWidget {
                           ),
                         ),
                       )
-                      : const Text(
-                        'Create Coupon',
-                        style: TextStyle(
+                      : Text(
+                        controller.isEditMode ? 'Update Coupon' : 'Create Coupon',
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                         ),

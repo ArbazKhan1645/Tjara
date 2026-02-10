@@ -54,46 +54,42 @@ class AdminCarsList extends StatelessWidget {
       backgroundColor: CarsAdminTheme.surface,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          return Scrollbar(
-            thumbVisibility: true,
-            trackVisibility: true,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildTableHeader(),
-                    const SizedBox(height: CarsAdminTheme.spacingSm),
-                    ...adminCarsService.adminProducts.map((product) {
-                      final productId = product.id ?? '';
-                      return Padding(
-                        padding: const EdgeInsets.only(
-                          bottom: CarsAdminTheme.spacingSm,
-                        ),
-                        child: Obx(
-                          () => CarOrderItemCard(
-                            product: product,
-                            isSelected: adminCarsService.selectedProductIds
-                                .contains(productId),
-                            onSelectionChanged: (selected) {
-                              adminCarsService.toggleProductSelection(
-                                productId,
-                              );
-                            },
-                          ),
-                        ),
-                      );
-                    }),
-                    if (adminCarsService.isPaginationLoading.value)
-                      const Padding(
-                        padding: EdgeInsets.all(CarsAdminTheme.spacingLg),
-                        child: ProductShimmerCard(),
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minWidth: constraints.maxWidth),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildTableHeader(),
+                  const SizedBox(height: CarsAdminTheme.spacingSm),
+                  ...adminCarsService.adminProducts.map((product) {
+                    final productId = product.id ?? '';
+                    return Padding(
+                      padding: const EdgeInsets.only(
+                        bottom: CarsAdminTheme.spacingSm,
                       ),
-                  ],
-                ),
+                      child: Obx(
+                        () => CarOrderItemCard(
+                          product: product,
+                          isSelected: adminCarsService.selectedProductIds
+                              .contains(productId),
+                          onSelectionChanged: (selected) {
+                            adminCarsService.toggleProductSelection(
+                              productId,
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  }),
+                  if (adminCarsService.isPaginationLoading.value)
+                    const Padding(
+                      padding: EdgeInsets.all(CarsAdminTheme.spacingLg),
+                      child: ProductShimmerCard(),
+                    ),
+                ],
               ),
             ),
           );

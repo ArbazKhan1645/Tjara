@@ -399,7 +399,7 @@ class ProductAttributeItemsScreen extends StatelessWidget {
     const expandedStackGradient = LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: [Colors.teal, Color(0xFFFACC15)],
+      colors: [Colors.teal, Colors.teal],
     );
     final controller = Get.put(ProductAttributeItemsController());
 

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_products_promotion/model/promotion_model.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_products_promotion/model/shop_model.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_products_promotion/model/category_model.dart';
+import 'package:tjara/app/modules/admin_products_module/admin_products_promotion/model/store_product_model.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_products_promotion/service/promotion_api_service.dart';
 import 'package:tjara/app/modules/admin_products_module/admin_products_promotion/views/widgets/custom_snackbar.dart';
 
@@ -51,10 +52,13 @@ class AdminPromotionController extends GetxController {
   final RxList<String> selectedStoreProductIds = <String>[].obs;
   final RxBool isLoadingStoreProducts = false.obs;
   final RxBool storeProductsFetched = false.obs;
+  final RxList<StoreProduct> searchedProducts = <StoreProduct>[].obs;
+  final RxBool isSearchingProducts = false.obs;
 
   // Search controllers
   final shopSearchController = TextEditingController();
   final categorySearchController = TextEditingController();
+  final productSearchController = TextEditingController();
 
   // Context for snackbar
   BuildContext? _context;
@@ -90,6 +94,7 @@ class AdminPromotionController extends GetxController {
     discountValueController.dispose();
     shopSearchController.dispose();
     categorySearchController.dispose();
+    productSearchController.dispose();
     super.onClose();
   }
 
@@ -179,36 +184,44 @@ class AdminPromotionController extends GetxController {
     shopSearchController.text = shop.name;
     // Reset store products when shop changes
     selectedStoreProductIds.clear();
+    searchedProducts.clear();
+    productSearchController.clear();
     storeProductsFetched.value = false;
-    // If selected_products option is active, fetch products
-    if (applyToOption.value == 'selected_products') {
-      fetchStoreProducts(shop.id);
-    }
   }
 
-  // Fetch products for selected store
-  Future<void> fetchStoreProducts(String shopId) async {
-    isLoadingStoreProducts.value = true;
-    storeProductsFetched.value = false;
+  // Search products for selected store
+  Future<void> searchStoreProducts(String query) async {
+    if (selectedShop.value == null) return;
+    isSearchingProducts.value = true;
     try {
-      final productIds = await _apiService.fetchStoreProducts(shopId: shopId);
-      selectedStoreProductIds.value = productIds;
-      storeProductsFetched.value = true;
+      final products = await _apiService.fetchStoreProducts(
+        shopId: selectedShop.value!.id,
+        search: query,
+      );
+      searchedProducts.value = products;
     } catch (e) {
-      selectedStoreProductIds.clear();
-      storeProductsFetched.value = true;
+      searchedProducts.clear();
     } finally {
-      isLoadingStoreProducts.value = false;
+      isSearchingProducts.value = false;
     }
   }
 
-  // Called when applyToOption changes to 'selected_products'
+  // Toggle product selection
+  void toggleProductSelection(String productId) {
+    if (selectedStoreProductIds.contains(productId)) {
+      selectedStoreProductIds.remove(productId);
+    } else {
+      selectedStoreProductIds.add(productId);
+    }
+  }
+
+  // Called when applyToOption changes
   void onApplyToOptionChanged(String value) {
     applyToOption.value = value;
-    if (value == 'selected_products' && selectedShop.value != null) {
-      fetchStoreProducts(selectedShop.value!.id);
-    } else if (value != 'selected_products') {
+    if (value != 'selected_products') {
       selectedStoreProductIds.clear();
+      searchedProducts.clear();
+      productSearchController.clear();
       storeProductsFetched.value = false;
     }
   }
@@ -393,12 +406,8 @@ class AdminPromotionController extends GetxController {
     }
     // Validation for selected_products option
     if (applyToOption.value == 'selected_products') {
-      if (isLoadingStoreProducts.value) {
-        CustomSnackbar.showError(context, 'Please wait, loading products...');
-        return false;
-      }
       if (selectedStoreProductIds.isEmpty) {
-        CustomSnackbar.showError(context, 'No products found for this store');
+        CustomSnackbar.showError(context, 'Please select at least one product');
         return false;
       }
     }
@@ -456,6 +465,8 @@ class AdminPromotionController extends GetxController {
     categorySearchController.clear();
     // Clear store products state
     selectedStoreProductIds.clear();
+    searchedProducts.clear();
+    productSearchController.clear();
     storeProductsFetched.value = false;
     isLoadingStoreProducts.value = false;
   }

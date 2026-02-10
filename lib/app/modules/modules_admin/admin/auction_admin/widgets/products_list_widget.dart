@@ -54,46 +54,42 @@ class AdminAuctionList extends StatelessWidget {
       backgroundColor: AuctionAdminTheme.surface,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          return Scrollbar(
-            thumbVisibility: true,
-            trackVisibility: true,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildTableHeader(),
-                    const SizedBox(height: AuctionAdminTheme.spacingSm),
-                    ...adminAuctionService.adminProducts.map((product) {
-                      final productId = product.id ?? '';
-                      return Padding(
-                        padding: const EdgeInsets.only(
-                          bottom: AuctionAdminTheme.spacingSm,
-                        ),
-                        child: Obx(
-                          () => AuctionOrderItemCard(
-                            product: product,
-                            isSelected: adminAuctionService.selectedProductIds
-                                .contains(productId),
-                            onSelectionChanged: (selected) {
-                              adminAuctionService.toggleProductSelection(
-                                productId,
-                              );
-                            },
-                          ),
-                        ),
-                      );
-                    }),
-                    if (adminAuctionService.isPaginationLoading.value)
-                      const Padding(
-                        padding: EdgeInsets.all(AuctionAdminTheme.spacingLg),
-                        child: ProductShimmerCard(),
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minWidth: constraints.maxWidth),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildTableHeader(),
+                  const SizedBox(height: AuctionAdminTheme.spacingSm),
+                  ...adminAuctionService.adminProducts.map((product) {
+                    final productId = product.id ?? '';
+                    return Padding(
+                      padding: const EdgeInsets.only(
+                        bottom: AuctionAdminTheme.spacingSm,
                       ),
-                  ],
-                ),
+                      child: Obx(
+                        () => AuctionOrderItemCard(
+                          product: product,
+                          isSelected: adminAuctionService.selectedProductIds
+                              .contains(productId),
+                          onSelectionChanged: (selected) {
+                            adminAuctionService.toggleProductSelection(
+                              productId,
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  }),
+                  if (adminAuctionService.isPaginationLoading.value)
+                    const Padding(
+                      padding: EdgeInsets.all(AuctionAdminTheme.spacingLg),
+                      child: ProductShimmerCard(),
+                    ),
+                ],
               ),
             ),
           );

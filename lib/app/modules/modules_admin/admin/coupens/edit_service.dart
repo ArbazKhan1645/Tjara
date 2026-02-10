@@ -49,6 +49,46 @@ class CouponEditService {
     }
   }
 
+  // Update coupon
+  static Future updateCoupon(String couponId, Map<String, dynamic> payload) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/coupons/$couponId/update'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Request-From': 'Application',
+        },
+        body: jsonEncode(payload),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return;
+      } else {
+        throw ApiException(
+          statusCode: response.statusCode,
+          message: 'Failed to update coupon',
+        );
+      }
+    } on SocketException {
+      throw ApiException(
+        statusCode: 0,
+        message: 'No internet connection. Please check your network.',
+      );
+    } on FormatException {
+      throw ApiException(
+        statusCode: -1,
+        message: 'Invalid response format from server.',
+      );
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        statusCode: -1,
+        message: 'An unexpected error occurred: ${e.toString()}',
+      );
+    }
+  }
+
   // Fetch shops
   static Future<ShopResponse> fetchShops({String search = ''}) async {
     try {

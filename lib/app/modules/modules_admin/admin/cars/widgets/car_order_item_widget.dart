@@ -64,29 +64,32 @@ class _CarOrderItemCardState extends State<CarOrderItemCard> {
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
         decoration: BoxDecoration(
-          color: widget.isSelected
-              ? CarsAdminTheme.accent.withValues(alpha: 0.04)
-              : _isHovered
+          color:
+              widget.isSelected
+                  ? CarsAdminTheme.accent.withValues(alpha: 0.04)
+                  : _isHovered
                   ? CarsAdminTheme.surface
                   : CarsAdminTheme.surface,
           borderRadius: BorderRadius.circular(CarsAdminTheme.radiusMd),
           border: Border.all(
-            color: widget.isSelected
-                ? CarsAdminTheme.accent
-                : _isHovered
+            color:
+                widget.isSelected
+                    ? CarsAdminTheme.accent
+                    : _isHovered
                     ? CarsAdminTheme.accent.withValues(alpha: 0.3)
                     : CarsAdminTheme.border,
             width: widget.isSelected ? 1.5 : 1,
           ),
-          boxShadow: _isHovered
-              ? [
-                  BoxShadow(
-                    color: CarsAdminTheme.accent.withValues(alpha: 0.08),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : CarsAdminTheme.shadowSm,
+          boxShadow:
+              _isHovered
+                  ? [
+                    BoxShadow(
+                      color: CarsAdminTheme.accent.withValues(alpha: 0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                  : CarsAdminTheme.shadowSm,
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(
@@ -304,9 +307,7 @@ class _CarOrderItemCardState extends State<CarOrderItemCard> {
   }) {
     return Container(
       width: width,
-      padding: const EdgeInsets.symmetric(
-        horizontal: CarsAdminTheme.spacingSm,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: CarsAdminTheme.spacingSm),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -357,14 +358,16 @@ class _CarOrderItemCardState extends State<CarOrderItemCard> {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm - 1),
-        child: imageUrl.isNotEmpty
-            ? CachedNetworkImage(
-                imageUrl: imageUrl,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => _buildImagePlaceholder(),
-                errorWidget: (context, url, error) => _buildImagePlaceholder(),
-              )
-            : _buildImagePlaceholder(),
+        child:
+            imageUrl.isNotEmpty
+                ? CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => _buildImagePlaceholder(),
+                  errorWidget:
+                      (context, url, error) => _buildImagePlaceholder(),
+                )
+                : _buildImagePlaceholder(),
       ),
     );
   }
@@ -455,9 +458,10 @@ class _CarOrderItemCardState extends State<CarOrderItemCard> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: isActive
-            ? CarsAdminTheme.success.withValues(alpha: 0.1)
-            : CarsAdminTheme.errorLight,
+        color:
+            isActive
+                ? CarsAdminTheme.success.withValues(alpha: 0.1)
+                : CarsAdminTheme.errorLight,
         borderRadius: BorderRadius.circular(CarsAdminTheme.radiusSm),
       ),
       child: Row(
@@ -468,8 +472,7 @@ class _CarOrderItemCardState extends State<CarOrderItemCard> {
             height: 6,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color:
-                  isActive ? CarsAdminTheme.success : CarsAdminTheme.error,
+              color: isActive ? CarsAdminTheme.success : CarsAdminTheme.error,
             ),
           ),
           const SizedBox(width: 6),
@@ -478,9 +481,7 @@ class _CarOrderItemCardState extends State<CarOrderItemCard> {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: isActive
-                  ? CarsAdminTheme.success
-                  : CarsAdminTheme.error,
+              color: isActive ? CarsAdminTheme.success : CarsAdminTheme.error,
             ),
           ),
         ],
@@ -550,311 +551,328 @@ class _CarOrderItemCardState extends State<CarOrderItemCard> {
   // Quick edit: name + price + sold toggle for cars
   void _showQuickEditDialog() {
     final nameController = TextEditingController(text: productName);
-    final priceController = TextEditingController(text: price.toStringAsFixed(2));
+    final priceController = TextEditingController(
+      text: price.toStringAsFixed(2),
+    );
     bool soldValue = isSold;
 
     showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setDialogState) => Dialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(CarsAdminTheme.radiusLg),
-          ),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            constraints: const BoxConstraints(maxWidth: 440),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Text(
-                      'Quick Edit Car',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () => Navigator.of(ctx).pop(),
-                      icon: const Icon(Icons.close, size: 20),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                // Name field
-                const Text(
-                  'Current Title',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: CarsAdminTheme.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: CarsAdminTheme.surfaceSecondary,
+      builder:
+          (ctx) => StatefulBuilder(
+            builder:
+                (context, setDialogState) => Dialog(
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(
-                      CarsAdminTheme.radiusSm,
-                    ),
-                    border: Border.all(color: CarsAdminTheme.border),
-                  ),
-                  child: Text(
-                    productName,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: CarsAdminTheme.textPrimary,
+                      CarsAdminTheme.radiusLg,
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'New Title *',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: CarsAdminTheme.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        CarsAdminTheme.radiusSm,
-                      ),
-                      borderSide: const BorderSide(
-                        color: CarsAdminTheme.border,
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        CarsAdminTheme.radiusSm,
-                      ),
-                      borderSide: const BorderSide(
-                        color: CarsAdminTheme.border,
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        CarsAdminTheme.radiusSm,
-                      ),
-                      borderSide: const BorderSide(
-                        color: CarsAdminTheme.accent,
-                      ),
-                    ),
-                  ),
-                  style: const TextStyle(fontSize: 14),
-                ),
-                const SizedBox(height: 16),
-
-                // Price field
-                const Text(
-                  'Price',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: CarsAdminTheme.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: priceController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: InputDecoration(
-                    prefixText: '\$ ',
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        CarsAdminTheme.radiusSm,
-                      ),
-                      borderSide: const BorderSide(
-                        color: CarsAdminTheme.border,
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        CarsAdminTheme.radiusSm,
-                      ),
-                      borderSide: const BorderSide(
-                        color: CarsAdminTheme.border,
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        CarsAdminTheme.radiusSm,
-                      ),
-                      borderSide: const BorderSide(
-                        color: CarsAdminTheme.accent,
-                      ),
-                    ),
-                  ),
-                  style: const TextStyle(fontSize: 14),
-                ),
-                const SizedBox(height: 16),
-
-                // Sold toggle
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Mark as Sold',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: CarsAdminTheme.textSecondary,
-                      ),
-                    ),
-                    Switch(
-                      value: soldValue,
-                      onChanged: (val) {
-                        setDialogState(() {
-                          soldValue = val;
-                        });
-                      },
-                      activeColor: CarsAdminTheme.accent,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: CarsAdminTheme.info.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(
-                      CarsAdminTheme.radiusSm,
-                    ),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Icon(
-                        Icons.info_outline,
-                        size: 16,
-                        color: CarsAdminTheme.info,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    constraints: const BoxConstraints(maxWidth: 440),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           children: [
-                            _infoText('The product slug will remain unchanged'),
-                            _infoText('Only the display name will be updated'),
-                            _infoText(
-                              'This change will be reflected immediately',
+                            const Text(
+                              'Quick Edit Car',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const Spacer(),
+                            IconButton(
+                              onPressed: () => Navigator.of(ctx).pop(),
+                              icon: const Icon(Icons.close, size: 20),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.of(ctx).pop(),
-                        child: const Text('Cancel'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () async {
-                          final newName = nameController.text.trim();
-                          final newPrice = double.tryParse(priceController.text.trim());
-                          Navigator.of(ctx).pop();
+                        const SizedBox(height: 20),
 
-                          // Update name if changed
-                          if (newName.isNotEmpty && newName != productName) {
-                            final response =
-                                await ProductService.updateProductName(
-                              productId: id,
-                              shopId: shopId,
-                              name: newName,
-                            );
-                            if (response.success) {
-                              _showSuccessMessage(response.message);
-                            } else {
-                              _showErrorMessage(response);
-                            }
-                          }
-
-                          // Update price if changed
-                          if (newPrice != null && newPrice != price) {
-                            final response =
-                                await ProductService.updateProductPrice(
-                              productId: id,
-                              shopId: shopId,
-                              price: newPrice,
-                            );
-                            if (response.success) {
-                              _showSuccessMessage(response.message);
-                            } else {
-                              _showErrorMessage(response);
-                            }
-                          }
-
-                          // Update sold status if changed
-                          if (soldValue != isSold) {
-                            final response =
-                                await ProductService.updateSoldStatus(
-                              productId: id,
-                              isSold: soldValue,
-                            );
-                            if (response.success) {
-                              _showSuccessMessage(response.message);
-                            } else {
-                              _showErrorMessage(response);
-                            }
-                          }
-
-                          await _refreshProducts();
-                        },
-                        icon: const Icon(Icons.save_outlined, size: 16),
-                        label: const Text('Update'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: CarsAdminTheme.accent,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
+                        // Name field
+                        const Text(
+                          'Current Title',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: CarsAdminTheme.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: CarsAdminTheme.surfaceSecondary,
                             borderRadius: BorderRadius.circular(
-                              CarsAdminTheme.radiusMd,
+                              CarsAdminTheme.radiusSm,
+                            ),
+                            border: Border.all(color: CarsAdminTheme.border),
+                          ),
+                          child: Text(
+                            productName,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: CarsAdminTheme.textPrimary,
                             ),
                           ),
                         ),
-                      ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'New Title *',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: CarsAdminTheme.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        TextField(
+                          controller: nameController,
+                          decoration: InputDecoration(
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(
+                                CarsAdminTheme.radiusSm,
+                              ),
+                              borderSide: const BorderSide(
+                                color: CarsAdminTheme.border,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(
+                                CarsAdminTheme.radiusSm,
+                              ),
+                              borderSide: const BorderSide(
+                                color: CarsAdminTheme.border,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(
+                                CarsAdminTheme.radiusSm,
+                              ),
+                              borderSide: const BorderSide(
+                                color: CarsAdminTheme.accent,
+                              ),
+                            ),
+                          ),
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Price field
+                        const Text(
+                          'Price',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: CarsAdminTheme.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        TextField(
+                          controller: priceController,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          decoration: InputDecoration(
+                            prefixText: '\$ ',
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(
+                                CarsAdminTheme.radiusSm,
+                              ),
+                              borderSide: const BorderSide(
+                                color: CarsAdminTheme.border,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(
+                                CarsAdminTheme.radiusSm,
+                              ),
+                              borderSide: const BorderSide(
+                                color: CarsAdminTheme.border,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(
+                                CarsAdminTheme.radiusSm,
+                              ),
+                              borderSide: const BorderSide(
+                                color: CarsAdminTheme.accent,
+                              ),
+                            ),
+                          ),
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Sold toggle
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Mark as Sold',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: CarsAdminTheme.textSecondary,
+                              ),
+                            ),
+                            Switch(
+                              value: soldValue,
+                              onChanged: (val) {
+                                setDialogState(() {
+                                  soldValue = val;
+                                });
+                              },
+                              activeColor: CarsAdminTheme.accent,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: CarsAdminTheme.info.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(
+                              CarsAdminTheme.radiusSm,
+                            ),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(
+                                Icons.info_outline,
+                                size: 16,
+                                color: CarsAdminTheme.info,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _infoText(
+                                      'The product slug will remain unchanged',
+                                    ),
+                                    _infoText(
+                                      'Only the display name will be updated',
+                                    ),
+                                    _infoText(
+                                      'This change will be reflected immediately',
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () => Navigator.of(ctx).pop(),
+                                child: const Text('Cancel'),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () async {
+                                  final newName = nameController.text.trim();
+                                  final newPrice = double.tryParse(
+                                    priceController.text.trim(),
+                                  );
+                                  Navigator.of(ctx).pop();
+
+                                  // Update name if changed
+                                  if (newName.isNotEmpty &&
+                                      newName != productName) {
+                                    final response =
+                                        await ProductService.updateProductName(
+                                          productId: id,
+                                          shopId: shopId,
+                                          name: newName,
+                                        );
+                                    if (response.success) {
+                                      _showSuccessMessage(response.message);
+                                    } else {
+                                      _showErrorMessage(response);
+                                    }
+                                  }
+
+                                  // Update price if changed
+                                  if (newPrice != null && newPrice != price) {
+                                    final response =
+                                        await ProductService.updateProductPrice(
+                                          productId: id,
+                                          shopId: shopId,
+                                          price: newPrice,
+                                        );
+                                    if (response.success) {
+                                      _showSuccessMessage(response.message);
+                                    } else {
+                                      _showErrorMessage(response);
+                                    }
+                                  }
+
+                                  // Update sold status if changed
+                                  if (soldValue != isSold) {
+                                    final response =
+                                        await ProductService.updateSoldStatus(
+                                          productId: id,
+                                          isSold: soldValue,
+                                        );
+                                    if (response.success) {
+                                      _showSuccessMessage(response.message);
+                                    } else {
+                                      _showErrorMessage(response);
+                                    }
+                                  }
+
+                                  await _refreshProducts();
+                                },
+                                icon: const Icon(Icons.save_outlined, size: 16),
+                                label: const Text('Update'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: CarsAdminTheme.accent,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      CarsAdminTheme.radiusMd,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ],
-            ),
           ),
-        ),
-      ),
     );
   }
 
@@ -864,10 +882,7 @@ class _CarOrderItemCardState extends State<CarOrderItemCard> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '\u2022 ',
-            style: TextStyle(fontSize: 12),
-          ),
+          const Text('\u2022 ', style: TextStyle(fontSize: 12)),
           Expanded(
             child: Text(
               text,
@@ -919,7 +934,7 @@ class _CarOrderItemCardState extends State<CarOrderItemCard> {
     final response = await ProductService.updateActiveStatus(
       shopId: shopId,
       productId: id,
-      isActive: isActive,
+      isActive: !isActive,
     );
 
     if (response.success) {
@@ -934,7 +949,7 @@ class _CarOrderItemCardState extends State<CarOrderItemCard> {
     final response = await ProductService.updateFeaturedStatus(
       shopId: shopId,
       productId: id,
-      isFeatured: isFeatured,
+      isFeatured: !isFeatured,
     );
 
     if (response.success) {
@@ -949,7 +964,7 @@ class _CarOrderItemCardState extends State<CarOrderItemCard> {
     final response = await ProductService.updateDealStatus(
       shopId: shopId,
       productId: id,
-      isDeal: isDeal,
+      isDeal: !isDeal,
     );
 
     if (response.success) {

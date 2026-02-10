@@ -228,6 +228,10 @@ class _TimingSection extends StatelessWidget {
             );
           }
 
+          // Read reactive values so Obx tracks their changes
+          final startTime = controller.selectedStartTime.value;
+          final endTime = controller.selectedEndTime.value;
+
           return Column(
             children: [
               // Start Time
@@ -235,7 +239,9 @@ class _TimingSection extends StatelessWidget {
                 label: 'Start Time',
                 description: 'When the auction will begin accepting bids',
                 icon: Icons.play_circle_outline_rounded,
-                controller: controller.selectedStartTimeController,
+                displayValue: startTime != null
+                    ? controller.formatDateTime(startTime)
+                    : null,
                 onTap: () => controller.selectStartTime(context),
                 isRequired: true,
                 accentColor: AuctionAdminTheme.success,
@@ -247,7 +253,9 @@ class _TimingSection extends StatelessWidget {
                 label: 'End Time',
                 description: 'When the auction will close',
                 icon: Icons.stop_circle_outlined,
-                controller: controller.selectedEndTimeController,
+                displayValue: endTime != null
+                    ? controller.formatDateTime(endTime)
+                    : null,
                 onTap: () => controller.selectEndTime(context),
                 isRequired: true,
                 accentColor: AuctionAdminTheme.error,
@@ -429,7 +437,7 @@ class _TimePickerField extends StatelessWidget {
   final String label;
   final String description;
   final IconData icon;
-  final TextEditingController controller;
+  final String? displayValue;
   final VoidCallback onTap;
   final bool isRequired;
   final Color accentColor;
@@ -438,7 +446,7 @@ class _TimePickerField extends StatelessWidget {
     required this.label,
     required this.description,
     required this.icon,
-    required this.controller,
+    this.displayValue,
     required this.onTap,
     this.isRequired = false,
     this.accentColor = AuctionAdminTheme.accent,
@@ -446,7 +454,7 @@ class _TimePickerField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasValue = controller.text.isNotEmpty;
+    final hasValue = displayValue != null && displayValue!.isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -519,7 +527,7 @@ class _TimePickerField extends StatelessWidget {
                   const SizedBox(width: AuctionAdminTheme.spacingMd),
                   Expanded(
                     child: Text(
-                      hasValue ? controller.text : 'Select date and time',
+                      hasValue ? displayValue! : 'Select date and time',
                       style: TextStyle(
                         fontSize: 14,
                         color: hasValue

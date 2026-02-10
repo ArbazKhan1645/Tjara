@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/controllers/add_product_admin_controller.dart';
 import 'package:tjara/app/modules/modules_admin/admin/add_product_admin/widgets/admin_ui_components.dart';
+import 'package:tjara/app/modules/modules_admin/admin/products_attributes_group/model.dart';
 
 class ProductSettingsWidget extends StatelessWidget {
-  final AddProductAdminController controller = Get.find<AddProductAdminController>();
+  final AddProductAdminController controller =
+      Get.find<AddProductAdminController>();
 
   ProductSettingsWidget({super.key});
 
@@ -16,8 +18,33 @@ class ProductSettingsWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildProductTypeSelector(),
-          const SizedBox(height: 20),
+          // Hide product type selector for car products
+          Obx(() {
+            if (controller.isCarProduct) {
+              return const SizedBox.shrink();
+            }
+            return Column(
+              children: [
+                _buildProductTypeSelector(),
+                const SizedBox(height: 20),
+              ],
+            );
+          }),
+          // Show group attributes option when Variants is selected
+          Obx(() {
+            if (controller.selectedProductType.value == 'Variants') {
+              return Column(
+                children: [
+                  _buildGroupAttributesToggle(),
+                  const SizedBox(height: 12),
+                  if (controller.useGroupAttributes.value)
+                    _buildAttributeGroupSelector(),
+                  const SizedBox(height: 20),
+                ],
+              );
+            }
+            return const SizedBox.shrink();
+          }),
           _buildToggleSwitches(),
           const SizedBox(height: 20),
           _buildSKUField(),
@@ -56,6 +83,82 @@ class ProductSettingsWidget extends StatelessWidget {
     });
   }
 
+  Widget _buildGroupAttributesToggle() {
+    return Obx(() => AdminToggleSwitch(
+          title: 'Group Attributes',
+          subtitle: 'Use a predefined attribute group for variations',
+          value: controller.useGroupAttributes.value,
+          onChanged: (val) => controller.toggleGroupAttributes(val),
+        ));
+  }
+
+  Widget _buildAttributeGroupSelector() {
+    return Obx(() {
+      if (controller.isLoadingGroups.value) {
+        return const Padding(
+          padding: EdgeInsets.symmetric(vertical: 12),
+          child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        );
+      }
+
+      if (controller.attributeGroups.isEmpty) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: const Text(
+            'No attribute groups available',
+            style: TextStyle(color: Colors.grey, fontSize: 14),
+          ),
+        );
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const AdminSectionHeader(
+            title: 'Select Attribute Group',
+            subtitle: 'All variations from the selected group will be added',
+          ),
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: DropdownButtonFormField<AttributeGroupModel>(
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                hintText: 'Choose an attribute group',
+              ),
+              initialValue: controller.selectedAttributeGroup.value,
+              items: controller.attributeGroups.map((group) {
+                final itemCount = group.attributes.fold<int>(
+                  0,
+                  (sum, attr) => sum + attr.items.length,
+                );
+                return DropdownMenuItem<AttributeGroupModel>(
+                  value: group,
+                  child: Text(
+                    '${group.name} ($itemCount items)',
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                );
+              }).toList(),
+              onChanged: (group) => controller.selectAttributeGroup(group),
+            ),
+          ),
+        ],
+      );
+    });
+  }
+
   Widget _buildToggleSwitches() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,25 +168,25 @@ class ProductSettingsWidget extends StatelessWidget {
           subtitle: 'Configure additional product settings',
         ),
         Obx(() => AdminToggleSwitch(
-          title: 'Featured Product',
-          subtitle: 'Highlight this product on the homepage',
-          value: controller.isFeatured.value,
-          onChanged: (val) => controller.isFeatured.value = val,
-        )),
+              title: 'Featured Product',
+              subtitle: 'Highlight this product on the homepage',
+              value: controller.isFeatured.value,
+              onChanged: (val) => controller.isFeatured.value = val,
+            )),
         const SizedBox(height: 12),
         Obx(() => AdminToggleSwitch(
-          title: 'Deal of the Day',
-          subtitle: 'Show in deals section',
-          value: controller.isDeal.value,
-          onChanged: (val) => controller.isDeal.value = val,
-        )),
+              title: 'Deal of the Day',
+              subtitle: 'Show in deals section',
+              value: controller.isDeal.value,
+              onChanged: (val) => controller.isDeal.value = val,
+            )),
         const SizedBox(height: 12),
         Obx(() => AdminToggleSwitch(
-          title: 'Purchase Limit',
-          subtitle: 'Limit purchase quantity per customer',
-          value: controller.enablePurchaseLimit.value,
-          onChanged: (val) => controller.enablePurchaseLimit.value = val,
-        )),
+              title: 'Purchase Limit',
+              subtitle: 'Limit purchase quantity per customer',
+              value: controller.enablePurchaseLimit.value,
+              onChanged: (val) => controller.enablePurchaseLimit.value = val,
+            )),
       ],
     );
   }

@@ -145,6 +145,52 @@ class ContentManagementScreen extends StatelessWidget {
           _buildHeaderCategoriesSection(),
           const SizedBox(height: 20),
 
+          // Featured Products Sort
+          _buildProductSortSection(
+            type: 'featured_products',
+            title: 'Featured Products Sorting (Home Page)',
+            description:
+                'This sets the featured products section sorting on home page.',
+            icon: Icons.star_outline,
+            iconColor: Colors.amber,
+            ids: controller.featuredProductIds,
+          ),
+          const SizedBox(height: 20),
+
+          // Featured Cars Sort
+          _buildProductSortSection(
+            type: 'featured_cars',
+            title: 'Featured Cars Sorting (Home Page)',
+            description:
+                'This sets the featured cars section sorting on home page.',
+            icon: Icons.directions_car_outlined,
+            iconColor: Colors.teal,
+            ids: controller.featuredCarIds,
+          ),
+          const SizedBox(height: 20),
+
+          // Sale Products Sort
+          _buildProductSortSection(
+            type: 'sale_products',
+            title: 'Sale Products Sorting',
+            description: 'This sets the sale products section sorting.',
+            icon: Icons.sell_outlined,
+            iconColor: Colors.red,
+            ids: controller.saleProductIds,
+          ),
+          const SizedBox(height: 20),
+
+          // Super Deals Products Sort
+          _buildProductSortSection(
+            type: 'super_deals',
+            title: 'Super Deals Products Sorting',
+            description: 'This sets the super deals products section sorting.',
+            icon: Icons.flash_on_outlined,
+            iconColor: Colors.orange,
+            ids: controller.superDealsProductIds,
+          ),
+          const SizedBox(height: 20),
+
           // Shop Discounts Section
           _buildShopDiscountsSection(),
           const SizedBox(height: 24),
@@ -522,124 +568,156 @@ class ContentManagementScreen extends StatelessWidget {
                 Row(
                   children: [
                     Icon(
-                      Icons.drag_indicator,
+                      Icons.swap_vert,
                       size: 16,
                       color: Colors.grey.shade400,
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      'Drag to reorder categories',
+                      'Use arrows to reorder',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey.shade500,
                         fontStyle: FontStyle.italic,
                       ),
                     ),
+                    const Spacer(),
+                    Text(
+                      '${controller.headerCategoryIds.length} categories',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade500,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
-                ReorderableListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  buildDefaultDragHandles: false,
-                  itemCount: controller.headerCategoryIds.length,
-                  onReorder: (oldIndex, newIndex) {
-                    controller.reorderCategories(oldIndex, newIndex);
-                  },
-                  proxyDecorator: (child, index, animation) {
-                    return Material(
-                      elevation: 4,
-                      borderRadius: BorderRadius.circular(8),
-                      child: child,
-                    );
-                  },
-                  itemBuilder: (context, index) {
-                    final categoryId = controller.headerCategoryIds[index];
-                    final categoryName = controller.getCategoryName(categoryId);
+                ...List.generate(controller.headerCategoryIds.length, (index) {
+                  final categoryId = controller.headerCategoryIds[index];
+                  final categoryName = controller.getCategoryName(categoryId);
 
-                    return Container(
-                      key: ValueKey(categoryId),
-                      margin: const EdgeInsets.only(bottom: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey.shade200),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.03),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey.shade200),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      child: Row(
+                        children: [
+                          // Reorder arrows
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              InkWell(
+                                onTap:
+                                    index > 0
+                                        ? () => controller.reorderCategories(
+                                          index,
+                                          index - 1,
+                                        )
+                                        : null,
+                                borderRadius: BorderRadius.circular(4),
+                                child: Icon(
+                                  Icons.keyboard_arrow_up,
+                                  size: 20,
+                                  color:
+                                      index > 0
+                                          ? Colors.grey.shade600
+                                          : Colors.grey.shade300,
+                                ),
+                              ),
+                              InkWell(
+                                onTap:
+                                    index <
+                                            controller
+                                                    .headerCategoryIds
+                                                    .length -
+                                                1
+                                        ? () => controller.reorderCategories(
+                                          index,
+                                          index + 2,
+                                        )
+                                        : null,
+                                borderRadius: BorderRadius.circular(4),
+                                child: Icon(
+                                  Icons.keyboard_arrow_down,
+                                  size: 20,
+                                  color:
+                                      index <
+                                              controller
+                                                      .headerCategoryIds
+                                                      .length -
+                                                  1
+                                          ? Colors.grey.shade600
+                                          : Colors.grey.shade300,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 8),
+                          // Index badge
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: WebSettingsTheme.primaryColor.withValues(
+                                alpha: 0.1,
+                              ),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${index + 1}',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: WebSettingsTheme.primaryColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              categoryName,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(
+                              Icons.close,
+                              size: 20,
+                              color: Colors.red.shade400,
+                            ),
+                            onPressed:
+                                () => controller.removeCategory(categoryId),
+                            tooltip: 'Remove category',
+                            constraints: const BoxConstraints(),
+                            padding: const EdgeInsets.all(4),
                           ),
                         ],
                       ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 4,
-                        ),
-                        leading: ReorderableDragStartListener(
-                          index: index,
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade100,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Icon(
-                              Icons.drag_handle,
-                              size: 20,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        ),
-                        title: Row(
-                          children: [
-                            Container(
-                              width: 24,
-                              height: 24,
-                              decoration: BoxDecoration(
-                                color: WebSettingsTheme.primaryColor
-                                    .withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  '${index + 1}',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: WebSettingsTheme.primaryColor,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                categoryName,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                        trailing: IconButton(
-                          icon: Icon(
-                            Icons.close,
-                            size: 20,
-                            color: Colors.red.shade400,
-                          ),
-                          onPressed:
-                              () => controller.removeCategory(categoryId),
-                          tooltip: 'Remove category',
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                }),
               ],
             );
           }),
@@ -743,13 +821,12 @@ class ContentManagementScreen extends StatelessWidget {
                                 color: WebSettingsTheme.primaryColor,
                               ),
                               const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  category.name,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                              // REMOVED Expanded widget - this was the problem!
+                              Text(
+                                category.name,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ],
@@ -832,7 +909,7 @@ class ContentManagementScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          // Discounts List
+          // Discounts List - FIXED!
           Obx(() {
             if (controller.shopDiscounts.isEmpty) {
               return Container(
@@ -871,10 +948,14 @@ class ContentManagementScreen extends StatelessWidget {
               );
             }
 
-            return Column(
-              children: List.generate(controller.shopDiscounts.length, (index) {
+            // FIXED: Use ListView.builder with shrinkWrap instead of Column with List.generate
+            return ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: controller.shopDiscounts.length,
+              itemBuilder: (context, index) {
                 return _buildShopDiscountCard(index);
-              }),
+              },
             );
           }),
         ],
@@ -965,9 +1046,9 @@ class ContentManagementScreen extends StatelessWidget {
                   // Shop & Category Row
                   Row(
                     children: [
-                      Expanded(child: _buildSearchableShopField(index: index)),
+                      Flexible(child: _buildSearchableShopField(index: index)),
                       const SizedBox(width: 12),
-                      Expanded(
+                      Flexible(
                         child: _buildSearchableCategoryField(
                           label: 'Category (Optional)',
                           value:
@@ -987,27 +1068,27 @@ class ContentManagementScreen extends StatelessWidget {
                   const SizedBox(height: 12),
 
                   // Discount Range
-                  _buildDropdownField(
-                    label: 'Discount Range',
-                    value: discount.discountRange,
-                    items:
-                        controller.discountRangeOptions
-                            .map(
-                              (r) => DropdownMenuItem(
-                                value: r,
-                                child: Text(r.contains('-') ? '$r%' : r),
-                              ),
-                            )
-                            .toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        controller.updateShopDiscount(
-                          index,
-                          discountRange: value,
-                        );
-                      }
-                    },
-                  ),
+                  // _buildDropdownField(
+                  //   label: 'Discount Range',
+                  //   value: discount.discountRange,
+                  //   items:
+                  //       controller.discountRangeOptions
+                  //           .map(
+                  //             (r) => DropdownMenuItem(
+                  //               value: r,
+                  //               child: Text(r.contains('-') ? '$r%' : r),
+                  //             ),
+                  //           )
+                  //           .toList(),
+                  //   onChanged: (value) {
+                  //     if (value != null) {
+                  //       controller.updateShopDiscount(
+                  //         index,
+                  //         discountRange: value,
+                  //       );
+                  //     }
+                  //   },
+                  // ),
                   const SizedBox(height: 12),
 
                   // Tooltip & Shipping Text
@@ -1277,6 +1358,7 @@ class ContentManagementScreen extends StatelessWidget {
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min, // IMPORTANT: Add this!
       children: [
         Text(
           label,
@@ -1288,6 +1370,7 @@ class ContentManagementScreen extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Container(
+          width: double.infinity, // IMPORTANT: Add explicit width
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             color: Colors.grey.shade50,
@@ -1298,6 +1381,7 @@ class ContentManagementScreen extends StatelessWidget {
             child: DropdownButton<String>(
               value: value,
               isExpanded: true,
+              isDense: true, // IMPORTANT: Add this to reduce height
               hint: Text(
                 'Select',
                 style: TextStyle(color: Colors.grey.shade400),
@@ -1309,6 +1393,9 @@ class ContentManagementScreen extends StatelessWidget {
                 Icons.keyboard_arrow_down,
                 color: Colors.grey.shade400,
               ),
+              // IMPORTANT: Add these constraints
+              menuMaxHeight: 300, // Limit dropdown menu height
+              dropdownColor: Colors.white,
             ),
           ),
         ),
@@ -1582,6 +1669,256 @@ class ContentManagementScreen extends StatelessWidget {
     );
   }
 
+  // ============================================
+  // Product Sort Section (Reusable)
+  // ============================================
+
+  // ============================================
+  // Product Sort Section (Reusable)
+  // ============================================
+
+  Widget _buildProductSortSection({
+    required String type,
+    required String title,
+    required String description,
+    required IconData icon,
+    required Color iconColor,
+    required RxList<String> ids,
+  }) {
+    return _buildSectionCard(
+      title: title,
+      icon: icon,
+      iconColor: iconColor,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: Colors.blue.shade200),
+                ),
+                child: Text(
+                  'Required',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.blue.shade700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            description,
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+          ),
+          const SizedBox(height: 16),
+
+          // Product Search Widget
+          _ProductSearchWidget(
+            controller: controller,
+            type: type,
+            onProductSelected: (productId) {
+              controller.addProductToSort(type, productId);
+            },
+          ),
+          const SizedBox(height: 16),
+
+          // Selected Products List
+          Obx(() {
+            if (ids.isEmpty) {
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: Column(
+                  children: [
+                    Icon(icon, size: 48, color: Colors.grey.shade300),
+                    const SizedBox(height: 12),
+                    Text(
+                      'No products added',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Search and add products above',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade400,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.swap_vert,
+                      size: 16,
+                      color: Colors.grey.shade400,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Use arrows to reorder',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade500,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '${ids.length} products',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade500,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ...List.generate(ids.length, (index) {
+                  final productId = ids[index];
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey.shade200),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      child: Row(
+                        children: [
+                          // Reorder arrows
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              InkWell(
+                                onTap:
+                                    index > 0
+                                        ? () => controller.reorderProducts(
+                                          type,
+                                          index,
+                                          index - 1,
+                                        )
+                                        : null,
+                                borderRadius: BorderRadius.circular(4),
+                                child: Icon(
+                                  Icons.keyboard_arrow_up,
+                                  size: 20,
+                                  color:
+                                      index > 0
+                                          ? Colors.grey.shade600
+                                          : Colors.grey.shade300,
+                                ),
+                              ),
+                              InkWell(
+                                onTap:
+                                    index < ids.length - 1
+                                        ? () => controller.reorderProducts(
+                                          type,
+                                          index,
+                                          index + 2,
+                                        )
+                                        : null,
+                                borderRadius: BorderRadius.circular(4),
+                                child: Icon(
+                                  Icons.keyboard_arrow_down,
+                                  size: 20,
+                                  color:
+                                      index < ids.length - 1
+                                          ? Colors.grey.shade600
+                                          : Colors.grey.shade300,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 8),
+                          // Index badge
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: iconColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${index + 1}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: iconColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          // Product name
+                          Expanded(
+                            child: _ProductNameDisplay(
+                              productId: productId,
+                              controller: controller,
+                            ),
+                          ),
+                          // Remove button
+                          IconButton(
+                            icon: Icon(
+                              Icons.close,
+                              size: 20,
+                              color: Colors.red.shade400,
+                            ),
+                            onPressed:
+                                () => controller.removeProductFromSort(
+                                  type,
+                                  productId,
+                                ),
+                            tooltip: 'Remove product',
+                            constraints: const BoxConstraints(),
+                            padding: const EdgeInsets.all(4),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+              ],
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSaveButton() {
     return Obx(
       () => SizedBox(
@@ -1841,47 +2178,51 @@ class _ShopSearchWidgetState extends State<_ShopSearchWidget> {
                 ),
               ],
             ),
-            child: ListView.builder(
-              shrinkWrap: true,
+            child: SingleChildScrollView(
               padding: EdgeInsets.zero,
-              itemCount: results.length,
-              itemBuilder: (context, index) {
-                final shop = results[index];
-                return InkWell(
-                  onTap: () => _selectShop(shop.id),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      border:
-                          index < results.length - 1
-                              ? Border(
-                                bottom: BorderSide(color: Colors.grey.shade100),
-                              )
-                              : null,
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.store_outlined,
-                          size: 18,
-                          color: Colors.grey.shade500,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            shop.name,
-                            style: const TextStyle(fontSize: 14),
-                            overflow: TextOverflow.ellipsis,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children:
+                    results.map((shop) {
+                      final isLast = shop == results.last;
+                      return InkWell(
+                        onTap: () => _selectShop(shop.id),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            border:
+                                !isLast
+                                    ? Border(
+                                      bottom: BorderSide(
+                                        color: Colors.grey.shade100,
+                                      ),
+                                    )
+                                    : null,
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.store_outlined,
+                                size: 18,
+                                color: Colors.grey.shade500,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  shop.name,
+                                  style: const TextStyle(fontSize: 14),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+                      );
+                    }).toList(),
+              ),
             ),
           );
         }),
@@ -1982,6 +2323,340 @@ class _SelectedShopDisplayState extends State<_SelectedShopDisplay> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Product search widget with debounced API search
+class _ProductSearchWidget extends StatefulWidget {
+  final ContentManagementController controller;
+  final String type;
+  final Function(String productId) onProductSelected;
+
+  const _ProductSearchWidget({
+    super.key,
+    required this.controller,
+    required this.type,
+    required this.onProductSelected,
+  });
+
+  @override
+  State<_ProductSearchWidget> createState() => _ProductSearchWidgetState();
+}
+
+class _ProductSearchWidgetState extends State<_ProductSearchWidget> {
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+  Timer? _debounce;
+  final _searchText = ''.obs;
+  final _showResults = true.obs;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(_onFocusChange);
+  }
+
+  void _onFocusChange() {
+    if (!_focusNode.hasFocus && _searchText.value.isEmpty) {
+      Future.delayed(const Duration(milliseconds: 200), () {
+        if (!_focusNode.hasFocus) {
+          _showResults.value = false;
+        }
+      });
+    } else if (_focusNode.hasFocus) {
+      _showResults.value = true;
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_onFocusChange);
+    _searchController.dispose();
+    _focusNode.dispose();
+    _debounce?.cancel();
+    _searchText.close();
+    _showResults.close();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    _searchText.value = query;
+    _showResults.value = true;
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 400), () {
+      if (query.trim().isNotEmpty) {
+        widget.controller.searchProducts(query, widget.type);
+      } else {
+        widget.controller.clearProductSearch();
+      }
+    });
+  }
+
+  void _selectProduct(String productId) {
+    widget.onProductSelected(productId);
+    _searchController.clear();
+    _searchText.value = '';
+    _showResults.value = false;
+    widget.controller.clearProductSearch();
+    _focusNode.unfocus();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: _searchController,
+          focusNode: _focusNode,
+          onChanged: _onSearchChanged,
+          style: const TextStyle(fontSize: 14),
+          decoration: InputDecoration(
+            hintText: 'Search products...',
+            hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+            prefixIcon: Icon(
+              Icons.search,
+              color: Colors.grey.shade400,
+              size: 20,
+            ),
+            suffixIcon: Obx(
+              () =>
+                  widget.controller.isSearchingProducts.value
+                      ? Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.grey.shade400,
+                          ),
+                        ),
+                      )
+                      : const SizedBox.shrink(),
+            ),
+            filled: true,
+            fillColor: Colors.grey.shade50,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey.shade200),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey.shade200),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(
+                color: WebSettingsTheme.primaryColor,
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
+            ),
+          ),
+        ),
+        // Search results dropdown
+        Obx(() {
+          if (!_showResults.value) return const SizedBox.shrink();
+
+          final results = widget.controller.productSearchResults;
+          final searchText = _searchText.value;
+
+          if (searchText.isEmpty) return const SizedBox.shrink();
+
+          if (widget.controller.isSearchingProducts.value && results.isEmpty) {
+            return Container(
+              margin: const EdgeInsets.only(top: 4),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade200),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  'Searching...',
+                  style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                ),
+              ),
+            );
+          }
+
+          if (results.isEmpty) {
+            return Container(
+              margin: const EdgeInsets.only(top: 4),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade200),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  'No matching products found',
+                  style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                ),
+              ),
+            );
+          }
+
+          return Container(
+            margin: const EdgeInsets.only(top: 4),
+            constraints: const BoxConstraints(maxHeight: 250),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade200),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.zero,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children:
+                    results.map((product) {
+                      final isLast = product == results.last;
+                      return InkWell(
+                        onTap: () => _selectProduct(product.id),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            border:
+                                !isLast
+                                    ? Border(
+                                      bottom: BorderSide(
+                                        color: Colors.grey.shade100,
+                                      ),
+                                    )
+                                    : null,
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.inventory_2_outlined,
+                                size: 18,
+                                color: Colors.grey.shade500,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  product.name,
+                                  style: const TextStyle(fontSize: 14),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Icon(
+                                Icons.add_circle_outline,
+                                size: 18,
+                                color: WebSettingsTheme.primaryColor.withValues(
+                                  alpha: 0.7,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+              ),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+}
+
+/// Displays product name - fetches from cache/API
+class _ProductNameDisplay extends StatefulWidget {
+  final String productId;
+  final ContentManagementController controller;
+
+  const _ProductNameDisplay({
+    super.key,
+    required this.productId,
+    required this.controller,
+  });
+
+  @override
+  State<_ProductNameDisplay> createState() => _ProductNameDisplayState();
+}
+
+class _ProductNameDisplayState extends State<_ProductNameDisplay> {
+  late Future<ProductItem?> _productFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _productFuture = widget.controller.getProductDetails(widget.productId);
+  }
+
+  @override
+  void didUpdateWidget(covariant _ProductNameDisplay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.productId != widget.productId) {
+      _productFuture = widget.controller.getProductDetails(widget.productId);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<ProductItem?>(
+      future: _productFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Row(
+            children: [
+              SizedBox(
+                width: 14,
+                height: 14,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.grey.shade400,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Loading...',
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+              ),
+            ],
+          );
+        }
+
+        final product = snapshot.data;
+        return Text(
+          product?.name ?? 'Unknown Product',
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          overflow: TextOverflow.ellipsis,
+        );
+      },
     );
   }
 }
