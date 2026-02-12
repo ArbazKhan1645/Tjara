@@ -18,6 +18,15 @@ import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:crypto/crypto.dart';
 
+// Top-level functions required for compute() - cannot be inside a class
+Map<String, dynamic> _decodeJsonMap(String source) {
+  return json.decode(source) as Map<String, dynamic>;
+}
+
+dynamic _decodeJsonDynamic(String source) {
+  return json.decode(source);
+}
+
 class NetworkRepository {
   CommonHeader original = CommonHeader(
     headers: {
@@ -132,7 +141,7 @@ class NetworkRepository {
       if (!forceRefresh) {
         final cachedData = await _getFromCache(fullUrl);
         if (cachedData != null) {
-          return fromJson(json.decode(cachedData));
+          return fromJson(await compute(_decodeJsonMap, cachedData));
         }
       }
 
@@ -150,12 +159,12 @@ class NetworkRepository {
         await _saveToCache(fullUrl, response.body);
 
         // Parse and return
-        return fromJson(json.decode(response.body));
+        return fromJson(await compute(_decodeJsonMap, response.body));
       } else if (response.statusCode == 404) {
         // Try cache if network request fails
         final cachedData = await _getFromCache(fullUrl);
         if (cachedData != null) {
-          return fromJson(json.decode(cachedData));
+          return fromJson(await compute(_decodeJsonMap, cachedData));
         }
 
         // If no cache, throw exception
@@ -163,7 +172,7 @@ class NetworkRepository {
       } else {
         final cachedData = await _getFromCache(fullUrl);
         if (cachedData != null) {
-          return fromJson(json.decode(cachedData));
+          return fromJson(await compute(_decodeJsonMap, cachedData));
         }
 
         // If no cache, throw exception
@@ -175,21 +184,21 @@ class NetworkRepository {
       // Timeout handling
       final cachedData = await _getFromCache(fullUrl);
       if (cachedData != null) {
-        return fromJson(json.decode(cachedData));
+        return fromJson(await compute(_decodeJsonMap, cachedData));
       }
       throw ApiException('Request timed out');
     } on SocketException {
       // No internet connection
       final cachedData = await _getFromCache(fullUrl);
       if (cachedData != null) {
-        return fromJson(json.decode(cachedData));
+        return fromJson(await compute(_decodeJsonMap, cachedData));
       }
       throw ApiException('No internet connection');
     } catch (e) {
       // Generic error handling
       final cachedData = await _getFromCache(fullUrl);
       if (cachedData != null) {
-        return fromJson(json.decode(cachedData));
+        return fromJson(await compute(_decodeJsonMap, cachedData));
       }
       throw ApiException('Unexpected error: $e');
     }
@@ -208,7 +217,7 @@ class NetworkRepository {
       if (!forceRefresh) {
         final cachedData = await _getFromCache(fullUrl);
         if (cachedData != null) {
-          return json.decode(cachedData);
+          return await compute<String, dynamic>(_decodeJsonDynamic, cachedData) as T;
         }
       }
 
@@ -226,12 +235,12 @@ class NetworkRepository {
         await _saveToCache(fullUrl, response.body);
 
         // Parse and return
-        return json.decode(response.body);
+        return await compute<String, dynamic>(_decodeJsonDynamic, response.body) as T;
       } else {
         // Try cache if network request fails
         final cachedData = await _getFromCache(fullUrl);
         if (cachedData != null) {
-          return json.decode(cachedData);
+          return await compute<String, dynamic>(_decodeJsonDynamic, cachedData) as T;
         }
 
         // If no cache, throw exception
@@ -243,21 +252,21 @@ class NetworkRepository {
       // Timeout handling
       final cachedData = await _getFromCache(fullUrl);
       if (cachedData != null) {
-        return json.decode(cachedData);
+        return await compute<String, dynamic>(_decodeJsonDynamic, cachedData) as T;
       }
       throw ApiException('Request timed out');
     } on SocketException {
       // No internet connection
       final cachedData = await _getFromCache(fullUrl);
       if (cachedData != null) {
-        return json.decode(cachedData);
+        return await compute<String, dynamic>(_decodeJsonDynamic, cachedData) as T;
       }
       throw ApiException('No internet connection');
     } catch (e) {
       // Generic error handling
       final cachedData = await _getFromCache(fullUrl);
       if (cachedData != null) {
-        return json.decode(cachedData);
+        return await compute<String, dynamic>(_decodeJsonDynamic, cachedData) as T;
       }
       throw ApiException('Unexpected error: $e');
     }
@@ -299,7 +308,7 @@ class NetworkRepository {
         }
 
         // Parse and return
-        return fromJson(json.decode(response.body));
+        return fromJson(await compute(_decodeJsonMap, response.body));
       } else {
         throw ApiException(
           'Failed to post data: ${response.statusCode} ${response.reasonPhrase}',

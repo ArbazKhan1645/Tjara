@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -35,6 +36,11 @@ import 'package:tjara/app/models/superdeals_temp_model.dart' as superdeals;
 import 'package:tjara/app/modules/modules_customer/product_detail_screen/screens/flash_deal_checkout_sheet.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shimmer/shimmer.dart';
+
+// Top-level function required for compute() - cannot be inside a class
+Map<String, dynamic> _decodeJsonMap(String source) {
+  return json.decode(source) as Map<String, dynamic>;
+}
 
 class FlashDealDetailScreen extends StatefulWidget {
   const FlashDealDetailScreen({super.key});
@@ -188,7 +194,7 @@ class _FlashDealDetailScreenState extends State<FlashDealDetailScreen>
 
       if (!_isDisposed) {
         if (response.statusCode == 200) {
-          final data = json.decode(response.body);
+          final data = await compute(_decodeJsonMap, response.body);
           final newFlashDeal = superdeals.SuperDeals.fromMap(data);
           _handleStateChange(newFlashDeal);
         } else {

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:tjara/app/models/products/products_model.dart';
+import 'package:tjara/app/repo/network_repository.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
 
 class TjaraVideosService {
@@ -49,18 +50,25 @@ class TjaraVideosService {
     int perPage = 10,
   }) async {
     try {
-      final uri = Uri.parse(
-        '$_baseUrl/products/videos?page=$page&per_page=$perPage',
-      );
-      final response = await http
-          .get(uri, headers: _headers())
-          .timeout(const Duration(seconds: 15));
+      final NetworkRepository repository = NetworkRepository();
+      final result = await repository
+          .fetchData<VideoProductsResponse>(
+            url: '$_baseUrl/products/videos?page=$page&per_page=$perPage',
+            fromJson: (json) => VideoProductsResponse.fromJson(json),
+            forceRefresh: true,
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              return VideoProductsResponse.empty();
+            },
+          );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return VideoProductsResponse.fromJson(data);
+      if (result.videos.isEmpty) {
+        return VideoProductsResponse.empty();
+      } else {
+        return result;
       }
-      return VideoProductsResponse.empty();
     } catch (e) {
       debugPrint('TjaraVideosService.fetchVideoProducts error: $e');
       return VideoProductsResponse.empty();

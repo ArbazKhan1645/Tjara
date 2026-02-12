@@ -26,8 +26,8 @@ class HomeController extends GetxController {
     'assets/images/—Pngtree—sports shoes_15910407.png',
   );
   void preCacheImage() {
-    if (Get.context == null) return;
-    precacheImage(cachedShoeImage, Get.context!);
+    // if (Get.context == null) return;
+    // precacheImage(cachedShoeImage, Get.context!);
   }
 
   // Initialization state management
@@ -1090,7 +1090,7 @@ class HomeController extends GetxController {
     String url;
     if (isDealsection) {
       url =
-          'https://api.libanbuy.com/api/products?request_for=FLASH_DEALS_ENDED_DEALS_SECTION&with=image,shop&includeFlashDeals=true&filterJoin=AND&filterByColumns%5BfilterJoin%5D=AND&filterByColumns%5Bcolumns%5D%5B0%5D%5Bcolumn%5D=is_deal&filterByColumns%5Bcolumns%5D%5B0%5D%5Boperator%5D=%3D&filterByColumns%5Bcolumns%5D%5B0%5D%5Bvalue%5D=1&filterByMetaFields%5BfilterJoin%5D=AND&filterByMetaFields%5Bfields%5D%5B0%5D%5Bkey%5D=sold&filterByMetaFields%5Bfields%5D%5B0%5D%5Boperator%5D=%3E&filterByMetaFields%5Bfields%5D%5B0%5D%5Bvalue%5D=0&page=1&per_page=10&orderBy=created_at&order=desc';
+          'https://api.libanbuy.com/api/products?request_for=FLASH_DEALS_ENDED_DEALS_SECTION&with=image,shop&includeFlashDeals=true&filterJoin=AND&filterByColumns%5BfilterJoin%5D=AND&filterByColumns%5Bcolumns%5D%5B0%5D%5Bcolumn%5D=is_deal&filterByColumns%5Bcolumns%5D%5B0%5D%5Boperator%5D=%3D&filterByColumns%5Bcolumns%5D%5B0%5D%5Bvalue%5D=1&orderBy=super_deals_products_sort_order&restrictToIds=true&page=1&per_page=6';
     } else if (isCategoryUUID) {
       url =
           'https://api.libanbuy.com/api/products?request_for=SHOP_PRODUCTS_SECTION&with=thumbnail,shop,variations,rating,analytics&filterJoin=OR&page=1&per_page=24&filterByColumns[filterJoin]=AND&filterByAttributes[filterJoin]=AND&filterByAttributes[attributes][0][key]=categories&filterByAttributes[attributes][0][value]=$search&filterByAttributes[attributes][0][operator]=%3D';

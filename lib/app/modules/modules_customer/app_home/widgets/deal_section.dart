@@ -183,9 +183,20 @@ class _DealProductCard extends StatelessWidget {
           return;
         }
 
+        if (index != 0) {
+          Get.to(
+            () => ProductDetailScreenView(product: product),
+            preventDuplicates: false,
+          );
+          return;
+        }
+
         Get.to(() => const FlashDealDetailScreen(), preventDuplicates: false);
       },
-      child: isScheduledProduct ? _buildScheduledCard() : _buildNormalCard(),
+      child:
+          (isScheduledProduct && index == 0)
+              ? _buildScheduledCard()
+              : _buildNormalCard(),
     );
   }
 

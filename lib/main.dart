@@ -29,6 +29,11 @@ LINE: $errorLine
   };
 
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
+  /// ✅ Smarter image cache sizing
+  final imageCache = PaintingBinding.instance.imageCache;
+  imageCache.maximumSize = 100;
+  imageCache.maximumSizeBytes = 1024 * 1024 * (Platform.isAndroid ? 40 : 60);
   runApp(const MyApp());
 }
 
@@ -49,7 +54,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      // navigatorObservers: [RouteTracker()],
+      scrollBehavior: MyScrollBehavior(),
       debugShowCheckedModeBanner: false,
       defaultTransition: Transition.rightToLeft,
       localizationsDelegates: [
@@ -66,12 +71,19 @@ class MyApp extends StatelessWidget {
           child: widget!,
         );
       },
-      // theme: lightThemeData(context),
+
       themeMode: ThemeMode.light,
-      transitionDuration: const Duration(milliseconds: 200),
+      transitionDuration: const Duration(milliseconds: 300),
       initialRoute: AppPages.INITIAL,
       getPages: AppPages.routes,
     );
+  }
+}
+
+class MyScrollBehavior extends MaterialScrollBehavior {
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) {
+    return const ClampingScrollPhysics(); // smoother for Android
   }
 }
 
