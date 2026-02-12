@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tjara/app/modules/modules_admin/admin/dashboard_admin/widgets/admin_dashboard_theme.dart';
+import 'package:tjara/app/modules/modules_admin/dashboard_admin/widgets/admin_dashboard_theme.dart';
 import 'package:tjara/app/modules/modules_customer/orders_dashboard/controllers/orders_dashboard_controller.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
 
@@ -32,8 +32,7 @@ class _OrdersDisputeOverviewState extends State<OrdersDisputeOverview> {
   // Safe getters
   String get _userId =>
       AuthService.instance.authCustomer?.user?.id?.toString() ?? '';
-  String get _orderId =>
-      _controller.selectedOrder.value?.id?.toString() ?? '';
+  String get _orderId => _controller.selectedOrder.value?.id?.toString() ?? '';
 
   @override
   void dispose() {
@@ -123,9 +122,7 @@ class _OrdersDisputeOverviewState extends State<OrdersDisputeOverview> {
             },
           ),
           const SizedBox(height: AdminDashboardTheme.spacingLg),
-          _DisputeDetailsCard(
-            controller: _descriptionController,
-          ),
+          _DisputeDetailsCard(controller: _descriptionController),
           const SizedBox(height: AdminDashboardTheme.spacingXl),
           _buildActionButtons(),
           const SizedBox(height: 100),
@@ -143,11 +140,7 @@ class _OrdersDisputeOverviewState extends State<OrdersDisputeOverview> {
             color: Colors.white.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusSm),
           ),
-          child: const Icon(
-            Icons.gavel_rounded,
-            color: Colors.white,
-            size: 20,
-          ),
+          child: const Icon(Icons.gavel_rounded, color: Colors.white, size: 20),
         ),
         const SizedBox(width: AdminDashboardTheme.spacingMd),
         const Text(
@@ -167,11 +160,7 @@ class _OrdersDisputeOverviewState extends State<OrdersDisputeOverview> {
             borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusSm),
             child: const Padding(
               padding: EdgeInsets.all(AdminDashboardTheme.spacingSm),
-              child: Icon(
-                Icons.close_rounded,
-                color: Colors.white,
-                size: 20,
-              ),
+              child: Icon(Icons.close_rounded, color: Colors.white, size: 20),
             ),
           ),
         ),
@@ -192,8 +181,9 @@ class _OrdersDisputeOverviewState extends State<OrdersDisputeOverview> {
                 height: 52,
                 decoration: BoxDecoration(
                   color: AdminDashboardTheme.surfaceSecondary,
-                  borderRadius:
-                      BorderRadius.circular(AdminDashboardTheme.radiusMd),
+                  borderRadius: BorderRadius.circular(
+                    AdminDashboardTheme.radiusMd,
+                  ),
                   border: Border.all(color: AdminDashboardTheme.border),
                 ),
                 child: const Center(
@@ -222,15 +212,19 @@ class _OrdersDisputeOverviewState extends State<OrdersDisputeOverview> {
                 duration: const Duration(milliseconds: 200),
                 height: 52,
                 decoration: BoxDecoration(
-                  color: _isSubmitting
-                      ? AdminDashboardTheme.surfaceSecondary
-                      : AdminDashboardTheme.error,
-                  borderRadius:
-                      BorderRadius.circular(AdminDashboardTheme.radiusMd),
-                  boxShadow: _isSubmitting
-                      ? null
-                      : AdminDashboardTheme.shadowColored(
-                          AdminDashboardTheme.error),
+                  color:
+                      _isSubmitting
+                          ? AdminDashboardTheme.surfaceSecondary
+                          : AdminDashboardTheme.error,
+                  borderRadius: BorderRadius.circular(
+                    AdminDashboardTheme.radiusMd,
+                  ),
+                  boxShadow:
+                      _isSubmitting
+                          ? null
+                          : AdminDashboardTheme.shadowColored(
+                            AdminDashboardTheme.error,
+                          ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -256,9 +250,10 @@ class _OrdersDisputeOverviewState extends State<OrdersDisputeOverview> {
                     Text(
                       _isSubmitting ? 'Submitting...' : 'Submit Dispute',
                       style: TextStyle(
-                        color: _isSubmitting
-                            ? AdminDashboardTheme.textSecondary
-                            : Colors.white,
+                        color:
+                            _isSubmitting
+                                ? AdminDashboardTheme.textSecondary
+                                : Colors.white,
                         fontWeight: FontWeight.w600,
                         fontSize: 15,
                       ),
@@ -314,10 +309,7 @@ class _DisputeReasonCard extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader({
-    required IconData icon,
-    required String title,
-  }) {
+  Widget _buildSectionHeader({required IconData icon, required String title}) {
     return Row(
       children: [
         Container(
@@ -370,9 +362,10 @@ class _DisputeReasonCard extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusMd),
         border: Border.all(
-          color: selectedReason != null
-              ? AdminDashboardTheme.primary
-              : AdminDashboardTheme.border,
+          color:
+              selectedReason != null
+                  ? AdminDashboardTheme.primary
+                  : AdminDashboardTheme.border,
         ),
       ),
       child: DropdownButtonFormField<String>(
@@ -384,9 +377,10 @@ class _DisputeReasonCard extends StatelessWidget {
         decoration: InputDecoration(
           prefixIcon: Icon(
             Icons.category_rounded,
-            color: selectedReason != null
-                ? AdminDashboardTheme.primary
-                : AdminDashboardTheme.textTertiary,
+            color:
+                selectedReason != null
+                    ? AdminDashboardTheme.primary
+                    : AdminDashboardTheme.textTertiary,
             size: 20,
           ),
           border: InputBorder.none,
@@ -397,12 +391,13 @@ class _DisputeReasonCard extends StatelessWidget {
         ),
         dropdownColor: AdminDashboardTheme.surface,
         borderRadius: BorderRadius.circular(AdminDashboardTheme.radiusMd),
-        items: reasons.map((String reason) {
-          return DropdownMenuItem<String>(
-            value: reason,
-            child: Text(reason, style: AdminDashboardTheme.bodyLarge),
-          );
-        }).toList(),
+        items:
+            reasons.map((String reason) {
+              return DropdownMenuItem<String>(
+                value: reason,
+                child: Text(reason, style: AdminDashboardTheme.bodyLarge),
+              );
+            }).toList(),
         onChanged: onReasonChanged,
       ),
     );
@@ -413,9 +408,7 @@ class _DisputeReasonCard extends StatelessWidget {
 class _DisputeDetailsCard extends StatelessWidget {
   final TextEditingController controller;
 
-  const _DisputeDetailsCard({
-    required this.controller,
-  });
+  const _DisputeDetailsCard({required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -447,10 +440,7 @@ class _DisputeDetailsCard extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader({
-    required IconData icon,
-    required String title,
-  }) {
+  Widget _buildSectionHeader({required IconData icon, required String title}) {
     return Row(
       children: [
         Container(
@@ -555,9 +545,10 @@ class _DisputeDetailsCard extends StatelessWidget {
             Text(
               '$count / 1000',
               style: AdminDashboardTheme.bodySmall.copyWith(
-                color: isNearLimit
-                    ? AdminDashboardTheme.warning
-                    : AdminDashboardTheme.textTertiary,
+                color:
+                    isNearLimit
+                        ? AdminDashboardTheme.warning
+                        : AdminDashboardTheme.textTertiary,
               ),
             ),
           ],

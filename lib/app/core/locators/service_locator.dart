@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:tjara/app/modules/modules_admin/admin/popups/popups.dart';
+import 'package:tjara/app/modules/modules_admin/popups/popups.dart';
 import 'package:tjara/app/services/dashbopard_services/adminJobs_service.dart';
 import 'package:tjara/app/services/dashbopard_services/admin_auction_service.dart';
 import 'package:tjara/app/services/dashbopard_services/admin_cars_service.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:country_code_picker/country_code_picker.dart';
-import 'package:tjara/app/modules/authentication_module/controllers/auth_controller.dart';
+import 'package:tjara/app/modules/authentication_module/controllers/signup_controller.dart';
 
 class SignupScreen extends StatelessWidget {
   const SignupScreen({

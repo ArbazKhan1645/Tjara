@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tjara/app/core/utils/helpers/alerts.dart';
-import 'package:tjara/app/modules/modules_admin/admin/profile/profile.dart';
+import 'package:tjara/app/modules/modules_admin/profile/profile.dart';
 import 'package:tjara/app/modules/modules_customer/customer_dashboard/controllers/dashboard_controller.dart';
 import 'package:tjara/app/modules/modules_customer/customer_cart/controllers/my_cart_controller.dart';
 import 'package:tjara/app/modules/modules_customer/user_wishlist/service/wishlist_service.dart';

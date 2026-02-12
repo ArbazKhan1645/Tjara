@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tjara/app/modules/authentication_module/controllers/device_activation_controller.dart';
+import 'package:tjara/app/modules/authentication_module/controllers/login_auth_controller.dart';
 
 class ForgetPassword extends StatefulWidget {
   const ForgetPassword({super.key});
@@ -14,7 +14,6 @@ class _ForgetPasswordState extends State<ForgetPassword> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     final isSmallDevice = screenSize.width < 400;
-    final isMediumDevice = screenSize.width < 600;
 
     return Material(
       color: Colors.transparent,
