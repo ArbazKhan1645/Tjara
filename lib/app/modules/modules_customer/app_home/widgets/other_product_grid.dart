@@ -9,8 +9,8 @@ import 'package:get/get.dart';
 import 'package:tjara/app/core/utils/helpers/alerts.dart';
 import 'package:tjara/app/models/products/products_model.dart';
 import 'package:tjara/app/models/users_model.dart/customer_models.dart';
-import 'package:tjara/app/modules/authentication/screens/contact_us.dart';
-import 'package:tjara/app/modules/authentication/screens/login.dart';
+import 'package:tjara/app/modules/authentication_module/screens/contact_us.dart';
+import 'package:tjara/app/modules/authentication_module/screens/login.dart';
 import 'package:tjara/app/modules/modules_customer/customer_dashboard/controllers/dashboard_controller.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/controllers/home_controller.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/widgets/auction_products.dart';
@@ -270,8 +270,7 @@ class TemuProductCard extends StatelessWidget {
               final controller = Get.put(WishlistServiceController());
               final isThisRemoving =
                   controller.removingWishlistId.value == wishlistId;
-              final isAnyRemoving =
-                  controller.removingWishlistId.value != null;
+              final isAnyRemoving = controller.removingWishlistId.value != null;
               return GestureDetector(
                 onTap: isAnyRemoving ? null : () => _removeFromWishlist(),
                 child: Container(
@@ -288,21 +287,23 @@ class TemuProductCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: isThisRemoving
-                      ? const Padding(
-                          padding: EdgeInsets.all(4),
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.grey,
+                  child:
+                      isThisRemoving
+                          ? const Padding(
+                            padding: EdgeInsets.all(4),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.grey,
+                            ),
+                          )
+                          : Icon(
+                            Icons.close,
+                            color:
+                                isAnyRemoving
+                                    ? Colors.grey.shade300
+                                    : Colors.grey,
+                            size: 14,
                           ),
-                        )
-                      : Icon(
-                          Icons.close,
-                          color: isAnyRemoving
-                              ? Colors.grey.shade300
-                              : Colors.grey,
-                          size: 14,
-                        ),
                 ),
               );
             }),

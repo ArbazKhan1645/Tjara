@@ -10,7 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:tjara/app/core/utils/helpers/alerts.dart';
 import 'package:tjara/app/models/users_model.dart/customer_models.dart';
-import 'package:tjara/app/modules/authentication/screens/contact_us.dart';
+import 'package:tjara/app/modules/authentication_module/screens/contact_us.dart';
 import 'package:tjara/app/modules/modules_customer/customer_dashboard/controllers/dashboard_controller.dart';
 import 'package:tjara/app/modules/modules_customer/customer_cart/controllers/my_cart_controller.dart';
 import 'package:tjara/app/modules/modules_customer/tjara_surveys/view/survey_view.dart';

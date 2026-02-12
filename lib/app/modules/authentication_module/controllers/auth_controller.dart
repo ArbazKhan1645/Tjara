@@ -14,7 +14,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:tjara/app/modules/authentication/controllers/device_activation_controller.dart';
+import 'package:tjara/app/modules/authentication_module/controllers/device_activation_controller.dart';
 import 'dart:convert';
 
 class AuthController extends GetxController {

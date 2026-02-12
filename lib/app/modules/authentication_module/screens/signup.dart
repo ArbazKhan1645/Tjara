@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:country_code_picker/country_code_picker.dart';
-import 'package:tjara/app/modules/authentication/controllers/auth_controller.dart';
+import 'package:tjara/app/modules/authentication_module/controllers/auth_controller.dart';
 
 class SignupScreen extends StatelessWidget {
   const SignupScreen({
@@ -429,43 +429,41 @@ class SignupScreen extends StatelessWidget {
                               () => TextFormField(
                                 controller:
                                     authController.referralCodeController,
-                                onChanged:
-                                    authController.onReferralCodeChanged,
+                                onChanged: authController.onReferralCodeChanged,
                                 decoration: _buildInputDecoration(
                                   hintText: 'Enter your referral code here',
                                   prefixIcon: Icons.card_giftcard_outlined,
-                                  suffixIcon: authController
-                                              .referralStatus
-                                              .value ==
-                                          'validating'
-                                      ? const Padding(
-                                        padding: EdgeInsets.all(14.0),
-                                        child: SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: Color(0xFFfea52d),
-                                          ),
-                                        ),
-                                      )
-                                      : authController
-                                              .referralStatus
-                                              .value ==
-                                          'valid'
-                                      ? const Icon(
-                                        Icons.check_circle,
-                                        color: Colors.green,
-                                      )
-                                      : authController
-                                              .referralStatus
-                                              .value ==
-                                          'invalid'
-                                      ? const Icon(
-                                        Icons.error_outline,
-                                        color: Colors.red,
-                                      )
-                                      : null,
+                                  suffixIcon:
+                                      authController.referralStatus.value ==
+                                              'validating'
+                                          ? const Padding(
+                                            padding: EdgeInsets.all(14.0),
+                                            child: SizedBox(
+                                              width: 20,
+                                              height: 20,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: Color(0xFFfea52d),
+                                              ),
+                                            ),
+                                          )
+                                          : authController
+                                                  .referralStatus
+                                                  .value ==
+                                              'valid'
+                                          ? const Icon(
+                                            Icons.check_circle,
+                                            color: Colors.green,
+                                          )
+                                          : authController
+                                                  .referralStatus
+                                                  .value ==
+                                              'invalid'
+                                          ? const Icon(
+                                            Icons.error_outline,
+                                            color: Colors.red,
+                                          )
+                                          : null,
                                 ).copyWith(
                                   errorText:
                                       authController

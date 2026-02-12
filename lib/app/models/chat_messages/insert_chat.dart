@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 import 'package:tjara/app/models/chat_messages/chat_messages_model.dart';
 import 'package:tjara/app/models/chat_messages/chat_messages_sub_model.dart';
 import 'package:tjara/app/models/users_model.dart/customer_models.dart';
-import 'package:tjara/app/modules/authentication/screens/contact_us.dart';
+import 'package:tjara/app/modules/authentication_module/screens/contact_us.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
 import 'package:http/http.dart' as http;
 

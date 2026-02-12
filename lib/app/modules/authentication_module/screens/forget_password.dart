@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tjara/app/modules/authentication/controllers/device_activation_controller.dart';
+import 'package:tjara/app/modules/authentication_module/controllers/device_activation_controller.dart';
 
 class ForgetPassword extends StatefulWidget {
   const ForgetPassword({super.key});

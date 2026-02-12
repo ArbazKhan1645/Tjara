@@ -13,8 +13,8 @@ import 'package:tjara/app/models/media_model/media_model.dart';
 import 'package:tjara/app/models/users_model.dart/customer_models.dart'
     hide Thumbnail;
 import 'package:tjara/app/models/wishlists/wishlist_model.dart';
-import 'package:tjara/app/modules/authentication/screens/contact_us.dart';
-import 'package:tjara/app/modules/authentication/screens/login.dart';
+import 'package:tjara/app/modules/authentication_module/screens/contact_us.dart';
+import 'package:tjara/app/modules/authentication_module/screens/login.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/widgets/deal_section.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/widgets/attributes.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/widgets/bids.dart';

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'package:tjara/app/modules/authentication/screens/login.dart';
+import 'package:tjara/app/modules/authentication_module/screens/login.dart';
 
-import 'package:tjara/app/modules/authentication/screens/signup.dart';
+import 'package:tjara/app/modules/authentication_module/screens/signup.dart';
 
 // ========================================
 // 🎯 MAIN AUTH WRAPPER (Parent Widget)

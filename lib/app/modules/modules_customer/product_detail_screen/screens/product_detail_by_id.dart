@@ -11,8 +11,8 @@ import 'package:tjara/app/core/dialogs/payment_security.dart';
 import 'package:tjara/app/core/utils/helpers/alerts.dart';
 import 'package:tjara/app/models/users_model.dart/customer_models.dart';
 import 'package:tjara/app/models/wishlists/wishlist_model.dart';
-import 'package:tjara/app/modules/authentication/screens/contact_us.dart';
-import 'package:tjara/app/modules/authentication/screens/login.dart';
+import 'package:tjara/app/modules/authentication_module/screens/contact_us.dart';
+import 'package:tjara/app/modules/authentication_module/screens/login.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/widgets/attributes.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/widgets/bids.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/service/customer_service.dart'
