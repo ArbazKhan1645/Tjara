@@ -6,9 +6,9 @@ class AdminProductsTheme {
   AdminProductsTheme._();
 
   // Primary Colors
-  static const Color primary = const Color(0xFFfda730);
+  static const Color primary = Color(0xFFfda730);
   static const Color primaryLight = Color(0xFFEEF2FF);
-  static const Color primaryDark = const Color(0xFFfda730);
+  static const Color primaryDark = Color(0xFFfda730);
 
   // Secondary Colors
   static const Color secondary = Color(0xFF0EA5E9); // Sky blue

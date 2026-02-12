@@ -1173,7 +1173,7 @@ class ResellerListPage extends StatelessWidget {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              SizedBox(
+                              const SizedBox(
                                 width: 20,
                                 height: 20,
                                 child: CircularProgressIndicator(
@@ -1332,9 +1332,9 @@ class ResellerListPage extends StatelessWidget {
           // Header
           Container(
             padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: ResellerTheme.cardGradient,
-              borderRadius: const BorderRadius.vertical(
+              borderRadius: BorderRadius.vertical(
                 top: Radius.circular(16),
               ),
             ),
@@ -1434,7 +1434,7 @@ class ResellerListPage extends StatelessWidget {
                   },
                   itemBuilder:
                       (context) => [
-                        PopupMenuItem(
+                        const PopupMenuItem(
                           value: 'edit',
                           child: Row(
                             children: [
@@ -1443,8 +1443,8 @@ class ResellerListPage extends StatelessWidget {
                                 size: 18,
                                 color: ResellerTheme.primaryTeal,
                               ),
-                              const SizedBox(width: 12),
-                              const Text('Edit'),
+                              SizedBox(width: 12),
+                              Text('Edit'),
                             ],
                           ),
                         ),
@@ -1807,7 +1807,7 @@ class AddEditResellerPage extends StatelessWidget {
                                 onChanged:
                                     (value) =>
                                         controller.freeShipping.value = value,
-                                activeColor: ResellerTheme.primaryTeal,
+                                activeThumbColor: ResellerTheme.primaryTeal,
                               ),
                             ],
                           ),

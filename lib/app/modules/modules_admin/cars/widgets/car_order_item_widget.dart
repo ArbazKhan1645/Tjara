@@ -741,7 +741,7 @@ class _CarOrderItemCardState extends State<CarOrderItemCard> {
                                   soldValue = val;
                                 });
                               },
-                              activeColor: CarsAdminTheme.accent,
+                              activeThumbColor: CarsAdminTheme.accent,
                             ),
                           ],
                         ),

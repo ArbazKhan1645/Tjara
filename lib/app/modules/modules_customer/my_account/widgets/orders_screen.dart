@@ -1045,7 +1045,7 @@ class _OrdersScreenState extends State<OrdersScreen>
             child: Switch(
               value: value,
               onChanged: onChanged,
-              activeColor: Colors.teal,
+              activeThumbColor: Colors.teal,
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
           ),

@@ -296,8 +296,8 @@ class VideoProductsResponse {
     if (productsData is Map<String, dynamic> && productsData['data'] is List) {
       videosList =
           (productsData['data'] as List)
-              .where((e) => e is Map<String, dynamic>)
-              .map((e) => VideoProduct.fromRawJson(e as Map<String, dynamic>))
+              .whereType<Map<String, dynamic>>()
+              .map((e) => VideoProduct.fromRawJson(e))
               .where(
                 (v) => v.videoUrl.isNotEmpty,
               ) // Only include products with videos

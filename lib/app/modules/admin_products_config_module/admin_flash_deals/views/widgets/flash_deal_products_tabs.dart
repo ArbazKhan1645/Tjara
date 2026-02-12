@@ -274,7 +274,7 @@ class FlashDealProductsTabs extends GetView<FlashDealController> {
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style: TextStyle(color: AdminTheme.textMuted, fontSize: 13),
+              style: const TextStyle(color: AdminTheme.textMuted, fontSize: 13),
             ),
           ],
         ),

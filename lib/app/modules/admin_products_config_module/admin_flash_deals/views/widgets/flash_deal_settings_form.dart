@@ -179,7 +179,7 @@ class FlashDealSettingsForm extends GetView<FlashDealController> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Select Start Date & Time (Local Time)',
                     style: TextStyle(
                       fontSize: 13,
@@ -220,7 +220,7 @@ class FlashDealSettingsForm extends GetView<FlashDealController> {
           child: DropdownButton<String>(
             value: value.value.isEmpty ? null : value.value,
             isExpanded: true,
-            hint: Text(
+            hint: const Text(
               'Unit',
               style: TextStyle(color: AdminTheme.textMuted, fontSize: 14),
             ),
@@ -311,7 +311,7 @@ class FlashDealSettingsForm extends GetView<FlashDealController> {
               child: Obx(() {
                 final dt = controller.scheduledStartTime.value;
                 if (dt == null) {
-                  return Text(
+                  return const Text(
                     'Tap to select date and time',
                     style: TextStyle(color: AdminTheme.textMuted, fontSize: 14),
                   );
@@ -406,7 +406,7 @@ class FlashDealSettingsForm extends GetView<FlashDealController> {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 13,
                 color: AdminTheme.primaryDark,
                 fontWeight: FontWeight.w500,

@@ -5,7 +5,6 @@ import 'package:tjara/app/modules/admin_products_config_module/admin_flash_deals
 import 'package:tjara/app/modules/admin_products_config_module/admin_flash_deals/views/widgets/flash_deal_products_tabs.dart';
 import 'package:tjara/app/modules/admin_products_config_module/admin_flash_deals/views/widgets/flash_deal_shimmer.dart';
 import 'package:tjara/app/modules/modules_admin/add_product_admin/widgets/admin_ui_components.dart';
-import 'package:tjara/app/routes/app_pages.dart';
 
 class FlashDealSettingsView extends GetView<FlashDealController> {
   const FlashDealSettingsView({super.key});

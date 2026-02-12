@@ -136,7 +136,7 @@ class OrdersDashboardController extends GetxController {
     BuildContext context,
     String currentStatus,
   ) async {
-    String? selectedStatus = await showDialog<String>(
+    final String? selectedStatus = await showDialog<String>(
       context: context,
       builder:
           (context) => _StatusSelectionDialog(
@@ -157,7 +157,7 @@ class OrdersDashboardController extends GetxController {
     BuildContext context,
     String currentStatus,
   ) async {
-    String? selectedStatus = await showDialog<String>(
+    final String? selectedStatus = await showDialog<String>(
       context: context,
       builder:
           (context) => _StatusSelectionDialog(

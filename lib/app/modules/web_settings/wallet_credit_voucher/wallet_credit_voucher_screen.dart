@@ -178,7 +178,7 @@ class WalletCreditVoucherScreen extends StatelessWidget {
                                   const SizedBox(width: 6),
                                   InkWell(
                                     onTap: () => controller.removeCoupon(coupon.id),
-                                    child: Icon(
+                                    child: const Icon(
                                       Icons.close,
                                       size: 16,
                                       color: WebSettingsTheme.primaryDark,
@@ -229,7 +229,7 @@ class WalletCreditVoucherScreen extends StatelessWidget {
                   color: WebSettingsTheme.primaryColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.notifications_active_rounded,
                   color: WebSettingsTheme.primaryColor,
                   size: 20,
@@ -309,14 +309,14 @@ class WalletCreditVoucherScreen extends StatelessWidget {
           color: WebSettingsTheme.warningColor.withOpacity(0.3),
         ),
       ),
-      child: Row(
+      child: const Row(
         children: [
           Icon(
             Icons.info_outline_rounded,
             color: WebSettingsTheme.warningColor,
             size: 24,
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Text(
               'Enable Automatic Wallet Credit Voucher to configure voucher and notification settings.',
@@ -520,7 +520,7 @@ class _CouponSearchableDropdownState extends State<_CouponSearchableDropdown> {
                     decoration: InputDecoration(
                       hintText: 'Search coupons...',
                       hintStyle: TextStyle(color: Colors.grey.shade400),
-                      prefixIcon: Icon(
+                      prefixIcon: const Icon(
                         Icons.search,
                         size: 20,
                         color: WebSettingsTheme.textSecondary,
@@ -556,7 +556,7 @@ class _CouponSearchableDropdownState extends State<_CouponSearchableDropdown> {
                   ),
                 ),
 
-                Divider(height: 1, color: WebSettingsTheme.dividerColor),
+                const Divider(height: 1, color: WebSettingsTheme.dividerColor),
 
                 // Results list
                 Flexible(
@@ -586,14 +586,14 @@ class _CouponSearchableDropdownState extends State<_CouponSearchableDropdown> {
                             subtitle: coupon.discountValue != null
                                 ? Text(
                                     '${coupon.discountType == 'percentage' ? '${coupon.discountValue}%' : '\$${coupon.discountValue}'} discount',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 12,
                                       color: WebSettingsTheme.textSecondary,
                                     ),
                                   )
                                 : null,
                             trailing: isSelected
-                                ? Icon(
+                                ? const Icon(
                                     Icons.check_circle,
                                     color: WebSettingsTheme.successColor,
                                     size: 20,
@@ -608,8 +608,8 @@ class _CouponSearchableDropdownState extends State<_CouponSearchableDropdown> {
                         // Empty state
                         if (widget.controller.couponSearchResults.isEmpty &&
                             !widget.controller.isSearchingCoupons.value)
-                          Padding(
-                            padding: const EdgeInsets.all(20),
+                          const Padding(
+                            padding: EdgeInsets.all(20),
                             child: Column(
                               children: [
                                 Icon(
@@ -617,7 +617,7 @@ class _CouponSearchableDropdownState extends State<_CouponSearchableDropdown> {
                                   color: WebSettingsTheme.textSecondary,
                                   size: 32,
                                 ),
-                                const SizedBox(height: 8),
+                                SizedBox(height: 8),
                                 Text(
                                   'No coupons found',
                                   style: TextStyle(

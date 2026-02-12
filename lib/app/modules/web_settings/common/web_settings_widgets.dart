@@ -81,7 +81,7 @@ class WebSettingsHeaderCard extends StatelessWidget {
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [WebSettingsTheme.primaryColor, WebSettingsTheme.primaryDark],
@@ -276,7 +276,7 @@ class WebSettingsToggleRow extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: WebSettingsTheme.primaryColor,
+            activeThumbColor: WebSettingsTheme.primaryColor,
           ),
         ],
       ),
@@ -392,7 +392,7 @@ class WebSettingsTextField extends StatelessWidget {
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: WebSettingsTheme.dividerColor),
+              borderSide: const BorderSide(color: WebSettingsTheme.dividerColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
@@ -807,7 +807,7 @@ class WebSettingsQuickActions extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.flash_on,
                 color: WebSettingsTheme.accentColor,
                 size: 20,
@@ -856,7 +856,7 @@ class WebSettingsErrorState extends StatelessWidget {
                 color: WebSettingsTheme.errorColor.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.error_outline,
                 size: 48,
                 color: WebSettingsTheme.errorColor,
@@ -912,7 +912,7 @@ class WebSettingsInfoCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.info_outline,
                 color: WebSettingsTheme.primaryColor,
                 size: 18,
@@ -920,7 +920,7 @@ class WebSettingsInfoCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 title,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: WebSettingsTheme.primaryColor,
@@ -948,7 +948,7 @@ class WebSettingsInfoCard extends StatelessWidget {
                       children: [
                         Text(
                           item['placeholder'] ?? '',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontFamily: 'monospace',
                             fontSize: 11,
                             color: WebSettingsTheme.primaryDark,

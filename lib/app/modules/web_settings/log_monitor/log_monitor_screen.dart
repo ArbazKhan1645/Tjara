@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:tjara/app/modules/web_settings/common/web_settings_widgets.dart';
 import 'package:tjara/app/modules/web_settings/log_monitor/log_monitor_controller.dart';
 
@@ -13,9 +12,7 @@ class LogMonitorScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: WebSettingsTheme.backgroundColor,
-      appBar: WebSettingsAppBar(
-        title: 'Real-time Log Monitor',
-      ),
+      appBar: const WebSettingsAppBar(title: 'Real-time Log Monitor'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -24,7 +21,8 @@ class LogMonitorScreen extends StatelessWidget {
             // Header Card
             const WebSettingsHeaderCard(
               title: 'Log Monitor',
-              description: 'Monitor server logs in real-time. Configure log files, refresh intervals, and view errors/warnings.',
+              description:
+                  'Monitor server logs in real-time. Configure log files, refresh intervals, and view errors/warnings.',
               icon: Icons.terminal_rounded,
               badge: 'Tools',
             ),
@@ -86,7 +84,8 @@ class _SettingsSection extends StatelessWidget {
               title: 'Enable Api Performance Logs',
               subtitle: 'Log API response times and performance metrics',
               value: controller.enableApiPerformanceLogs.value,
-              onChanged: (value) => controller.enableApiPerformanceLogs.value = value,
+              onChanged:
+                  (value) => controller.enableApiPerformanceLogs.value = value,
               icon: Icons.speed_rounded,
             ),
           ),
@@ -138,43 +137,49 @@ class _ControlsSection extends StatelessWidget {
           // Log File Dropdown
           _buildDropdownField(
             label: 'Log File',
-            child: Obx(
-              () {
-                final isDisabled = controller.isMonitoring.value;
-                return Opacity(
-                  opacity: isDisabled ? 0.6 : 1.0,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: isDisabled ? Colors.grey.shade200 : WebSettingsTheme.surfaceColor,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: WebSettingsTheme.dividerColor),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: controller.selectedLogFile.value,
-                        isExpanded: true,
-                        icon: Icon(
-                          Icons.keyboard_arrow_down_rounded,
-                          color: isDisabled ? Colors.grey : WebSettingsTheme.textSecondary,
-                        ),
-                        items: controller.logFileOptions.map((option) {
-                          return DropdownMenuItem<String>(
-                            value: option.name,
-                            child: Text(option.displayName),
-                          );
-                        }).toList(),
-                        onChanged: isDisabled
-                            ? null
-                            : (value) {
+            child: Obx(() {
+              final isDisabled = controller.isMonitoring.value;
+              return Opacity(
+                opacity: isDisabled ? 0.6 : 1.0,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color:
+                        isDisabled
+                            ? Colors.grey.shade200
+                            : WebSettingsTheme.surfaceColor,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: WebSettingsTheme.dividerColor),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: controller.selectedLogFile.value,
+                      isExpanded: true,
+                      icon: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color:
+                            isDisabled
+                                ? Colors.grey
+                                : WebSettingsTheme.textSecondary,
+                      ),
+                      items:
+                          controller.logFileOptions.map((option) {
+                            return DropdownMenuItem<String>(
+                              value: option.name,
+                              child: Text(option.displayName),
+                            );
+                          }).toList(),
+                      onChanged:
+                          isDisabled
+                              ? null
+                              : (value) {
                                 if (value != null) controller.setLogFile(value);
                               },
-                      ),
                     ),
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            }),
           ),
 
           const SizedBox(height: 12),
@@ -185,43 +190,53 @@ class _ControlsSection extends StatelessWidget {
               Expanded(
                 child: _buildDropdownField(
                   label: 'Number of Lines',
-                  child: Obx(
-                    () {
-                      final isDisabled = controller.isMonitoring.value;
-                      return Opacity(
-                        opacity: isDisabled ? 0.6 : 1.0,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: isDisabled ? Colors.grey.shade200 : WebSettingsTheme.surfaceColor,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: WebSettingsTheme.dividerColor),
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<int>(
-                              value: controller.selectedLines.value,
-                              isExpanded: true,
-                              icon: Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                color: isDisabled ? Colors.grey : WebSettingsTheme.textSecondary,
-                              ),
-                              items: controller.linesOptions.map((lines) {
-                                return DropdownMenuItem<int>(
-                                  value: lines,
-                                  child: Text('$lines lines'),
-                                );
-                              }).toList(),
-                              onChanged: isDisabled
-                                  ? null
-                                  : (value) {
-                                      if (value != null) controller.setLines(value);
-                                    },
-                            ),
+                  child: Obx(() {
+                    final isDisabled = controller.isMonitoring.value;
+                    return Opacity(
+                      opacity: isDisabled ? 0.6 : 1.0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color:
+                              isDisabled
+                                  ? Colors.grey.shade200
+                                  : WebSettingsTheme.surfaceColor,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: WebSettingsTheme.dividerColor,
                           ),
                         ),
-                      );
-                    },
-                  ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<int>(
+                            value: controller.selectedLines.value,
+                            isExpanded: true,
+                            icon: Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color:
+                                  isDisabled
+                                      ? Colors.grey
+                                      : WebSettingsTheme.textSecondary,
+                            ),
+                            items:
+                                controller.linesOptions.map((lines) {
+                                  return DropdownMenuItem<int>(
+                                    value: lines,
+                                    child: Text('$lines lines'),
+                                  );
+                                }).toList(),
+                            onChanged:
+                                isDisabled
+                                    ? null
+                                    : (value) {
+                                      if (value != null) {
+                                        controller.setLines(value);
+                                      }
+                                    },
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
                 ),
               ),
 
@@ -230,43 +245,53 @@ class _ControlsSection extends StatelessWidget {
               Expanded(
                 child: _buildDropdownField(
                   label: 'Refresh Interval',
-                  child: Obx(
-                    () {
-                      final isDisabled = controller.isMonitoring.value;
-                      return Opacity(
-                        opacity: isDisabled ? 0.6 : 1.0,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: isDisabled ? Colors.grey.shade200 : WebSettingsTheme.surfaceColor,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: WebSettingsTheme.dividerColor),
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<int>(
-                              value: controller.selectedInterval.value,
-                              isExpanded: true,
-                              icon: Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                color: isDisabled ? Colors.grey : WebSettingsTheme.textSecondary,
-                              ),
-                              items: controller.intervalOptions.map((interval) {
-                                return DropdownMenuItem<int>(
-                                  value: interval,
-                                  child: Text('$interval sec'),
-                                );
-                              }).toList(),
-                              onChanged: isDisabled
-                                  ? null
-                                  : (value) {
-                                      if (value != null) controller.setInterval(value);
-                                    },
-                            ),
+                  child: Obx(() {
+                    final isDisabled = controller.isMonitoring.value;
+                    return Opacity(
+                      opacity: isDisabled ? 0.6 : 1.0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color:
+                              isDisabled
+                                  ? Colors.grey.shade200
+                                  : WebSettingsTheme.surfaceColor,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: WebSettingsTheme.dividerColor,
                           ),
                         ),
-                      );
-                    },
-                  ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<int>(
+                            value: controller.selectedInterval.value,
+                            isExpanded: true,
+                            icon: Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color:
+                                  isDisabled
+                                      ? Colors.grey
+                                      : WebSettingsTheme.textSecondary,
+                            ),
+                            items:
+                                controller.intervalOptions.map((interval) {
+                                  return DropdownMenuItem<int>(
+                                    value: interval,
+                                    child: Text('$interval sec'),
+                                  );
+                                }).toList(),
+                            onChanged:
+                                isDisabled
+                                    ? null
+                                    : (value) {
+                                      if (value != null) {
+                                        controller.setInterval(value);
+                                      }
+                                    },
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
                 ),
               ),
             ],
@@ -292,9 +317,10 @@ class _ControlsSection extends StatelessWidget {
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: controller.isMonitoring.value
-                          ? WebSettingsTheme.errorColor
-                          : WebSettingsTheme.primaryColor,
+                      backgroundColor:
+                          controller.isMonitoring.value
+                              ? WebSettingsTheme.errorColor
+                              : WebSettingsTheme.primaryColor,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
@@ -329,7 +355,8 @@ class _ControlsSection extends StatelessWidget {
           Obx(
             () => InkWell(
               onTap: () {
-                controller.autoScrollToBottom.value = !controller.autoScrollToBottom.value;
+                controller.autoScrollToBottom.value =
+                    !controller.autoScrollToBottom.value;
                 if (controller.autoScrollToBottom.value) {
                   controller.scrollToBottom();
                 }
@@ -524,14 +551,16 @@ class _MonitoringStatus extends StatelessWidget {
       () => Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: controller.isMonitoring.value
-              ? WebSettingsTheme.successColor.withValues(alpha: 0.1)
-              : WebSettingsTheme.surfaceColor,
+          color:
+              controller.isMonitoring.value
+                  ? WebSettingsTheme.successColor.withValues(alpha: 0.1)
+                  : WebSettingsTheme.surfaceColor,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: controller.isMonitoring.value
-                ? WebSettingsTheme.successColor.withValues(alpha: 0.3)
-                : WebSettingsTheme.dividerColor,
+            color:
+                controller.isMonitoring.value
+                    ? WebSettingsTheme.successColor.withValues(alpha: 0.3)
+                    : WebSettingsTheme.dividerColor,
           ),
         ),
         child: Row(
@@ -540,9 +569,10 @@ class _MonitoringStatus extends StatelessWidget {
               width: 10,
               height: 10,
               decoration: BoxDecoration(
-                color: controller.isMonitoring.value
-                    ? WebSettingsTheme.successColor
-                    : WebSettingsTheme.textSecondary,
+                color:
+                    controller.isMonitoring.value
+                        ? WebSettingsTheme.successColor
+                        : WebSettingsTheme.textSecondary,
                 shape: BoxShape.circle,
               ),
             ),
@@ -554,9 +584,10 @@ class _MonitoringStatus extends StatelessWidget {
                     : 'Not monitoring',
                 style: TextStyle(
                   fontSize: 12,
-                  color: controller.isMonitoring.value
-                      ? WebSettingsTheme.successColor
-                      : WebSettingsTheme.textSecondary,
+                  color:
+                      controller.isMonitoring.value
+                          ? WebSettingsTheme.successColor
+                          : WebSettingsTheme.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -604,80 +635,78 @@ class _LogContentSection extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child: Obx(
-          () {
-            if (controller.errorMessage.value != null) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.error_outline_rounded,
+        child: Obx(() {
+          if (controller.errorMessage.value != null) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.error_outline_rounded,
+                      color: WebSettingsTheme.errorColor,
+                      size: 48,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      controller.errorMessage.value!,
+                      style: const TextStyle(
                         color: WebSettingsTheme.errorColor,
-                        size: 48,
+                        fontSize: 14,
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        controller.errorMessage.value!,
-                        style: const TextStyle(
-                          color: WebSettingsTheme.errorColor,
-                          fontSize: 14,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-
-            if (controller.logContent.value.isEmpty) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.terminal_rounded,
-                        color: Colors.grey.shade600,
-                        size: 48,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No logs to display.\nClick "Start" to begin monitoring.',
-                        style: TextStyle(
-                          color: Colors.grey.shade500,
-                          fontSize: 14,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-
-            return Scrollbar(
-              controller: controller.scrollController,
-              thumbVisibility: true,
-              child: SingleChildScrollView(
-                controller: controller.scrollController,
-                padding: const EdgeInsets.all(12),
-                child: SelectableText.rich(
-                  _buildLogTextSpan(controller.logContent.value),
-                  style: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 11,
-                    height: 1.4,
-                  ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               ),
             );
-          },
-        ),
+          }
+
+          if (controller.logContent.value.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.terminal_rounded,
+                      color: Colors.grey.shade600,
+                      size: 48,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No logs to display.\nClick "Start" to begin monitoring.',
+                      style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 14,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          return Scrollbar(
+            controller: controller.scrollController,
+            thumbVisibility: true,
+            child: SingleChildScrollView(
+              controller: controller.scrollController,
+              padding: const EdgeInsets.all(12),
+              child: SelectableText.rich(
+                _buildLogTextSpan(controller.logContent.value),
+                style: const TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 11,
+                  height: 1.4,
+                ),
+              ),
+            ),
+          );
+        }),
       ),
     );
   }
@@ -692,7 +721,8 @@ class _LogContentSection extends StatelessWidget {
 
       if (line.contains('.ERROR:') || line.toLowerCase().contains('error')) {
         textColor = WebSettingsTheme.errorColor;
-      } else if (line.contains('.WARNING:') || line.toLowerCase().contains('warning')) {
+      } else if (line.contains('.WARNING:') ||
+          line.toLowerCase().contains('warning')) {
         textColor = WebSettingsTheme.warningColor;
       } else if (line.contains('.INFO:')) {
         textColor = WebSettingsTheme.successColor;
@@ -720,12 +750,7 @@ class _LogContentSection extends StatelessWidget {
         }
       }
 
-      spans.add(
-        TextSpan(
-          text: '$line\n',
-          style: TextStyle(color: textColor),
-        ),
-      );
+      spans.add(TextSpan(text: '$line\n', style: TextStyle(color: textColor)));
     }
 
     return TextSpan(children: spans);
@@ -745,19 +770,21 @@ class _InstructionsSection extends StatelessWidget {
       decoration: BoxDecoration(
         color: WebSettingsTheme.successColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: WebSettingsTheme.successColor.withValues(alpha: 0.2)),
+        border: Border.all(
+          color: WebSettingsTheme.successColor.withValues(alpha: 0.2),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
               Icon(
                 Icons.lightbulb_outline_rounded,
                 color: WebSettingsTheme.successColor,
                 size: 18,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 'Instructions',
                 style: TextStyle(
@@ -769,11 +796,19 @@ class _InstructionsSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          _buildInstruction('Select a log file and configure the number of lines to monitor'),
-          _buildInstruction('Set your preferred refresh interval (1-60 seconds)'),
+          _buildInstruction(
+            'Select a log file and configure the number of lines to monitor',
+          ),
+          _buildInstruction(
+            'Set your preferred refresh interval (1-60 seconds)',
+          ),
           _buildInstruction('Click "Start" to begin real-time monitoring'),
-          _buildInstruction('Use auto-scroll to automatically scroll to the latest entries'),
-          _buildInstruction('Error and warning counts are displayed above the log content'),
+          _buildInstruction(
+            'Use auto-scroll to automatically scroll to the latest entries',
+          ),
+          _buildInstruction(
+            'Error and warning counts are displayed above the log content',
+          ),
         ],
       ),
     );
@@ -785,7 +820,7 @@ class _InstructionsSection extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             '• ',
             style: TextStyle(
               color: WebSettingsTheme.successColor,
@@ -795,7 +830,7 @@ class _InstructionsSection extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12,
                 color: WebSettingsTheme.textSecondary,
               ),

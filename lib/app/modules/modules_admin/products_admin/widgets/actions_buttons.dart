@@ -612,7 +612,7 @@ class ProductActionButtons extends StatelessWidget {
               // Warning Icon
               Container(
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AdminProductsTheme.errorLight,
                   shape: BoxShape.circle,
                 ),

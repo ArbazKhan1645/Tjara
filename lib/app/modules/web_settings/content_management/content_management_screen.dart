@@ -2334,7 +2334,6 @@ class _ProductSearchWidget extends StatefulWidget {
   final Function(String productId) onProductSelected;
 
   const _ProductSearchWidget({
-    super.key,
     required this.controller,
     required this.type,
     required this.onProductSelected,
@@ -2599,7 +2598,6 @@ class _ProductNameDisplay extends StatefulWidget {
   final ContentManagementController controller;
 
   const _ProductNameDisplay({
-    super.key,
     required this.productId,
     required this.controller,
   });

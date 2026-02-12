@@ -145,7 +145,7 @@ class OrderDiscountCouponScreen extends StatelessWidget {
                       controller.targetOrderStatus.value = value!,
                 ),
                 const SizedBox(height: 4),
-                Text(
+                const Text(
                   'Selected order status will be used to check for eligible orders',
                   style: TextStyle(
                     fontSize: 11,
@@ -178,7 +178,7 @@ class OrderDiscountCouponScreen extends StatelessWidget {
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: WebSettingsTheme.dividerColor),
+                      borderSide: const BorderSide(color: WebSettingsTheme.dividerColor),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -196,7 +196,7 @@ class OrderDiscountCouponScreen extends StatelessWidget {
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 ),
                 const SizedBox(height: 4),
-                Text(
+                const Text(
                   'Delay in days before sending the notification after order status change',
                   style: TextStyle(
                     fontSize: 11,
@@ -218,7 +218,7 @@ class OrderDiscountCouponScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 _CouponSearchableDropdown(controller: controller),
                 const SizedBox(height: 4),
-                Text(
+                const Text(
                   'Selected coupon will be automatically applied to eligible orders',
                   style: TextStyle(
                     fontSize: 11,
@@ -264,7 +264,7 @@ class OrderDiscountCouponScreen extends StatelessWidget {
                                   const SizedBox(width: 6),
                                   InkWell(
                                     onTap: () => controller.removeCoupon(coupon.id),
-                                    child: Icon(
+                                    child: const Icon(
                                       Icons.close,
                                       size: 16,
                                       color: WebSettingsTheme.primaryDark,
@@ -315,7 +315,7 @@ class OrderDiscountCouponScreen extends StatelessWidget {
                   color: WebSettingsTheme.primaryColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.notifications_active_rounded,
                   color: WebSettingsTheme.primaryColor,
                   size: 20,
@@ -395,14 +395,14 @@ class OrderDiscountCouponScreen extends StatelessWidget {
           color: WebSettingsTheme.warningColor.withOpacity(0.3),
         ),
       ),
-      child: Row(
+      child: const Row(
         children: [
           Icon(
             Icons.info_outline_rounded,
             color: WebSettingsTheme.warningColor,
             size: 24,
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Text(
               'Enable Automatic Order Discount Coupon to configure coupon and notification settings.',
@@ -599,7 +599,7 @@ class _CouponSearchableDropdownState extends State<_CouponSearchableDropdown> {
                     decoration: InputDecoration(
                       hintText: 'Search coupons...',
                       hintStyle: TextStyle(color: Colors.grey.shade400),
-                      prefixIcon: Icon(
+                      prefixIcon: const Icon(
                         Icons.search,
                         size: 20,
                         color: WebSettingsTheme.textSecondary,
@@ -634,7 +634,7 @@ class _CouponSearchableDropdownState extends State<_CouponSearchableDropdown> {
                     onChanged: _search,
                   ),
                 ),
-                Divider(height: 1, color: WebSettingsTheme.dividerColor),
+                const Divider(height: 1, color: WebSettingsTheme.dividerColor),
                 Flexible(
                   child: Obx(
                     () => ListView(
@@ -661,14 +661,14 @@ class _CouponSearchableDropdownState extends State<_CouponSearchableDropdown> {
                             subtitle: coupon.discountValue != null
                                 ? Text(
                                     '${coupon.discountType == 'percentage' ? '${coupon.discountValue}%' : '\$${coupon.discountValue}'} discount',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 12,
                                       color: WebSettingsTheme.textSecondary,
                                     ),
                                   )
                                 : null,
                             trailing: isSelected
-                                ? Icon(
+                                ? const Icon(
                                     Icons.check_circle,
                                     color: WebSettingsTheme.successColor,
                                     size: 20,
@@ -681,8 +681,8 @@ class _CouponSearchableDropdownState extends State<_CouponSearchableDropdown> {
                         }),
                         if (widget.controller.couponSearchResults.isEmpty &&
                             !widget.controller.isSearchingCoupons.value)
-                          Padding(
-                            padding: const EdgeInsets.all(20),
+                          const Padding(
+                            padding: EdgeInsets.all(20),
                             child: Column(
                               children: [
                                 Icon(
@@ -690,7 +690,7 @@ class _CouponSearchableDropdownState extends State<_CouponSearchableDropdown> {
                                   color: WebSettingsTheme.textSecondary,
                                   size: 32,
                                 ),
-                                const SizedBox(height: 8),
+                                SizedBox(height: 8),
                                 Text(
                                   'No coupons found',
                                   style: TextStyle(

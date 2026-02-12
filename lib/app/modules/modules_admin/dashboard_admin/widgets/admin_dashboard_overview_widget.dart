@@ -250,7 +250,7 @@ class _OrderItemCardState extends State<_OrderItemCard>
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.tag_rounded,
                           size: 14,
                           color: AdminDashboardTheme.primary,
@@ -276,7 +276,7 @@ class _OrderItemCardState extends State<_OrderItemCard>
                         Container(
                           width: 28,
                           height: 28,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: AdminDashboardTheme.accentLight,
                             shape: BoxShape.circle,
                           ),
@@ -599,7 +599,7 @@ class _EmptyOrdersState extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(AdminDashboardTheme.spacingLg),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AdminDashboardTheme.surfaceSecondary,
               shape: BoxShape.circle,
             ),

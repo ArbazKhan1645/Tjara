@@ -65,7 +65,7 @@ class ShippingWidget extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'From',
                     style: TextStyle(
                       fontSize: 12,
@@ -87,7 +87,7 @@ class ShippingWidget extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'To',
                     style: TextStyle(
                       fontSize: 12,
@@ -109,7 +109,7 @@ class ShippingWidget extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Unit',
                     style: TextStyle(
                       fontSize: 12,
@@ -151,7 +151,7 @@ class ShippingWidget extends StatelessWidget {
                     ? null
                     : controller.selectedTimeUnit.value,
             isExpanded: true,
-            hint: Text(
+            hint: const Text(
               'Select',
               style: TextStyle(color: AdminTheme.textMuted, fontSize: 14),
             ),
@@ -198,7 +198,7 @@ class ShippingWidget extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
+        const Text(
           'Price will be in decimals e.g. 10.00',
           style: TextStyle(fontSize: 12, color: AdminTheme.textMuted),
         ),
@@ -221,7 +221,7 @@ class ShippingWidget extends StatelessWidget {
           Flexible(
             child: Text(
               text,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 13,
                 color: AdminTheme.primaryDark,
                 fontWeight: FontWeight.w500,

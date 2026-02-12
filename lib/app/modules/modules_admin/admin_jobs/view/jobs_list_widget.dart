@@ -161,7 +161,7 @@ class _JobDataRow extends StatelessWidget {
             index % 2 == 0
                 ? JobsAdminTheme.surface
                 : JobsAdminTheme.surfaceSecondary,
-        border: Border(bottom: BorderSide(color: JobsAdminTheme.borderLight)),
+        border: const Border(bottom: BorderSide(color: JobsAdminTheme.borderLight)),
       ),
       child: Row(
         children: [

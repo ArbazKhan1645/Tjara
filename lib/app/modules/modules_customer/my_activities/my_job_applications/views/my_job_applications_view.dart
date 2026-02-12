@@ -30,7 +30,7 @@ class MyJobApplicationsView extends StatelessWidget {
                     color: Colors.teal,
                   ),
                   Container(
-                    decoration: BoxDecoration(color: Colors.teal),
+                    decoration: const BoxDecoration(color: Colors.teal),
                     child: _buildHeader(),
                   ),
                 ],

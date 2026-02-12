@@ -242,11 +242,11 @@ class _ReadRateLimitingSection extends StatelessWidget {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: WebSettingsTheme.dividerColor),
+              borderSide: const BorderSide(color: WebSettingsTheme.dividerColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: WebSettingsTheme.dividerColor),
+              borderSide: const BorderSide(color: WebSettingsTheme.dividerColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -359,11 +359,11 @@ class _WriteRateLimitingSection extends StatelessWidget {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: WebSettingsTheme.dividerColor),
+              borderSide: const BorderSide(color: WebSettingsTheme.dividerColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: WebSettingsTheme.dividerColor),
+              borderSide: const BorderSide(color: WebSettingsTheme.dividerColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -497,11 +497,11 @@ class _SoftGateSection extends StatelessWidget {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: WebSettingsTheme.dividerColor),
+              borderSide: const BorderSide(color: WebSettingsTheme.dividerColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: WebSettingsTheme.dividerColor),
+              borderSide: const BorderSide(color: WebSettingsTheme.dividerColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -634,11 +634,11 @@ class _OrderLockingSection extends StatelessWidget {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: WebSettingsTheme.dividerColor),
+              borderSide: const BorderSide(color: WebSettingsTheme.dividerColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: WebSettingsTheme.dividerColor),
+              borderSide: const BorderSide(color: WebSettingsTheme.dividerColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -727,13 +727,13 @@ class _IdempotencySection extends StatelessWidget {
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(
+                    borderSide: const BorderSide(
                       color: WebSettingsTheme.dividerColor,
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(
+                    borderSide: const BorderSide(
                       color: WebSettingsTheme.dividerColor,
                     ),
                   ),
@@ -864,14 +864,14 @@ class _ImportantNotesSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
               Icon(
                 Icons.warning_amber_rounded,
                 color: WebSettingsTheme.warningColor,
                 size: 20,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 'Important Configuration Notes',
                 style: TextStyle(
@@ -918,7 +918,7 @@ class _ImportantNotesSection extends StatelessWidget {
         children: [
           TextSpan(
             text: title,
-            style: TextStyle(
+            style: const TextStyle(
               fontWeight: FontWeight.w600,
               color: WebSettingsTheme.errorColor,
             ),

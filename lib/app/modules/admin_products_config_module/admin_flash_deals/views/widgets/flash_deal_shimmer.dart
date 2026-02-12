@@ -113,10 +113,10 @@ class FlashDealSettingsShimmer extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header row
-          Row(
+          const Row(
             children: [
               ShimmerWidget(width: 32, height: 32, borderRadius: 8),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               ShimmerWidget(width: 150, height: 20, borderRadius: 4),
             ],
           ),
@@ -144,12 +144,12 @@ class FlashDealSettingsShimmer extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
-          Row(
+          const Row(
             children: [
               ShimmerWidget(width: 32, height: 32, borderRadius: 8),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               ShimmerWidget(width: 120, height: 20, borderRadius: 4),
-              const Spacer(),
+              Spacer(),
               ShimmerWidget(width: 100, height: 36, borderRadius: 8),
             ],
           ),
@@ -161,7 +161,7 @@ class FlashDealSettingsShimmer extends StatelessWidget {
               (index) => Expanded(
                 child: Padding(
                   padding: EdgeInsets.only(right: index < 3 ? 8 : 0),
-                  child: ShimmerWidget(
+                  child: const ShimmerWidget(
                     width: double.infinity,
                     height: 40,
                     borderRadius: 8,
@@ -192,14 +192,14 @@ class FlashDealSettingsShimmer extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: Colors.grey.shade200),
       ),
-      child: Row(
+      child: const Row(
         children: [
           // Drag handle
           ShimmerWidget(width: 24, height: 24, borderRadius: 4),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           // Image
           ShimmerWidget(width: 56, height: 56, borderRadius: 8),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           // Content
           Expanded(
             child: Column(
@@ -210,12 +210,12 @@ class FlashDealSettingsShimmer extends StatelessWidget {
                   height: 16,
                   borderRadius: 4,
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 ShimmerWidget(width: 100, height: 14, borderRadius: 4),
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           // Actions
           ShimmerWidget(width: 32, height: 32, borderRadius: 8),
         ],
@@ -237,12 +237,12 @@ class FlashDealProductShimmer extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: Colors.grey.shade200),
       ),
-      child: Row(
+      child: const Row(
         children: [
           ShimmerWidget(width: 24, height: 24, borderRadius: 4),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           ShimmerWidget(width: 56, height: 56, borderRadius: 8),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,12 +252,12 @@ class FlashDealProductShimmer extends StatelessWidget {
                   height: 16,
                   borderRadius: 4,
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 ShimmerWidget(width: 100, height: 14, borderRadius: 4),
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           ShimmerWidget(width: 32, height: 32, borderRadius: 8),
         ],
       ),
@@ -287,7 +287,7 @@ class FlashDealEmptyState extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AdminTheme.primarySurface,
               shape: BoxShape.circle,
             ),

@@ -1133,7 +1133,7 @@ class _VerifyEmailDialogState extends State<_VerifyEmailDialog> {
         }
       } else {
         if (mounted) {
-          var msgs = jsonDecode(res.body);
+          final msgs = jsonDecode(res.body);
           NotificationHelper.showError(
             context,
             'Alert',

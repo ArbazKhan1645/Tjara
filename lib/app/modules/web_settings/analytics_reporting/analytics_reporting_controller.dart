@@ -203,7 +203,7 @@ class AnalyticsReportingController extends GetxController {
   /// Get formatted time for display (12-hour format)
   String get formattedTime {
     final parts = time.value.split(':');
-    int hour24 = int.tryParse(parts[0]) ?? 10;
+    final int hour24 = int.tryParse(parts[0]) ?? 10;
     final minutes = parts.length > 1 ? parts[1] : '00';
 
     String period;

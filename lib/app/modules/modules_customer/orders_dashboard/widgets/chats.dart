@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:tjara/app/core/widgets/admin_app_bar_actions.dart';
-import 'package:tjara/app/core/widgets/overlay.dart';
 import 'package:tjara/app/models/chat_messages/chat_messages_model.dart';
 import 'package:tjara/app/models/chat_messages/insert_chat.dart';
-import 'package:tjara/app/services/notifications/notification_service.dart';
 import 'package:tjara/app/services/orders/orders_service.dart';
 import 'package:tjara/app/modules/authentication_module/screens/contact_us.dart';
 import 'package:tjara/app/modules/modules_customer/orders_dashboard/controllers/orders_dashboard_controller.dart';
@@ -190,7 +188,7 @@ class _ChatsScreenViewState extends State<ChatsScreenView>
   }
 
   List<Widget> _buildAppBarActions() {
-    return [AdminAppBarActions()];
+    return [const AdminAppBarActions()];
   }
 
   Widget _buildMainContent() {

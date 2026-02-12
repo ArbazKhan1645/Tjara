@@ -60,7 +60,7 @@ class AnalyticsReportingScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header
-                WebSettingsHeaderCard(
+                const WebSettingsHeaderCard(
                   title: 'Analytics Reports',
                   description: 'Configure automated order analytics reports with customizable schedules and delivery options.',
                   icon: Icons.analytics_rounded,
@@ -140,7 +140,7 @@ class AnalyticsReportingScreen extends StatelessWidget {
               color: WebSettingsTheme.warningColor.withOpacity(0.2),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.info_outline_rounded,
               color: WebSettingsTheme.warningColor,
               size: 20,
@@ -272,14 +272,14 @@ class AnalyticsReportingScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
               Icon(
                 Icons.info_outline_rounded,
                 color: WebSettingsTheme.primaryColor,
                 size: 20,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 'Report Schedule Information',
                 style: TextStyle(
@@ -310,7 +310,7 @@ class AnalyticsReportingScreen extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
+                const Icon(
                   Icons.lightbulb_outline_rounded,
                   color: WebSettingsTheme.accentColor,
                   size: 18,
@@ -338,7 +338,7 @@ class AnalyticsReportingScreen extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.check_circle_outline_rounded,
             size: 16,
             color: WebSettingsTheme.primaryColor,
@@ -346,7 +346,7 @@ class AnalyticsReportingScreen extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             '$label: ',
-            style: TextStyle(
+            style: const TextStyle(
               fontWeight: FontWeight.w500,
               fontSize: 13,
               color: WebSettingsTheme.primaryDark,
@@ -654,7 +654,7 @@ class _StoreSearchableDropdownState extends State<_StoreSearchableDropdown> {
                                   ),
                                 ),
                                 if (isSelected)
-                                  Icon(
+                                  const Icon(
                                     Icons.check_rounded,
                                     color: WebSettingsTheme.primaryColor,
                                     size: 20,
@@ -722,7 +722,7 @@ class _TimePickerState extends State<_TimePicker> {
 
   void _parseValue(String value) {
     final parts = value.split(':');
-    int hour24 = int.tryParse(parts[0]) ?? 10;
+    final int hour24 = int.tryParse(parts[0]) ?? 10;
     _selectedMinute = parts.length > 1 ? (int.tryParse(parts[1]) ?? 0) : 0;
 
     if (hour24 == 0) {

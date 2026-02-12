@@ -345,7 +345,7 @@ class OrderNotificationsScreen extends StatelessWidget {
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: WebSettingsTheme.dividerColor),
+                  borderSide: const BorderSide(color: WebSettingsTheme.dividerColor),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),

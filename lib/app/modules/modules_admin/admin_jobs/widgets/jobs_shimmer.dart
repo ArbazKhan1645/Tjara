@@ -82,9 +82,9 @@ class JobsTableShimmer extends StatelessWidget {
           // Header shimmer
           Container(
             height: 52,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: JobsAdminTheme.surfaceSecondary,
-              borderRadius: const BorderRadius.only(
+              borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(JobsAdminTheme.radiusMd),
                 topRight: Radius.circular(JobsAdminTheme.radiusMd),
               ),
@@ -92,17 +92,17 @@ class JobsTableShimmer extends StatelessWidget {
             padding: const EdgeInsets.symmetric(
               horizontal: JobsAdminTheme.spacingLg,
             ),
-            child: Row(
+            child: const Row(
               children: [
-                const ShimmerWidget(width: 150, height: 16),
-                const Spacer(),
-                const ShimmerWidget(width: 80, height: 16),
-                const SizedBox(width: JobsAdminTheme.spacingXl),
-                const ShimmerWidget(width: 100, height: 16),
-                const SizedBox(width: JobsAdminTheme.spacingXl),
-                const ShimmerWidget(width: 80, height: 16),
-                const SizedBox(width: JobsAdminTheme.spacingXl),
-                const ShimmerWidget(width: 100, height: 16),
+                ShimmerWidget(width: 150, height: 16),
+                Spacer(),
+                ShimmerWidget(width: 80, height: 16),
+                SizedBox(width: JobsAdminTheme.spacingXl),
+                ShimmerWidget(width: 100, height: 16),
+                SizedBox(width: JobsAdminTheme.spacingXl),
+                ShimmerWidget(width: 80, height: 16),
+                SizedBox(width: JobsAdminTheme.spacingXl),
+                ShimmerWidget(width: 100, height: 16),
               ],
             ),
           ),
@@ -126,7 +126,7 @@ class JobsTableShimmer extends StatelessWidget {
             index % 2 == 0
                 ? JobsAdminTheme.surface
                 : JobsAdminTheme.surfaceSecondary,
-        border: Border(bottom: BorderSide(color: JobsAdminTheme.borderLight)),
+        border: const Border(bottom: BorderSide(color: JobsAdminTheme.borderLight)),
       ),
       child: Row(
         children: [
@@ -197,26 +197,26 @@ class JobCardShimmer extends StatelessWidget {
         borderRadius: BorderRadius.circular(JobsAdminTheme.radiusSm),
         border: Border.all(color: JobsAdminTheme.borderLight),
       ),
-      child: Row(
+      child: const Row(
         children: [
-          const ShimmerWidget(
+          ShimmerWidget(
             width: 40,
             height: 40,
             borderRadius: BorderRadius.all(Radius.circular(20)),
           ),
-          const SizedBox(width: JobsAdminTheme.spacingMd),
+          SizedBox(width: JobsAdminTheme.spacingMd),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const ShimmerWidget(width: 150, height: 14),
-                const SizedBox(height: 6),
-                const ShimmerWidget(width: 100, height: 10),
+                ShimmerWidget(width: 150, height: 14),
+                SizedBox(height: 6),
+                ShimmerWidget(width: 100, height: 10),
               ],
             ),
           ),
-          const ShimmerWidget(
+          ShimmerWidget(
             width: 70,
             height: 24,
             borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -236,24 +236,24 @@ class StatsCardShimmer extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(JobsAdminTheme.spacingLg),
       decoration: JobsAdminTheme.cardDecoration,
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const ShimmerWidget(
+              ShimmerWidget(
                 width: 40,
                 height: 40,
                 borderRadius: BorderRadius.all(Radius.circular(10)),
               ),
-              const Spacer(),
-              const ShimmerWidget(width: 60, height: 24),
+              Spacer(),
+              ShimmerWidget(width: 60, height: 24),
             ],
           ),
-          const SizedBox(height: JobsAdminTheme.spacingMd),
-          const ShimmerWidget(width: 80, height: 12),
-          const SizedBox(height: JobsAdminTheme.spacingSm),
-          const ShimmerWidget(width: 50, height: 20),
+          SizedBox(height: JobsAdminTheme.spacingMd),
+          ShimmerWidget(width: 80, height: 12),
+          SizedBox(height: JobsAdminTheme.spacingSm),
+          ShimmerWidget(width: 50, height: 20),
         ],
       ),
     );

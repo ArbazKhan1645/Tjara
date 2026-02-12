@@ -996,7 +996,7 @@ class _PlacedOrdersScreenState extends State<PlacedOrdersScreen> {
             child: Switch(
               value: value,
               onChanged: onChanged,
-              activeColor: Colors.teal,
+              activeThumbColor: Colors.teal,
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
           ),

@@ -60,7 +60,7 @@ class InventoryReportingScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header
-                WebSettingsHeaderCard(
+                const WebSettingsHeaderCard(
                   title: 'Inventory Reports',
                   description: 'Configure automated inventory reports for your stores with customizable schedules and recipients.',
                   icon: Icons.inventory_2_rounded,
@@ -138,7 +138,7 @@ class InventoryReportingScreen extends StatelessWidget {
               color: WebSettingsTheme.warningColor.withOpacity(0.2),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.info_outline_rounded,
               color: WebSettingsTheme.warningColor,
               size: 20,
@@ -324,7 +324,7 @@ class InventoryReportingScreen extends StatelessWidget {
                     value: currentConfig?.enabled ?? config.enabled,
                     onChanged: (value) =>
                         controller.toggleReportConfig(config.id, value),
-                    activeColor: WebSettingsTheme.primaryColor,
+                    activeThumbColor: WebSettingsTheme.primaryColor,
                   ),
                 );
               }),
@@ -887,7 +887,7 @@ class _SearchableDropdownState<T> extends State<_SearchableDropdown<T>> {
               ),
             ),
             if (isSelected)
-              Icon(
+              const Icon(
                 Icons.check_rounded,
                 color: WebSettingsTheme.primaryColor,
                 size: 20,
@@ -935,7 +935,7 @@ class _TimePickerState extends State<_TimePicker> {
 
   void _parseValue(String value) {
     final parts = value.split(':');
-    int hour24 = int.tryParse(parts[0]) ?? 10;
+    final int hour24 = int.tryParse(parts[0]) ?? 10;
 
     if (hour24 == 0) {
       _selectedHour = 12;
