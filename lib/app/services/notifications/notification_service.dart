@@ -37,7 +37,17 @@ class NotificationService extends GetxService {
     try {
       final response = await http.get(
         url,
-        headers: {'user-id': userid, 'X-Request-From': 'Application'},
+        headers: {
+          'dashboard-view':
+              AuthService.instance.authCustomer?.user?.meta?.dashboardView ??
+              '',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'shop-id':
+              AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
+          'user-id': AuthService.instance.authCustomer?.user?.id ?? '',
+          'X-Request-From': 'Dashboard',
+        },
       );
 
       if (response.statusCode == 200) {

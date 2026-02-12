@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:tjara/app/services/auth/auth_service.dart';
 
 // ============== MODELS ==============
 
@@ -75,10 +76,14 @@ class BidService {
       receiveTimeout: const Duration(seconds: _timeout),
       sendTimeout: const Duration(seconds: _timeout),
       headers: {
+        'dashboard-view':
+            AuthService.instance.authCustomer?.user?.meta?.dashboardView ?? '',
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'X-Request-From': 'Application',
-        'user-id': userId,
+        'shop-id':
+            AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
+        'user-id': AuthService.instance.authCustomer?.user?.id ?? '',
+        'X-Request-From': 'Dashboard',
       },
     );
   }

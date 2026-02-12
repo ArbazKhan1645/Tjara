@@ -25,8 +25,8 @@ class _OrdersDetailOverviewState extends State<OrdersDetailOverview> {
 
   // Safe getters
   bool get _isAdmin =>
-      AuthService.instance.authCustomer?.user?.role == 'admin' ||
-      AuthService.instance.authCustomer?.user?.role == 'vendor';
+      AuthService.instance.authCustomer?.user?.meta?.dashboardView == 'admin' ||
+      AuthService.instance.authCustomer?.user?.meta?.dashboardView == 'vendor';
 
   @override
   void initState() {

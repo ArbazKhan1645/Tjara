@@ -135,6 +135,9 @@ class _OrdersWebAnalyticsPageState extends State<OrdersWebAnalyticsPage>
       final response = await http.get(
         Uri.parse(url),
         headers: {
+          'dashboard-view':
+              AuthService.instance.authCustomer?.user?.meta?.dashboardView ??
+              '',
           'Content-Type': 'application/json',
           'X-Request-From': 'Dashboard',
           'shop-id':
@@ -581,7 +584,8 @@ class _OrdersWebAnalyticsPageState extends State<OrdersWebAnalyticsPage>
             ),
           ],
         ),
-        if (AuthService.instance.authCustomer?.user?.role == 'admin')
+        if (AuthService.instance.authCustomer?.user?.meta?.dashboardView ==
+            'admin')
           Material(
             color: Colors.transparent,
             child: InkWell(

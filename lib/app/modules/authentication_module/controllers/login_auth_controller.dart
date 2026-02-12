@@ -402,6 +402,8 @@ class DeviceActivationController extends GetxController {
 
   // Login method with enhanced error handling
   Future<void> onLogin(BuildContext context) async {
+    if (isLoggingIn.value) return;
+
     try {
       if (!formKey.currentState!.validate()) {
         _showError('Please fill all required fields correctly');

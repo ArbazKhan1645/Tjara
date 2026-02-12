@@ -84,6 +84,9 @@ class _QuizFormState extends State<QuizForm> {
       final response = await http.get(
         Uri.parse('https://api.libanbuy.com/api/contests/$contestId'),
         headers: {
+          'dashboard-view':
+              AuthService.instance.authCustomer?.user?.meta?.dashboardView ??
+              '',
           'Content-Type': 'application/json',
           'X-Request-From': 'Application',
           'shop-id':
@@ -239,6 +242,7 @@ class _QuizFormState extends State<QuizForm> {
 
       request.headers.addAll({
         'X-Request-From': 'Application',
+
         'Accept': 'application/json',
         'shop-id':
             AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',

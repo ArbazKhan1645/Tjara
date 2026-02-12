@@ -38,7 +38,8 @@ class _ChatsScreenViewState extends State<ChatsScreenView>
 
   // Check if user is customer (only sees Sent tab)
   bool get _isCustomer =>
-      AuthService.instance.authCustomer?.user?.role == 'customer';
+      AuthService.instance.authCustomer?.user?.meta?.dashboardView ==
+      'customer';
 
   // Debounce timer for search
   Timer? _debounceTimer;

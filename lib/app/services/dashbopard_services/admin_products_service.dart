@@ -11,7 +11,7 @@ import 'package:http/http.dart' as http;
 
 enum ProductStatus { all, active, inactive, deleted }
 
-enum FilterColumn { salePrice, featured, productGroup, productType, status }
+enum FilterColumn { featured, deals, notDeals, onSale, pinnedSale }
 
 enum SortOrder {
   none,
@@ -56,12 +56,14 @@ class ProductFilter {
   final String value;
   final FilterColumn column;
   final String operator;
+  final bool isMetaField;
 
   ProductFilter({
     required this.name,
     required this.value,
     required this.column,
     required this.operator,
+    this.isMetaField = false,
   });
 }
 
@@ -271,6 +273,9 @@ class AdminProductsService extends GetxService {
       final response = await http.get(
         uri,
         headers: {
+          'dashboard-view':
+              AuthService.instance.authCustomer?.user?.meta?.dashboardView ??
+              '',
           'Content-Type': 'application/json',
           'Accept': 'application/json',
           'X-Request-From': 'Dashboard',
@@ -289,12 +294,18 @@ class AdminProductsService extends GetxService {
       }
 
       if (response.statusCode == 404) {
+        adminProducts.clear();
+        totalItems.value = 0;
+        totalPages.value = 0;
         return;
       }
 
       final data = jsonDecode(response.body);
       if (data['products'] == null) {
-        throw Exception('Products data is missing from response');
+        adminProducts.clear();
+        totalItems.value = 0;
+        totalPages.value = 0;
+        return;
       }
 
       final products = AdminProductsModel.fromJson(data);
@@ -302,6 +313,8 @@ class AdminProductsService extends GetxService {
 
       if (products.products?.data != null) {
         adminProducts.assignAll(products.products!.data!);
+      } else {
+        adminProducts.clear();
       }
 
       final productsData = data['products'];
@@ -561,8 +574,12 @@ class AdminProductsService extends GetxService {
     fetchProducts(refresh: true);
   }
 
-  // SKU filter
+  // SKU filter (mutually exclusive with quick filters)
   void updateSkuFilter(SkuFilter filter) {
+    // Clear active quick filters when selecting SKU filter
+    if (filter != SkuFilter.all) {
+      activeFilters.clear();
+    }
     skuFilter.value = filter;
     currentPage.value = 1;
     fetchProducts(refresh: true);
@@ -576,9 +593,11 @@ class AdminProductsService extends GetxService {
     fetchProducts(refresh: true);
   }
 
-  // Column filters
+  // Column filters (mutually exclusive - only one quick filter at a time)
   void addColumnFilter(ProductFilter filter) {
-    activeFilters.removeWhere((f) => f.column == filter.column);
+    // Clear all active filters and SKU filter (only one quick filter at a time)
+    activeFilters.clear();
+    skuFilter.value = SkuFilter.all;
     activeFilters.add(filter);
     currentPage.value = 1;
     fetchProducts(refresh: true);
@@ -749,15 +768,17 @@ class AdminProductsService extends GetxService {
       columnIndex++;
     }
 
-    // 8. Custom active filters
+    // 8. Custom active filters (column-based only, meta fields handled below)
     for (var filter in activeFilters) {
-      queryParams['filterByColumns[columns][$columnIndex][column]'] =
-          _getColumnName(filter.column);
-      queryParams['filterByColumns[columns][$columnIndex][value]'] =
-          filter.value;
-      queryParams['filterByColumns[columns][$columnIndex][operator]'] =
-          filter.operator;
-      columnIndex++;
+      if (!filter.isMetaField) {
+        queryParams['filterByColumns[columns][$columnIndex][column]'] =
+            _getColumnName(filter.column);
+        queryParams['filterByColumns[columns][$columnIndex][value]'] =
+            filter.value;
+        queryParams['filterByColumns[columns][$columnIndex][operator]'] =
+            filter.operator;
+        columnIndex++;
+      }
     }
 
     // filterByColumns join
@@ -778,6 +799,20 @@ class AdminProductsService extends GetxService {
     // filterByMetaFields
     int metaFieldIndex = 0;
     bool hasMetaFields = false;
+
+    // Active filters that are meta fields
+    for (var filter in activeFilters) {
+      if (filter.isMetaField) {
+        hasMetaFields = true;
+        queryParams['filterByMetaFields[fields][$metaFieldIndex][key]'] =
+            _getColumnName(filter.column);
+        queryParams['filterByMetaFields[fields][$metaFieldIndex][value]'] =
+            filter.value;
+        queryParams['filterByMetaFields[fields][$metaFieldIndex][operator]'] =
+            filter.operator;
+        metaFieldIndex++;
+      }
+    }
 
     // Inventory Updated date range
     if (inventoryUpdatedEnabled.value &&
@@ -841,16 +876,16 @@ class AdminProductsService extends GetxService {
 
   String _getColumnName(FilterColumn column) {
     switch (column) {
-      case FilterColumn.salePrice:
-        return 'sale_price';
       case FilterColumn.featured:
         return 'is_featured';
-      case FilterColumn.productGroup:
-        return 'product_group';
-      case FilterColumn.productType:
-        return 'product_type';
-      case FilterColumn.status:
-        return 'status';
+      case FilterColumn.deals:
+        return 'is_deal';
+      case FilterColumn.notDeals:
+        return 'is_deal';
+      case FilterColumn.onSale:
+        return 'sale_price';
+      case FilterColumn.pinnedSale:
+        return 'is_pinned_sale';
     }
   }
 
@@ -1014,28 +1049,35 @@ class AdminProductsService extends GetxService {
   List<ProductFilter> getPredefinedFilters() {
     return [
       ProductFilter(
-        name: 'Products with Sale Price',
-        value: '0',
-        column: FilterColumn.salePrice,
-        operator: '!=',
-      ),
-      ProductFilter(
-        name: 'Non-Featured Products',
-        value: '0',
+        name: 'Featured',
+        value: '1',
         column: FilterColumn.featured,
         operator: '=',
       ),
       ProductFilter(
-        name: 'Car Products',
-        value: 'car',
-        column: FilterColumn.productGroup,
+        name: 'Deals',
+        value: '1',
+        column: FilterColumn.deals,
         operator: '=',
       ),
       ProductFilter(
-        name: 'Auction Products',
-        value: 'auction',
-        column: FilterColumn.productType,
+        name: 'Not Deals',
+        value: '0',
+        column: FilterColumn.notDeals,
         operator: '=',
+      ),
+      ProductFilter(
+        name: 'On Sale',
+        value: '0',
+        column: FilterColumn.onSale,
+        operator: '!=',
+      ),
+      ProductFilter(
+        name: 'Pinned Sale',
+        value: '1',
+        column: FilterColumn.pinnedSale,
+        operator: '=',
+        isMetaField: true,
       ),
     ];
   }

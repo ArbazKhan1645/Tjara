@@ -1,7 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tjara/app/core/utils/helpers/alerts.dart';
+import 'package:tjara/app/models/users_model.dart/customer_models.dart';
 import 'package:tjara/app/modules/modules_admin/profile/profile.dart';
 import 'package:tjara/app/modules/modules_customer/customer_dashboard/controllers/dashboard_controller.dart';
 import 'package:tjara/app/modules/modules_customer/customer_cart/controllers/my_cart_controller.dart';
@@ -12,11 +15,72 @@ import 'package:tjara/app/services/dashbopard_services/balance_service.dart';
 import 'package:tjara/app/services/notifications/notification_service.dart';
 
 // Main User Menu Dialog
-class UserMenuDialog extends StatelessWidget {
+class UserMenuDialog extends StatefulWidget {
   const UserMenuDialog({super.key});
 
   static void show(BuildContext context) {
     showDialog(context: context, builder: (context) => const UserMenuDialog());
+  }
+
+  @override
+  State<UserMenuDialog> createState() => _UserMenuDialogState();
+}
+
+class _UserMenuDialogState extends State<UserMenuDialog> {
+  String? shopBalance;
+  bool isLoadingBalance = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchShopBalance();
+  }
+
+  Future<void> _fetchShopBalance() async {
+    final shopId =
+        AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '';
+    if (shopId.isEmpty) {
+      setState(() {
+        isLoadingBalance = false;
+      });
+      return;
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse('https://api.libanbuy.com/api/shops/$shopId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-request-from': 'Dashboard',
+          'shop-id': shopId,
+          'user-id':
+              AuthService.instance.authCustomer?.user?.id?.toString() ?? '',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final balance = data['shop']?['balance'];
+        if (mounted) {
+          setState(() {
+            shopBalance = balance?.toString() ?? '0.00';
+            isLoadingBalance = false;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            isLoadingBalance = false;
+          });
+        }
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          isLoadingBalance = false;
+        });
+      }
+    }
   }
 
   @override
@@ -123,6 +187,32 @@ class UserMenuDialog extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Column(
                 children: [
+                  // Shop Balance
+                  _MenuItem(
+                    icon: Icons.store_outlined,
+                    title: 'Shop Balance:',
+                    trailing: isLoadingBalance
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Color(0xFFF97316),
+                            ),
+                          )
+                        : Text(
+                            '\$${shopBalance ?? '0.00'}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFFF97316),
+                            ),
+                          ),
+                    onTap: null,
+                  ),
+
+                  const Divider(height: 1, thickness: 1),
+
                   // Reseller Balance
                   _MenuItem(
                     icon: Icons.account_balance_wallet_outlined,
@@ -141,24 +231,24 @@ class UserMenuDialog extends StatelessWidget {
                   const Divider(height: 1, thickness: 1),
 
                   // Switch Account
-                  // if (AuthService.instance.authCustomer?.user?.role ==
-                  //         'admin' ||
-                  //     AuthService.instance.authCustomer?.user?.role == 'vendor')
-                  //   _MenuItem(
-                  //     icon: Icons.swap_horiz_rounded,
-                  //     title: 'Switch Account',
-                  //     trailing: Icon(
-                  //       Icons.chevron_right,
-                  //       color: Colors.grey.shade600,
-                  //     ),
-                  //     onTap: () {
-                  //       Navigator.pop(context);
-                  //       SwitchAccountDialog.show(
-                  //         context,
-                  //         AuthService.instance.authCustomer?.user?.email ?? '',
-                  //       );
-                  //     },
-                  //   ),
+                  if (AuthService.instance.authCustomer?.user?.role ==
+                          'admin' ||
+                      AuthService.instance.authCustomer?.user?.role == 'vendor')
+                    _MenuItem(
+                      icon: Icons.swap_horiz_rounded,
+                      title: 'Switch Account',
+                      trailing: Icon(
+                        Icons.chevron_right,
+                        color: Colors.grey.shade600,
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        SwitchAccountDialog.show(
+                          context,
+                          AuthService.instance.authCustomer?.user?.email ?? '',
+                        );
+                      },
+                    ),
                   if (AuthService.instance.authCustomer?.user?.role == 'admin')
                     const Divider(height: 1, thickness: 1),
 
@@ -312,18 +402,33 @@ class SwitchAccountDialog extends StatefulWidget {
 
 class _SwitchAccountDialogState extends State<SwitchAccountDialog> {
   String? selectedRole;
+  bool _isSwitching = false;
   final AuthService authService = AuthService.instance;
 
-  final List<Map<String, String>> roles = [
-    {'role': 'admin', 'label': 'Admin'},
-    {'role': 'vendor', 'label': 'Vendor'},
-    {'role': 'customer', 'label': 'Customer'},
-  ];
+  List<Map<String, String>> get roles {
+    final userRole =
+        AuthService.instance.authCustomer?.user?.role?.toLowerCase();
+    if (userRole == 'admin') {
+      return [
+        {'role': 'admin', 'label': 'Admin'},
+        {'role': 'vendor', 'label': 'Vendor'},
+        {'role': 'customer', 'label': 'Customer'},
+      ];
+    } else {
+      // Vendor can switch between vendor and customer
+      return [
+        {'role': 'vendor', 'label': 'Vendor'},
+        {'role': 'customer', 'label': 'Customer'},
+      ];
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    selectedRole = authService.role;
+    selectedRole =
+        authService.authCustomer?.user?.meta?.dashboardView?.toLowerCase() ??
+            authService.role;
   }
 
   @override
@@ -367,12 +472,14 @@ class _SwitchAccountDialogState extends State<SwitchAccountDialog> {
     final isSelected = selectedRole?.toLowerCase() == role.toLowerCase();
 
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedRole = role;
-        });
-        _switchRole(role);
-      },
+      onTap: _isSwitching
+          ? null
+          : () {
+              setState(() {
+                selectedRole = role;
+              });
+              _switchRole(role);
+            },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
@@ -432,27 +539,37 @@ class _SwitchAccountDialogState extends State<SwitchAccountDialog> {
               ),
             ),
 
-            // Radio Button (Checkmark)
-            Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color:
-                      isSelected
-                          ? const Color(0xFFF97316)
-                          : Colors.grey.shade400,
-                  width: 2,
+            // Loading or Radio Button
+            if (_isSwitching && isSelected)
+              const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Color(0xFFF97316),
                 ),
-                color:
-                    isSelected ? const Color(0xFFF97316) : Colors.transparent,
+              )
+            else
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color:
+                        isSelected
+                            ? const Color(0xFFF97316)
+                            : Colors.grey.shade400,
+                    width: 2,
+                  ),
+                  color:
+                      isSelected ? const Color(0xFFF97316) : Colors.transparent,
+                ),
+                child:
+                    isSelected
+                        ? const Icon(Icons.check, size: 16, color: Colors.white)
+                        : null,
               ),
-              child:
-                  isSelected
-                      ? const Icon(Icons.check, size: 16, color: Colors.white)
-                      : null,
-            ),
           ],
         ),
       ),
@@ -460,27 +577,91 @@ class _SwitchAccountDialogState extends State<SwitchAccountDialog> {
   }
 
   void _switchRole(String role) async {
-    // Update role
-    authService.updateRole(role.toLowerCase());
+    if (_isSwitching) return;
 
-    // Close dialog
-    Navigator.of(context).pop();
+    setState(() {
+      _isSwitching = true;
+    });
 
-    // Navigate to dashboard
-    Get.until((route) => route.isFirst);
-    Get.toNamed(Routes.DASHBOARD_ADMIN);
+    try {
+      final response = await http.put(
+        Uri.parse('https://api.libanbuy.com/api/users/switch-user-role'),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-request-from': 'Dashboard',
+          'shop-id':
+              AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
+          'user-id':
+              AuthService.instance.authCustomer?.user?.id?.toString() ?? '',
+        },
+        body: jsonEncode({'role': role.toLowerCase()}),
+      );
 
-    // Show success message
-    Get.snackbar(
-      'Account Switched',
-      'Successfully switched to ${role.toUpperCase()} account',
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: const Color(0xFF0D9488),
-      colorText: Colors.white,
-      duration: const Duration(seconds: 2),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 8,
-    );
+      if (response.statusCode == 200) {
+        // Update dashboardView in auth state
+        final currentAuth = authService.authCustomer;
+        if (currentAuth != null && currentAuth.user != null) {
+          final updatedMeta = currentAuth.user!.meta != null
+              ? currentAuth.user!.meta!
+                  .copyWith(dashboardView: role.toLowerCase())
+              : Meta(dashboardView: role.toLowerCase());
+          final updatedUser = currentAuth.user!.copyWith(meta: updatedMeta);
+          final updatedAuth = currentAuth.copyWith(user: updatedUser);
+          authService.saveAuthState(updatedAuth);
+        }
+
+        // Update role
+        authService.updateRole(role.toLowerCase());
+
+        // Close dialog
+        if (!mounted) return;
+        Navigator.of(context).pop();
+
+        // Navigate to dashboard
+        Get.until((route) => route.isFirst);
+        Get.toNamed(Routes.DASHBOARD_ADMIN);
+
+        // Show success message
+        Get.snackbar(
+          'Account Switched',
+          'Successfully switched to ${role.toUpperCase()} account',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: const Color(0xFF0D9488),
+          colorText: Colors.white,
+          duration: const Duration(seconds: 2),
+          margin: const EdgeInsets.all(16),
+          borderRadius: 8,
+        );
+      } else {
+        setState(() {
+          _isSwitching = false;
+        });
+        Get.snackbar(
+          'Error',
+          'Failed to switch account. Please try again.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 2),
+          margin: const EdgeInsets.all(16),
+          borderRadius: 8,
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isSwitching = false;
+      });
+      Get.snackbar(
+        'Error',
+        'Something went wrong. Please try again.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+        margin: const EdgeInsets.all(16),
+        borderRadius: 8,
+      );
+    }
   }
 }
 

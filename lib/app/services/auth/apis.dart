@@ -103,7 +103,7 @@ class AuthenticationApiService {
           "X-Request-From": "Application",
         },
         body: {'email': email, 'password': password},
-      );
+      ).timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final LoginResponse login = parseLoginResponse(response.body);
@@ -114,7 +114,7 @@ class AuthenticationApiService {
       }
     } catch (e) {
       print(e);
-      "Error: $e";
+      rethrow;
     }
   }
 

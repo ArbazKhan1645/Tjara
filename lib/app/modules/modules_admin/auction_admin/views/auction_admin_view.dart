@@ -18,6 +18,7 @@ class _AuctionAdminViewState extends State<AuctionAdminView> {
     super.initState();
 
     _adminProductsService = Get.put(AdminAuctionService());
+    _adminProductsService.adminProducts.clear();
     _adminProductsService.fetchProducts(refresh: true, showLoader: true);
   }
 

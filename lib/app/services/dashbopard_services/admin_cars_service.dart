@@ -11,7 +11,7 @@ import 'package:http/http.dart' as http;
 
 enum CarProductStatus { all, active, inactive, deleted }
 
-enum CarFilterColumn { salePrice, featured, productGroup, productType, status }
+enum CarFilterColumn { featured, deals, notDeals, onSale, pinnedSale }
 
 enum CarSortOrder {
   none,
@@ -50,12 +50,14 @@ class CarProductFilter {
   final String value;
   final CarFilterColumn column;
   final String operator;
+  final bool isMetaField;
 
   CarProductFilter({
     required this.name,
     required this.value,
     required this.column,
     required this.operator,
+    this.isMetaField = false,
   });
 }
 
@@ -265,6 +267,9 @@ class AdminCarsService extends GetxService {
       final response = await http.get(
         uri,
         headers: {
+          'dashboard-view':
+              AuthService.instance.authCustomer?.user?.meta?.dashboardView ??
+              '',
           'Content-Type': 'application/json',
           'Accept': 'application/json',
           'X-Request-From': 'Dashboard',
@@ -278,18 +283,22 @@ class AdminCarsService extends GetxService {
       if (response.statusCode != 200 &&
           response.statusCode != 201 &&
           response.statusCode != 404) {
-        throw Exception(
-          'Failed to fetch cars. Status: ${response.statusCode}',
-        );
+        throw Exception('Failed to fetch cars. Status: ${response.statusCode}');
       }
 
       if (response.statusCode == 404) {
+        adminProducts.clear();
+        totalItems.value = 0;
+        totalPages.value = 0;
         return;
       }
 
       final data = jsonDecode(response.body);
       if (data['products'] == null) {
-        throw Exception('Products data is missing from response');
+        adminProducts.clear();
+        totalItems.value = 0;
+        totalPages.value = 0;
+        return;
       }
 
       final products = AdminProductsModel.fromJson(data);
@@ -297,6 +306,8 @@ class AdminCarsService extends GetxService {
 
       if (products.products?.data != null) {
         adminProducts.assignAll(products.products!.data!);
+      } else {
+        adminProducts.clear();
       }
 
       final productsData = data['products'];
@@ -558,8 +569,11 @@ class AdminCarsService extends GetxService {
     fetchProducts(refresh: true);
   }
 
-  // SKU filter
+  // SKU filter (mutually exclusive with quick filters)
   void updateSkuFilter(CarSkuFilter filter) {
+    if (filter != CarSkuFilter.all) {
+      activeFilters.clear();
+    }
     skuFilter.value = filter;
     currentPage.value = 1;
     fetchProducts(refresh: true);
@@ -573,9 +587,10 @@ class AdminCarsService extends GetxService {
     fetchProducts(refresh: true);
   }
 
-  // Column filters
+  // Column filters (mutually exclusive - only one quick filter at a time)
   void addColumnFilter(CarProductFilter filter) {
-    activeFilters.removeWhere((f) => f.column == filter.column);
+    activeFilters.clear();
+    skuFilter.value = CarSkuFilter.all;
     activeFilters.add(filter);
     currentPage.value = 1;
     fetchProducts(refresh: true);
@@ -738,15 +753,17 @@ class AdminCarsService extends GetxService {
       columnIndex++;
     }
 
-    // 7. Custom active filters
+    // 7. Custom active filters (column-based only, meta fields handled below)
     for (var filter in activeFilters) {
-      queryParams['filterByColumns[columns][$columnIndex][column]'] =
-          _getColumnName(filter.column);
-      queryParams['filterByColumns[columns][$columnIndex][value]'] =
-          filter.value;
-      queryParams['filterByColumns[columns][$columnIndex][operator]'] =
-          filter.operator;
-      columnIndex++;
+      if (!filter.isMetaField) {
+        queryParams['filterByColumns[columns][$columnIndex][column]'] =
+            _getColumnName(filter.column);
+        queryParams['filterByColumns[columns][$columnIndex][value]'] =
+            filter.value;
+        queryParams['filterByColumns[columns][$columnIndex][operator]'] =
+            filter.operator;
+        columnIndex++;
+      }
     }
 
     // filterByColumns join
@@ -767,6 +784,20 @@ class AdminCarsService extends GetxService {
     // filterByMetaFields
     int metaFieldIndex = 0;
     bool hasMetaFields = false;
+
+    // Active filters that are meta fields
+    for (var filter in activeFilters) {
+      if (filter.isMetaField) {
+        hasMetaFields = true;
+        queryParams['filterByMetaFields[fields][$metaFieldIndex][key]'] =
+            _getColumnName(filter.column);
+        queryParams['filterByMetaFields[fields][$metaFieldIndex][value]'] =
+            filter.value;
+        queryParams['filterByMetaFields[fields][$metaFieldIndex][operator]'] =
+            filter.operator;
+        metaFieldIndex++;
+      }
+    }
 
     // Inventory Updated date range
     if (inventoryUpdatedEnabled.value &&
@@ -830,16 +861,16 @@ class AdminCarsService extends GetxService {
 
   String _getColumnName(CarFilterColumn column) {
     switch (column) {
-      case CarFilterColumn.salePrice:
-        return 'sale_price';
       case CarFilterColumn.featured:
         return 'is_featured';
-      case CarFilterColumn.productGroup:
-        return 'product_group';
-      case CarFilterColumn.productType:
-        return 'product_type';
-      case CarFilterColumn.status:
-        return 'status';
+      case CarFilterColumn.deals:
+        return 'is_deal';
+      case CarFilterColumn.notDeals:
+        return 'is_deal';
+      case CarFilterColumn.onSale:
+        return 'sale_price';
+      case CarFilterColumn.pinnedSale:
+        return 'is_pinned_sale';
     }
   }
 
@@ -1003,16 +1034,35 @@ class AdminCarsService extends GetxService {
   List<CarProductFilter> getPredefinedFilters() {
     return [
       CarProductFilter(
-        name: 'Cars with Sale Price',
+        name: 'Featured',
+        value: '1',
+        column: CarFilterColumn.featured,
+        operator: '=',
+      ),
+      CarProductFilter(
+        name: 'Deals',
+        value: '1',
+        column: CarFilterColumn.deals,
+        operator: '=',
+      ),
+      CarProductFilter(
+        name: 'Not Deals',
         value: '0',
-        column: CarFilterColumn.salePrice,
+        column: CarFilterColumn.notDeals,
+        operator: '=',
+      ),
+      CarProductFilter(
+        name: 'On Sale',
+        value: '0',
+        column: CarFilterColumn.onSale,
         operator: '!=',
       ),
       CarProductFilter(
-        name: 'Non-Featured Cars',
-        value: '0',
-        column: CarFilterColumn.featured,
+        name: 'Pinned Sale',
+        value: '1',
+        column: CarFilterColumn.pinnedSale,
         operator: '=',
+        isMetaField: true,
       ),
     ];
   }

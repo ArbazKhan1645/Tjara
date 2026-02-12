@@ -113,7 +113,7 @@ class ProductChatsService extends GetxService {
       final queryParams = _buildQueryParams(targetPage);
 
       // Add user filter for non-admin users
-      if (user?.id != null && user?.role != 'admin') {
+      if (user?.id != null && user?.meta?.dashboardView == 'customer') {
         queryParams.addAll({
           'filterByColumns[columns][0][column]': 'user_id',
           'filterByColumns[columns][0][value]': user!.id!,
@@ -132,8 +132,20 @@ class ProductChatsService extends GetxService {
           .get(
             uri,
             headers: {
-              "Content-Type": "application/json",
-              "X-Request-From": "Application",
+              'dashboard-view':
+                  AuthService
+                      .instance
+                      .authCustomer
+                      ?.user
+                      ?.meta
+                      ?.dashboardView ??
+                  '',
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'shop-id':
+                  AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
+              'user-id': AuthService.instance.authCustomer?.user?.id ?? '',
+              'X-Request-From': 'Dashboard',
             },
           )
           .timeout(const Duration(seconds: 15));

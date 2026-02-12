@@ -112,6 +112,8 @@ class AuthController extends GetxController {
   }
 
   Future<void> signUp() async {
+    if (isLoading.value) return;
+
     if (!formKey.currentState!.validate()) {
       Get.snackbar(
         'Validation Error',
@@ -171,8 +173,8 @@ class AuthController extends GetxController {
           'Accept': 'application/json, text/plain, */*',
           'X-Request-From': 'Website',
         },
-        body: jsonEncode(data), // Send as raw JSON
-      );
+        body: jsonEncode(data),
+      ).timeout(const Duration(seconds: 30));
 
       print('📥 Sign Up Response Status: ${response.statusCode}');
       print('📥 Sign Up Response Body: ${response.body}');

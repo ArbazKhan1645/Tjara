@@ -24,6 +24,8 @@ class ProductService {
       });
 
       final Map<String, String> headers = {
+        'dashboard-view':
+            AuthService.instance.authCustomer?.user?.meta?.dashboardView ?? '',
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         'shop-id':
@@ -59,6 +61,8 @@ class ProductService {
       });
 
       final Map<String, String> headers = {
+        'dashboard-view':
+            AuthService.instance.authCustomer?.user?.meta?.dashboardView ?? '',
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         'shop-id':
@@ -96,6 +100,8 @@ class ProductService {
         if (productType != null) 'product_type': productType,
       });
       final Map<String, String> headers = {
+        'dashboard-view':
+            AuthService.instance.authCustomer?.user?.meta?.dashboardView ?? '',
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         'shop-id':
@@ -138,6 +144,8 @@ class ProductService {
         if (productType != null) 'product_type': productType,
       });
       final Map<String, String> headers = {
+        'dashboard-view':
+            AuthService.instance.authCustomer?.user?.meta?.dashboardView ?? '',
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         'shop-id':
@@ -177,6 +185,8 @@ class ProductService {
         if (productType != null) 'product_type': productType,
       });
       final Map<String, String> headers = {
+        'dashboard-view':
+            AuthService.instance.authCustomer?.user?.meta?.dashboardView ?? '',
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         'shop-id':
@@ -214,6 +224,8 @@ class ProductService {
         if (productType != null) 'product_type': productType,
       });
       final Map<String, String> headers = {
+        'dashboard-view':
+            AuthService.instance.authCustomer?.user?.meta?.dashboardView ?? '',
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         'shop-id':
@@ -250,6 +262,8 @@ class ProductService {
         if (productType != null) 'product_type': productType,
       });
       final Map<String, String> headers = {
+        'dashboard-view':
+            AuthService.instance.authCustomer?.user?.meta?.dashboardView ?? '',
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         'shop-id':
@@ -283,6 +297,8 @@ class ProductService {
         if (productType != null) 'product_type': productType,
       });
       final Map<String, String> headers = {
+        'dashboard-view':
+            AuthService.instance.authCustomer?.user?.meta?.dashboardView ?? '',
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         'shop-id':
@@ -315,6 +331,8 @@ class ProductService {
         if (productType != null) 'product_type': productType,
       });
       final Map<String, String> headers = {
+        'dashboard-view':
+            AuthService.instance.authCustomer?.user?.meta?.dashboardView ?? '',
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         'shop-id':
@@ -343,6 +361,8 @@ class ProductService {
       final url = Uri.parse('$baseUrl/products/$productId/meta/update');
       final body = json.encode({'key': 'is_sold', 'value': isSold ? '1' : '0'});
       final Map<String, String> headers = {
+        'dashboard-view':
+            AuthService.instance.authCustomer?.user?.meta?.dashboardView ?? '',
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         'shop-id':
@@ -372,6 +392,8 @@ class ProductService {
     try {
       final url = Uri.parse('$baseUrl/products/$productId/delete');
       final Map<String, String> headers = {
+        'dashboard-view':
+            AuthService.instance.authCustomer?.user?.meta?.dashboardView ?? '',
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         'shop-id':

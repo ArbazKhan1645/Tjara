@@ -116,10 +116,7 @@ class OrderService extends GetxService {
         queryParams['per_page'] = perPage.toString();
         queryParams['page'] = page.toString();
       } else {
-        queryParams = {
-          'per_page': perPage.toString(),
-          'page': page.toString(),
-        };
+        queryParams = {'per_page': perPage.toString(), 'page': page.toString()};
 
         if (userId.isNotEmpty &&
             current?.user?.id != null &&
@@ -139,6 +136,9 @@ class OrderService extends GetxService {
       final response = await http.get(
         uri,
         headers: {
+          'dashboard-view':
+              AuthService.instance.authCustomer?.user?.meta?.dashboardView ??
+              '',
           'X-Request-From': 'Dashboard',
           if (current?.user?.role != 'customer')
             'shop-id':

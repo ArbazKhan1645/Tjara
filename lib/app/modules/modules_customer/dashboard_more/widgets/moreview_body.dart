@@ -325,7 +325,7 @@ class ProfileCard extends StatelessWidget {
             if (AuthService.instance.authCustomer?.user?.role == 'admin')
               _PremiumButton(
                 icon: Icons.dashboard_outlined,
-                label: 'Admin Dashboard',
+                label: 'Dashboard',
                 onTap: () async {
                   await Get.putAsync(() => BalanceService().init());
                   Get.toNamed(Routes.DASHBOARD_ADMIN);
@@ -337,7 +337,7 @@ class ProfileCard extends StatelessWidget {
             else if (AuthService.instance.authCustomer?.user?.role == 'vendor')
               _PremiumButton(
                 icon: Icons.dashboard_outlined,
-                label: 'Vendor Dashboard',
+                label: 'Dashboard',
                 onTap: () async {
                   await Get.putAsync(() => BalanceService().init());
                   Get.toNamed(Routes.DASHBOARD_ADMIN);

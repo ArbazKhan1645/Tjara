@@ -325,6 +325,14 @@ class PromotionApiService {
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
+              'dashboard-view':
+                  AuthService
+                      .instance
+                      .authCustomer
+                      ?.user
+                      ?.meta
+                      ?.dashboardView ??
+                  '',
               'X-Request-From': 'Dashboard',
               'user-id': AuthService.instance.authCustomer?.user?.id ?? '',
               'shop-id':

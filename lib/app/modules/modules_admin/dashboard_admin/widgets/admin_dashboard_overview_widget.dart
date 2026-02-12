@@ -13,7 +13,9 @@ class AdminDashboardOverviewWidget extends StatelessWidget {
   const AdminDashboardOverviewWidget({super.key});
 
   // Safe getters for auth data
-  String get _userRole => AuthService.instance.role ?? 'customer';
+  String get _userRole =>
+      AuthService.instance.authCustomer?.user?.meta?.dashboardView ??
+      'customer';
   String get _userName {
     final user = AuthService.instance.authCustomer?.user;
     final firstName = user?.firstName ?? '';

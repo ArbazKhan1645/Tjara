@@ -103,6 +103,9 @@ class StoriesService extends GetxService {
       final response = await http.get(
         uri,
         headers: {
+          'dashboard-view':
+              AuthService.instance.authCustomer?.user?.meta?.dashboardView ??
+              '',
           'X-Request-From': 'Dashboard',
           'Content-Type': 'application/json',
           'shop-id':

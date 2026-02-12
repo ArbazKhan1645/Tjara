@@ -33,14 +33,16 @@ class AdminProductsList extends StatelessWidget {
   }
 
   Widget _buildContent(BuildContext context) {
-    // Initial loading state
-    if (adminProductsService.isLoading.value &&
+    // Initial loading state (check both isLoading and isRefreshing)
+    if ((adminProductsService.isLoading.value ||
+            adminProductsService.isRefreshing.value) &&
         adminProductsService.adminProducts.isEmpty) {
       return const ProductsShimmerList(itemCount: 8);
     }
 
-    // Empty state
+    // Empty state (only when not loading AND not refreshing)
     if (!adminProductsService.isLoading.value &&
+        !adminProductsService.isRefreshing.value &&
         adminProductsService.adminProducts.isEmpty) {
       return _buildEmptyState();
     }

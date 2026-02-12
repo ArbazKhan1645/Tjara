@@ -66,8 +66,8 @@ class _AdminDrawerWidgetState extends State<AdminDrawerWidget> {
 
   List<DrawerMenuModel> get filteredMenus {
     final roleString =
-        AuthService.instance.role ??
-        AuthService.instance.authCustomerRx.value?.user?.role ??
+        AuthService.instance.authCustomer?.user?.meta?.dashboardView ??
+        // AuthService.instance.authCustomerRx.value?.user?.role ??
         'customer';
 
     final userRole = RoleMenuConfig.getRoleFromString(roleString);
@@ -159,8 +159,7 @@ class _AdminDrawerWidgetState extends State<AdminDrawerWidget> {
   Widget _buildDrawerItem(int i) {
     final item = filteredMenus[i];
     final roleString =
-        AuthService.instance.role ??
-        AuthService.instance.authCustomerRx.value?.user?.role ??
+        AuthService.instance.authCustomerRx.value?.user?.meta?.dashboardView ??
         'customer';
     final userRole = RoleMenuConfig.getRoleFromString(roleString);
 

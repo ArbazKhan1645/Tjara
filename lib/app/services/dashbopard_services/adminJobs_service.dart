@@ -51,6 +51,9 @@ class AdminJobsService extends GetxService {
       final response = await http.get(
         uri,
         headers: {
+          'dashboard-view':
+              AuthService.instance.authCustomer?.user?.meta?.dashboardView ??
+              '',
           'X-Request-From': 'Dashboard',
           'shop-id':
               AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',

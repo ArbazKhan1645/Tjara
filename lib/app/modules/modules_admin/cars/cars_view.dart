@@ -18,6 +18,7 @@ class _CarsViewState extends State<CarsView> {
     super.initState();
 
     _adminCarsService = Get.put(AdminCarsService());
+    _adminCarsService.adminProducts.clear();
     _adminCarsService.fetchProducts(refresh: true, showLoader: true);
   }
 

@@ -247,53 +247,53 @@ class _LoginUiState extends State<LoginUi> {
                                 SizedBox(
                                   width: double.infinity,
                                   height: 56,
-                                  child: ElevatedButton(
-                                    onPressed:
-                                        controller.isLoggingIn.value
-                                            ? null
-                                            : () async {
-                                              await controller.onLogin(context);
-                                            },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFFfea52d),
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(16),
+                                  child: Obx(
+                                    () => ElevatedButton(
+                                      onPressed:
+                                          controller.isLoggingIn.value
+                                              ? null
+                                              : () async {
+                                                await controller.onLogin(context);
+                                              },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFFfea52d),
+                                        foregroundColor: Colors.white,
+                                        disabledBackgroundColor: const Color(0xFFfea52d).withValues(alpha: 0.6),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(16),
+                                        ),
+                                        elevation: 0,
                                       ),
-                                      elevation: 0,
-                                      shadowColor: const Color(
-                                        0xFFfea52d,
-                                      ).withOpacity(0.3),
-                                    ),
-                                    child:
-                                        controller.isLoggingIn.value
-                                            ? const SizedBox(
-                                              width: 24,
-                                              height: 24,
-                                              child: CircularProgressIndicator(
-                                                color: Colors.white,
-                                                strokeWidth: 2.5,
-                                              ),
-                                            )
-                                            : const Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Text(
-                                                  'Sign In',
-                                                  style: TextStyle(
-                                                    fontSize: 17,
-                                                    fontWeight: FontWeight.w600,
-                                                    letterSpacing: 0.5,
+                                      child:
+                                          controller.isLoggingIn.value
+                                              ? const SizedBox(
+                                                width: 24,
+                                                height: 24,
+                                                child: CircularProgressIndicator(
+                                                  color: Colors.white,
+                                                  strokeWidth: 2.5,
+                                                ),
+                                              )
+                                              : const Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    'Sign In',
+                                                    style: TextStyle(
+                                                      fontSize: 17,
+                                                      fontWeight: FontWeight.w600,
+                                                      letterSpacing: 0.5,
+                                                    ),
                                                   ),
-                                                ),
-                                                SizedBox(width: 8),
-                                                Icon(
-                                                  Icons.arrow_forward,
-                                                  size: 20,
-                                                ),
-                                              ],
-                                            ),
+                                                  SizedBox(width: 8),
+                                                  Icon(
+                                                    Icons.arrow_forward,
+                                                    size: 20,
+                                                  ),
+                                                ],
+                                              ),
+                                    ),
                                   ),
                                 ),
 

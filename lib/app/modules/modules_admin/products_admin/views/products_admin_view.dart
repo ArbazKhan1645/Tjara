@@ -19,6 +19,7 @@ class _ProductsAdminViewState extends State<ProductsAdminView> {
     super.initState();
 
     _adminProductsService = Get.put(AdminProductsService());
+    _adminProductsService.adminProducts.clear();
     _adminProductsService.fetchProducts(refresh: true, showLoader: true);
   }
 

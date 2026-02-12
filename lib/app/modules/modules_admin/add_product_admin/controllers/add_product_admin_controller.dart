@@ -321,6 +321,8 @@ class AddProductAdminController extends GetxController {
       'X-Request-From': _requestFromHeader,
       'Content-Type': 'application/json',
       'shop-id': _shopId,
+      'dashboard-view':
+          AuthService.instance.authCustomer?.user?.meta?.dashboardView ?? '',
     };
   }
 
@@ -1251,7 +1253,8 @@ class AddProductAdminController extends GetxController {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         'X-Request-From': 'Dashboard',
-        'dashboard-view': 'admin',
+        'dashboard-view':
+            AuthService.instance.authCustomer?.user?.meta?.dashboardView ?? '',
         'Shop-Id': _shopId,
         'User-Id': AuthService.instance.authCustomer!.user!.id.toString(),
         'Origin': 'https://dashboard.tjara.com',

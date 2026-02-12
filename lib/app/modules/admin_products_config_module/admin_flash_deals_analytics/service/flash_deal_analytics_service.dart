@@ -22,6 +22,8 @@ class FlashDealAnalyticsService {
   static final Map<String, String> _headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
+    'dashboard-view':
+        AuthService.instance.authCustomer?.user?.meta?.dashboardView ?? '',
     'shop-id': AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
     'user-id': AuthService.instance.authCustomer?.user?.id ?? '',
     'X-Request-From': 'Dashboard',
