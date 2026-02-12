@@ -15,7 +15,7 @@ import 'package:tjara/app/models/others/state_model.dart';
 import 'package:tjara/app/modules/modules_admin/admin_jobs/models/attributes_model.dart';
 import 'package:tjara/app/repo/network_repository.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
-import 'package:tjara/app/services/others/others_service.dart';
+import 'package:tjara/app/services/country_state_city_service/country_state_city_service.dart';
 import 'package:tjara/app/models/others/cities_model.dart';
 
 // Add your Job model import here

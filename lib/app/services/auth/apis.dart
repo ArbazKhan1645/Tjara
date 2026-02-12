@@ -351,13 +351,4 @@ class CategoryApiService {
       return false;
     }
   }
-
-  // Example pagination handler (optional)
-  // Future<Map<String, dynamic>> fetchNextPage() async {
-  //   if (!hasMoreData) {
-  //     return {'success': false, 'message': 'No more data available'};
-  //   }
-  //   currentPage++;
-  //   return await fetchProducts(page: currentPage);
-  // }
 }

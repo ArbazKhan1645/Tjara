@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:tjara/app/core/widgets/admin_app_bar_actions.dart';
 import 'package:tjara/app/core/widgets/admin_drawer_widget.dart';
 import 'package:tjara/app/modules/modules_admin/dashboard_admin/widgets/admin_dashboard_overview_widget.dart';
-import 'package:tjara/app/services/orders_service.dart';
+import 'package:tjara/app/services/orders/orders_service.dart';
 import 'package:tjara/app/modules/modules_customer/my_account/views/my_account_view.dart';
 import 'package:tjara/app/modules/modules_customer/orders_dashboard/controllers/orders_dashboard_controller.dart';
 import 'package:tjara/app/modules/modules_customer/orders_dashboard/widgets/chats.dart';

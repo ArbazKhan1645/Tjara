@@ -16,7 +16,7 @@ import 'package:tjara/app/modules/modules_admin/services_admin/insert/attributes
 import 'package:tjara/app/modules/modules_customer/tjara_services/model/sevices_model.dart'
     show ServiceData;
 import 'package:tjara/app/services/auth/auth_service.dart';
-import 'package:tjara/app/services/others/others_service.dart';
+import 'package:tjara/app/services/country_state_city_service/country_state_city_service.dart';
 import 'package:tjara/main.dart';
 
 class InsertServiceScreen extends StatefulWidget {

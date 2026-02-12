@@ -12,7 +12,7 @@ import 'package:tjara/app/models/order_model.dart';
 import 'package:tjara/app/modules/modules_customer/orders_dashboard/widgets/orders_web_analytics.dart';
 import 'package:tjara/app/routes/app_pages.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
-import 'package:tjara/app/services/orders_service.dart';
+import 'package:tjara/app/services/orders/orders_service.dart';
 import 'package:tjara/app/modules/modules_customer/orders_dashboard/controllers/orders_dashboard_controller.dart';
 
 class OrdersScreen extends StatefulWidget {
@@ -1024,9 +1024,7 @@ class _OrdersScreenState extends State<OrdersScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        border: Border.all(
-          color: value ? Colors.teal : Colors.grey.shade300,
-        ),
+        border: Border.all(color: value ? Colors.teal : Colors.grey.shade300),
         borderRadius: BorderRadius.circular(10),
         color: value ? Colors.teal.shade50 : Colors.grey.shade50,
       ),
@@ -1163,8 +1161,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                 _paginationBtn(
                   Icons.chevron_right,
                   'Next',
-                  (isLoading ||
-                          !(paginationInfo['hasMorePages'] ?? false))
+                  (isLoading || !(paginationInfo['hasMorePages'] ?? false))
                       ? null
                       : () => _loadSpecificPage(
                         (paginationInfo['currentPage'] ?? 1) + 1,
@@ -1173,8 +1170,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                 _paginationBtn(
                   Icons.last_page,
                   'Last',
-                  (isLoading ||
-                          !(paginationInfo['hasMorePages'] ?? false))
+                  (isLoading || !(paginationInfo['hasMorePages'] ?? false))
                       ? null
                       : () =>
                           _loadSpecificPage(paginationInfo['totalPages'] ?? 1),
@@ -1387,10 +1383,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                   const SizedBox(width: 8),
                   Text(
                     DateFormat('MMM dd, yyyy').format(createdAt),
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey.shade500,
-                    ),
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
                   ),
                 ],
                 const Spacer(),
@@ -1515,11 +1508,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                     ),
                   ),
                 ),
-                Container(
-                  width: 1,
-                  height: 40,
-                  color: Colors.grey.shade200,
-                ),
+                Container(width: 1, height: 40, color: Colors.grey.shade200),
                 Expanded(
                   child: PopupMenuButton<String>(
                     onSelected: (value) => _handleOrderAction(value, order),
@@ -1681,8 +1670,7 @@ class _OrdersScreenState extends State<OrdersScreen>
         .replaceAll('-', ' ')
         .split(' ')
         .map(
-          (w) =>
-              w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '',
+          (w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '',
         )
         .join(' ');
   }

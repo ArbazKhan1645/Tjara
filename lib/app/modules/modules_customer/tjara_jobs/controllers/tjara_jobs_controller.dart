@@ -14,7 +14,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 import 'package:tjara/app/services/auth/auth_service.dart';
-import 'package:tjara/app/services/others/others_service.dart';
+import 'package:tjara/app/services/country_state_city_service/country_state_city_service.dart';
 import 'package:tjara/app/models/others/country_model.dart';
 import 'package:tjara/app/models/others/state_model.dart';
 import 'package:tjara/app/models/others/cities_model.dart' as location;

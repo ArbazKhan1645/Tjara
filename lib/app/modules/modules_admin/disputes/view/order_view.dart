@@ -13,7 +13,7 @@ import 'package:tjara/app/models/disputes/disputes_model.dart';
 import 'package:tjara/app/models/order_model.dart';
 import 'package:tjara/app/modules/modules_customer/orders_dashboard/controllers/orders_dashboard_controller.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
-import 'package:tjara/app/services/orders_service.dart';
+import 'package:tjara/app/services/orders/orders_service.dart';
 
 class OrderDisputeChatMessage {
   final String id;

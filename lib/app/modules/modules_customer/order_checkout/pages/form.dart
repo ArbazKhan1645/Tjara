@@ -10,8 +10,8 @@ import 'package:tjara/app/modules/authentication_module/screens/contact_us.dart'
 import 'package:tjara/app/modules/modules_customer/order_checkout/pages/success.dart';
 import 'package:tjara/app/modules/modules_customer/product_detail_screen/screens/product_detail_by_id.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
-import 'package:tjara/app/services/orders/order_service.dart';
-import 'package:tjara/app/services/others/others_service.dart';
+import 'package:tjara/app/services/orders/make_order_service.dart';
+import 'package:tjara/app/services/country_state_city_service/country_state_city_service.dart';
 import 'package:tjara/app/services/coupon/coupon_service.dart';
 import 'package:tjara/app/modules/modules_customer/customer_cart/controllers/my_cart_controller.dart';
 import 'package:tjara/app/modules/modules_customer/customer_dashboard/controllers/dashboard_controller.dart';
@@ -349,7 +349,7 @@ class _FormScreenState extends State<FormScreen> {
           controller.selectedState.value?.id.toString() ?? '';
       final String cityId = controller.selectedCity.value?.id.toString() ?? '';
 
-      final response = await OrderService.placeOrder(
+      final response = await MakeOrderService.placeOrder(
         firstName: firstName,
         lastName: lastName,
         email: email,

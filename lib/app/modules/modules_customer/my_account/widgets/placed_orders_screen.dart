@@ -13,7 +13,7 @@ import 'package:tjara/app/modules/modules_customer/orders_dashboard/widgets/orde
 import 'package:tjara/app/routes/app_pages.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
 import 'package:tjara/app/modules/modules_customer/orders_dashboard/controllers/orders_dashboard_controller.dart';
-import 'package:tjara/app/services/placed_orders_service.dart';
+import 'package:tjara/app/services/orders/placed_orders_service.dart';
 
 class PlacedOrdersScreen extends StatefulWidget {
   const PlacedOrdersScreen({super.key, this.userId, this.onAdCallback});
@@ -245,9 +245,9 @@ class _PlacedOrdersScreenState extends State<PlacedOrdersScreen> {
       await _fetchWithFilters(page: 1, refresh: true);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load orders: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to load orders: $e')));
       }
     }
   }
@@ -366,9 +366,7 @@ class _PlacedOrdersScreenState extends State<PlacedOrdersScreen> {
   Future<void> _loadMoreOrders() async {
     if (_orderService.hasMorePages.value && !_orderService.isLoading.value) {
       try {
-        await _fetchWithFilters(
-          page: _orderService.currentPage.value + 1,
-        );
+        await _fetchWithFilters(page: _orderService.currentPage.value + 1);
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -386,9 +384,9 @@ class _PlacedOrdersScreenState extends State<PlacedOrdersScreen> {
       await _fetchWithFilters(page: 1, refresh: true);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to refresh orders: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to refresh orders: $e')));
       }
     }
   }
@@ -506,8 +504,7 @@ class _PlacedOrdersScreenState extends State<PlacedOrdersScreen> {
           ),
           const SizedBox(height: 8),
           OrdersWebAnalyticsPage(
-            usernumber:
-                AuthService.instance.authCustomer?.user?.phone ?? '',
+            usernumber: AuthService.instance.authCustomer?.user?.phone ?? '',
             userid:
                 '${AuthService.instance.authCustomer?.user?.firstName ?? ''} ${AuthService.instance.authCustomer?.user?.lastName ?? ''}',
           ),
@@ -978,9 +975,7 @@ class _PlacedOrdersScreenState extends State<PlacedOrdersScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        border: Border.all(
-          color: value ? Colors.teal : Colors.grey.shade300,
-        ),
+        border: Border.all(color: value ? Colors.teal : Colors.grey.shade300),
         borderRadius: BorderRadius.circular(10),
         color: value ? Colors.teal.shade50 : Colors.grey.shade50,
       ),
@@ -1117,8 +1112,7 @@ class _PlacedOrdersScreenState extends State<PlacedOrdersScreen> {
                 _paginationBtn(
                   Icons.chevron_right,
                   'Next',
-                  (isLoading ||
-                          !(paginationInfo['hasMorePages'] ?? false))
+                  (isLoading || !(paginationInfo['hasMorePages'] ?? false))
                       ? null
                       : () => _loadSpecificPage(
                         (paginationInfo['currentPage'] ?? 1) + 1,
@@ -1127,8 +1121,7 @@ class _PlacedOrdersScreenState extends State<PlacedOrdersScreen> {
                 _paginationBtn(
                   Icons.last_page,
                   'Last',
-                  (isLoading ||
-                          !(paginationInfo['hasMorePages'] ?? false))
+                  (isLoading || !(paginationInfo['hasMorePages'] ?? false))
                       ? null
                       : () =>
                           _loadSpecificPage(paginationInfo['totalPages'] ?? 1),
@@ -1368,10 +1361,7 @@ class _PlacedOrdersScreenState extends State<PlacedOrdersScreen> {
                   const SizedBox(width: 8),
                   Text(
                     DateFormat('MMM dd, yyyy').format(createdAt),
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey.shade500,
-                    ),
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
                   ),
                 ],
                 const Spacer(),
@@ -1490,11 +1480,7 @@ class _PlacedOrdersScreenState extends State<PlacedOrdersScreen> {
                     ),
                   ),
                 ),
-                Container(
-                  width: 1,
-                  height: 40,
-                  color: Colors.grey.shade200,
-                ),
+                Container(width: 1, height: 40, color: Colors.grey.shade200),
                 Expanded(
                   child: PopupMenuButton<String>(
                     onSelected: (value) => _handleOrderAction(value, order),
@@ -1654,8 +1640,7 @@ class _PlacedOrdersScreenState extends State<PlacedOrdersScreen> {
         .replaceAll('-', ' ')
         .split(' ')
         .map(
-          (w) =>
-              w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '',
+          (w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '',
         )
         .join(' ');
   }

@@ -11,14 +11,14 @@ import 'package:tjara/app/services/dashbopard_services/services_service.dart';
 import 'package:tjara/app/services/dashbopard_services/shops_service.dart';
 import 'package:tjara/app/services/dashbopard_services/stories_service.dart';
 import 'package:tjara/app/services/dashbopard_services/users_service.dart';
-import 'package:tjara/app/services/orders_service.dart';
+import 'package:tjara/app/services/orders/orders_service.dart';
 import 'package:tjara/app/modules/modules_customer/app_home/controllers/home_controller.dart';
 import 'package:tjara/app/modules/modules_customer/customer_cart/controllers/my_cart_controller.dart';
 import 'package:tjara/app/modules/modules_customer/user_wishlist/service/wishlist_service.dart';
 import 'package:tjara/app/services/chat_messages/chat_messages_service.dart';
 import 'package:tjara/app/services/notifications/notification_service.dart';
-import 'package:tjara/app/services/others/others_service.dart';
-import 'package:tjara/app/services/placed_orders_service.dart';
+import 'package:tjara/app/services/country_state_city_service/country_state_city_service.dart';
+import 'package:tjara/app/services/orders/placed_orders_service.dart';
 import 'package:tjara/app/services/websettings_service/websetting_service.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
 

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:tjara/app/services/auth/auth_service.dart';
 
-class OrderService {
+class MakeOrderService {
   static const String apiUrl = "https://api.libanbuy.com/api/orders/insert/";
 
   static Future<Map<String, dynamic>> placeOrder({
@@ -94,8 +94,6 @@ class OrderService {
         },
         body: jsonEncode(orderData),
       );
-
-      print(response.statusCode);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = jsonDecode(response.body);
