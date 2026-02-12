@@ -20,7 +20,6 @@ import 'package:tjara/app/services/notifications/notification_service.dart';
 import 'package:tjara/app/services/others/others_service.dart';
 import 'package:tjara/app/services/placed_orders_service.dart';
 import 'package:tjara/app/services/websettings_service/websetting_service.dart';
-import 'package:tjara/app/services/app/app_service.dart';
 import 'package:tjara/app/services/auth/auth_service.dart';
 
 Future<void> initDependencies() async {
@@ -33,12 +32,6 @@ Future<void> _initAppService() async {
     await Get.putAsync(() => AuthService().init(), permanent: true);
   } catch (e, stackTrace) {
     Get.log('Error initializing AuthService: $e\n$stackTrace', isError: true);
-  }
-
-  try {
-    await Get.putAsync(() => AppService().init());
-  } catch (e, stackTrace) {
-    Get.log('Error initializing AppService: $e\n$stackTrace', isError: true);
   }
 }
 

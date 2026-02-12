@@ -11,44 +11,6 @@ class AdminAppBarActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        // IconButton(
-        //   icon: const Icon(Icons.web, color: Colors.white),
-        //   onPressed: () {},
-        // ),
-        // IconButton(
-        //   icon: const Icon(Icons.fullscreen, color: Colors.white),
-        //   onPressed: () {},
-        // ),
-        // Stack(
-        //   alignment: Alignment.center,
-        //   children: [
-        //     IconButton(
-        //       icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-        //       onPressed: () {},
-        //     ),
-        //     Positioned(
-        //       top: 8,
-        //       right: 8,
-        //       child: Container(
-        //         padding: const EdgeInsets.all(2),
-        //         decoration: BoxDecoration(
-        //           color: Colors.red,
-        //           borderRadius: BorderRadius.circular(10),
-        //         ),
-        //         constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-        //         child: const Text(
-        //           '2',
-        //           style: TextStyle(
-        //             color: Colors.white,
-        //             fontSize: 10,
-        //             fontWeight: FontWeight.bold,
-        //           ),
-        //           textAlign: TextAlign.center,
-        //         ),
-        //       ),
-        //     ),
-        //   ],
-        // ),
         const NotificationIconButton(),
         const SizedBox(width: 10),
 

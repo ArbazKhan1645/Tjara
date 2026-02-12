@@ -11,7 +11,7 @@ class SearchTextFieldWidget extends StatelessWidget {
     this.searchBy = 'ID',
     this.onChanged,
     this.controller,
-    this.searchByStaticText = 'Search By :'
+    this.searchByStaticText = 'Search By :',
   });
 
   @override

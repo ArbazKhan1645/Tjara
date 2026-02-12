@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/core/widgets/admin_header_animated_background_widget.dart';
 import 'package:tjara/app/core/widgets/admin_sliver_app_bar_widget.dart';
-import 'package:tjara/app/core/widgets/buttons/gardient_button_with_left_arrow_and_text.dart';
+import 'package:tjara/app/core/widgets/gardient_button_with_left_arrow_and_text.dart';
 import 'package:tjara/app/modules/modules_admin/admin_contexts/insert.dart';
 import 'package:tjara/app/modules/modules_admin/admin_contexts/view/datatable.dart';
 import 'package:tjara/app/modules/modules_admin/admin_contexts/view/filters.dart';

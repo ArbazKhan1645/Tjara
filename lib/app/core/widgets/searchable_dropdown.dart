@@ -48,19 +48,22 @@ class _SearchableDropdownState<T> extends State<SearchableDropdown<T>> {
         ),
         const SizedBox(height: 8),
         GestureDetector(
-          onTap: widget.enabled && !widget.isLoading && widget.errorMessage == null
-              ? () => _showSearchableBottomSheet(context)
-              : null,
+          onTap:
+              widget.enabled && !widget.isLoading && widget.errorMessage == null
+                  ? () => _showSearchableBottomSheet(context)
+                  : null,
           child: Container(
             height: 52,
             padding: const EdgeInsets.symmetric(horizontal: 14),
             decoration: BoxDecoration(
-              color: widget.enabled ? Colors.grey.shade50 : Colors.grey.shade200,
+              color:
+                  widget.enabled ? Colors.grey.shade50 : Colors.grey.shade200,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: widget.errorMessage != null
-                    ? Colors.red.shade300
-                    : Colors.grey.shade200,
+                color:
+                    widget.errorMessage != null
+                        ? Colors.red.shade300
+                        : Colors.grey.shade200,
                 width: 1,
               ),
             ),
@@ -88,10 +91,7 @@ class _SearchableDropdownState<T> extends State<SearchableDropdown<T>> {
           SizedBox(width: 12),
           Text(
             'Loading...',
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 14,
-            ),
+            style: TextStyle(color: Colors.grey, fontSize: 14),
           ),
         ],
       );
@@ -115,7 +115,10 @@ class _SearchableDropdownState<T> extends State<SearchableDropdown<T>> {
             GestureDetector(
               onTap: widget.onRetry,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF0D9488).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(4),
@@ -144,8 +147,10 @@ class _SearchableDropdownState<T> extends State<SearchableDropdown<T>> {
                 : widget.hint,
             style: TextStyle(
               fontSize: 14,
-              color: widget.value != null ? Colors.black87 : Colors.grey.shade500,
-              fontWeight: widget.value != null ? FontWeight.w500 : FontWeight.normal,
+              color:
+                  widget.value != null ? Colors.black87 : Colors.grey.shade500,
+              fontWeight:
+                  widget.value != null ? FontWeight.w500 : FontWeight.normal,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -165,17 +170,18 @@ class _SearchableDropdownState<T> extends State<SearchableDropdown<T>> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _SearchableBottomSheet<T>(
-        title: widget.label,
-        searchHint: widget.searchHint,
-        items: widget.items,
-        selectedValue: widget.value,
-        getDisplayText: widget.getDisplayText,
-        onSelected: (value) {
-          widget.onChanged(value);
-          Navigator.pop(context);
-        },
-      ),
+      builder:
+          (context) => _SearchableBottomSheet<T>(
+            title: widget.label,
+            searchHint: widget.searchHint,
+            items: widget.items,
+            selectedValue: widget.value,
+            getDisplayText: widget.getDisplayText,
+            onSelected: (value) {
+              widget.onChanged(value);
+              Navigator.pop(context);
+            },
+          ),
     );
   }
 }
@@ -198,7 +204,8 @@ class _SearchableBottomSheet<T> extends StatefulWidget {
   final Function(T) onSelected;
 
   @override
-  State<_SearchableBottomSheet<T>> createState() => _SearchableBottomSheetState<T>();
+  State<_SearchableBottomSheet<T>> createState() =>
+      _SearchableBottomSheetState<T>();
 }
 
 class _SearchableBottomSheetState<T> extends State<_SearchableBottomSheet<T>> {
@@ -228,10 +235,11 @@ class _SearchableBottomSheetState<T> extends State<_SearchableBottomSheet<T>> {
       if (query.isEmpty) {
         _filteredItems = widget.items;
       } else {
-        _filteredItems = widget.items.where((item) {
-          final displayText = widget.getDisplayText(item).toLowerCase();
-          return displayText.contains(query.toLowerCase());
-        }).toList();
+        _filteredItems =
+            widget.items.where((item) {
+              final displayText = widget.getDisplayText(item).toLowerCase();
+              return displayText.contains(query.toLowerCase());
+            }).toList();
       }
     });
   }
@@ -319,19 +327,20 @@ class _SearchableBottomSheetState<T> extends State<_SearchableBottomSheet<T>> {
                     color: Colors.grey.shade500,
                     size: 22,
                   ),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? GestureDetector(
-                          onTap: () {
-                            _searchController.clear();
-                            _filterItems('');
-                          },
-                          child: Icon(
-                            Icons.clear,
-                            color: Colors.grey.shade500,
-                            size: 20,
-                          ),
-                        )
-                      : null,
+                  suffixIcon:
+                      _searchController.text.isNotEmpty
+                          ? GestureDetector(
+                            onTap: () {
+                              _searchController.clear();
+                              _filterItems('');
+                            },
+                            child: Icon(
+                              Icons.clear,
+                              color: Colors.grey.shade500,
+                              size: 20,
+                            ),
+                          )
+                          : null,
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -351,10 +360,7 @@ class _SearchableBottomSheetState<T> extends State<_SearchableBottomSheet<T>> {
               children: [
                 Text(
                   '${_filteredItems.length} ${_filteredItems.length == 1 ? 'result' : 'results'}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                 ),
               ],
             ),
@@ -365,90 +371,97 @@ class _SearchableBottomSheetState<T> extends State<_SearchableBottomSheet<T>> {
 
           // Items list
           Expanded(
-            child: _filteredItems.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.search_off,
-                          size: 48,
-                          color: Colors.grey.shade400,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'No results found',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade600,
+            child:
+                _filteredItems.isEmpty
+                    ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.search_off,
+                            size: 48,
+                            color: Colors.grey.shade400,
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Try a different search term',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey.shade500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    padding: EdgeInsets.only(bottom: bottomPadding + 16),
-                    itemCount: _filteredItems.length,
-                    itemBuilder: (context, index) {
-                      final item = _filteredItems[index];
-                      final isSelected = widget.selectedValue != null &&
-                          widget.getDisplayText(widget.selectedValue as T) ==
-                              widget.getDisplayText(item);
-
-                      return InkWell(
-                        onTap: () => widget.onSelected(item),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 14,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? const Color(0xFF0D9488).withOpacity(0.08)
-                                : Colors.transparent,
-                            border: Border(
-                              bottom: BorderSide(
-                                color: Colors.grey.shade100,
-                                width: 1,
-                              ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'No results found',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade600,
                             ),
                           ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  widget.getDisplayText(item),
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: isSelected
-                                        ? FontWeight.w600
-                                        : FontWeight.normal,
-                                    color: isSelected
-                                        ? const Color(0xFF0D9488)
-                                        : Colors.black87,
-                                  ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Try a different search term',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                    : ListView.builder(
+                      padding: EdgeInsets.only(bottom: bottomPadding + 16),
+                      itemCount: _filteredItems.length,
+                      itemBuilder: (context, index) {
+                        final item = _filteredItems[index];
+                        final isSelected =
+                            widget.selectedValue != null &&
+                            widget.getDisplayText(widget.selectedValue as T) ==
+                                widget.getDisplayText(item);
+
+                        return InkWell(
+                          onTap: () => widget.onSelected(item),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                            decoration: BoxDecoration(
+                              color:
+                                  isSelected
+                                      ? const Color(
+                                        0xFF0D9488,
+                                      ).withOpacity(0.08)
+                                      : Colors.transparent,
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: Colors.grey.shade100,
+                                  width: 1,
                                 ),
                               ),
-                              if (isSelected)
-                                const Icon(
-                                  Icons.check_circle,
-                                  color: Color(0xFF0D9488),
-                                  size: 22,
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    widget.getDisplayText(item),
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight:
+                                          isSelected
+                                              ? FontWeight.w600
+                                              : FontWeight.normal,
+                                      color:
+                                          isSelected
+                                              ? const Color(0xFF0D9488)
+                                              : Colors.black87,
+                                    ),
+                                  ),
                                 ),
-                            ],
+                                if (isSelected)
+                                  const Icon(
+                                    Icons.check_circle,
+                                    color: Color(0xFF0D9488),
+                                    size: 22,
+                                  ),
+                              ],
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
+                        );
+                      },
+                    ),
           ),
         ],
       ),

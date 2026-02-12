@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:tjara/app/core/widgets/admin_app_bar_actions.dart';
 import 'package:tjara/app/core/widgets/admin_header_animated_background_widget.dart';
 import 'package:tjara/app/core/widgets/admin_sliver_app_bar_widget.dart';
-import 'package:tjara/app/core/widgets/buttons/gardient_button_with_left_arrow_and_text.dart';
+import 'package:tjara/app/core/widgets/gardient_button_with_left_arrow_and_text.dart';
 import 'package:tjara/app/modules/modules_admin/users/insert/insert_user.dart';
 import 'package:tjara/app/modules/modules_admin/users/view/users_stastics.dart';
 import 'package:tjara/app/modules/modules_admin/users/view/users_widget.dart';
