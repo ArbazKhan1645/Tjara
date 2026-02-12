@@ -5,8 +5,10 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:tjara/app/core/widgets/admin_app_bar_actions.dart';
+import 'package:tjara/app/services/auth/auth_service.dart';
 
 import 'package:tjara/app/models/popups/popups-model.dart';
+import 'package:tjara/app/modules/modules_admin/popups/popup_analytics.dart';
 
 // Updated Popup Controller
 class PopupController extends GetxController {
@@ -222,738 +224,645 @@ class PopupController extends GetxController {
   }
 }
 
-// Updated Popup List View
+// Popup List View - Card-based mobile design
 class PopupListView extends GetView<PopupController> {
   const PopupListView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    const expandedStackGradient = LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [Colors.teal, Colors.teal],
-    );
     return Scaffold(
+      backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
         backgroundColor: Colors.teal,
-        actions: [const AdminAppBarActionsSimple()],
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
-      ),
-      body: Stack(
-        children: [
-          // Gradient background for upper half
-          Container(
-            height: MediaQuery.of(context).size.height * 0.4,
-            decoration: const BoxDecoration(gradient: expandedStackGradient),
+        elevation: 0,
+        actions: [
+          IconButton(
+            onPressed: () => Get.to(() => PopupAnalyticsView()),
+            icon: const Icon(Icons.analytics_outlined, color: Colors.white),
+            tooltip: 'Analytics',
           ),
-          // Content
-          SafeArea(
-            child: Column(
-              children: [
-                // Header
-                const Padding(
-                  padding: EdgeInsets.all(16.0),
+          const AdminAppBarActionsSimple(),
+        ],
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text(
+          'Popup Management',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => Get.to(() => AddPopupView())?.then((_) => controller.refreshData()),
+        backgroundColor: Colors.teal,
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text(
+          'Add Popup',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            _buildSearchBar(),
+            const SizedBox(height: 12),
+            _buildFilterChips(),
+            const SizedBox(height: 12),
+            Expanded(child: _buildPopupList()),
+            _buildPaginationControls(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.search, color: Colors.grey[400], size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextField(
+              controller: controller.searchController,
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                hintText: 'Search popups...',
+                hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+              ),
+              onChanged: (value) => controller.searchQuery.value = value,
+            ),
+          ),
+          Obx(
+            () => controller.searchQuery.value.isNotEmpty
+                ? InkWell(
+                    onTap: () {
+                      controller.searchController.clear();
+                      controller.searchQuery.value = '';
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Icon(Icons.clear, color: Colors.grey[400], size: 18),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChips() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Obx(
+        () => Row(
+          children: [
+            _buildFilterChip(
+              label: controller.selectedType.value.isEmpty
+                  ? 'All Types'
+                  : controller.typeOptions.firstWhere(
+                      (o) => o['value'] == controller.selectedType.value,
+                      orElse: () => {'label': 'All Types'},
+                    )['label']!,
+              isActive: controller.selectedType.value.isNotEmpty,
+              onTap: () => _showTypeFilterSheet(),
+            ),
+            const SizedBox(width: 8),
+            _buildFilterChip(
+              label: controller.selectedStatus.value.isEmpty
+                  ? 'All Status'
+                  : controller.selectedStatus.value == 'active'
+                      ? 'Active'
+                      : 'Inactive',
+              isActive: controller.selectedStatus.value.isNotEmpty,
+              onTap: () => _showStatusFilterSheet(),
+            ),
+            if (controller.selectedType.value.isNotEmpty ||
+                controller.selectedStatus.value.isNotEmpty) ...[
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () {
+                  controller.selectedType.value = '';
+                  controller.selectedStatus.value = '';
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.red[50],
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.red[200]!),
+                  ),
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.clear_all, size: 14, color: Colors.red[400]),
+                      const SizedBox(width: 4),
+                      Text('Clear', style: TextStyle(fontSize: 12, color: Colors.red[400], fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChip({required String label, required bool isActive, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive ? Colors.teal.withValues(alpha: 0.08) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isActive ? Colors.teal : Colors.grey[300]!),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: isActive ? Colors.teal : Colors.grey[600],
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.keyboard_arrow_down,
+              size: 16,
+              color: isActive ? Colors.teal : Colors.grey[500],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPopupList() {
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return const Center(child: CircularProgressIndicator(color: Colors.teal));
+      }
+
+      final popups = controller.filteredPopups;
+
+      if (popups.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.campaign_outlined, size: 64, color: Colors.grey[300]),
+              const SizedBox(height: 16),
+              Text(
+                'No popups found',
+                style: TextStyle(color: Colors.grey[500], fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Create your first popup to get started',
+                style: TextStyle(color: Colors.grey[400], fontSize: 13),
+              ),
+            ],
+          ),
+        );
+      }
+
+      return RefreshIndicator(
+        color: Colors.teal,
+        onRefresh: () => controller.fetchPopups(isRefresh: true),
+        child: ListView.builder(
+          controller: controller.scrollController,
+          itemCount: popups.length,
+          itemBuilder: (context, index) {
+            final popup = popups[index];
+            if (popup.isAbTest == true) {
+              return _buildAbTestCard(popup);
+            }
+            return _buildPopupCard(popup);
+          },
+        ),
+      );
+    });
+  }
+
+  Widget _buildPopupCard(Data popup) {
+    final now = DateTime.now();
+    DateTime? endTime;
+    DateTime? startTime;
+    if (popup.endTime != null) endTime = DateTime.tryParse(popup.endTime!);
+    if (popup.startTime != null) startTime = DateTime.tryParse(popup.startTime!);
+    final isExpired = endTime != null && now.isAfter(endTime);
+    final isActive = popup.isActive == true && !isExpired;
+
+    final statusColor = isExpired ? const Color(0xFFEF4444) : (isActive ? const Color(0xFF10B981) : Colors.grey);
+    final statusText = isExpired ? 'Expired' : (isActive ? 'Active' : 'Inactive');
+    final statusIcon = isExpired ? Icons.timer_off_outlined : (isActive ? Icons.check_circle_outline : Icons.pause_circle_outline);
+
+    final int views = popup.views ?? 0;
+    final int clicks = popup.clicks ?? 0;
+    final double ctr = views > 0 ? (clicks / views) * 100 : 0;
+
+    final String typeLabel = _getTypeLabel(popup.type);
+    final imageUrl = popup.thumbnail?.media?.url;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey[200]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Row 1: Thumbnail + Name + Status
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.grey[100],
+                    border: Border.all(color: Colors.grey[200]!),
+                  ),
+                  child: imageUrl != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.network(
+                            imageUrl,
+                            width: 52,
+                            height: 52,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Icon(Icons.image_not_supported, size: 22, color: Colors.grey[400]),
+                          ),
+                        )
+                      : Icon(Icons.campaign_outlined, size: 22, color: Colors.grey[400]),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Popups',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        popup.name ?? 'Unnamed',
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          Text(
+                            'ID: ${popup.popupId ?? '-'}',
+                            style: TextStyle(fontSize: 11, color: Colors.grey[500], fontFamily: 'monospace'),
+                          ),
+                          if (popup.userSegment != null) ...[
+                            Text('  \u2022  ', style: TextStyle(fontSize: 11, color: Colors.grey[400])),
+                            Text(
+                              _getSegmentLabel(popup.userSegment!),
+                              style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                            ),
+                          ],
+                        ],
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
-                // Content
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      children: [
-                        // Add New Popup Button Card
-                        GestureDetector(
-                          onTap: () => Get.to(() => AddPopupView()),
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 20),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 5),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              children: [
-                                // Add New Button
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF97316),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: const Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.add, color: Colors.white),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        'Add New Popup',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(statusIcon, size: 13, color: statusColor),
+                      const SizedBox(width: 4),
+                      Text(
+                        statusText,
+                        style: TextStyle(fontSize: 11, color: statusColor, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
 
-                        // Popups List Card
-                        Container(
-                          margin: const EdgeInsets.only(bottom: 20),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 10,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              // Search Input
-                              Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: TextFormField(
-                                  controller: controller.searchController,
-                                  decoration: InputDecoration(
-                                    hintText: 'Search popups',
-                                    hintStyle: TextStyle(
-                                      color: Colors.grey[400],
-                                    ),
-                                    prefixIcon: Container(
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFFF97316),
-                                        borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(25),
-                                          bottomLeft: Radius.circular(25),
-                                        ),
-                                      ),
-                                      child: const Icon(
-                                        Icons.search,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    filled: true,
-                                    fillColor: Colors.grey[100],
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 12,
-                                      horizontal: 16,
-                                    ),
-                                  ),
-                                  onChanged: (value) {
-                                    controller.searchQuery.value = value;
-                                  },
-                                ),
-                              ),
+            // Row 2: Info chips
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                _buildInfoChip(Icons.widgets_outlined, typeLabel, color: Colors.teal),
+                if (popup.pageLocation != null && popup.pageLocation!.isNotEmpty)
+                  _buildInfoChip(Icons.location_on_outlined, popup.pageLocation!),
+                if (startTime != null && endTime != null)
+                  _buildInfoChip(
+                    Icons.calendar_today_outlined,
+                    '${_formatShortDate(startTime)} - ${_formatShortDate(endTime)}',
+                  ),
+                if (isExpired && endTime != null)
+                  _buildInfoChip(Icons.timer_off_outlined, 'Ended ${_timeAgo(endTime)}', color: const Color(0xFFEF4444))
+                else if (!isExpired && endTime != null)
+                  _buildInfoChip(Icons.schedule, '${endTime.difference(now).inDays}d left', color: const Color(0xFF10B981)),
+              ],
+            ),
 
-                              // Filter buttons
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                ),
-                                child: Row(
-                                  children: [
-                                    _buildFilterButton(
-                                      'Filter by: All Types',
-                                      () {
-                                        _showTypeFilterDialog();
-                                      },
-                                    ),
-                                    const SizedBox(width: 12),
-                                    _buildFilterButton(
-                                      'Filter by: All Status',
-                                      () {
-                                        _showStatusFilterDialog();
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-
-                              // Table Header
-                              SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: Column(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 12,
-                                      ),
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFFF97316),
-                                      ),
-                                      child: const Row(
-                                        children: [
-                                          SizedBox(
-                                            width: 80,
-                                            child: Center(
-                                              child: Text(
-                                                'Thumbnail',
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 12,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            width: 100,
-                                            child: Center(
-                                              child: Text(
-                                                'ID',
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 12,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            width: 120,
-                                            child: Center(
-                                              child: Text(
-                                                'Name',
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 12,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            width: 120,
-                                            child: Center(
-                                              child: Text(
-                                                'Category',
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 12,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            width: 80,
-                                            child: Center(
-                                              child: Text(
-                                                'Status',
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 12,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            width: 200,
-                                            child: Center(
-                                              child: Text(
-                                                'Analytics',
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 12,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            width: 80,
-                                            child: Center(
-                                              child: Text(
-                                                'Action',
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 12,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-
-                                    // Popups List
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                      ),
-                                      child: Obx(() {
-                                        if (controller.isLoading.value) {
-                                          return const SizedBox(
-                                            height: 200,
-                                            child: Center(
-                                              child: CircularProgressIndicator(
-                                                color: Color(0xFFF97316),
-                                              ),
-                                            ),
-                                          );
-                                        }
-
-                                        if (controller.filteredPopups.isEmpty) {
-                                          return SizedBox(
-                                            height: 200,
-                                            child: Center(
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Icon(
-                                                    Icons.campaign_outlined,
-                                                    size: 64,
-                                                    color: Colors.grey[400],
-                                                  ),
-                                                  const SizedBox(height: 16),
-                                                  Text(
-                                                    'No popups found',
-                                                    style: TextStyle(
-                                                      color: Colors.grey[600],
-                                                      fontSize: 16,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          );
-                                        }
-
-                                        return Column(
-                                          children:
-                                              controller.filteredPopups.map((
-                                                popup,
-                                              ) {
-                                                return Container(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        vertical: 12,
-                                                      ),
-                                                  decoration: BoxDecoration(
-                                                    border: Border(
-                                                      bottom: BorderSide(
-                                                        color:
-                                                            Colors.grey[200]!,
-                                                        width: 0.5,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  child: Row(
-                                                    children: [
-                                                      // Thumbnail (width: 80)
-                                                      SizedBox(
-                                                        width: 80,
-                                                        child: Center(
-                                                          child: Container(
-                                                            width: 60,
-                                                            height: 60,
-                                                            decoration: BoxDecoration(
-                                                              borderRadius:
-                                                                  BorderRadius.circular(
-                                                                    8,
-                                                                  ),
-                                                              color:
-                                                                  Colors
-                                                                      .grey[200],
-                                                              border: Border.all(
-                                                                color:
-                                                                    Colors
-                                                                        .grey[300]!,
-                                                                width: 1,
-                                                              ),
-                                                            ),
-                                                            child:
-                                                                popup
-                                                                            .thumbnail
-                                                                            ?.media
-                                                                            ?.url !=
-                                                                        null
-                                                                    ? ClipRRect(
-                                                                      borderRadius:
-                                                                          BorderRadius.circular(
-                                                                            8,
-                                                                          ),
-                                                                      child: Image.network(
-                                                                        popup
-                                                                            .thumbnail!
-                                                                            .media!
-                                                                            .url!,
-                                                                        width:
-                                                                            60,
-                                                                        height:
-                                                                            60,
-                                                                        fit:
-                                                                            BoxFit.cover,
-                                                                        errorBuilder:
-                                                                            (
-                                                                              context,
-                                                                              error,
-                                                                              stackTrace,
-                                                                            ) => Center(
-                                                                              child: Icon(
-                                                                                Icons.image_not_supported,
-                                                                                size:
-                                                                                    24,
-                                                                                color:
-                                                                                    Colors.grey[400],
-                                                                              ),
-                                                                            ),
-                                                                      ),
-                                                                    )
-                                                                    : Center(
-                                                                      child: Icon(
-                                                                        Icons
-                                                                            .image,
-                                                                        color:
-                                                                            Colors.grey[400],
-                                                                        size:
-                                                                            24,
-                                                                      ),
-                                                                    ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      // ID (width: 100)
-                                                      SizedBox(
-                                                        width: 100,
-                                                        child: Center(
-                                                          child: Text(
-                                                            popup.popupId
-                                                                    ?.toString() ??
-                                                                'N/A',
-                                                            style: TextStyle(
-                                                              fontSize: 12,
-                                                              color:
-                                                                  Colors
-                                                                      .grey[600],
-                                                              fontFamily:
-                                                                  'monospace',
-                                                            ),
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      // Name (width: 120)
-                                                      SizedBox(
-                                                        width: 120,
-                                                        child: Center(
-                                                          child: Text(
-                                                            popup.name ??
-                                                                'Unnamed',
-                                                            style:
-                                                                const TextStyle(
-                                                                  fontSize: 14,
-                                                                ),
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      // Category (width: 120)
-                                                      SizedBox(
-                                                        width: 120,
-                                                        child: Center(
-                                                          child: Builder(
-                                                            builder: (context) {
-                                                              final categoryNames =
-                                                                  popup
-                                                                      .categoryNames;
-
-                                                              if (categoryNames ==
-                                                                      null ||
-                                                                  categoryNames
-                                                                      .isEmpty) {
-                                                                return Text(
-                                                                  'No Category',
-                                                                  style: TextStyle(
-                                                                    fontSize:
-                                                                        12,
-                                                                    color:
-                                                                        Colors
-                                                                            .grey[500],
-                                                                  ),
-                                                                );
-                                                              }
-
-                                                              return Column(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .center,
-                                                                crossAxisAlignment:
-                                                                    CrossAxisAlignment
-                                                                        .start,
-                                                                children:
-                                                                    categoryNames.map((
-                                                                      category,
-                                                                    ) {
-                                                                      return Padding(
-                                                                        padding: const EdgeInsets.symmetric(
-                                                                          vertical:
-                                                                              2,
-                                                                        ),
-                                                                        child: Row(
-                                                                          mainAxisSize:
-                                                                              MainAxisSize.min,
-                                                                          children: [
-                                                                            const Text(
-                                                                              '• ',
-                                                                              style: TextStyle(
-                                                                                fontSize:
-                                                                                    12,
-                                                                                color: Color(
-                                                                                  0xFFF97316,
-                                                                                ),
-                                                                                fontWeight:
-                                                                                    FontWeight.bold,
-                                                                              ),
-                                                                            ),
-                                                                            Flexible(
-                                                                              child: Text(
-                                                                                category,
-                                                                                style: const TextStyle(
-                                                                                  fontSize:
-                                                                                      12,
-                                                                                ),
-                                                                                overflow:
-                                                                                    TextOverflow.ellipsis,
-                                                                              ),
-                                                                            ),
-                                                                          ],
-                                                                        ),
-                                                                      );
-                                                                    }).toList(),
-                                                              );
-                                                            },
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      // Status (width: 80)
-                                                      SizedBox(
-                                                        width: 80,
-                                                        child: Center(
-                                                          child: Builder(
-                                                            builder: (context) {
-                                                              final now =
-                                                                  DateTime.now();
-                                                              DateTime? endTime;
-
-                                                              // Parse end time if it exists
-                                                              if (popup
-                                                                      .endTime !=
-                                                                  null) {
-                                                                endTime = DateTime.tryParse(
-                                                                  popup.endTime
-                                                                      .toString(),
-                                                                );
-                                                              }
-
-                                                              // Determine if expired
-                                                              final isExpired =
-                                                                  endTime !=
-                                                                      null &&
-                                                                  now.isAfter(
-                                                                    endTime,
-                                                                  );
-
-                                                              return Text(
-                                                                isExpired
-                                                                    ? 'Expired'
-                                                                    : 'Active',
-                                                                style: TextStyle(
-                                                                  fontSize: 12,
-                                                                  color:
-                                                                      isExpired
-                                                                          ? Colors
-                                                                              .red
-                                                                          : Colors
-                                                                              .green,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                ),
-                                                              );
-                                                            },
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      SizedBox(
-                                                        width: 200,
-                                                        child: Center(
-                                                          child: Column(
-                                                            children: [
-                                                              Text(
-                                                                'views: ${popup.views}',
-                                                              ),
-                                                              Text(
-                                                                'clicks: ${popup.clicks}',
-                                                              ),
-                                                              Builder(
-                                                                builder: (
-                                                                  context,
-                                                                ) {
-                                                                  final int
-                                                                  views =
-                                                                      popup
-                                                                          .views ??
-                                                                      0;
-                                                                  final int
-                                                                  clicks =
-                                                                      popup
-                                                                          .clicks ??
-                                                                      0;
-
-                                                                  final double
-                                                                  ctr =
-                                                                      views > 0
-                                                                          ? (clicks /
-                                                                                  views) *
-                                                                              100
-                                                                          : 0;
-                                                                  final String
-                                                                  ctrText =
-                                                                      'CTR: ${ctr.toStringAsFixed(2)}%';
-
-                                                                  return Text(
-                                                                    ctrText,
-                                                                    style: const TextStyle(
-                                                                      fontSize:
-                                                                          16,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .bold,
-                                                                      color:
-                                                                          Colors
-                                                                              .blueGrey,
-                                                                    ),
-                                                                  );
-                                                                },
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      // Action (width: 80)
-                                                      SizedBox(
-                                                        width: 80,
-                                                        child: PopupMenuButton<
-                                                          String
-                                                        >(
-                                                          onSelected:
-                                                              (value) =>
-                                                                  _handleAction(
-                                                                    value,
-                                                                    popup,
-                                                                  ),
-                                                          itemBuilder:
-                                                              (context) => [
-                                                                const PopupMenuItem(
-                                                                  value: 'edit',
-                                                                  child: Text(
-                                                                    'Edit',
-                                                                  ),
-                                                                ),
-                                                                const PopupMenuItem(
-                                                                  value:
-                                                                      'delete',
-                                                                  child: Text(
-                                                                    'Delete',
-                                                                    style: TextStyle(
-                                                                      color:
-                                                                          Colors
-                                                                              .red,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                          child: const Icon(
-                                                            Icons.more_horiz,
-                                                            size: 20,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                );
-                                              }).toList(),
-                                        );
-                                      }),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                            ],
-                          ),
-                        ),
-
-                        // Pagination button
-                        Container(
-                          width: double.infinity,
-                          margin: const EdgeInsets.only(bottom: 20),
-                          child: ElevatedButton(
-                            onPressed: () {
-                              // Add pagination logic here
-                              controller.refreshData();
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.black,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Text(
-                              '1/1',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+            // Row 3: Categories
+            if (popup.categoryNames != null && popup.categoryNames!.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 4,
+                runSpacing: 4,
+                children: [
+                  ...popup.categoryNames!.take(3).map((cat) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.teal.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.teal.withValues(alpha: 0.15)),
+                      ),
+                      child: Text(cat, style: const TextStyle(fontSize: 11, color: Colors.teal)),
+                    );
+                  }),
+                  if (popup.categoryNames!.length > 3)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text('+${popup.categoryNames!.length - 3} more', style: TextStyle(fontSize: 11, color: Colors.grey[500])),
                     ),
+                ],
+              ),
+            ],
+
+            // Row 4: Analytics
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FAFB),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.grey[200]!),
+              ),
+              child: Row(
+                children: [
+                  _buildAnalyticItem('Views', views.toString(), Icons.visibility_outlined),
+                  _buildAnalyticDivider(),
+                  _buildAnalyticItem('Clicks', clicks.toString(), Icons.touch_app_outlined),
+                  _buildAnalyticDivider(),
+                  _buildAnalyticItem('CTR', '${ctr.toStringAsFixed(1)}%', Icons.trending_up, highlight: ctr > 2),
+                  if (popup.conversions != null && popup.conversions! > 0) ...[
+                    _buildAnalyticDivider(),
+                    _buildAnalyticItem('Conv.', popup.conversions.toString(), Icons.shopping_cart_outlined),
+                  ],
+                ],
+              ),
+            ),
+
+            // Row 5: Actions
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: () {
+                    Get.to(() => AddPopupView(), arguments: {'popup': popup})?.then((_) {
+                      controller.refreshData();
+                    });
+                  },
+                  icon: const Icon(Icons.edit_outlined, size: 15),
+                  label: const Text('Edit'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.teal,
+                    side: BorderSide(color: Colors.teal.withValues(alpha: 0.3)),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton.icon(
+                  onPressed: () => controller.deletePopup(popup.id!),
+                  icon: const Icon(Icons.delete_outline, size: 15),
+                  label: const Text('Delete'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFEF4444),
+                    side: BorderSide(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAbTestCard(Data popup) {
+    final now = DateTime.now();
+    DateTime? endTime;
+    if (popup.endTime != null) endTime = DateTime.tryParse(popup.endTime!);
+    final isExpired = endTime != null && now.isAfter(endTime);
+    final statusColor = isExpired ? const Color(0xFFEF4444) : const Color(0xFF10B981);
+    final statusText = isExpired ? 'Expired' : 'Active';
+
+    final int totalViews = (popup.abVariantAViews ?? 0) + (popup.abVariantBViews ?? 0);
+    final int totalClicks = (popup.abVariantAClicks ?? 0) + (popup.abVariantBClicks ?? 0);
+    final double totalCtr = totalViews > 0 ? (totalClicks / totalViews) * 100 : 0;
+
+    final imageUrl = popup.thumbnail?.media?.url;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.purple[200]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.purple.withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // A/B Test header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.purple[50],
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(13),
+                topRight: Radius.circular(13),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.science_outlined, size: 16, color: Colors.purple[700]),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'A/B Testing: ${popup.name ?? 'Unnamed'}',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.purple[700]),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(statusText, style: TextStyle(fontSize: 10, color: statusColor, fontWeight: FontWeight.w600)),
+                ),
+              ],
+            ),
+          ),
+
+          // Combined analytics
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.purple[50]?.withValues(alpha: 0.3),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Text('Views: $totalViews', style: TextStyle(fontSize: 11, color: Colors.grey[600], fontWeight: FontWeight.w500)),
+                Text('Clicks: $totalClicks', style: TextStyle(fontSize: 11, color: Colors.grey[600], fontWeight: FontWeight.w500)),
+                Text('CTR: ${totalCtr.toStringAsFixed(1)}%', style: TextStyle(fontSize: 11, color: Colors.purple[700], fontWeight: FontWeight.w600)),
+                if (popup.abTestMethod != null)
+                  Text('Method: ${popup.abTestMethod}', style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+              ],
+            ),
+          ),
+
+          // Variant A
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 0),
+            child: _buildVariantRow(
+              label: 'Variant A',
+              color: Colors.blue,
+              imageUrl: imageUrl,
+              views: popup.abVariantAViews ?? 0,
+              clicks: popup.abVariantAClicks ?? 0,
+              conversions: popup.abVariantAConversions ?? 0,
+              isWinner: popup.abTestWinner == 'variant_a',
+            ),
+          ),
+
+          Divider(height: 1, color: Colors.grey[200], indent: 14, endIndent: 14),
+
+          // Variant B
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+            child: _buildVariantRow(
+              label: 'Variant B',
+              color: Colors.orange,
+              imageUrl: popup.variantBThumbnail?.media?.url,
+              views: popup.abVariantBViews ?? 0,
+              clicks: popup.abVariantBClicks ?? 0,
+              conversions: popup.abVariantBConversions ?? 0,
+              isWinner: popup.abTestWinner == 'variant_b',
+            ),
+          ),
+
+          // Categories
+          if (popup.categoryNames != null && popup.categoryNames!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+              child: Wrap(
+                spacing: 4,
+                runSpacing: 4,
+                children: popup.categoryNames!.take(3).map((cat) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Colors.teal.withValues(alpha: 0.06),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.teal.withValues(alpha: 0.15)),
+                    ),
+                    child: Text(cat, style: const TextStyle(fontSize: 11, color: Colors.teal)),
+                  );
+                }).toList(),
+              ),
+            ),
+
+          // Actions
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: () {
+                    Get.to(() => AddPopupView(), arguments: {'popup': popup})?.then((_) {
+                      controller.refreshData();
+                    });
+                  },
+                  icon: const Icon(Icons.edit_outlined, size: 15),
+                  label: const Text('Edit'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.teal,
+                    side: BorderSide(color: Colors.teal.withValues(alpha: 0.3)),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton.icon(
+                  onPressed: () => controller.deletePopup(popup.id!),
+                  icon: const Icon(Icons.delete_outline, size: 15),
+                  label: const Text('Delete'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFEF4444),
+                    side: BorderSide(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
@@ -964,80 +873,316 @@ class PopupListView extends GetView<PopupController> {
     );
   }
 
-  Widget _buildFilterButton(String text, VoidCallback onPressed) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[300]!),
-          borderRadius: BorderRadius.circular(20),
-        ),
+  Widget _buildVariantRow({
+    required String label,
+    required Color color,
+    String? imageUrl,
+    required int views,
+    required int clicks,
+    required int conversions,
+    required bool isWinner,
+  }) {
+    final double ctr = views > 0 ? (clicks / views) * 100 : 0;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: Colors.grey[100],
+              border: Border.all(color: color.withValues(alpha: 0.3)),
+            ),
+            child: imageUrl != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(imageUrl, width: 40, height: 40, fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Icon(Icons.image, size: 18, color: Colors.grey[400]),
+                    ),
+                  )
+                : Icon(Icons.image, size: 18, color: Colors.grey[400]),
+          ),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(label, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600)),
+                  ),
+                  if (isWinner) ...[
+                    const SizedBox(width: 6),
+                    Icon(Icons.emoji_events, size: 14, color: Colors.amber[700]),
+                    Text(' Winner', style: TextStyle(fontSize: 10, color: Colors.amber[700], fontWeight: FontWeight.w600)),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text('CTR: ${ctr.toStringAsFixed(1)}%', style: TextStyle(fontSize: 11, color: Colors.grey[600])),
+            ],
+          ),
+          const Spacer(),
+          Row(
+            children: [
+              _buildMiniStat('$views', 'views'),
+              const SizedBox(width: 12),
+              _buildMiniStat('$clicks', 'clicks'),
+              const SizedBox(width: 12),
+              _buildMiniStat('$conversions', 'conv.'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMiniStat(String value, String label) {
+    return Column(
+      children: [
+        Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+        Text(label, style: TextStyle(fontSize: 9, color: Colors.grey[500])),
+      ],
+    );
+  }
+
+  Widget _buildInfoChip(IconData icon, String label, {Color? color}) {
+    final chipColor = color ?? Colors.grey[600]!;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: chipColor.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: chipColor),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(fontSize: 11, color: chipColor, fontWeight: FontWeight.w500),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnalyticItem(String label, String value, IconData icon, {bool highlight = false}) {
+    return Expanded(
+      child: Column(
+        children: [
+          Icon(icon, size: 16, color: highlight ? Colors.teal : Colors.grey[400]),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: highlight ? Colors.teal : Colors.grey[800],
+            ),
+          ),
+          Text(label, style: TextStyle(fontSize: 10, color: Colors.grey[500])),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnalyticDivider() {
+    return Container(width: 1, height: 30, color: Colors.grey[200]);
+  }
+
+  Widget _buildPaginationControls() {
+    return Obx(() {
+      if (controller.totalPages.value <= 1) return const SizedBox.shrink();
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(text, style: TextStyle(color: Colors.grey[700], fontSize: 12)),
-            const SizedBox(width: 4),
-            Icon(Icons.keyboard_arrow_down, size: 16, color: Colors.grey[700]),
+            IconButton(
+              onPressed: controller.currentPage.value > 1
+                  ? () {
+                      controller.currentPage.value--;
+                      controller.fetchPopups();
+                    }
+                  : null,
+              icon: const Icon(Icons.chevron_left),
+              color: Colors.teal,
+              disabledColor: Colors.grey[300],
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.teal,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '${controller.currentPage.value} / ${controller.totalPages.value}',
+                style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+              ),
+            ),
+            IconButton(
+              onPressed: controller.currentPage.value < controller.totalPages.value
+                  ? () {
+                      controller.currentPage.value++;
+                      controller.fetchPopups();
+                    }
+                  : null,
+              icon: const Icon(Icons.chevron_right),
+              color: Colors.teal,
+              disabledColor: Colors.grey[300],
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  void _showTypeFilterSheet() {
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text('Filter by Type', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 12),
+            ...controller.typeOptions.map((option) {
+              final isSelected = controller.selectedType.value == option['value'];
+              return ListTile(
+                leading: Icon(
+                  isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+                  color: isSelected ? Colors.teal : Colors.grey[400],
+                  size: 20,
+                ),
+                title: Text(
+                  option['label'] as String,
+                  style: TextStyle(
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                    color: isSelected ? Colors.teal : Colors.grey[700],
+                  ),
+                ),
+                onTap: () {
+                  controller.onTypeFilterChanged(option['value'] as String);
+                  Get.back();
+                },
+              );
+            }),
           ],
         ),
       ),
     );
   }
 
-  void _showTypeFilterDialog() {
-    Get.dialog(
-      AlertDialog(
-        title: const Text('Filter by Type'),
-        content: Column(
+  void _showStatusFilterSheet() {
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+        ),
+        child: Column(
           mainAxisSize: MainAxisSize.min,
-          children:
-              controller.typeOptions.map((option) {
-                return ListTile(
-                  title: Text(option['label'] as String),
-                  onTap: () {
-                    controller.onTypeFilterChanged(option['value'] as String);
-                    Get.back();
-                  },
-                );
-              }).toList(),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text('Filter by Status', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 12),
+            ...controller.statusOptions.map((option) {
+              final isSelected = controller.selectedStatus.value == option['value'];
+              return ListTile(
+                leading: Icon(
+                  isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+                  color: isSelected ? Colors.teal : Colors.grey[400],
+                  size: 20,
+                ),
+                title: Text(
+                  option['label'] as String,
+                  style: TextStyle(
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                    color: isSelected ? Colors.teal : Colors.grey[700],
+                  ),
+                ),
+                onTap: () {
+                  controller.onStatusFilterChanged(option['value'] as String);
+                  Get.back();
+                },
+              );
+            }),
+          ],
         ),
       ),
     );
   }
 
-  void _showStatusFilterDialog() {
-    Get.dialog(
-      AlertDialog(
-        title: const Text('Filter by Status'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children:
-              controller.statusOptions.map((option) {
-                return ListTile(
-                  title: Text(option['label'] as String),
-                  onTap: () {
-                    controller.onStatusFilterChanged(option['value'] as String);
-                    Get.back();
-                  },
-                );
-              }).toList(),
-        ),
-      ),
-    );
-  }
-
-  void _handleAction(String action, Data popup) {
-    switch (action) {
-      case 'edit':
-        Get.to(() => AddPopupView(), arguments: {'popup': popup})?.then((_) {
-          controller.refreshData();
-        });
-        break;
-      case 'delete':
-        controller.deletePopup(popup.id!);
-        break;
+  String _getTypeLabel(String? type) {
+    switch (type) {
+      case 'banner_popup':
+        return 'Banner';
+      case 'lead_generation_popup':
+        return 'Lead Gen';
+      case 'feature_product_popup':
+        return 'Product';
+      default:
+        return type ?? 'Unknown';
     }
+  }
+
+  String _getSegmentLabel(String segment) {
+    switch (segment) {
+      case 'all':
+        return 'All Users';
+      case 'pre_registration':
+        return 'Pre-Reg';
+      case 'post_registration':
+        return 'Post-Reg';
+      default:
+        return segment;
+    }
+  }
+
+  String _formatShortDate(DateTime date) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${date.day} ${months[date.month - 1]} ${date.year.toString().substring(2)}';
+  }
+
+  String _timeAgo(DateTime date) {
+    final diff = DateTime.now().difference(date);
+    if (diff.inDays > 30) return '${(diff.inDays / 30).floor()}mo ago';
+    if (diff.inDays > 0) return '${diff.inDays}d ago';
+    if (diff.inHours > 0) return '${diff.inHours}h ago';
+    return '${diff.inMinutes}m ago';
   }
 }
 
@@ -1416,7 +1561,7 @@ class AddPopupController extends GetxController {
   }
 }
 
-// Complete Add Popup View with ALL fields
+// Complete Add Popup View with ALL fields - Elegant teal design
 class AddPopupView extends StatelessWidget {
   AddPopupView({super.key});
 
@@ -1424,584 +1569,412 @@ class AddPopupView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const expandedStackGradient = LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [Colors.teal, Colors.teal],
-    );
-
     return Scaffold(
+      backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
         backgroundColor: Colors.teal,
+        elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Obx(
           () => Text(
-            controller.isEditMode.value ? 'Edit Popup' : 'Add Popup',
-            style: const TextStyle(color: Colors.white),
+            controller.isEditMode.value ? 'Edit Popup' : 'Create Popup',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ),
-      body: Stack(
-        children: [
-          // Gradient background for upper half
-          Container(
-            height: MediaQuery.of(context).size.height * 0.4,
-            decoration: const BoxDecoration(gradient: expandedStackGradient),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: controller.formKey,
+          child: Column(
+            children: [
+              _buildBasicInformationCard(),
+              const SizedBox(height: 16),
+              _buildImageUploadCard(),
+              const SizedBox(height: 16),
+              _buildDisplaySettingsCard(),
+              const SizedBox(height: 16),
+              _buildLinkSettingsCard(),
+              const SizedBox(height: 16),
+              Obx(() => controller.isAbTest.value
+                  ? Column(children: [
+                      _buildAbTestCard(),
+                      const SizedBox(height: 16),
+                    ])
+                  : const SizedBox.shrink()),
+              Obx(() => controller.selectedType.value == 'feature_product_popup'
+                  ? Column(children: [
+                      _buildProductCard(),
+                      const SizedBox(height: 16),
+                    ])
+                  : const SizedBox.shrink()),
+              _buildActionButtons(),
+              const SizedBox(height: 24),
+            ],
           ),
-          // Content
-          SafeArea(
-            child: Column(
-              children: [
-                // Header
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      Obx(
-                        () => Text(
-                          controller.isEditMode.value
-                              ? 'Edit Popup'
-                              : 'Add Popup',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                // Content
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Form(
-                      key: controller.formKey,
-                      child: Column(
-                        children: [
-                          // Basic Information Card
-                          _buildBasicInformationCard(),
-                          const SizedBox(height: 16),
+        ),
+      ),
+    );
+  }
 
-                          // Image Upload Card
-                          _buildImageUploadCard(),
-                          const SizedBox(height: 16),
-
-                          // Display Settings Card
-                          _buildDisplaySettingsCard(),
-                          const SizedBox(height: 16),
-
-                          // Link Settings Card
-                          _buildLinkSettingsCard(),
-                          const SizedBox(height: 16),
-
-                          // A/B Test Card (conditional)
-                          Obx(
-                            () =>
-                                controller.isAbTest.value
-                                    ? _buildAbTestCard()
-                                    : const SizedBox(),
-                          ),
-                          Obx(
-                            () =>
-                                controller.isAbTest.value
-                                    ? const SizedBox(height: 16)
-                                    : const SizedBox(),
-                          ),
-
-                          // Product Information Card (conditional)
-                          Obx(
-                            () =>
-                                controller.selectedType.value ==
-                                        'feature_product_popup'
-                                    ? _buildProductCard()
-                                    : const SizedBox(),
-                          ),
-                          Obx(
-                            () =>
-                                controller.selectedType.value ==
-                                        'feature_product_popup'
-                                    ? const SizedBox(height: 16)
-                                    : const SizedBox(),
-                          ),
-
-                          // Action buttons
-                          _buildActionButtons(),
-                          const SizedBox(height: 20),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+  Widget _buildSectionHeader(String title, IconData icon, {bool required = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.teal.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(8),
             ),
+            child: Icon(icon, size: 18, color: Colors.teal),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1F2937),
+            ),
+          ),
+          if (required) ...[
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.teal.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Text(
+                'Required',
+                style: TextStyle(fontSize: 10, color: Colors.teal, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCard({required Widget child}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[200]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
+      child: child,
     );
   }
 
   Widget _buildBasicInformationCard() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
+    return _buildCard(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header - Separate container with padding from all sides
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.all(12),
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF97316),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Row(
-              children: [
-                Text(
-                  'Basic Information',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Spacer(),
-                Icon(Icons.keyboard_arrow_down, color: Colors.white),
-              ],
-            ),
+          _buildSectionHeader('Basic Information', Icons.info_outline, required: true),
+          _buildTextField(
+            'Popup Name',
+            controller.nameController,
+            'Enter the unique name of your popup',
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Popup name is required';
+              }
+              return null;
+            },
           ),
-          // Form content
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Popup Name
-                _buildTextField(
-                  'Popup Name *',
-                  controller.nameController,
-                  'Enter the unique name of your popup',
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Popup name is required';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-
-                // Popup Type
-                _buildDropdown(
-                  'Popup Type',
-                  controller.selectedType,
-                  controller.typeOptions,
-                ),
-                const SizedBox(height: 20),
-
-                // User Segment
-                _buildDropdown(
-                  'User Segment',
-                  controller.selectedUserSegment,
-                  controller.userSegmentOptions,
-                ),
-                const SizedBox(height: 20),
-
-                // Description
-                _buildTextField(
-                  'Description',
-                  controller.descriptionController,
-                  'Craft a comprehensive description that highlights the unique features',
-                  maxLines: 3,
-                ),
-                const SizedBox(height: 20),
-
-                // Active Status
-                Obx(
-                  () => SwitchListTile(
-                    title: const Text('Active'),
-                    subtitle: const Text('Show popup to users'),
-                    value: controller.isActive.value,
-                    onChanged: (value) => controller.isActive.value = value,
-                    activeThumbColor: const Color(0xFFF97316),
-                  ),
-                ),
-
-                // Enable A/B Testing
-                Obx(
-                  () => SwitchListTile(
-                    title: const Text('Enable A/B Testing'),
-                    subtitle: const Text('This is your primary popup version'),
-                    value: controller.isAbTest.value,
-                    onChanged: (value) => controller.isAbTest.value = value,
-                    activeThumbColor: const Color(0xFFF97316),
-                  ),
-                ),
-              ],
-            ),
+          const SizedBox(height: 16),
+          _buildDropdown(
+            'Popup Type',
+            controller.selectedType,
+            controller.typeOptions,
+          ),
+          const SizedBox(height: 16),
+          _buildDropdown(
+            'User Segment',
+            controller.selectedUserSegment,
+            controller.userSegmentOptions,
+          ),
+          const SizedBox(height: 16),
+          _buildTextField(
+            'Description',
+            controller.descriptionController,
+            'Describe your popup content and purpose',
+            maxLines: 3,
+          ),
+          const SizedBox(height: 12),
+          _buildSwitchRow(
+            'Active',
+            'Show popup to users',
+            controller.isActive,
+            Icons.visibility_outlined,
+          ),
+          const SizedBox(height: 8),
+          _buildSwitchRow(
+            'Enable A/B Testing',
+            'Compare two popup variants',
+            controller.isAbTest,
+            Icons.science_outlined,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildImageUploadCard() {
-    return Container(
+  Widget _buildSwitchRow(String title, String subtitle, RxBool value, IconData icon) {
+    return Obx(() => Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
+        color: value.value ? Colors.teal.withValues(alpha: 0.04) : Colors.grey[50],
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: value.value ? Colors.teal.withValues(alpha: 0.2) : Colors.grey[200]!,
+        ),
       ),
-      child: Column(
+      child: Row(
         children: [
-          // Header
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.all(12),
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF97316),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Row(
-              children: [
-                Icon(Icons.image, color: Colors.white, size: 20),
-                SizedBox(width: 8),
-                Text(
-                  'Popup Image',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Spacer(),
-                Icon(Icons.keyboard_arrow_down, color: Colors.white),
-              ],
-            ),
-          ),
-          // Form content
-          Padding(
-            padding: const EdgeInsets.all(20),
+          Icon(icon, size: 20, color: value.value ? Colors.teal : Colors.grey[400]),
+          const SizedBox(width: 12),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Upload Image *',
+                  title,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey[800],
+                    color: value.value ? Colors.teal[800] : Colors.grey[700],
                   ),
                 ),
-                const SizedBox(height: 8),
                 Text(
-                  'Choose an eye-catching image for your popup (recommended: 800x600px)',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  subtitle,
+                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                 ),
-                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+          Switch(
+            value: value.value,
+            onChanged: (v) => value.value = v,
+            activeThumbColor: Colors.teal,
+            activeTrackColor: Colors.teal.withValues(alpha: 0.3),
+          ),
+        ],
+      ),
+    ));
+  }
 
-                // Image preview and upload button
-                Obx(() {
-                  final hasImage =
-                      controller.selectedImage.value != null ||
-                      controller.existingImageUrl.value.isNotEmpty;
+  Widget _buildImageUploadCard() {
+    return _buildCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionHeader('Popup Image', Icons.image_outlined),
+          Text(
+            'Choose an eye-catching image for your popup (recommended: 800x600px)',
+            style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+          ),
+          const SizedBox(height: 16),
+          Obx(() {
+            final hasImage = controller.selectedImage.value != null ||
+                controller.existingImageUrl.value.isNotEmpty;
 
-                  return Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey[300]!, width: 2),
-                      borderRadius: BorderRadius.circular(12),
+            return Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: hasImage ? Colors.teal.withValues(alpha: 0.3) : Colors.grey[300]!,
+                  width: hasImage ? 1.5 : 1,
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  if (hasImage) ...[
+                    Container(
+                      height: 200,
+                      width: double.infinity,
+                      decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(11),
+                          topRight: Radius.circular(11),
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(11),
+                          topRight: Radius.circular(11),
+                        ),
+                        child: controller.selectedImage.value != null
+                            ? Image.file(
+                                controller.selectedImage.value!,
+                                fit: BoxFit.cover,
+                              )
+                            : Image.network(
+                                controller.existingImageUrl.value,
+                                fit: BoxFit.cover,
+                                loadingBuilder: (_, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return const Center(
+                                    child: CircularProgressIndicator(color: Colors.teal),
+                                  );
+                                },
+                                errorBuilder: (_, __, ___) => Center(
+                                  child: Icon(Icons.broken_image, size: 48, color: Colors.grey[400]),
+                                ),
+                              ),
+                      ),
                     ),
-                    child: Column(
-                      children: [
-                        if (hasImage) ...[
-                          // Image preview
-                          Container(
-                            height: 200,
-                            width: double.infinity,
-                            decoration: const BoxDecoration(
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(10),
-                                topRight: Radius.circular(10),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[50],
+                        borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(11),
+                          bottomRight: Radius.circular(11),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: controller.pickImage,
+                              icon: const Icon(Icons.edit_outlined, size: 16),
+                              label: const Text('Change'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.teal,
+                                side: BorderSide(color: Colors.teal.withValues(alpha: 0.3)),
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                               ),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(10),
-                                topRight: Radius.circular(10),
-                              ),
-                              child:
-                                  controller.selectedImage.value != null
-                                      ? Image.file(
-                                        controller.selectedImage.value!,
-                                        fit: BoxFit.cover,
-                                      )
-                                      : Image.network(
-                                        controller.existingImageUrl.value,
-                                        fit: BoxFit.cover,
-                                        loadingBuilder: (
-                                          context,
-                                          child,
-                                          loadingProgress,
-                                        ) {
-                                          if (loadingProgress == null) {
-                                            return child;
-                                          }
-                                          return const Center(
-                                            child: CircularProgressIndicator(
-                                              valueColor:
-                                                  AlwaysStoppedAnimation<Color>(
-                                                    Color(0xFFF97316),
-                                                  ),
-                                            ),
-                                          );
-                                        },
-                                        errorBuilder: (
-                                          context,
-                                          error,
-                                          stackTrace,
-                                        ) {
-                                          return Center(
-                                            child: Icon(
-                                              Icons.broken_image,
-                                              size: 64,
-                                              color: Colors.grey[400],
-                                            ),
-                                          );
-                                        },
-                                      ),
                             ),
                           ),
-                          // Action buttons for existing image
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[50],
-                              borderRadius: const BorderRadius.only(
-                                bottomLeft: Radius.circular(10),
-                                bottomRight: Radius.circular(10),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: ElevatedButton.icon(
-                                    onPressed: controller.pickImage,
-                                    icon: const Icon(Icons.edit, size: 18),
-                                    label: const Text('Change Image'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFFF97316),
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 12,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: ElevatedButton.icon(
-                                    onPressed: controller.removeImage,
-                                    icon: const Icon(Icons.delete, size: 18),
-                                    label: const Text('Remove'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.red,
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 12,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ] else ...[
-                          // Upload button when no image
-                          GestureDetector(
-                            onTap: controller.pickImage,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 60),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: const Color(
-                                        0xFFF97316,
-                                      ).withOpacity(0.1),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.cloud_upload,
-                                      size: 48,
-                                      color: Color(0xFFF97316),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'Tap to upload image',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.grey[700],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Supported: JPG, PNG (Max 5MB)',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[500],
-                                    ),
-                                  ),
-                                ],
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: controller.removeImage,
+                              icon: const Icon(Icons.delete_outline, size: 16),
+                              label: const Text('Remove'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFFEF4444),
+                                side: BorderSide(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                               ),
                             ),
                           ),
                         ],
-                      ],
+                      ),
                     ),
-                  );
-                }),
-              ],
-            ),
-          ),
+                  ] else ...[
+                    GestureDetector(
+                      onTap: controller.pickImage,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 48),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.teal.withValues(alpha: 0.08),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.cloud_upload_outlined, size: 40, color: Colors.teal),
+                            ),
+                            const SizedBox(height: 14),
+                            Text(
+                              'Tap to upload image',
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.grey[700]),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'JPG, PNG supported (Max 5MB)',
+                              style: TextStyle(fontSize: 12, color: Colors.grey[400]),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );
   }
 
   Widget _buildDisplaySettingsCard() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
+    return _buildCard(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header - Separate container with padding from all sides
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.all(12),
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF97316),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Row(
-              children: [
-                Text(
-                  'Display Settings',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Spacer(),
-                Icon(Icons.keyboard_arrow_down, color: Colors.white),
-              ],
-            ),
+          _buildSectionHeader('Display Settings', Icons.tune_outlined),
+          _buildTextField(
+            'Display Location',
+            controller.pageLocationController,
+            'e.g., Show on all pages',
           ),
-          // Form content
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Page Location
-                _buildTextField(
-                  'Display Location',
-                  controller.pageLocationController,
-                  'e.g., Show on all pages',
+          const SizedBox(height: 16),
+          _buildTextField(
+            'Display Delay (seconds)',
+            controller.displayDelayController,
+            'Enter delay in seconds',
+            keyboardType: TextInputType.number,
+            validator: (value) {
+              if (value != null && value.isNotEmpty) {
+                final delay = int.tryParse(value);
+                if (delay == null || delay < 0) {
+                  return 'Please enter a valid delay in seconds';
+                }
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 12),
+          _buildSwitchRow(
+            'Show Once Per Session',
+            'Prevent repeat display per session',
+            controller.showOncePerSession,
+            Icons.repeat_one_outlined,
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildDateTimeField(
+                  'Start Time',
+                  controller.startTime,
+                  () => controller.selectDateTime(controller.startTime, 'Start Time'),
                 ),
-                const SizedBox(height: 20),
-
-                // Display Delay
-                _buildTextField(
-                  'Display Delay (seconds)',
-                  controller.displayDelayController,
-                  'Enter delay in seconds',
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value != null && value.isNotEmpty) {
-                      final delay = int.tryParse(value);
-                      if (delay == null || delay < 0) {
-                        return 'Please enter a valid delay in seconds';
-                      }
-                    }
-                    return null;
-                  },
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildDateTimeField(
+                  'End Time',
+                  controller.endTime,
+                  () => controller.selectDateTime(controller.endTime, 'End Time'),
                 ),
-                const SizedBox(height: 20),
-
-                // Show Once Per Session
-                Obx(
-                  () => SwitchListTile(
-                    title: const Text('Show Once Per Session'),
-                    value: controller.showOncePerSession.value,
-                    onChanged:
-                        (value) => controller.showOncePerSession.value = value,
-                    activeThumbColor: const Color(0xFFF97316),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Start and End Time
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildDateTimeField(
-                        'Start Time',
-                        controller.startTime,
-                        () => controller.selectDateTime(
-                          controller.startTime,
-                          'Start Time',
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildDateTimeField(
-                        'End Time',
-                        controller.endTime,
-                        () => controller.selectDateTime(
-                          controller.endTime,
-                          'End Time',
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
@@ -2009,77 +1982,32 @@ class AddPopupView extends StatelessWidget {
   }
 
   Widget _buildLinkSettingsCard() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
+    return _buildCard(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header - Separate container with padding from all sides
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.all(12),
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF97316),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Row(
-              children: [
-                Text(
-                  'Link Settings',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Spacer(),
-                Icon(Icons.keyboard_arrow_down, color: Colors.white),
-              ],
-            ),
+          _buildSectionHeader('Link Settings', Icons.link_outlined),
+          _buildDropdown(
+            'Variant A Link Type',
+            controller.selectedLinkType,
+            controller.linkTypeOptions,
           ),
-          // Form content
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Link Type
-                _buildDropdown(
-                  'Variant A Link Type',
-                  controller.selectedLinkType,
-                  controller.linkTypeOptions,
-                ),
-                const SizedBox(height: 20),
-
-                // Link URL
-                _buildTextField(
-                  'Variant A Link URL',
-                  controller.linkUrlController,
-                  'https://example.com',
-                  validator: (value) {
-                    if (value != null && value.isNotEmpty) {
-                      final urlPattern = RegExp(
-                        r'^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&=]*)',
-                      );
-                      if (!urlPattern.hasMatch(value)) {
-                        return 'Please enter a valid URL';
-                      }
-                    }
-                    return null;
-                  },
-                ),
-              ],
-            ),
+          const SizedBox(height: 16),
+          _buildTextField(
+            'Variant A Link URL',
+            controller.linkUrlController,
+            'https://example.com',
+            validator: (value) {
+              if (value != null && value.isNotEmpty) {
+                final urlPattern = RegExp(
+                  r'^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&=]*)',
+                );
+                if (!urlPattern.hasMatch(value)) {
+                  return 'Please enter a valid URL';
+                }
+              }
+              return null;
+            },
           ),
         ],
       ),
@@ -2088,84 +2016,84 @@ class AddPopupView extends StatelessWidget {
 
   Widget _buildAbTestCard() {
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.purple[200]!),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
+            color: Colors.purple.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Warning Header
-          Container(
-            padding: const EdgeInsets.all(12),
-            margin: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.red.shade50,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.red.shade200),
-            ),
-            child: const Row(
-              children: [
-                Icon(Icons.warning, color: Colors.red),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Variant A (Control) - This is your primary popup version.',
-                    style: TextStyle(
-                      color: Colors.red,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Header - Separate container with padding from all sides
+          // Purple header banner
           Container(
             width: double.infinity,
-            margin: const EdgeInsets.all(12),
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             decoration: BoxDecoration(
-              color: const Color(0xFFF97316),
-              borderRadius: BorderRadius.circular(10),
+              color: Colors.purple[50],
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(15),
+                topRight: Radius.circular(15),
+              ),
             ),
-            child: const Row(
+            child: Row(
               children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.purple.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Icon(Icons.science_outlined, size: 16, color: Colors.purple[700]),
+                ),
+                const SizedBox(width: 10),
                 Text(
                   'A/B Test Configuration',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.purple[800]),
                 ),
-                Spacer(),
-                Icon(Icons.keyboard_arrow_down, color: Colors.white),
               ],
             ),
           ),
-          // Form content
+          // Info banner
+          Container(
+            margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.blue[50],
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.blue[200]!),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, size: 18, color: Colors.blue[700]),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Variant A (Control) is your primary popup. Configure Variant B below.',
+                    style: TextStyle(fontSize: 12, color: Colors.blue[800], fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Variant B Link Type
                 _buildDropdown(
                   'Variant B Link Type',
                   controller.selectedVariantBLinkType,
                   controller.linkTypeOptions,
                 ),
-                const SizedBox(height: 20),
-
-                // Variant B Link URL
+                const SizedBox(height: 16),
                 _buildTextField(
                   'Variant B Link URL',
                   controller.variantBLinkUrlController,
@@ -2182,65 +2110,39 @@ class AddPopupView extends StatelessWidget {
                     return null;
                   },
                 ),
-                const SizedBox(height: 20),
-
-                // A/B Test Dates
+                const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
                       child: _buildDateTimeField(
-                        'A/B Test Start Time',
+                        'Test Start',
                         controller.abTestStartTime,
-                        () => controller.selectDateTime(
-                          controller.abTestStartTime,
-                          'A/B Test Start Time',
-                        ),
+                        () => controller.selectDateTime(controller.abTestStartTime, 'A/B Test Start'),
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: _buildDateTimeField(
-                        'A/B Test End Time',
+                        'Test End',
                         controller.abTestEndTime,
-                        () => controller.selectDateTime(
-                          controller.abTestEndTime,
-                          'A/B Test End Time',
-                        ),
+                        () => controller.selectDateTime(controller.abTestEndTime, 'A/B Test End'),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-
-                // A/B Test Options
-                Row(
-                  children: [
-                    Expanded(
-                      child: Obx(
-                        () => SwitchListTile(
-                          title: const Text('Auto Select Winner'),
-                          value: controller.abTestAutoSelectWinner.value,
-                          onChanged:
-                              (value) =>
-                                  controller.abTestAutoSelectWinner.value =
-                                      value,
-                          activeThumbColor: const Color(0xFFF97316),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Obx(
-                        () => SwitchListTile(
-                          title: const Text('Test Completed'),
-                          value: controller.abTestCompleted.value,
-                          onChanged:
-                              (value) =>
-                                  controller.abTestCompleted.value = value,
-                          activeThumbColor: const Color(0xFFF97316),
-                        ),
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 12),
+                _buildSwitchRow(
+                  'Auto Select Winner',
+                  'Automatically pick the best variant',
+                  controller.abTestAutoSelectWinner,
+                  Icons.emoji_events_outlined,
+                ),
+                const SizedBox(height: 8),
+                _buildSwitchRow(
+                  'Test Completed',
+                  'Mark A/B test as finished',
+                  controller.abTestCompleted,
+                  Icons.check_circle_outline,
                 ),
               ],
             ),
@@ -2251,87 +2153,38 @@ class AddPopupView extends StatelessWidget {
   }
 
   Widget _buildProductCard() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
+    return _buildCard(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header - Separate container with padding from all sides
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.all(12),
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF97316),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Row(
-              children: [
-                Text(
-                  'Product Information',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Spacer(),
-                Icon(Icons.keyboard_arrow_down, color: Colors.white),
-              ],
-            ),
+          _buildSectionHeader('Product Information', Icons.shopping_bag_outlined),
+          _buildTextField(
+            'Product ID',
+            controller.productIdController,
+            'Enter product ID',
           ),
-          // Form content
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Product ID
-                _buildTextField(
-                  'Product ID',
-                  controller.productIdController,
-                  'Enter product ID',
-                ),
-                const SizedBox(height: 20),
-
-                // Product Name
-                _buildTextField(
-                  'Product Name',
-                  controller.productNameController,
-                  'Enter product name',
-                ),
-                const SizedBox(height: 20),
-
-                // Product Price
-                _buildTextField(
-                  'Product Price',
-                  controller.productPriceController,
-                  'Enter product price',
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  prefixText: '\$ ',
-                  validator: (value) {
-                    if (value != null && value.isNotEmpty) {
-                      final price = double.tryParse(value);
-                      if (price == null || price < 0) {
-                        return 'Please enter a valid price';
-                      }
-                    }
-                    return null;
-                  },
-                ),
-              ],
-            ),
+          const SizedBox(height: 16),
+          _buildTextField(
+            'Product Name',
+            controller.productNameController,
+            'Enter product name',
+          ),
+          const SizedBox(height: 16),
+          _buildTextField(
+            'Product Price',
+            controller.productPriceController,
+            'Enter product price',
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            prefixText: '\$ ',
+            validator: (value) {
+              if (value != null && value.isNotEmpty) {
+                final price = double.tryParse(value);
+                if (price == null || price < 0) {
+                  return 'Please enter a valid price';
+                }
+              }
+              return null;
+            },
           ),
         ],
       ),
@@ -2341,75 +2194,69 @@ class AddPopupView extends StatelessWidget {
   Widget _buildActionButtons() {
     return Column(
       children: [
-        // Save button
         Obx(
           () => SizedBox(
             width: double.infinity,
-            height: 50,
+            height: 52,
             child: ElevatedButton(
-              onPressed:
-                  controller.isLoading.value ? null : controller.savePopup,
+              onPressed: controller.isLoading.value ? null : controller.savePopup,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF97316),
+                backgroundColor: Colors.teal,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                elevation: 2,
+                disabledBackgroundColor: Colors.teal.withValues(alpha: 0.5),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 0,
               ),
-              child:
-                  controller.isLoading.value
-                      ? Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
-                            ),
+              child: controller.isLoading.value
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
-                          const SizedBox(width: 12),
-                          Text(
-                            controller.isEditMode.value
-                                ? 'Updating...'
-                                : 'Saving...',
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                        ],
-                      )
-                      : Text(
-                        controller.isEditMode.value
-                            ? 'Update Popup'
-                            : 'Create Popup',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
                         ),
-                      ),
+                        const SizedBox(width: 12),
+                        Text(
+                          controller.isEditMode.value ? 'Updating...' : 'Saving...',
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          controller.isEditMode.value ? Icons.save_outlined : Icons.add_circle_outline,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          controller.isEditMode.value ? 'Update Popup' : 'Create Popup',
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
             ),
           ),
         ),
-        const SizedBox(height: 12),
-        // Cancel button
+        const SizedBox(height: 10),
         SizedBox(
           width: double.infinity,
-          height: 50,
-          child: TextButton(
+          height: 48,
+          child: OutlinedButton(
             onPressed: () => Get.back(),
-            style: TextButton.styleFrom(
-              backgroundColor: Colors.grey[200],
-              foregroundColor: Colors.grey[700],
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25),
-              ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.grey[600],
+              side: BorderSide(color: Colors.grey[300]!),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
             child: const Text(
               'Cancel',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
             ),
           ),
         ),
@@ -2417,7 +2264,6 @@ class AddPopupView extends StatelessWidget {
     );
   }
 
-  // Helper widget builders
   Widget _buildTextField(
     String label,
     TextEditingController controller,
@@ -2433,35 +2279,43 @@ class AddPopupView extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: Colors.grey[800],
+            color: Colors.grey[700],
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         TextFormField(
           controller: controller,
           maxLines: maxLines,
           keyboardType: keyboardType,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: Colors.grey[400]),
+            hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
             prefixText: prefixText,
             filled: true,
-            fillColor: Colors.grey[100],
+            fillColor: Colors.grey[50],
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide.none,
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[300]!),
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Colors.grey[200]!),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFF97316), width: 2),
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: Colors.teal, width: 1.5),
             ),
-            contentPadding: const EdgeInsets.all(16),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: Color(0xFFEF4444)),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           ),
           validator: validator,
         ),
@@ -2480,32 +2334,33 @@ class AddPopupView extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: Colors.grey[800],
+            color: Colors.grey[700],
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         Obx(
           () => Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
             decoration: BoxDecoration(
-              color: Colors.grey[100],
-              border: Border.all(color: Colors.grey[300]!),
-              borderRadius: BorderRadius.circular(12),
+              color: Colors.grey[50],
+              border: Border.all(color: Colors.grey[200]!),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: selectedValue.value,
                 isExpanded: true,
-                items:
-                    options.map((option) {
-                      return DropdownMenuItem<String>(
-                        value: option['value']!,
-                        child: Text(option['label']!),
-                      );
-                    }).toList(),
+                icon: Icon(Icons.keyboard_arrow_down, color: Colors.grey[500], size: 20),
+                style: TextStyle(fontSize: 14, color: Colors.grey[800]),
+                items: options.map((option) {
+                  return DropdownMenuItem<String>(
+                    value: option['value']!,
+                    child: Text(option['label']!),
+                  );
+                }).toList(),
                 onChanged: (value) => selectedValue.value = value!,
               ),
             ),
@@ -2526,34 +2381,51 @@ class AddPopupView extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: Colors.grey[800],
+            color: Colors.grey[700],
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         GestureDetector(
           onTap: onTap,
-          child: Container(
+          child: Obx(() => Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
             decoration: BoxDecoration(
-              color: Colors.grey[100],
-              border: Border.all(color: Colors.grey[300]!),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Obx(
-              () => Text(
-                dateTime.value != null
-                    ? '${dateTime.value!.day}/${dateTime.value!.month}/${dateTime.value!.year} ${dateTime.value!.hour}:${dateTime.value!.minute.toString().padLeft(2, '0')}'
-                    : 'Select date and time',
-                style: TextStyle(
-                  color:
-                      dateTime.value != null ? Colors.black : Colors.grey[500],
-                ),
+              color: Colors.grey[50],
+              border: Border.all(
+                color: dateTime.value != null ? Colors.teal.withValues(alpha: 0.3) : Colors.grey[200]!,
               ),
+              borderRadius: BorderRadius.circular(10),
             ),
-          ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.calendar_today_outlined,
+                  size: 16,
+                  color: dateTime.value != null ? Colors.teal : Colors.grey[400],
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    dateTime.value != null
+                        ? '${dateTime.value!.day}/${dateTime.value!.month}/${dateTime.value!.year} ${dateTime.value!.hour}:${dateTime.value!.minute.toString().padLeft(2, '0')}'
+                        : 'Select date & time',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: dateTime.value != null ? Colors.grey[800] : Colors.grey[400],
+                    ),
+                  ),
+                ),
+                if (dateTime.value != null)
+                  GestureDetector(
+                    onTap: () => dateTime.value = null,
+                    child: Icon(Icons.clear, size: 16, color: Colors.grey[400]),
+                  ),
+              ],
+            ),
+          )),
         ),
       ],
     );
@@ -2645,7 +2517,9 @@ class ApiService extends GetxService {
     return {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'X-Request-From': 'Application',
+      'X-Request-From': 'Dashboard',
+      'shop-id': AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
+      'user-id': AuthService.instance.authCustomer!.user!.id.toString(),
     };
   }
 

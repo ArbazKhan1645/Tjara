@@ -449,6 +449,15 @@ class _UsersItemCardState extends State<UsersItemCard>
                 color: Colors.red,
               ),
             ),
+            if (!(widget.product.meta?.role ?? '').contains('team_member'))
+              PopupMenuItem<String>(
+                value: 'make_team_member',
+                child: _buildMenuItem(
+                  icon: Icons.group_add,
+                  label: 'Make Tjara Team Member',
+                  color: Colors.teal,
+                ),
+              ),
           ],
       onSelected: _handleMenuSelection,
     );
@@ -502,9 +511,56 @@ class _UsersItemCardState extends State<UsersItemCard>
       case 'suspend':
         // Suspend user logic
         break;
+      case 'make_team_member':
+        _makeTeamMember(widget.product.id.toString());
+        break;
       case 'delete':
         widget.onDelete?.call();
         break;
+    }
+  }
+
+  Future<void> _makeTeamMember(String userId) async {
+    final url = Uri.parse(
+      'https://api.libanbuy.com/api/users/update-user-to-team-member/$userId',
+    );
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-Request-From": "Application",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        Get.snackbar(
+          'Success',
+          'User successfully made a Tjara team member.',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      } else {
+        final message = jsonDecode(response.body)['message'] ?? 'Update failed';
+        Get.snackbar(
+          'Error',
+          message.toString(),
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+      Get.find<AdminUsersService>().refreshData();
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'An error occurred: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 

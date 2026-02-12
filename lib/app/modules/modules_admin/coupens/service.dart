@@ -1,18 +1,19 @@
-// services/coupon_service.dart
 // ignore_for_file: depend_on_referenced_packages
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:tjara/app/models/coupens/coupens_model.dart';
+import 'package:tjara/app/services/auth/auth_service.dart';
 
 class CouponService {
   static const String baseUrl = 'https://api.libanbuy.com/api';
 
-  // Add your headers here
   static Map<String, String> get headers => {
     'Content-Type': 'application/json',
-    'X-Request-From': 'Application',
+    'x-request-from': 'Dashboard',
     'Accept': 'application/json',
+    'shop-id': AuthService.instance.authCustomer?.user?.shop?.shop?.id ?? '',
+    'user-id': AuthService.instance.authCustomer?.user?.id?.toString() ?? '',
   };
 
   static Future<CouponResponse> getCoupons({
@@ -50,7 +51,7 @@ class CouponService {
       } else if (response.statusCode >= 500) {
         throw ServerException('Server error occurred');
       } else {
-        throw ApiException;
+        throw ServerException('Unexpected error: ${response.statusCode}');
       }
     } catch (e) {
       if (e is ApiException) {
@@ -76,7 +77,7 @@ class CouponService {
       } else if (response.statusCode >= 500) {
         throw ServerException('Server error occurred');
       } else {
-        throw ApiException;
+        throw ServerException('Unexpected error: ${response.statusCode}');
       }
     } catch (e) {
       if (e is ApiException) {

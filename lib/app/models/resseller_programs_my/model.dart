@@ -16,6 +16,7 @@ class ResellerProgramModel {
   final Referrer? referrer;
   final List<TeamMemberOrder>? teamMemberOrders;
   final Membership? membership;
+  final TransactionsSummary? transactionsSummary;
 
   ResellerProgramModel({
     required this.id,
@@ -34,6 +35,7 @@ class ResellerProgramModel {
     required this.owner,
     this.referrer,
     this.membership,
+    this.transactionsSummary,
   });
 
   factory ResellerProgramModel.fromJson(Map<String, dynamic> json) {
@@ -76,6 +78,9 @@ class ResellerProgramModel {
                   resellerProgram['membership'] is Map &&
                   !resellerProgram['membership'].containsKey('message')
           ? Membership.fromJson(resellerProgram['membership'])
+          : null,
+      transactionsSummary: resellerProgram['transactions_summary'] != null
+          ? TransactionsSummary.fromJson(resellerProgram['transactions_summary'])
           : null,
     );
   }
@@ -126,7 +131,7 @@ class OrderMeta {
   final String? cancelledAt;
   final String? initialTotal;
   final String? discountTotal;
-  // Add other dynamic fields as needed
+  final String? referralEarnings;
 
   OrderMeta({
     this.orderId,
@@ -135,6 +140,7 @@ class OrderMeta {
     this.cancelledAt,
     this.initialTotal,
     this.discountTotal,
+    this.referralEarnings,
   });
 
   factory OrderMeta.fromJson(Map<String, dynamic> json) {
@@ -145,6 +151,36 @@ class OrderMeta {
       cancelledAt: json['cancelled_at'],
       initialTotal: json['initial_total'],
       discountTotal: json['discount_total'],
+      referralEarnings: json['referral_earnings'],
+    );
+  }
+}
+
+class TransactionsSummary {
+  final int totalTransactions;
+  final double totalAmount;
+  final int pendingTransactions;
+  final double pendingAmount;
+  final int availableTransactions;
+  final double availableAmount;
+
+  TransactionsSummary({
+    required this.totalTransactions,
+    required this.totalAmount,
+    required this.pendingTransactions,
+    required this.pendingAmount,
+    required this.availableTransactions,
+    required this.availableAmount,
+  });
+
+  factory TransactionsSummary.fromJson(Map<String, dynamic> json) {
+    return TransactionsSummary(
+      totalTransactions: json['total_transactions'] ?? 0,
+      totalAmount: (json['total_amount'] ?? 0).toDouble(),
+      pendingTransactions: json['pending_transactions'] ?? 0,
+      pendingAmount: (json['pending_amount'] ?? 0).toDouble(),
+      availableTransactions: json['available_transactions'] ?? 0,
+      availableAmount: (json['available_amount'] ?? 0).toDouble(),
     );
   }
 }

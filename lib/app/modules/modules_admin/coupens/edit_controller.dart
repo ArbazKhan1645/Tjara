@@ -1,5 +1,7 @@
-// controllers/coupon_controller.dart
+// ignore_for_file: depend_on_referenced_packages
+
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -31,6 +33,10 @@ class EditCouponController extends GetxController {
   final RxString selectedStatus = 'active'.obs;
   final Rx<DateTime?> startDate = Rx<DateTime?>(null);
   final Rx<DateTime?> expiryDate = Rx<DateTime?>(null);
+
+  // New feature: allow on discounted items
+  final RxBool allowOnDiscountedItems = false.obs;
+  final RxString discountPriceMode = 'original'.obs;
 
   // Code generation
   final RxBool isAutoGenerate = true.obs;
@@ -68,7 +74,6 @@ class EditCouponController extends GetxController {
   void _loadCouponForEdit(Coupon coupon) {
     editingCoupon.value = coupon;
 
-    // Pre-fill form fields
     nameController.text = coupon.name;
     descriptionController.text = coupon.description ?? '';
     selectedCouponType.value = coupon.couponType;
@@ -78,6 +83,12 @@ class EditCouponController extends GetxController {
     expiryDate.value = coupon.expiryDate;
     isGlobal.value = coupon.isGlobal;
     selectedStatus.value = coupon.status;
+
+    // New fields
+    allowOnDiscountedItems.value = coupon.allowOnDiscountedItems;
+    if (coupon.discountPriceMode != null) {
+      discountPriceMode.value = coupon.discountPriceMode!;
+    }
 
     if (coupon.minimumAmount != null && coupon.minimumAmount!.isNotEmpty) {
       minimumAmountController.text = coupon.minimumAmount!;
@@ -92,12 +103,10 @@ class EditCouponController extends GetxController {
       usageLimitPerUserController.text = coupon.usageLimitPerUser.toString();
     }
 
-    // Load existing codes
     for (var code in coupon.codes) {
       generatedCodes.add(code.code);
     }
 
-    // Load shop selections if not global
     if (!coupon.isGlobal && coupon.shops.isNotEmpty) {
       fetchShops();
     }
@@ -126,7 +135,6 @@ class EditCouponController extends GetxController {
     });
   }
 
-  // Fetch shops
   Future<void> fetchShops([String search = '']) async {
     try {
       isLoadingShops.value = true;
@@ -139,7 +147,6 @@ class EditCouponController extends GetxController {
     }
   }
 
-  // Shop selection methods
   void toggleShopSelection(ShopShop shop) {
     final index = selectedShops.indexWhere((s) => s.id == shop.id);
     if (index >= 0) {
@@ -153,19 +160,32 @@ class EditCouponController extends GetxController {
     return selectedShops.any((s) => s.id == shop.id);
   }
 
-  // Date selection
   Future<void> selectStartDate(BuildContext context) async {
     final picked = await showDatePicker(
       context: context,
       initialDate: startDate.value ?? DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder:
+          (context, child) => Theme(
+            data: Theme.of(context).copyWith(
+              colorScheme: const ColorScheme.light(primary: Colors.teal),
+            ),
+            child: child!,
+          ),
     );
 
-    if (picked != null) {
+    if (picked != null && context.mounted) {
       final time = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.now(),
+        builder:
+            (context, child) => Theme(
+              data: Theme.of(context).copyWith(
+                colorScheme: const ColorScheme.light(primary: Colors.teal),
+              ),
+              child: child!,
+            ),
       );
 
       if (time != null) {
@@ -177,7 +197,6 @@ class EditCouponController extends GetxController {
           time.minute,
         );
 
-        // Ensure expiry date is after start date
         if (expiryDate.value != null &&
             expiryDate.value!.isBefore(startDate.value!)) {
           expiryDate.value = startDate.value!.add(const Duration(days: 1));
@@ -196,12 +215,26 @@ class EditCouponController extends GetxController {
       initialDate: expiryDate.value ?? minDate,
       firstDate: minDate,
       lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder:
+          (context, child) => Theme(
+            data: Theme.of(context).copyWith(
+              colorScheme: const ColorScheme.light(primary: Colors.teal),
+            ),
+            child: child!,
+          ),
     );
 
-    if (picked != null) {
+    if (picked != null && context.mounted) {
       final time = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.now(),
+        builder:
+            (context, child) => Theme(
+              data: Theme.of(context).copyWith(
+                colorScheme: const ColorScheme.light(primary: Colors.teal),
+              ),
+              child: child!,
+            ),
       );
 
       if (time != null) {
@@ -216,7 +249,6 @@ class EditCouponController extends GetxController {
     }
   }
 
-  // Code generation methods
   void generateCodes() {
     if (!isAutoGenerate.value) return;
 
@@ -269,7 +301,7 @@ class EditCouponController extends GetxController {
     generatedCodes.remove(code);
   }
 
-  // Validation methods
+  // Validation
   String? validateRequired(String? value, String fieldName) {
     if (value == null || value.trim().isEmpty) {
       return '$fieldName is required';
@@ -348,12 +380,6 @@ class EditCouponController extends GetxController {
     return true;
   }
 
-  String _formatDateTimeForApi(DateTime dt) {
-    return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} '
-        '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}:00';
-  }
-
-  // Create or Update coupon
   Future<void> createCoupon() async {
     if (!_validateForm()) return;
 
@@ -361,31 +387,55 @@ class EditCouponController extends GetxController {
       isCreatingCoupon.value = true;
 
       if (isEditMode) {
-        // Update mode
-        final payload = {
-          'name': nameController.text.trim(),
-          'description': descriptionController.text.trim(),
-          'coupon_type': selectedCouponType.value,
-          'discount_type':
+        final existingCodes = editingCoupon.value!.codes.map((c) => c.code).toList();
+
+        final request = CouponInsertRequest(
+          name: nameController.text.trim(),
+          description:
+              descriptionController.text.trim().isNotEmpty
+                  ? descriptionController.text.trim()
+                  : null,
+          couponType: selectedCouponType.value,
+          discountType:
               selectedCouponType.value == 'discount'
                   ? selectedDiscountType.value
                   : null,
-          'discount_value': discountValueController.text.trim(),
-          'start_date': _formatDateTimeForApi(startDate.value!),
-          'expiry_date': _formatDateTimeForApi(expiryDate.value!),
-          'is_global': isGlobal.value ? '1' : '0',
-          'status': selectedStatus.value,
-          'minimum_amount': minimumAmountController.text.trim(),
-          'maximum_discount': maximumDiscountController.text.trim(),
-          'usage_limit': usageLimitController.text.trim(),
-          'usage_limit_per_user': usageLimitPerUserController.text.trim(),
-        };
+          discountValue: double.parse(discountValueController.text),
+          startDate: startDate.value!,
+          expiryDate: expiryDate.value!,
+          isGlobal: isGlobal.value,
+          shopIds:
+              isGlobal.value
+                  ? null
+                  : selectedShops.map((s) => s.id ?? '').toList(),
+          codes: existingCodes,
+          usageLimit:
+              usageLimitController.text.trim().isNotEmpty
+                  ? int.parse(usageLimitController.text)
+                  : null,
+          usageLimitPerUser:
+              usageLimitPerUserController.text.trim().isNotEmpty
+                  ? int.parse(usageLimitPerUserController.text)
+                  : null,
+          minimumAmount:
+              minimumAmountController.text.trim().isNotEmpty
+                  ? double.parse(minimumAmountController.text)
+                  : null,
+          maximumDiscount:
+              maximumDiscountController.text.trim().isNotEmpty
+                  ? double.parse(maximumDiscountController.text)
+                  : null,
+          status: selectedStatus.value,
+          allowOnDiscountedItems: allowOnDiscountedItems.value,
+          discountPriceMode:
+              allowOnDiscountedItems.value ? discountPriceMode.value : null,
+        );
 
-        await CouponEditService.updateCoupon(editingCoupon.value!.id, payload);
-        _showSuccess('Coupon updated successfully');
+        await CouponEditService.updateCoupon(editingCoupon.value!.id, request.toJson());
+
         Get.back(result: true);
+        _showSuccess('Coupon updated successfully');
       } else {
-        // Create mode
         final request = CouponInsertRequest(
           name: nameController.text.trim(),
           description:
@@ -423,18 +473,29 @@ class EditCouponController extends GetxController {
                   ? double.parse(maximumDiscountController.text)
                   : null,
           status: selectedStatus.value,
+
+          allowOnDiscountedItems: allowOnDiscountedItems.value,
+          discountPriceMode:
+              allowOnDiscountedItems.value ? discountPriceMode.value : null,
         );
+
         await CouponEditService.insertCoupon(request);
-        _showSuccess('Coupon created successfully');
+
         _resetForm();
-        Get.back();
+        Get.back(result: true);
+
+        _showSuccess('Coupon created successfully');
       }
     } catch (e) {
       if (e is ApiException) {
         _showError(e.message);
+      } else if (e is FormatException) {
+        _showError('Invalid data format. Please check your inputs.');
+      } else if (e is SocketException) {
+        _showError('No internet connection. Please check your network.');
       } else {
         _showError(
-          'Failed to ${isEditMode ? 'update' : 'create'} coupon: ${e.toString()}',
+          'Failed to ${isEditMode ? "update" : "create"} coupon. Please try again.',
         );
       }
     } finally {
@@ -459,6 +520,8 @@ class EditCouponController extends GetxController {
     isGlobal.value = true;
     selectedStatus.value = 'active';
     isAutoGenerate.value = true;
+    allowOnDiscountedItems.value = false;
+    discountPriceMode.value = 'original';
 
     generatedCodes.clear();
     selectedShops.clear();
@@ -474,6 +537,7 @@ class EditCouponController extends GetxController {
       backgroundColor: Colors.red,
       colorText: Colors.white,
       duration: const Duration(seconds: 3),
+      margin: const EdgeInsets.all(16),
     );
   }
 
@@ -485,6 +549,7 @@ class EditCouponController extends GetxController {
       backgroundColor: Colors.green,
       colorText: Colors.white,
       duration: const Duration(seconds: 3),
+      margin: const EdgeInsets.all(16),
     );
   }
 

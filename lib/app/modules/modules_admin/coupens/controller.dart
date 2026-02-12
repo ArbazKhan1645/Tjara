@@ -2,10 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/models/coupens/coupens_model.dart';
+import 'package:tjara/app/modules/modules_admin/coupens/add_coupen.dart';
+import 'package:tjara/app/modules/modules_admin/coupens/edit_controller.dart';
 import 'package:tjara/app/modules/modules_admin/coupens/service.dart';
 
 class CouponController extends GetxController {
-  // Observable variables
   final RxList<Coupon> coupons = <Coupon>[].obs;
   final RxBool isLoading = false.obs;
   final RxBool isLoadingMore = false.obs;
@@ -13,30 +14,25 @@ class CouponController extends GetxController {
   final RxString errorMessage = ''.obs;
   final RxBool hasReachedEnd = false.obs;
 
-  // Pagination variables
   final RxInt currentPage = 1.obs;
   final RxInt totalPages = 1.obs;
   final RxInt totalCoupons = 0.obs;
   final RxInt perPage = 10.obs;
 
-  // Search and filter variables
   final RxString searchQuery = ''.obs;
   final RxString searchById = ''.obs;
   final RxString orderBy = 'created_at'.obs;
   final RxString order = 'desc'.obs;
 
-  // Text controllers
   final TextEditingController searchController = TextEditingController();
   final TextEditingController searchByIdController = TextEditingController();
 
-  // Scroll controller for pagination
   final ScrollController scrollController = ScrollController();
 
   @override
   void onInit() {
     super.onInit();
     fetchCoupons();
-    _setupScrollListener();
   }
 
   @override
@@ -47,23 +43,11 @@ class CouponController extends GetxController {
     super.onClose();
   }
 
-  void _setupScrollListener() {
-    scrollController.addListener(() {
-      if (scrollController.position.pixels ==
-          scrollController.position.maxScrollExtent) {
-        if (!isLoadingMore.value && !hasReachedEnd.value) {
-          loadMoreCoupons();
-        }
-      }
-    });
-  }
-
   Future<void> fetchCoupons({bool refresh = false}) async {
     try {
       if (refresh) {
         currentPage.value = 1;
         hasReachedEnd.value = false;
-        coupons.clear();
       }
 
       isLoading.value = true;
@@ -82,12 +66,7 @@ class CouponController extends GetxController {
       if (response.success) {
         totalPages.value = response.coupons.lastPage;
         totalCoupons.value = response.coupons.total;
-
-        if (refresh) {
-          coupons.assignAll(response.coupons.data);
-        } else {
-          coupons.addAll(response.coupons.data);
-        }
+        coupons.assignAll(response.coupons.data);
 
         if (currentPage.value >= totalPages.value) {
           hasReachedEnd.value = true;
@@ -98,43 +77,8 @@ class CouponController extends GetxController {
     } catch (e) {
       hasError.value = true;
       errorMessage.value = _getErrorMessage(e);
-      _showErrorSnackbar(errorMessage.value);
     } finally {
       isLoading.value = false;
-    }
-  }
-
-  Future<void> loadMoreCoupons() async {
-    if (hasReachedEnd.value || isLoadingMore.value) return;
-
-    try {
-      isLoadingMore.value = true;
-      currentPage.value++;
-
-      final response = await CouponService.getCoupons(
-        search: searchQuery.value,
-        searchById: searchById.value,
-        orderBy: orderBy.value,
-        order: order.value,
-        page: currentPage.value,
-        perPage: perPage.value,
-      );
-
-      if (response.success) {
-        if (response.coupons.data.isEmpty) {
-          hasReachedEnd.value = true;
-        } else {
-          coupons.addAll(response.coupons.data);
-          if (currentPage.value >= response.coupons.lastPage) {
-            hasReachedEnd.value = true;
-          }
-        }
-      }
-    } catch (e) {
-      currentPage.value--; // Revert page increment on error
-      _showErrorSnackbar(_getErrorMessage(e));
-    } finally {
-      isLoadingMore.value = false;
     }
   }
 
@@ -160,38 +104,38 @@ class CouponController extends GetxController {
     fetchCoupons(refresh: true);
   }
 
+  void goToPage(int page) {
+    if (page < 1 || page > totalPages.value) return;
+    currentPage.value = page;
+    fetchCoupons();
+  }
+
   Future<void> deleteCoupon(String couponId) async {
     try {
-      // Show confirmation dialog
       final confirmed = await _showDeleteConfirmationDialog();
       if (!confirmed) return;
 
-      // Show loading indicator
       Get.dialog(
-        const Center(child: CircularProgressIndicator()),
+        const Center(child: CircularProgressIndicator(color: Colors.teal)),
         barrierDismissible: false,
       );
 
       final success = await CouponService.deleteCoupon(couponId);
 
-      // Close loading dialog
       Get.back();
 
       if (success) {
-        // Remove coupon from local list
         coupons.removeWhere((coupon) => coupon.id == couponId);
         totalCoupons.value--;
 
         _showSuccessSnackbar('Coupon deleted successfully');
 
-        // Refresh if list is empty or needs updating
         if (coupons.isEmpty && currentPage.value > 1) {
           currentPage.value--;
           await fetchCoupons();
         }
       }
     } catch (e) {
-      // Close loading dialog if still open
       if (Get.isDialogOpen == true) {
         Get.back();
       }
@@ -202,27 +146,73 @@ class CouponController extends GetxController {
   Future<bool> _showDeleteConfirmationDialog() async {
     return await Get.dialog<bool>(
           AlertDialog(
-            title: const Text('Delete Coupon'),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.delete_outline,
+                    color: Color(0xFFEF4444),
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'Delete Coupon',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
             content: const Text(
               'Are you sure you want to delete this coupon? This action cannot be undone.',
+              style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
             ),
             actions: [
               TextButton(
                 onPressed: () => Get.back(result: false),
-                child: const Text('Cancel'),
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
               ),
               ElevatedButton(
                 onPressed: () => Get.back(result: true),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: const Text(
-                  'Delete',
-                  style: TextStyle(color: Colors.white),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFEF4444),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
+                child: const Text('Delete'),
               ),
             ],
           ),
         ) ??
         false;
+  }
+
+  void navigateToAddCoupon() async {
+    Get.delete<EditCouponController>(force: true);
+    final result = await Get.to(() => AddCouponPage());
+    if (result == true) {
+      fetchCoupons(refresh: true);
+    }
+  }
+
+  void navigateToEditCoupon(Coupon coupon) async {
+    Get.delete<EditCouponController>(force: true);
+    final result = await Get.to(() => AddCouponPage(), arguments: coupon);
+    if (result == true) {
+      fetchCoupons(refresh: true);
+    }
   }
 
   void changeItemsPerPage(int newPerPage) {
@@ -278,7 +268,6 @@ class CouponController extends GetxController {
     );
   }
 
-  // Utility methods for status and type formatting
   String getStatusText(Coupon coupon) {
     if (coupon.isExpired) {
       return 'Expired';
@@ -291,11 +280,21 @@ class CouponController extends GetxController {
 
   Color getStatusColor(Coupon coupon) {
     if (coupon.isExpired) {
-      return Colors.red;
+      return const Color(0xFFEF4444);
     } else if (coupon.isActiveNow) {
-      return Colors.green;
+      return const Color(0xFF22C55E);
     } else {
-      return Colors.orange;
+      return const Color(0xFFF59E0B);
+    }
+  }
+
+  IconData getStatusIcon(Coupon coupon) {
+    if (coupon.isExpired) {
+      return Icons.cancel_outlined;
+    } else if (coupon.isActiveNow) {
+      return Icons.check_circle_outline;
+    } else {
+      return Icons.schedule;
     }
   }
 
@@ -308,12 +307,24 @@ class CouponController extends GetxController {
   }
 
   String getValidityPeriod(Coupon coupon) {
-    final startDate = coupon.startDate;
-    final endDate = coupon.expiryDate;
-    return '${formatDate(startDate)} - ${formatDate(endDate)}';
+    return '${formatDate(coupon.startDate)} - ${formatDate(coupon.expiryDate)}';
   }
 
   String formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 }

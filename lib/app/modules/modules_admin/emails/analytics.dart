@@ -41,6 +41,7 @@ class _EmailAnalyticsWidgetState extends State<EmailAnalyticsWidget> {
       final dateStr = DateFormat('yyyy-MM-dd').format(selectedDate);
       final url =
           'https://api.libanbuy.com/api/emails/analytics?start_date=$dateStr&end_date=&aggregated_by=&limit=&offset=';
+      print(url);
 
       final response = await http.get(
         Uri.parse(url),
@@ -91,16 +92,10 @@ class _EmailAnalyticsWidgetState extends State<EmailAnalyticsWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(8),
-      ),
-
+      color: Colors.white,
       child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.all(0),
+        child: ListView(
           children: [
             _buildHeader(),
             const SizedBox(height: 16),

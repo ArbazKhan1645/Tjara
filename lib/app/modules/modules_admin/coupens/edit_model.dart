@@ -1,4 +1,3 @@
-// models/coupon_model.dart
 class CouponInsertRequest {
   final String name;
   final String? description;
@@ -15,6 +14,8 @@ class CouponInsertRequest {
   final double? minimumAmount;
   final double? maximumDiscount;
   final String status;
+  final bool allowOnDiscountedItems;
+  final String? discountPriceMode;
 
   CouponInsertRequest({
     required this.name,
@@ -32,26 +33,46 @@ class CouponInsertRequest {
     this.minimumAmount,
     this.maximumDiscount,
     required this.status,
+    this.allowOnDiscountedItems = false,
+    this.discountPriceMode,
   });
 
+  String _formatDateTime(DateTime dt) {
+    return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} '
+        '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}:00';
+  }
+
   Map<String, dynamic> toJson() {
-    return {
+    final map = <String, dynamic>{
       'name': name,
-      'description': description,
+      'description': description ?? '',
       'coupon_type': couponType,
-      'discount_type': discountType,
-      'discount_value': discountValue,
-      'start_date': startDate.toIso8601String(),
-      'expiry_date': expiryDate.toIso8601String(),
-      'is_global': isGlobal,
-      'shop_ids': shopIds,
+      'discount_value': discountValue.toStringAsFixed(2),
+      'start_date': _formatDateTime(startDate),
+      'expiry_date': _formatDateTime(expiryDate),
+      'is_global': isGlobal ? '1' : '0',
       'codes': codes,
-      'usage_limit': usageLimit,
-      'usage_limit_per_user': usageLimitPerUser,
-      'minimum_amount': minimumAmount,
-      'maximum_discount': maximumDiscount,
+      'usage_limit': usageLimit?.toString() ?? '',
+      'usage_limit_per_user': usageLimitPerUser?.toString() ?? '',
+      'minimum_amount': minimumAmount?.toStringAsFixed(2) ?? '',
+      'maximum_discount': maximumDiscount?.toStringAsFixed(2) ?? '',
       'status': status,
+      'allow_on_discounted_items': allowOnDiscountedItems ? '1' : '0',
     };
+
+    if (couponType == 'discount') {
+      map['discount_type'] = discountType ?? '';
+    }
+
+    if (!isGlobal && shopIds != null && shopIds!.isNotEmpty) {
+      map['shop_ids'] = shopIds;
+    }
+
+    if (allowOnDiscountedItems && discountPriceMode != null) {
+      map['discount_price_mode'] = discountPriceMode;
+    }
+
+    return map;
   }
 }
 

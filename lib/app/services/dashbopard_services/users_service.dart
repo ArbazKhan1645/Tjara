@@ -610,10 +610,7 @@ class AdminUsersService extends GetxService {
   }
 
   Future<void> refreshData() async {
-    currentPage.value = 1;
-    searchController.clear();
-    searchQuery.value = '';
-    await fetchProducts(loaderType: true);
+    await fetchProducts(loaderType: false);
   }
 
   void clearSearch() {

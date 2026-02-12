@@ -106,6 +106,8 @@ class Coupon {
   final double usagePercentage;
   final List<dynamic> shops;
   final List<CouponCode> codes;
+  final bool allowOnDiscountedItems;
+  final String? discountPriceMode;
 
   Coupon({
     required this.id,
@@ -137,6 +139,8 @@ class Coupon {
     required this.usagePercentage,
     required this.shops,
     required this.codes,
+    this.allowOnDiscountedItems = false,
+    this.discountPriceMode,
   });
 
   factory Coupon.fromJson(Map<String, dynamic> json) {
@@ -149,7 +153,7 @@ class Coupon {
       discountValue: json['discount_value'] ?? '0',
       startDate: DateTime.parse(json['start_date'] ?? DateTime.now().toIso8601String()),
       expiryDate: DateTime.parse(json['expiry_date'] ?? DateTime.now().toIso8601String()),
-      isGlobal: json['is_global'] ?? false,
+      isGlobal: json['is_global'] == 1 || json['is_global'] == true,
       usageLimit: json['usage_limit'],
       usageLimitPerUser: json['usage_limit_per_user'],
       minimumAmount: json['minimum_amount'],
@@ -173,6 +177,8 @@ class Coupon {
               ?.map((e) => CouponCode.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
+      allowOnDiscountedItems: json['allow_on_discounted_items'] == 1 || json['allow_on_discounted_items'] == true,
+      discountPriceMode: json['discount_price_mode'],
     );
   }
 }

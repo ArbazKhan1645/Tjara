@@ -43,12 +43,20 @@ class MediaUniversalModel {
       cdnVideoId: json['cdn_video_id'] as String?,
       cdnThumbnailUrl: json['cdn_thumbnail_url'] as String?,
       cdnStoragePath: json['cdn_storage_path'] as String?,
-      isStreaming: json['is_streaming'] as bool?,
-      isUsed: json['is_used'] as bool?,
+      isStreaming: _toBool(json['is_streaming']),
+      isUsed: _toBool(json['is_used']),
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
       updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at']) : null,
       localUrl: json['local_url'] as String?,
     );
+  }
+
+  static bool? _toBool(dynamic value) {
+    if (value == null) return null;
+    if (value is bool) return value;
+    if (value is int) return value == 1;
+    if (value is String) return value == '1' || value == 'true';
+    return null;
   }
 
   Map<String, dynamic> toJson() {

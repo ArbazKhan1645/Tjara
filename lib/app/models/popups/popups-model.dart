@@ -109,6 +109,8 @@ class Data {
   List<dynamic>? formFields; // Changed from List<Null>? to List<dynamic>?
   int? displayDelay;
   bool? showOncePerSession;
+  int? displayInCategories;
+  String? categoryIds;
   int? views;
   int? clicks;
   int? addToCartClicks;
@@ -132,8 +134,8 @@ class Data {
   int? variantBAddToCartClicks;
   int? variantBViewDetailsClicks;
   int? abVariantBConversions;
-  String? abTestStartTime; // Changed from Null to String?
-  String? abTestEndTime; // Changed from Null to String?
+  String? abTestStartTime;
+  String? abTestEndTime;
   String? abTestWinner;
   bool? abTestAutoSelectWinner;
   bool? abTestCompleted;
@@ -150,6 +152,23 @@ class Data {
   ShopShop? shop;
   ProductThumbnail? variantBThumbnail;
   List<String>? categoryNames;
+  List<String>? selectedCategories;
+  // Analytics fields
+  double? clickRate;
+  double? conversionRate;
+  double? addToCartRate;
+  double? viewDetailsRate;
+  int? totalInteractions;
+  int? totalViews;
+  String? performanceStatus;
+  String? lastInteractionAt;
+  int? uniqueSessions;
+  int? uniqueUsers;
+  // A/B test analytics
+  double? variantAClickRate;
+  double? variantAConversionRate;
+  double? variantBClickRate;
+  double? variantBConversionRate;
 
   Data({
     this.id,
@@ -167,6 +186,8 @@ class Data {
     this.formFields,
     this.displayDelay,
     this.showOncePerSession,
+    this.displayInCategories,
+    this.categoryIds,
     this.views,
     this.clicks,
     this.addToCartClicks,
@@ -208,6 +229,21 @@ class Data {
     this.shop,
     this.variantBThumbnail,
     this.categoryNames,
+    this.selectedCategories,
+    this.clickRate,
+    this.conversionRate,
+    this.addToCartRate,
+    this.viewDetailsRate,
+    this.totalInteractions,
+    this.totalViews,
+    this.performanceStatus,
+    this.lastInteractionAt,
+    this.uniqueSessions,
+    this.uniqueUsers,
+    this.variantAClickRate,
+    this.variantAConversionRate,
+    this.variantBClickRate,
+    this.variantBConversionRate,
   });
 
   Data.fromJson(Map<String, dynamic> json) {
@@ -220,7 +256,7 @@ class Data {
     type = json['type'];
     pageLocation = json['page_location'];
     linkUrl = json['link_url'];
-    isActive = json['is_active'];
+    isActive = _toBool(json['is_active']);
     startTime = json['start_time'];
     endTime = json['end_time'];
 
@@ -230,7 +266,9 @@ class Data {
     }
 
     displayDelay = json['display_delay'];
-    showOncePerSession = json['show_once_per_session'];
+    showOncePerSession = _toBool(json['show_once_per_session']);
+    displayInCategories = json['display_in_categories'];
+    categoryIds = json['category_ids'];
     views = json['views'];
     clicks = json['clicks'];
     addToCartClicks = json['add_to_cart_clicks'];
@@ -238,7 +276,7 @@ class Data {
     conversions = json['conversions'];
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
-    isAbTest = json['is_ab_test'];
+    isAbTest = _toBool(json['is_ab_test']);
     userSegment = json['user_segment'];
     abTestMethod = json['ab_test_method'];
     abTestViewsLimit = json['ab_test_views_limit'];
@@ -257,8 +295,8 @@ class Data {
     abTestStartTime = json['ab_test_start_time'];
     abTestEndTime = json['ab_test_end_time'];
     abTestWinner = json['ab_test_winner'];
-    abTestAutoSelectWinner = json['ab_test_auto_select_winner'];
-    abTestCompleted = json['ab_test_completed'];
+    abTestAutoSelectWinner = _toBool(json['ab_test_auto_select_winner']);
+    abTestCompleted = _toBool(json['ab_test_completed']);
     linkType = json['link_type'];
     linkedPopupId = json['linked_popup_id'];
     variantBLinkType = json['variant_b_link_type'];
@@ -266,26 +304,69 @@ class Data {
     popupId = json['popup_id'];
     productId = json['product_id'];
     productName = json['product_name'];
-    productPrice = json['product_price'];
+    productPrice = json['product_price']?.toString();
 
-    thumbnail =
-        json['thumbnail'] != null
-            ? ProductThumbnail.fromJson(json['thumbnail'])
-            : null;
-    productThumbnail =
-        json['product_thumbnail'] != null
-            ? ProductThumbnail.fromJson(json['product_thumbnail'])
-            : null;
-    shop = json['shop'] != null ? ShopShop.fromJson(json['shop']) : null;
-    variantBThumbnail =
-        json['variant_b_thumbnail'] != null
-            ? ProductThumbnail.fromJson(json['variant_b_thumbnail'])
-            : null;
+    // thumbnail can be a Map with media, or an empty List []
+    if (json['thumbnail'] != null && json['thumbnail'] is Map<String, dynamic>) {
+      thumbnail = ProductThumbnail.fromJson(json['thumbnail']);
+    }
+    if (json['product_thumbnail'] != null && json['product_thumbnail'] is Map<String, dynamic>) {
+      productThumbnail = ProductThumbnail.fromJson(json['product_thumbnail']);
+    }
+    if (json['variant_b_thumbnail'] != null && json['variant_b_thumbnail'] is Map<String, dynamic>) {
+      variantBThumbnail = ProductThumbnail.fromJson(json['variant_b_thumbnail']);
+    }
+
+    // shop is wrapped in {"original": {...}} in the API
+    if (json['shop'] != null && json['shop'] is Map<String, dynamic>) {
+      final shopData = json['shop'];
+      if (shopData.containsKey('original') && shopData['original'] is Map<String, dynamic>) {
+        shop = ShopShop.fromJson(shopData['original']);
+      } else {
+        shop = ShopShop.fromJson(shopData);
+      }
+    }
 
     // Parse category_names
     if (json['category_names'] != null && json['category_names'] is List) {
       categoryNames = List<String>.from(json['category_names']);
     }
+    if (json['selected_categories'] != null && json['selected_categories'] is List) {
+      selectedCategories = List<String>.from(json['selected_categories']);
+    }
+
+    // Analytics fields
+    clickRate = _toDouble(json['click_rate']);
+    conversionRate = _toDouble(json['conversion_rate']);
+    addToCartRate = _toDouble(json['add_to_cart_rate']);
+    viewDetailsRate = _toDouble(json['view_details_rate']);
+    totalInteractions = json['total_interactions'];
+    totalViews = json['total_views'];
+    performanceStatus = json['performance_status'];
+    lastInteractionAt = json['last_interaction_at'];
+    uniqueSessions = json['unique_sessions'];
+    uniqueUsers = json['unique_users'];
+    // A/B test analytics
+    variantAClickRate = _toDouble(json['variant_a_click_rate']);
+    variantAConversionRate = _toDouble(json['variant_a_conversion_rate']);
+    variantBClickRate = _toDouble(json['variant_b_click_rate']);
+    variantBConversionRate = _toDouble(json['variant_b_conversion_rate']);
+  }
+
+  static bool? _toBool(dynamic value) {
+    if (value == null) return null;
+    if (value is bool) return value;
+    if (value is int) return value == 1;
+    if (value is String) return value == '1' || value == 'true';
+    return null;
+  }
+
+  static double? _toDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+    return null;
   }
 
   Map<String, dynamic> toJson() {
@@ -305,6 +386,8 @@ class Data {
     data['form_fields'] = formFields;
     data['display_delay'] = displayDelay;
     data['show_once_per_session'] = showOncePerSession;
+    data['display_in_categories'] = displayInCategories;
+    data['category_ids'] = categoryIds;
     data['views'] = views;
     data['clicks'] = clicks;
     data['add_to_cart_clicks'] = addToCartClicks;
@@ -355,6 +438,9 @@ class Data {
     }
     if (categoryNames != null) {
       data['category_names'] = categoryNames;
+    }
+    if (selectedCategories != null) {
+      data['selected_categories'] = selectedCategories;
     }
     return data;
   }

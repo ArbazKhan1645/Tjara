@@ -77,7 +77,7 @@ class ResellerService {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'X-Request-From': 'Application',
+          'X-Request-From': 'Dashboard',
         },
       );
 

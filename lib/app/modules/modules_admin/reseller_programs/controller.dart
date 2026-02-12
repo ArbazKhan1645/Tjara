@@ -50,8 +50,6 @@ class ResellerController extends GetxController {
       final program = await _resellerService.getResellerProgram(userId);
       resellerProgram.value = program;
 
-      print(program.id);
-
       // After getting the reseller program, fetch referral members
       if (program.id.isNotEmpty) {
         await fetchReferralMembers(program.id);

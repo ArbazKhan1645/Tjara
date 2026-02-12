@@ -546,240 +546,516 @@ class ResellerProgramScreen extends StatelessWidget {
   }
 
   Widget _buildTeamList(ResellerController controller) {
-    return Column(
-      children: [
-        // Table Header
-        Container(
-          margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-          decoration: BoxDecoration(
-            color: surfaceColor,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _buildHeaderCell('Member', 180),
-                _buildHeaderCell('Rewards', 150),
-                _buildHeaderCell('Recent Order', 120),
-                _buildHeaderCell('Status', 100),
-                _buildHeaderCell('Joined', 100),
-              ],
-            ),
-          ),
-        ),
-
-        // Team Members
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          itemCount: controller.referralMembers.length,
-          itemBuilder: (context, index) {
-            return _buildTeamMemberCard(controller.referralMembers[index]);
-          },
-        ),
-      ],
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(16),
+      itemCount: controller.referralMembers.length,
+      itemBuilder: (context, index) {
+        return _TeamMemberExpandableCard(
+          member: controller.referralMembers[index],
+        );
+      },
     );
   }
+}
 
-  Widget _buildHeaderCell(String text, double width) {
-    return SizedBox(
-      width: width,
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: Colors.grey[600],
-        ),
-      ),
-    );
-  }
+class _TeamMemberExpandableCard extends StatefulWidget {
+  final ResellerProgramModel member;
+  const _TeamMemberExpandableCard({required this.member});
 
-  Widget _buildTeamMemberCard(ResellerProgramModel member) {
+  @override
+  State<_TeamMemberExpandableCard> createState() =>
+      _TeamMemberExpandableCardState();
+}
+
+class _TeamMemberExpandableCardState extends State<_TeamMemberExpandableCard> {
+  bool _isExpanded = false;
+
+  static const Color _teal = Color(0xFF0D9488);
+
+  @override
+  Widget build(BuildContext context) {
+    final member = widget.member;
+    final user = member.owner.user;
+    final isVerified = member.verified_member == 'verified';
+    final orders = member.teamMemberOrders ?? [];
+    final summary = member.transactionsSummary;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: surfaceColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade100),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            // Member Info
-            SizedBox(
-              width: 180,
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: primaryTeal,
-                    child: Text(
-                      (member.owner.user.firstName.isNotEmpty
-                              ? member.owner.user.firstName[0]
-                              : 'U')
-                          .toUpperCase(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
+      child: Column(
+        children: [
+          // Main card content
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Row 1: Avatar + Name/Email + Status
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 22,
+                      backgroundColor: _teal,
+                      child: Text(
+                        (user.firstName.isNotEmpty ? user.firstName[0] : 'U')
+                            .toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${member.owner.user.firstName} ${member.owner.user.lastName}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (member.owner.user.email.isNotEmpty)
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           Text(
-                            member.owner.user.email,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey[600],
+                            '${user.firstName} ${user.lastName}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Rewards
-            SizedBox(
-              width: 150,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildRewardBadge(
-                    'Pending',
-                    '\$${member.status}',
-                    Colors.orange,
-                  ),
-                  const SizedBox(height: 4),
-                  _buildRewardBadge(
-                    'Available',
-                    '\$${member.balance}',
-                    Colors.green,
-                  ),
-                ],
-              ),
-            ),
-
-            // Recent Order
-            SizedBox(
-              width: 120,
-              child:
-                  member.teamMemberOrders == null ||
-                          member.teamMemberOrders!.isEmpty
-                      ? Text(
-                        'No orders',
-                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                      )
-                      : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '#${member.teamMemberOrders?.first.meta.orderId ?? ''}',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
+                          if (user.email.isNotEmpty)
+                            Text(
+                              user.email,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
+                          if (user.phone.isNotEmpty)
+                            Text(
+                              user.phone,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isVerified
+                            ? Colors.green.withValues(alpha: 0.1)
+                            : Colors.orange.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            isVerified
+                                ? Icons.verified
+                                : Icons.schedule,
+                            size: 13,
+                            color: isVerified
+                                ? Colors.green[700]
+                                : Colors.orange[700],
                           ),
+                          const SizedBox(width: 4),
                           Text(
-                            '\$${member.teamMemberOrders?.first.orderTotal ?? ''}',
+                            isVerified ? 'Active' : 'Pending',
                             style: TextStyle(
                               fontSize: 11,
-                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w600,
+                              color: isVerified
+                                  ? Colors.green[700]
+                                  : Colors.orange[700],
                             ),
                           ),
                         ],
                       ),
-            ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
 
-            // Status
-            SizedBox(
-              width: 100,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
+                // Row 2: Info chips
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _infoChip(
+                      Icons.schedule,
+                      'Pending: \$${summary?.pendingAmount.toStringAsFixed(2) ?? '0'}',
+                      Colors.orange,
+                    ),
+                    _infoChip(
+                      Icons.check_circle,
+                      'Available: \$${summary?.availableAmount.toStringAsFixed(2) ?? member.balance.toStringAsFixed(2)}',
+                      Colors.green,
+                    ),
+                    if (orders.isNotEmpty)
+                      _infoChip(
+                        Icons.receipt_long,
+                        'Order #${orders.first.meta.orderId ?? '-'}',
+                        _teal,
+                      ),
+                    _infoChip(
+                      Icons.calendar_today,
+                      member.createdAt != null
+                          ? DateFormat('dd MMM, yyyy').format(
+                              DateTime.parse(member.createdAt!))
+                          : '-',
+                      Colors.grey[600]!,
+                    ),
+                  ],
                 ),
-                decoration: BoxDecoration(
-                  color:
-                      member.verified_member == 'verified'
-                          ? Colors.green.withValues(alpha: 0.1)
-                          : Colors.orange.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  member.verified_member == 'verified' ? 'Verified' : 'Pending',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color:
-                        member.verified_member == 'verified'
-                            ? Colors.green[700]
-                            : Colors.orange[700],
+                const SizedBox(height: 12),
+
+                // Expand/Collapse button
+                InkWell(
+                  onTap: () => setState(() => _isExpanded = !_isExpanded),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8,
+                      horizontal: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _teal.withValues(alpha: 0.06),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          _isExpanded ? 'Hide Details' : 'Show Details',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: _teal,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          _isExpanded
+                              ? Icons.keyboard_arrow_up
+                              : Icons.keyboard_arrow_down,
+                          size: 18,
+                          color: _teal,
+                        ),
+                      ],
+                    ),
                   ),
-                  textAlign: TextAlign.center,
                 ),
-              ),
+              ],
             ),
+          ),
 
-            // Joined Date
-            SizedBox(
-              width: 100,
-              child: Text(
-                member.createdAt != null
-                    ? DateFormat(
-                      'MMM dd, yy',
-                    ).format(DateTime.parse(member.createdAt.toString()))
-                    : '-',
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+          // Expanded details
+          if (_isExpanded) ...[
+            Divider(height: 1, color: Colors.grey.shade200),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Recent Orders
+                  _detailSectionHeader(Icons.receipt_long, 'Recent Orders'),
+                  const SizedBox(height: 10),
+                  if (orders.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text(
+                        'No orders yet',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey[500],
+                        ),
+                      ),
+                    )
+                  else
+                    ...orders.map((order) => _buildOrderItem(order)),
+
+                  const SizedBox(height: 20),
+
+                  // Rewards Summary & Member Info side by side on wide, stacked on narrow
+                  _detailSectionHeader(Icons.monetization_on, 'Rewards Summary'),
+                  const SizedBox(height: 10),
+                  _buildRewardsSummaryCard(member, summary),
+
+                  const SizedBox(height: 20),
+
+                  _detailSectionHeader(Icons.person, 'Member Information'),
+                  const SizedBox(height: 10),
+                  _buildMemberInfoCard(member, user),
+                ],
               ),
             ),
           ],
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildRewardBadge(String label, String value, Color color) {
+  Widget _infoChip(IconData icon, String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _detailSectionHeader(IconData icon, String title) {
     return Row(
-      mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          label == 'Pending' ? Icons.schedule : Icons.check_circle,
-          size: 12,
-          color: color,
-        ),
-        const SizedBox(width: 4),
+        Icon(icon, size: 18, color: _teal),
+        const SizedBox(width: 8),
         Text(
-          '$label: $value',
-          style: TextStyle(
-            fontSize: 11,
-            color: color,
-            fontWeight: FontWeight.w500,
+          title,
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF1A202C),
           ),
         ),
       ],
     );
+  }
+
+  Widget _buildOrderItem(TeamMemberOrder order) {
+    final statusColor = _getOrderStatusColor(order.status);
+    final commission = order.meta.referralEarnings;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade100),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                'Order ID : ${order.meta.orderId ?? '-'}',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: _teal,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  order.status.capitalizeFirst ?? order.status,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: statusColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (commission != null && commission.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Referral Commission: \$$commission',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.green,
+              ),
+            ),
+          ],
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Text(
+                'Order Date : ${_formatOrderDate(order.createdAt)}',
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Order Total : \$${order.orderTotal}',
+            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRewardsSummaryCard(
+    ResellerProgramModel member,
+    TransactionsSummary? summary,
+  ) {
+    final available = summary?.availableAmount ?? member.balance;
+    final pending = summary?.pendingAmount ?? 0;
+    final total = summary?.totalAmount ?? (available + pending);
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade100),
+      ),
+      child: Column(
+        children: [
+          _rewardRow('Available Rewards', '\$${available.toStringAsFixed(2)}', Colors.green),
+          Divider(height: 20, color: Colors.grey.shade200),
+          _rewardRow('Pending Rewards', '\$${pending.toStringAsFixed(2)}', Colors.orange),
+          Divider(height: 20, color: Colors.grey.shade200),
+          _rewardRow('Total Rewards', '\$${total.toStringAsFixed(2)}', const Color(0xFF1A202C), bold: true),
+        ],
+      ),
+    );
+  }
+
+  Widget _rewardRow(String label, String value, Color valueColor, {bool bold = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
+            color: Colors.grey[700],
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: valueColor,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMemberInfoCard(ResellerProgramModel member, User user) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade100),
+      ),
+      child: Column(
+        children: [
+          _memberInfoRow(
+            'Joined',
+            member.createdAt != null
+                ? DateFormat('dd MMM, yyyy').format(DateTime.parse(member.createdAt!))
+                : '-',
+          ),
+          const SizedBox(height: 10),
+          _memberInfoRow(
+            'Status',
+            member.verified_member == 'verified' ? 'Active Member' : 'Pending',
+          ),
+          const SizedBox(height: 10),
+          _memberInfoRow('Contact', user.phone.isNotEmpty ? user.phone : '-'),
+        ],
+      ),
+    );
+  }
+
+  Widget _memberInfoRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey[600],
+          ),
+        ),
+        Flexible(
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1A202C),
+            ),
+            textAlign: TextAlign.end,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Color _getOrderStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return Colors.green;
+      case 'pending':
+        return Colors.orange;
+      case 'cancelled':
+        return Colors.red;
+      case 'processing':
+        return Colors.blue;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String _formatOrderDate(String dateStr) {
+    try {
+      return DateFormat('dd MMM, yyyy').format(DateTime.parse(dateStr));
+    } catch (_) {
+      return dateStr;
+    }
   }
 }
