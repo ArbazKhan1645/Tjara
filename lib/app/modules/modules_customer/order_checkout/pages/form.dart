@@ -1,6 +1,10 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:tjara/app/core/utils/helpers/alerts.dart';
 import 'package:tjara/app/core/widgets/searchable_dropdown.dart';
 import 'package:tjara/app/models/cart/cart_model.dart';
@@ -47,6 +51,12 @@ class FormController extends GetxController {
   var states = <States>[].obs;
   var cities = <City>[].obs;
 
+  // Wallet state
+  var walletBalance = 0.0.obs;
+  var isLoadingWallet = true.obs;
+  var walletError = RxnString();
+  var walletAmount = 0.0.obs;
+
   // Error messages
   var countryError = RxnString();
   var stateError = RxnString();
@@ -56,6 +66,7 @@ class FormController extends GetxController {
   void onInit() {
     super.onInit();
     loadCountries();
+    fetchWalletBalance();
   }
 
   Future<void> loadCountries() async {
@@ -244,6 +255,79 @@ class FormController extends GetxController {
       icon: const Icon(Icons.check_circle, color: Colors.white),
     );
   }
+
+  Future<void> fetchWalletBalance() async {
+    final userId = AuthService.instance.authCustomer?.user?.id ?? '';
+    if (userId.isEmpty) {
+      isLoadingWallet.value = false;
+      return;
+    }
+
+    try {
+      isLoadingWallet.value = true;
+      walletError.value = null;
+
+      final response = await http.get(
+        Uri.parse(
+          'https://api.libanbuy.com/api/reseller-programs/$userId/user-id',
+        ),
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Request-From': 'Application',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final balance = data['reseller_program']?['balance'];
+        walletBalance.value =
+            (balance is num)
+                ? balance.toDouble()
+                : double.tryParse(balance?.toString() ?? '0') ?? 0.0;
+      } else {
+        walletBalance.value = 0.0;
+      }
+    } catch (e) {
+      walletBalance.value = 0.0;
+      walletError.value = 'Failed to load wallet balance';
+    } finally {
+      isLoadingWallet.value = false;
+    }
+  }
+
+  /// Re-verify wallet balance before placing order to prevent bypass
+  Future<bool> verifyWalletBalance(double requestedAmount) async {
+    if (requestedAmount <= 0) return true;
+
+    final userId = AuthService.instance.authCustomer?.user?.id ?? '';
+    if (userId.isEmpty) return false;
+
+    try {
+      final response = await http.get(
+        Uri.parse(
+          'https://api.libanbuy.com/api/reseller-programs/$userId/user-id',
+        ),
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Request-From': 'Application',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final balance = data['reseller_program']?['balance'];
+        final currentBalance =
+            (balance is num)
+                ? balance.toDouble()
+                : double.tryParse(balance?.toString() ?? '0') ?? 0.0;
+        walletBalance.value = currentBalance;
+        return currentBalance >= requestedAmount;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
 }
 
 class FormScreen extends StatefulWidget {
@@ -262,7 +346,9 @@ class _FormScreenState extends State<FormScreen> {
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _zipCodeController = TextEditingController();
   final TextEditingController _couponController = TextEditingController();
+  final TextEditingController _walletAmountController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final ScrollController _scrollController = ScrollController();
 
   late final CartService cartService;
 
@@ -285,6 +371,8 @@ class _FormScreenState extends State<FormScreen> {
     _addressController.dispose();
     _zipCodeController.dispose();
     _couponController.dispose();
+    _walletAmountController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -315,12 +403,24 @@ class _FormScreenState extends State<FormScreen> {
     return null;
   }
 
+  void _scrollToTop() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
   void _onPlaceOrderPressed() async {
     if (!_formKey.currentState!.validate()) {
+      _scrollToTop();
       return;
     }
 
     if (controller.selectedCountry.value == null) {
+      _scrollToTop();
       Get.snackbar(
         'Validation Error',
         'Please select a country',
@@ -333,21 +433,42 @@ class _FormScreenState extends State<FormScreen> {
 
     if (controller.isLoading.value) return;
 
+    final walletAmount = controller.walletAmount.value;
+
     try {
       controller.isLoading.value = true;
+
+      // Re-verify wallet balance before placing order
+      if (walletAmount > 0) {
+        final isBalanceValid = await controller.verifyWalletBalance(
+          walletAmount,
+        );
+        if (!isBalanceValid) {
+          controller.isLoading.value = false;
+          if (!mounted) return;
+          NotificationHelper.showError(
+            context,
+            'Wallet Error',
+            'Insufficient wallet balance. Your current balance is \$${controller.walletBalance.value.toStringAsFixed(2)}',
+          );
+          return;
+        }
+      }
 
       final String firstName = _firstNameController.text.trim();
       final String lastName = _lastNameController.text.trim();
       final String email = _emailController.text.trim();
       final String phone = _phoneController.text.trim();
       final String address = _addressController.text.trim();
-      final String zipCode = _zipCodeController.text.trim();
+      // Zip Code commented out for now
+      // final String zipCode = _zipCodeController.text.trim();
 
       final String countryId =
           controller.selectedCountry.value?.id.toString() ?? '';
-      final String stateId =
-          controller.selectedState.value?.id.toString() ?? '';
-      final String cityId = controller.selectedCity.value?.id.toString() ?? '';
+      // State and City commented out for now
+      // final String stateId =
+      //     controller.selectedState.value?.id.toString() ?? '';
+      // final String cityId = controller.selectedCity.value?.id.toString() ?? '';
 
       final response = await MakeOrderService.placeOrder(
         firstName: firstName,
@@ -355,14 +476,14 @@ class _FormScreenState extends State<FormScreen> {
         email: email,
         phone: phone,
         streetAddress: address,
-        postalCode: zipCode.isEmpty ? "12345" : zipCode,
+        postalCode: "", // commented out - was zipCode
         countryId: countryId,
-        stateId: stateId,
-        cityId: cityId,
+        stateId: '', // commented out - was stateId
+        cityId: '', // commented out - was cityId
         paymentMethod: controller.selectedPaymentOption.value,
         successUrl: "https://tjara.com/checkout",
         cancelUrl: "https://tjara.com/checkout",
-        walletCheckoutAmount: 0,
+        walletCheckoutAmount: walletAmount,
         couponCode:
             controller.isCouponApplied.value
                 ? controller.appliedCouponCode.value
@@ -372,13 +493,18 @@ class _FormScreenState extends State<FormScreen> {
                 ? controller.couponUsageId.value
                 : null,
       );
-      print(response);
 
       if (response.containsKey('error')) {
         throw Exception(response['error']);
       }
 
       if (response['message'] == 'Orders placed successfully!') {
+        _clearForm();
+        await _refreshCartData();
+        Get.until((route) => route.isFirst);
+        showContactDialog(context, const OrderSuccessDialog());
+      } else if (response['message'] ==
+          'Orders placed successfully using wallet payment!') {
         _clearForm();
         await _refreshCartData();
         Get.until((route) => route.isFirst);
@@ -415,12 +541,14 @@ class _FormScreenState extends State<FormScreen> {
     _addressController.clear();
     _zipCodeController.clear();
     _couponController.clear();
+    _walletAmountController.clear();
+    controller.walletAmount.value = 0.0;
     controller.selectedCountry.value = null;
-    controller.selectedState.value = null;
-    controller.selectedCity.value = null;
+    // controller.selectedState.value = null;
+    // controller.selectedCity.value = null;
     controller.countries.clear();
-    controller.states.clear();
-    controller.cities.clear();
+    // controller.states.clear();
+    // controller.cities.clear();
     // Clear coupon state
     controller.removeCoupon();
   }
@@ -506,6 +634,7 @@ class _FormScreenState extends State<FormScreen> {
                 ),
               ),
               SingleChildScrollView(
+                controller: _scrollController,
                 padding: const EdgeInsets.only(bottom: 100),
                 child: Form(
                   key: _formKey,
@@ -554,6 +683,13 @@ class _FormScreenState extends State<FormScreen> {
                       // Coupon Section
                       _CouponSection(
                         couponController: _couponController,
+                        controller: controller,
+                        cart: cart,
+                      ),
+
+                      // Wallet Section
+                      _WalletSection(
+                        walletAmountController: _walletAmountController,
                         controller: controller,
                         cart: cart,
                       ),
@@ -705,7 +841,8 @@ class _BillingInfoSection extends StatelessWidget {
                     maxLines: 2,
                   ),
 
-                  _buildTextField('Zip Code', zipCodeController),
+                  // Zip Code - commented out for now
+                  // _buildTextField('Zip Code', zipCodeController),
 
                   // Country Dropdown
                   Obx(
@@ -723,39 +860,39 @@ class _BillingInfoSection extends StatelessWidget {
                     ),
                   ),
 
-                  // State Dropdown
-                  Obx(
-                    () => SearchableDropdown<States>(
-                      label: 'Region/State',
-                      hint: 'Select State',
-                      searchHint: 'Search state...',
-                      items: controller.states,
-                      value: controller.selectedState.value,
-                      onChanged: controller.onStateChanged,
-                      getDisplayText: (state) => state.name ?? 'Unknown',
-                      isLoading: controller.isLoadingStates.value,
-                      errorMessage: controller.stateError.value,
-                      onRetry: controller.retryLoadStates,
-                      enabled: controller.selectedCountry.value != null,
-                    ),
-                  ),
+                  // State Dropdown - commented out for now, uncomment when needed
+                  // Obx(
+                  //   () => SearchableDropdown<States>(
+                  //     label: 'Region/State',
+                  //     hint: 'Select State',
+                  //     searchHint: 'Search state...',
+                  //     items: controller.states,
+                  //     value: controller.selectedState.value,
+                  //     onChanged: controller.onStateChanged,
+                  //     getDisplayText: (state) => state.name ?? 'Unknown',
+                  //     isLoading: controller.isLoadingStates.value,
+                  //     errorMessage: controller.stateError.value,
+                  //     onRetry: controller.retryLoadStates,
+                  //     enabled: controller.selectedCountry.value != null,
+                  //   ),
+                  // ),
 
-                  // City Dropdown
-                  Obx(
-                    () => SearchableDropdown<City>(
-                      label: 'City',
-                      hint: 'Select City',
-                      searchHint: 'Search city...',
-                      items: controller.cities,
-                      value: controller.selectedCity.value,
-                      onChanged: controller.onCityChanged,
-                      getDisplayText: (city) => city.name,
-                      isLoading: controller.isLoadingCities.value,
-                      errorMessage: controller.cityError.value,
-                      onRetry: controller.retryLoadCities,
-                      enabled: controller.selectedState.value != null,
-                    ),
-                  ),
+                  // City Dropdown - commented out for now, uncomment when needed
+                  // Obx(
+                  //   () => SearchableDropdown<City>(
+                  //     label: 'City',
+                  //     hint: 'Select City',
+                  //     searchHint: 'Search city...',
+                  //     items: controller.cities,
+                  //     value: controller.selectedCity.value,
+                  //     onChanged: controller.onCityChanged,
+                  //     getDisplayText: (city) => city.name,
+                  //     isLoading: controller.isLoadingCities.value,
+                  //     errorMessage: controller.cityError.value,
+                  //     onRetry: controller.retryLoadCities,
+                  //     enabled: controller.selectedState.value != null,
+                  //   ),
+                  // ),
                 ],
               ),
             ),
@@ -1543,13 +1680,18 @@ class _OrderSummariesSection extends StatelessWidget {
     final isFreeDelivery = (cart.totalShippingFees ?? 0) == 0;
 
     return Obx(() {
-      // Calculate final total considering coupon
+      // Calculate final total considering coupon and wallet
       final hasCoupon = controller.isCouponApplied.value;
       final couponDiscount = controller.couponDiscountAmount.value;
-      final finalTotal =
+      final walletUsed = controller.walletAmount.value;
+      final totalBeforeWallet =
           hasCoupon
               ? controller.couponFinalAmount.value
-              : (cart.grandTotal ?? 0);
+              : (cart.grandTotal ?? 0).toDouble();
+      final finalTotal = (totalBeforeWallet - walletUsed).clamp(
+        0.0,
+        double.infinity,
+      );
 
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -1673,6 +1815,41 @@ class _OrderSummariesSection extends StatelessWidget {
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: Colors.green,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+
+            // Wallet Deduction (when used)
+            if (walletUsed > 0) ...[
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.account_balance_wallet,
+                        size: 16,
+                        color: Colors.deepPurple,
+                      ),
+                      SizedBox(width: 4),
+                      Text(
+                        'Wallet Payment',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.deepPurple,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    '- \$${walletUsed.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.deepPurple,
                     ),
                   ),
                 ],
@@ -2424,6 +2601,310 @@ class _CouponSection extends StatelessWidget {
 }
 
 // ========================================
+// Wallet Section
+// ========================================
+class _WalletSection extends StatelessWidget {
+  final TextEditingController walletAmountController;
+  final FormController controller;
+  final CartModel cart;
+
+  const _WalletSection({
+    required this.walletAmountController,
+    required this.controller,
+    required this.cart,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      // Don't show wallet section if loading or user not logged in
+      if (controller.isLoadingWallet.value) {
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: const Row(
+            children: [
+              Icon(
+                Icons.account_balance_wallet,
+                color: _primaryColor,
+                size: 22,
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Wallet',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+              Spacer(),
+              SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  color: _primaryColor,
+                  strokeWidth: 2,
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
+      final balance = controller.walletBalance.value;
+      final hasBalance = balance > 0;
+
+      // Calculate order total (considering coupon)
+      final orderTotal =
+          controller.isCouponApplied.value
+              ? controller.couponFinalAmount.value
+              : (cart.grandTotal ?? 0).toDouble();
+
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header with balance
+              Row(
+                children: [
+                  const Icon(
+                    Icons.account_balance_wallet,
+                    color: _primaryColor,
+                    size: 22,
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Wallet',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color:
+                          hasBalance
+                              ? Colors.green.shade50
+                              : Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color:
+                            hasBalance
+                                ? Colors.green.shade200
+                                : Colors.grey.shade300,
+                      ),
+                    ),
+                    child: Text(
+                      'Balance: \$${balance.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color:
+                            hasBalance
+                                ? Colors.green.shade700
+                                : Colors.grey.shade500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 14),
+
+              // Wallet amount input
+              if (!hasBalance)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        size: 18,
+                        color: Colors.grey.shade400,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'No wallet balance available',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Use wallet balance for this order',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: walletAmountController,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            onChanged: (value) {
+                              final parsed = double.tryParse(value) ?? 0.0;
+                              final maxAllowed =
+                                  balance < orderTotal ? balance : orderTotal;
+                              if (parsed > maxAllowed) {
+                                walletAmountController.text = maxAllowed
+                                    .toStringAsFixed(2);
+                                walletAmountController
+                                    .selection = TextSelection.fromPosition(
+                                  TextPosition(
+                                    offset: walletAmountController.text.length,
+                                  ),
+                                );
+                                controller.walletAmount.value = maxAllowed;
+                              } else {
+                                controller.walletAmount.value = parsed;
+                              }
+                            },
+                            decoration: InputDecoration(
+                              hintText: '0.00',
+                              prefixText: '\$ ',
+                              prefixStyle: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                              hintStyle: TextStyle(
+                                color: Colors.grey.shade400,
+                                fontSize: 14,
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey.shade50,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.shade200,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.shade200,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(
+                                  color: _primaryColor,
+                                  width: 1.5,
+                                ),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        // Use max button
+                        GestureDetector(
+                          onTap: () {
+                            final maxUsable =
+                                balance < orderTotal ? balance : orderTotal;
+                            walletAmountController.text = maxUsable
+                                .toStringAsFixed(2);
+                            controller.walletAmount.value = maxUsable;
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _primaryColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: _primaryColor.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: const Text(
+                              'Use Max',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: _primaryColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // Max limit hint
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(
+                        'Max: \$${(balance < orderTotal ? balance : orderTotal).toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+}
+
+// ========================================
 // Bottom Place Order Bar
 // ========================================
 class _BottomPlaceOrderBar extends StatelessWidget {
@@ -2469,8 +2950,19 @@ class _BottomPlaceOrderBar extends StatelessWidget {
               ),
             ],
           ),
-          child: Obx(
-            () => ElevatedButton(
+          child: Obx(() {
+            final hasCoupon = controller.isCouponApplied.value;
+            final walletUsed = controller.walletAmount.value;
+            final totalBeforeWallet =
+                hasCoupon
+                    ? controller.couponFinalAmount.value
+                    : (cart.grandTotal ?? 0).toDouble();
+            final finalTotal = (totalBeforeWallet - walletUsed).clamp(
+              0.0,
+              double.infinity,
+            );
+
+            return ElevatedButton(
               onPressed: controller.isLoading.value ? null : onPlaceOrder,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,
@@ -2492,22 +2984,30 @@ class _BottomPlaceOrderBar extends StatelessWidget {
                           strokeWidth: 2,
                         ),
                       )
-                      : const Row(
+                      : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
+                          const Text(
                             'Place Order',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          SizedBox(width: 8),
-                          Icon(Icons.arrow_forward, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            '\$${finalTotal.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.arrow_forward, size: 20),
                         ],
                       ),
-            ),
-          ),
+            );
+          }),
         ),
       ),
     );

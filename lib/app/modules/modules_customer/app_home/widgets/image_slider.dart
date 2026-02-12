@@ -232,11 +232,9 @@ class _ImageSliderState extends State<ImageSlider>
               fit: BoxFit.contain,
               memCacheWidth: MediaQuery.of(context).size.width.toInt(),
               fadeInDuration: Duration.zero,
-              placeholder:
-                  (_, __) => Container(
-                    color: Colors.grey[200],
-                    child: const Center(child: CircularProgressIndicator()),
-                  ),
+              fadeOutDuration: Duration.zero,
+              placeholderFadeInDuration: Duration.zero,
+              placeholder: (_, __) => Container(color: Colors.grey[200]),
               errorWidget: (_, __, ___) => _buildImageErrorWidget(),
             ),
           )
@@ -382,16 +380,11 @@ class _ImageSliderState extends State<ImageSlider>
                 cacheManager: PersistentCacheManager(),
                 imageUrl: widget.imageUrls[imageIndex],
                 fit: BoxFit.contain,
+                fadeInDuration: Duration.zero,
+                fadeOutDuration: Duration.zero,
+                placeholderFadeInDuration: Duration.zero,
                 placeholder:
-                    (context, url) => Container(
-                      color: Colors.transparent,
-                      child: const Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation(Colors.grey),
-                        ),
-                      ),
-                    ),
+                    (context, url) => Container(color: Colors.transparent),
                 errorWidget:
                     (context, url, error) =>
                         Container(color: Colors.grey.shade100),

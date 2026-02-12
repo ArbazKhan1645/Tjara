@@ -1166,7 +1166,7 @@ class _OrderSummaryCard extends StatelessWidget {
           // Total
           _SummaryRow(
             label: 'Total',
-            value: '\$${cartItem.shopFinalTotal.toStringAsFixed(2)}',
+            value: '\$${cartItem.shopGrandTotal.toStringAsFixed(2)}',
             isBold: true,
           ),
 

@@ -59,7 +59,7 @@ class MakeOrderService {
         },
         "user_address": {
           "street_address": streetAddress.trim(),
-          "postal_code": postalCode.isNotEmpty ? postalCode : "12345",
+          // "postal_code": postalCode.isNotEmpty ? postalCode : "12345",
           "country_id": countryId,
           "state_id": stateId.isNotEmpty ? stateId : "",
           "city_id": cityId.isNotEmpty ? cityId : "",

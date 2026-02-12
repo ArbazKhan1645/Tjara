@@ -73,7 +73,7 @@ class MyApp extends StatelessWidget {
       },
 
       themeMode: ThemeMode.light,
-      transitionDuration: const Duration(milliseconds: 300),
+      transitionDuration: const Duration(milliseconds: 200),
       initialRoute: AppPages.INITIAL,
       getPages: AppPages.routes,
     );

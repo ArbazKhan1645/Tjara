@@ -343,21 +343,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
   }
 
   void _initializeImageUrls() {
-    final videoUrl =
-        widget.product.video?.message?.url ??
-        widget.product.video?.message?.optimizedMediaUrl;
-    if (videoUrl?.isNotEmpty == true) {
-      _imageUrlsNotifier.value = [];
-    } else {
-      final thumbnailUrl =
-          widget.product.thumbnail?.media?.cdnThumbnailUrl ??
-          widget.product.thumbnail?.media?.optimizedMediaCdnUrl ??
-          widget.product.thumbnail?.media?.cdnUrl ??
-          widget.product.thumbnail?.media?.url ??
-          widget.product.thumbnail?.media?.localUrl ??
-          widget.product.thumbnail?.media?.optimizedMediaUrl ??
-          '';
+    final thumbnailUrl =
+        widget.product.thumbnail?.media?.optimizedMediaUrl ??
+        widget.product.thumbnail?.media?.cdnThumbnailUrl ??
+        widget.product.thumbnail?.media?.optimizedMediaCdnUrl ??
+        widget.product.thumbnail?.media?.cdnUrl ??
+        widget.product.thumbnail?.media?.url ??
+        widget.product.thumbnail?.media?.localUrl ??
+        '';
+    if (thumbnailUrl.isNotEmpty) {
       _imageUrlsNotifier.value = [thumbnailUrl];
+    } else {
+      _imageUrlsNotifier.value = [];
     }
   }
 

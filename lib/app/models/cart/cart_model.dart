@@ -270,10 +270,15 @@ class CartItem {
     required this.firstOrderDiscountPercentage,
   });
 
-  // Calculate shop final total after discounts + shipping
+  // Calculate shop final total after discounts (without shipping)
   double get shopFinalTotal {
+    return shopTotal - shopDiscount;
+  }
+
+  // Calculate grand total including shipping
+  double get shopGrandTotal {
     final shippingCost = freeShipping ? 0.0 : maxShippingFee;
-    return shopTotal - shopDiscount + shippingCost;
+    return shopFinalTotal + shippingCost;
   }
 
   // Get estimated delivery date based on shipping time
