@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:tjara/app/modules/modules_admin/admin_shops_module/const/app_urls.dart';
+import 'package:tjara/app/modules/modules_admin/admin/admin_shops_module/const/app_urls.dart';
 import 'package:path/path.dart' as path;
 
 class EditShopController extends GetxController {

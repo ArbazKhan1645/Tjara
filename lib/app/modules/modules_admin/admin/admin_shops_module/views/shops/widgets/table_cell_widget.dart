@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tjara/app/modules/modules_admin/admin_shops_module/const/appColors.dart';
-import 'package:tjara/app/modules/modules_admin/admin_shops_module/views/shops/widgets/drop_down_widget.dart';
+import 'package:tjara/app/modules/modules_admin/admin/admin_shops_module/const/appColors.dart';
+import 'package:tjara/app/modules/modules_admin/admin/admin_shops_module/views/shops/widgets/drop_down_widget.dart';
 
 Widget tableCellWidget({required String text, TextStyle? style}) {
   return Expanded(

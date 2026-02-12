@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tjara/app/modules/authentication/controllers/auth_controller.dart';
-import 'package:tjara/app/modules/modules_admin/admin_shops_module/const/appColors.dart';
+import 'package:tjara/app/modules/modules_admin/admin/admin_shops_module/const/appColors.dart';
 import 'package:tjara/app/services/auth/apis.dart';
 import 'package:tjara/app/models/users_model.dart/customer_models.dart';
 

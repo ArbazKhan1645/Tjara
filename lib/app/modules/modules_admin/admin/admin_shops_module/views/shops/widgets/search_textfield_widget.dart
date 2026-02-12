@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tjara/app/modules/modules_admin/admin_shops_module/const/appColors.dart';
+import 'package:tjara/app/modules/modules_admin/admin/admin_shops_module/const/appColors.dart';
 
 class SearchField extends StatelessWidget {
   final String hintText;

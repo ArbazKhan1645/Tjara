@@ -8,8 +8,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:tjara/app/modules/modules_admin/admin_shops_module/const/app_urls.dart';
-import 'package:tjara/app/modules/modules_admin/admin_shops_module/models/shopData_model.dart';
+import 'package:tjara/app/modules/modules_admin/admin/admin_shops_module/const/app_urls.dart';
+import 'package:tjara/app/modules/modules_admin/admin/admin_shops_module/models/shopData_model.dart';
 import 'dart:convert';
 
 import 'package:tjara/app/services/auth/auth_service.dart';
@@ -150,8 +150,6 @@ class ShopController extends GetxController {
       'Content-Type': 'application/json',
       'Accept': 'application/json, text/plain, */*',
     };
-
-    print(verificationFilter.value);
 
     final queryParams = {
       'page': PageNo,

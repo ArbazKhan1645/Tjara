@@ -47,7 +47,7 @@ import 'package:tjara/app/modules/modules_customer/my_activities/my_bids/views/m
 import 'package:tjara/app/modules/modules_customer/my_activities/my_job_applications/views/my_job_applications_view.dart';
 import 'package:tjara/app/modules/modules_customer/my_activities/my_participations/views/my_participations_view.dart';
 import 'package:tjara/app/modules/modules_customer/orders_dashboard/widgets/chats.dart';
-import 'package:tjara/app/modules/modules_admin/admin_shops_module/views/shops/shops_view.dart';
+import 'package:tjara/app/modules/modules_admin/admin/admin_shops_module/views/shops/shops_view.dart';
 import 'package:tjara/app/modules/modules_customer/tjara_faqs/faqs.dart';
 import 'package:tjara/app/modules/web_settings/content_management/content_management_screen.dart';
 import 'package:tjara/app/modules/web_settings/web_settings_dashboard/web_settings_dashboard_screen.dart';

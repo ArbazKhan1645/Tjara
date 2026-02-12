@@ -3,12 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl_phone_field/country_picker_dialog.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
-import 'package:tjara/app/modules/modules_admin/admin_shops_module/const/appColors.dart';
-import 'package:tjara/app/modules/modules_admin/admin_shops_module/views/edit_shop/controllers/edit_shop_controller.dart';
-import 'package:tjara/app/modules/modules_admin/admin_shops_module/views/edit_shop/widgets/infoTextWidget.dart';
-import 'package:tjara/app/modules/modules_admin/admin_shops_module/views/edit_shop/widgets/input_label_widget.dart';
-import 'package:tjara/app/modules/modules_admin/admin_shops_module/views/edit_shop/widgets/profile_card.dart';
-import 'package:tjara/app/modules/modules_admin/admin_shops_module/views/edit_shop/widgets/text_field_widget.dart';
+import 'package:tjara/app/modules/modules_admin/admin/admin_shops_module/const/appColors.dart';
+import 'package:tjara/app/modules/modules_admin/admin/admin_shops_module/views/edit_shop/controllers/edit_shop_controller.dart';
+import 'package:tjara/app/modules/modules_admin/admin/admin_shops_module/views/edit_shop/widgets/infoTextWidget.dart';
+import 'package:tjara/app/modules/modules_admin/admin/admin_shops_module/views/edit_shop/widgets/input_label_widget.dart';
+import 'package:tjara/app/modules/modules_admin/admin/admin_shops_module/views/edit_shop/widgets/profile_card.dart';
+import 'package:tjara/app/modules/modules_admin/admin/admin_shops_module/views/edit_shop/widgets/text_field_widget.dart';
 
 class ShopInfoImagesWidget extends StatefulWidget {
   const ShopInfoImagesWidget({

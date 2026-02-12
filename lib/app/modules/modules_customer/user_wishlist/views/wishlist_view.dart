@@ -79,6 +79,7 @@ class WishlistScreen extends GetView<WishlistController> {
 
   Widget _buildWishlistContent(WishlistController controller) {
     return CustomScrollView(
+      controller: controller.scrollController,
       slivers: [
         // Products Grid
         Obx(() {
@@ -100,25 +101,30 @@ class WishlistScreen extends GetView<WishlistController> {
             return SliverToBoxAdapter(child: _buildEmptyState());
           }
 
-          return SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            sliver: SliverMasonryGrid.count(
-              crossAxisCount: 2,
-              mainAxisSpacing: 20,
-              crossAxisSpacing: 12,
-              childCount: wishlistItems.length,
-              itemBuilder: (context, index) {
-                final product = wishlistItems[index].product;
-                if (product == null) return const SizedBox.shrink();
+          return SliverToBoxAdapter(
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              child: MasonryGridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                mainAxisSpacing: 20,
+                crossAxisSpacing: 12,
+                itemCount: wishlistItems.length,
+                itemBuilder: (context, index) {
+                  final product = wishlistItems[index].product;
+                  if (product == null) return const SizedBox.shrink();
 
-                return TemuProductCard(
-                  wishlistId: wishlistItems[index].id.toString(),
-                  isWishListProduct: true,
-                  isshownfromcategories: false,
-                  key: ValueKey('product_${product.id}'),
-                  product: product,
-                );
-              },
+                  return TemuProductCard(
+                    wishlistId: wishlistItems[index].id.toString(),
+                    isWishListProduct: true,
+                    isshownfromcategories: false,
+                    key: ValueKey('product_${product.id}'),
+                    product: product,
+                  );
+                },
+              ),
             ),
           );
         }),

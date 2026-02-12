@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tjara/app/modules/modules_admin/admin_shops_module/const/appColors.dart';
-import 'package:tjara/app/modules/modules_admin/admin_shops_module/views/edit_shop/controllers/edit_shop_controller.dart';
-import 'package:tjara/app/modules/modules_admin/admin_shops_module/views/edit_shop/widgets/shop_info_Widget.dart';
+import 'package:tjara/app/modules/modules_admin/admin/admin_shops_module/const/appColors.dart';
+import 'package:tjara/app/modules/modules_admin/admin/admin_shops_module/views/edit_shop/controllers/edit_shop_controller.dart';
+import 'package:tjara/app/modules/modules_admin/admin/admin_shops_module/views/edit_shop/widgets/shop_info_Widget.dart';
 
 class SettingsMenu extends StatelessWidget {
   final EditShopController controller = Get.put(EditShopController());

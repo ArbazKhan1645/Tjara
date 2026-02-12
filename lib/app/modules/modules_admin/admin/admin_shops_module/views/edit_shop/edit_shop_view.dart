@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tjara/app/modules/modules_admin/admin_shops_module/const/appColors.dart';
-import 'package:tjara/app/modules/modules_admin/admin_shops_module/views/edit_shop/widgets/settings_widget.dart';
+import 'package:tjara/app/modules/modules_admin/admin/admin_shops_module/const/appColors.dart';
+import 'package:tjara/app/modules/modules_admin/admin/admin_shops_module/views/edit_shop/widgets/settings_widget.dart';
 
 class EditShopView extends StatefulWidget {
   const EditShopView({

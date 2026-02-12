@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tjara/app/modules/modules_admin/admin_shops_module/const/appColors.dart';
+import 'package:tjara/app/modules/modules_admin/admin/admin_shops_module/const/appColors.dart';
 
 class CustomDropdown extends StatefulWidget {
   final List<String> items;

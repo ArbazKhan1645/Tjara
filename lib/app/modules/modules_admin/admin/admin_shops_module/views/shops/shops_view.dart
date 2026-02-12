@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:tjara/app/core/widgets/admin_app_bar_actions.dart';
 import 'package:tjara/app/modules/modules_admin/admin/myshop/view.dart';
 
-import 'package:tjara/app/modules/modules_admin/admin_shops_module/views/shops/controllers/shop_controller.dart';
+import 'package:tjara/app/modules/modules_admin/admin/admin_shops_module/views/shops/controllers/shop_controller.dart';
 
 class ShopView extends StatefulWidget {
   const ShopView({super.key});
