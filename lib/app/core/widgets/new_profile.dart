@@ -30,6 +30,8 @@ class _UserMenuDialogState extends State<UserMenuDialog> {
   String? shopBalance;
   bool isLoadingBalance = true;
 
+  bool isShopFound = false;
+
   @override
   void initState() {
     super.initState();
@@ -63,6 +65,9 @@ class _UserMenuDialogState extends State<UserMenuDialog> {
         final balance = data['shop']?['balance'];
         if (mounted) {
           setState(() {
+            if (data['shop'] != null) {
+              isShopFound = true;
+            }
             shopBalance = balance?.toString() ?? '0.00';
             isLoadingBalance = false;
           });
@@ -77,6 +82,7 @@ class _UserMenuDialogState extends State<UserMenuDialog> {
     } catch (_) {
       if (mounted) {
         setState(() {
+          isShopFound = false;
           isLoadingBalance = false;
         });
       }
@@ -151,8 +157,7 @@ class _UserMenuDialogState extends State<UserMenuDialog> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          AuthService.instance.authCustomer?.user?.email ??
-                              'Tjaragroup@gmail.com',
+                          AuthService.instance.authCustomer?.user?.email ?? '',
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.grey.shade600,
@@ -187,31 +192,32 @@ class _UserMenuDialogState extends State<UserMenuDialog> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Column(
                 children: [
-                  // Shop Balance
-                  _MenuItem(
-                    icon: Icons.store_outlined,
-                    title: 'Shop Balance:',
-                    trailing: isLoadingBalance
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Color(0xFFF97316),
-                            ),
-                          )
-                        : Text(
-                            '\$${shopBalance ?? '0.00'}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFFF97316),
-                            ),
-                          ),
-                    onTap: null,
-                  ),
-
-                  const Divider(height: 1, thickness: 1),
+                  if (isShopFound)
+                    // Shop Balance
+                    _MenuItem(
+                      icon: Icons.store_outlined,
+                      title: 'Shop Balance:',
+                      trailing:
+                          isLoadingBalance
+                              ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Color(0xFFF97316),
+                                ),
+                              )
+                              : Text(
+                                '\$${shopBalance ?? '0.00'}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFFF97316),
+                                ),
+                              ),
+                      onTap: null,
+                    ),
+                  if (isShopFound) const Divider(height: 1, thickness: 1),
 
                   // Reseller Balance
                   _MenuItem(
@@ -428,7 +434,7 @@ class _SwitchAccountDialogState extends State<SwitchAccountDialog> {
     super.initState();
     selectedRole =
         authService.authCustomer?.user?.meta?.dashboardView?.toLowerCase() ??
-            authService.role;
+        authService.role;
   }
 
   @override
@@ -472,14 +478,15 @@ class _SwitchAccountDialogState extends State<SwitchAccountDialog> {
     final isSelected = selectedRole?.toLowerCase() == role.toLowerCase();
 
     return GestureDetector(
-      onTap: _isSwitching
-          ? null
-          : () {
-              setState(() {
-                selectedRole = role;
-              });
-              _switchRole(role);
-            },
+      onTap:
+          _isSwitching
+              ? null
+              : () {
+                setState(() {
+                  selectedRole = role;
+                });
+                _switchRole(role);
+              },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
@@ -601,10 +608,12 @@ class _SwitchAccountDialogState extends State<SwitchAccountDialog> {
         // Update dashboardView in auth state
         final currentAuth = authService.authCustomer;
         if (currentAuth != null && currentAuth.user != null) {
-          final updatedMeta = currentAuth.user!.meta != null
-              ? currentAuth.user!.meta!
-                  .copyWith(dashboardView: role.toLowerCase())
-              : Meta(dashboardView: role.toLowerCase());
+          final updatedMeta =
+              currentAuth.user!.meta != null
+                  ? currentAuth.user!.meta!.copyWith(
+                    dashboardView: role.toLowerCase(),
+                  )
+                  : Meta(dashboardView: role.toLowerCase());
           final updatedUser = currentAuth.user!.copyWith(meta: updatedMeta);
           final updatedAuth = currentAuth.copyWith(user: updatedUser);
           authService.saveAuthState(updatedAuth);
