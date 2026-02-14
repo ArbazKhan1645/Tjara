@@ -9,6 +9,7 @@ import 'package:tjara/app/services/auth/auth_service.dart';
 
 import 'package:tjara/app/models/popups/popups-model.dart';
 import 'package:tjara/app/modules/modules_admin/popups/popup_analytics.dart';
+import 'package:tjara/main.dart';
 
 // Updated Popup Controller
 class PopupController extends GetxController {
@@ -32,7 +33,6 @@ class PopupController extends GetxController {
   final typeOptions = [
     {'value': '', 'label': 'All Types'},
     {'value': 'banner_popup', 'label': 'Banner Popup'},
-    {'value': 'lead_generation_popup', 'label': 'Lead Generation'},
     {'value': 'feature_product_popup', 'label': 'Feature Product'},
   ];
 
@@ -250,7 +250,10 @@ class PopupListView extends GetView<PopupController> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Get.to(() => AddPopupView())?.then((_) => controller.refreshData()),
+        onPressed:
+            () => Get.to(
+              () => AddPopupView(),
+            )?.then((_) => controller.refreshData()),
         backgroundColor: Colors.teal,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text(
@@ -305,19 +308,24 @@ class PopupListView extends GetView<PopupController> {
             ),
           ),
           Obx(
-            () => controller.searchQuery.value.isNotEmpty
-                ? InkWell(
-                    onTap: () {
-                      controller.searchController.clear();
-                      controller.searchQuery.value = '';
-                    },
-                    borderRadius: BorderRadius.circular(20),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: Icon(Icons.clear, color: Colors.grey[400], size: 18),
-                    ),
-                  )
-                : const SizedBox.shrink(),
+            () =>
+                controller.searchQuery.value.isNotEmpty
+                    ? InkWell(
+                      onTap: () {
+                        controller.searchController.clear();
+                        controller.searchQuery.value = '';
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Icon(
+                          Icons.clear,
+                          color: Colors.grey[400],
+                          size: 18,
+                        ),
+                      ),
+                    )
+                    : const SizedBox.shrink(),
           ),
         ],
       ),
@@ -331,20 +339,22 @@ class PopupListView extends GetView<PopupController> {
         () => Row(
           children: [
             _buildFilterChip(
-              label: controller.selectedType.value.isEmpty
-                  ? 'All Types'
-                  : controller.typeOptions.firstWhere(
-                      (o) => o['value'] == controller.selectedType.value,
-                      orElse: () => {'label': 'All Types'},
-                    )['label']!,
+              label:
+                  controller.selectedType.value.isEmpty
+                      ? 'All Types'
+                      : controller.typeOptions.firstWhere(
+                        (o) => o['value'] == controller.selectedType.value,
+                        orElse: () => {'label': 'All Types'},
+                      )['label']!,
               isActive: controller.selectedType.value.isNotEmpty,
               onTap: () => _showTypeFilterSheet(),
             ),
             const SizedBox(width: 8),
             _buildFilterChip(
-              label: controller.selectedStatus.value.isEmpty
-                  ? 'All Status'
-                  : controller.selectedStatus.value == 'active'
+              label:
+                  controller.selectedStatus.value.isEmpty
+                      ? 'All Status'
+                      : controller.selectedStatus.value == 'active'
                       ? 'Active'
                       : 'Inactive',
               isActive: controller.selectedStatus.value.isNotEmpty,
@@ -359,7 +369,10 @@ class PopupListView extends GetView<PopupController> {
                   controller.selectedStatus.value = '';
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.red[50],
                     borderRadius: BorderRadius.circular(20),
@@ -370,7 +383,14 @@ class PopupListView extends GetView<PopupController> {
                     children: [
                       Icon(Icons.clear_all, size: 14, color: Colors.red[400]),
                       const SizedBox(width: 4),
-                      Text('Clear', style: TextStyle(fontSize: 12, color: Colors.red[400], fontWeight: FontWeight.w500)),
+                      Text(
+                        'Clear',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.red[400],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -382,7 +402,11 @@ class PopupListView extends GetView<PopupController> {
     );
   }
 
-  Widget _buildFilterChip({required String label, required bool isActive, required VoidCallback onTap}) {
+  Widget _buildFilterChip({
+    required String label,
+    required bool isActive,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -418,7 +442,9 @@ class PopupListView extends GetView<PopupController> {
   Widget _buildPopupList() {
     return Obx(() {
       if (controller.isLoading.value) {
-        return const Center(child: CircularProgressIndicator(color: Colors.teal));
+        return const Center(
+          child: CircularProgressIndicator(color: Colors.teal),
+        );
       }
 
       final popups = controller.filteredPopups;
@@ -432,7 +458,11 @@ class PopupListView extends GetView<PopupController> {
               const SizedBox(height: 16),
               Text(
                 'No popups found',
-                style: TextStyle(color: Colors.grey[500], fontSize: 16, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
@@ -467,13 +497,23 @@ class PopupListView extends GetView<PopupController> {
     DateTime? endTime;
     DateTime? startTime;
     if (popup.endTime != null) endTime = DateTime.tryParse(popup.endTime!);
-    if (popup.startTime != null) startTime = DateTime.tryParse(popup.startTime!);
+    if (popup.startTime != null)
+      startTime = DateTime.tryParse(popup.startTime!);
     final isExpired = endTime != null && now.isAfter(endTime);
     final isActive = popup.isActive == true && !isExpired;
 
-    final statusColor = isExpired ? const Color(0xFFEF4444) : (isActive ? const Color(0xFF10B981) : Colors.grey);
-    final statusText = isExpired ? 'Expired' : (isActive ? 'Active' : 'Inactive');
-    final statusIcon = isExpired ? Icons.timer_off_outlined : (isActive ? Icons.check_circle_outline : Icons.pause_circle_outline);
+    final statusColor =
+        isExpired
+            ? const Color(0xFFEF4444)
+            : (isActive ? const Color(0xFF10B981) : Colors.grey);
+    final statusText =
+        isExpired ? 'Expired' : (isActive ? 'Active' : 'Inactive');
+    final statusIcon =
+        isExpired
+            ? Icons.timer_off_outlined
+            : (isActive
+                ? Icons.check_circle_outline
+                : Icons.pause_circle_outline);
 
     final int views = popup.views ?? 0;
     final int clicks = popup.clicks ?? 0;
@@ -513,18 +553,28 @@ class PopupListView extends GetView<PopupController> {
                     color: Colors.grey[100],
                     border: Border.all(color: Colors.grey[200]!),
                   ),
-                  child: imageUrl != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.network(
-                            imageUrl,
-                            width: 52,
-                            height: 52,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Icon(Icons.image_not_supported, size: 22, color: Colors.grey[400]),
+                  child:
+                      imageUrl != null
+                          ? ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.network(
+                              imageUrl,
+                              width: 52,
+                              height: 52,
+                              fit: BoxFit.cover,
+                              errorBuilder:
+                                  (_, __, ___) => Icon(
+                                    Icons.image_not_supported,
+                                    size: 22,
+                                    color: Colors.grey[400],
+                                  ),
+                            ),
+                          )
+                          : Icon(
+                            Icons.campaign_outlined,
+                            size: 22,
+                            color: Colors.grey[400],
                           ),
-                        )
-                      : Icon(Icons.campaign_outlined, size: 22, color: Colors.grey[400]),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -533,7 +583,10 @@ class PopupListView extends GetView<PopupController> {
                     children: [
                       Text(
                         popup.name ?? 'Unnamed',
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -542,13 +595,26 @@ class PopupListView extends GetView<PopupController> {
                         children: [
                           Text(
                             'ID: ${popup.popupId ?? '-'}',
-                            style: TextStyle(fontSize: 11, color: Colors.grey[500], fontFamily: 'monospace'),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey[500],
+                              fontFamily: 'monospace',
+                            ),
                           ),
                           if (popup.userSegment != null) ...[
-                            Text('  \u2022  ', style: TextStyle(fontSize: 11, color: Colors.grey[400])),
+                            Text(
+                              '  \u2022  ',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey[400],
+                              ),
+                            ),
                             Text(
                               _getSegmentLabel(popup.userSegment!),
-                              style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey[500],
+                              ),
                             ),
                           ],
                         ],
@@ -558,7 +624,10 @@ class PopupListView extends GetView<PopupController> {
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
                     color: statusColor.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(20),
@@ -570,7 +639,11 @@ class PopupListView extends GetView<PopupController> {
                       const SizedBox(width: 4),
                       Text(
                         statusText,
-                        style: TextStyle(fontSize: 11, color: statusColor, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: statusColor,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
@@ -584,23 +657,40 @@ class PopupListView extends GetView<PopupController> {
               spacing: 6,
               runSpacing: 6,
               children: [
-                _buildInfoChip(Icons.widgets_outlined, typeLabel, color: Colors.teal),
-                if (popup.pageLocation != null && popup.pageLocation!.isNotEmpty)
-                  _buildInfoChip(Icons.location_on_outlined, popup.pageLocation!),
+                _buildInfoChip(
+                  Icons.widgets_outlined,
+                  typeLabel,
+                  color: Colors.teal,
+                ),
+                if (popup.pageLocation != null &&
+                    popup.pageLocation!.isNotEmpty)
+                  _buildInfoChip(
+                    Icons.location_on_outlined,
+                    popup.pageLocation!,
+                  ),
                 if (startTime != null && endTime != null)
                   _buildInfoChip(
                     Icons.calendar_today_outlined,
                     '${_formatShortDate(startTime)} - ${_formatShortDate(endTime)}',
                   ),
                 if (isExpired && endTime != null)
-                  _buildInfoChip(Icons.timer_off_outlined, 'Ended ${_timeAgo(endTime)}', color: const Color(0xFFEF4444))
+                  _buildInfoChip(
+                    Icons.timer_off_outlined,
+                    'Ended ${_timeAgo(endTime)}',
+                    color: const Color(0xFFEF4444),
+                  )
                 else if (!isExpired && endTime != null)
-                  _buildInfoChip(Icons.schedule, '${endTime.difference(now).inDays}d left', color: const Color(0xFF10B981)),
+                  _buildInfoChip(
+                    Icons.schedule,
+                    '${endTime.difference(now).inDays}d left',
+                    color: const Color(0xFF10B981),
+                  ),
               ],
             ),
 
             // Row 3: Categories
-            if (popup.categoryNames != null && popup.categoryNames!.isNotEmpty) ...[
+            if (popup.categoryNames != null &&
+                popup.categoryNames!.isNotEmpty) ...[
               const SizedBox(height: 8),
               Wrap(
                 spacing: 4,
@@ -608,23 +698,40 @@ class PopupListView extends GetView<PopupController> {
                 children: [
                   ...popup.categoryNames!.take(3).map((cat) {
                     return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.teal.withValues(alpha: 0.06),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.teal.withValues(alpha: 0.15)),
+                        border: Border.all(
+                          color: Colors.teal.withValues(alpha: 0.15),
+                        ),
                       ),
-                      child: Text(cat, style: const TextStyle(fontSize: 11, color: Colors.teal)),
+                      child: Text(
+                        cat,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.teal,
+                        ),
+                      ),
                     );
                   }),
                   if (popup.categoryNames!.length > 3)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.grey[100],
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text('+${popup.categoryNames!.length - 3} more', style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+                      child: Text(
+                        '+${popup.categoryNames!.length - 3} more',
+                        style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                      ),
                     ),
                 ],
               ),
@@ -641,14 +748,31 @@ class PopupListView extends GetView<PopupController> {
               ),
               child: Row(
                 children: [
-                  _buildAnalyticItem('Views', views.toString(), Icons.visibility_outlined),
+                  _buildAnalyticItem(
+                    'Views',
+                    views.toString(),
+                    Icons.visibility_outlined,
+                  ),
                   _buildAnalyticDivider(),
-                  _buildAnalyticItem('Clicks', clicks.toString(), Icons.touch_app_outlined),
+                  _buildAnalyticItem(
+                    'Clicks',
+                    clicks.toString(),
+                    Icons.touch_app_outlined,
+                  ),
                   _buildAnalyticDivider(),
-                  _buildAnalyticItem('CTR', '${ctr.toStringAsFixed(1)}%', Icons.trending_up, highlight: ctr > 2),
+                  _buildAnalyticItem(
+                    'CTR',
+                    '${ctr.toStringAsFixed(1)}%',
+                    Icons.trending_up,
+                    highlight: ctr > 2,
+                  ),
                   if (popup.conversions != null && popup.conversions! > 0) ...[
                     _buildAnalyticDivider(),
-                    _buildAnalyticItem('Conv.', popup.conversions.toString(), Icons.shopping_cart_outlined),
+                    _buildAnalyticItem(
+                      'Conv.',
+                      popup.conversions.toString(),
+                      Icons.shopping_cart_outlined,
+                    ),
                   ],
                 ],
               ),
@@ -661,7 +785,10 @@ class PopupListView extends GetView<PopupController> {
               children: [
                 OutlinedButton.icon(
                   onPressed: () {
-                    Get.to(() => AddPopupView(), arguments: {'popup': popup})?.then((_) {
+                    Get.to(
+                      () => AddPopupView(),
+                      arguments: {'popup': popup},
+                    )?.then((_) {
                       controller.refreshData();
                     });
                   },
@@ -670,9 +797,17 @@ class PopupListView extends GetView<PopupController> {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.teal,
                     side: BorderSide(color: Colors.teal.withValues(alpha: 0.3)),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -682,10 +817,20 @@ class PopupListView extends GetView<PopupController> {
                   label: const Text('Delete'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFFEF4444),
-                    side: BorderSide(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    side: BorderSide(
+                      color: const Color(0xFFEF4444).withValues(alpha: 0.3),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
@@ -701,12 +846,16 @@ class PopupListView extends GetView<PopupController> {
     DateTime? endTime;
     if (popup.endTime != null) endTime = DateTime.tryParse(popup.endTime!);
     final isExpired = endTime != null && now.isAfter(endTime);
-    final statusColor = isExpired ? const Color(0xFFEF4444) : const Color(0xFF10B981);
+    final statusColor =
+        isExpired ? const Color(0xFFEF4444) : const Color(0xFF10B981);
     final statusText = isExpired ? 'Expired' : 'Active';
 
-    final int totalViews = (popup.abVariantAViews ?? 0) + (popup.abVariantBViews ?? 0);
-    final int totalClicks = (popup.abVariantAClicks ?? 0) + (popup.abVariantBClicks ?? 0);
-    final double totalCtr = totalViews > 0 ? (totalClicks / totalViews) * 100 : 0;
+    final int totalViews =
+        (popup.abVariantAViews ?? 0) + (popup.abVariantBViews ?? 0);
+    final int totalClicks =
+        (popup.abVariantAClicks ?? 0) + (popup.abVariantBClicks ?? 0);
+    final double totalCtr =
+        totalViews > 0 ? (totalClicks / totalViews) * 100 : 0;
 
     final imageUrl = popup.thumbnail?.media?.url;
 
@@ -738,24 +887,42 @@ class PopupListView extends GetView<PopupController> {
             ),
             child: Row(
               children: [
-                Icon(Icons.science_outlined, size: 16, color: Colors.purple[700]),
+                Icon(
+                  Icons.science_outlined,
+                  size: 16,
+                  color: Colors.purple[700],
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     'A/B Testing: ${popup.name ?? 'Unnamed'}',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.purple[700]),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.purple[700],
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(statusText, style: TextStyle(fontSize: 10, color: statusColor, fontWeight: FontWeight.w600)),
+                  child: Text(
+                    statusText,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: statusColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -770,11 +937,35 @@ class PopupListView extends GetView<PopupController> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Text('Views: $totalViews', style: TextStyle(fontSize: 11, color: Colors.grey[600], fontWeight: FontWeight.w500)),
-                Text('Clicks: $totalClicks', style: TextStyle(fontSize: 11, color: Colors.grey[600], fontWeight: FontWeight.w500)),
-                Text('CTR: ${totalCtr.toStringAsFixed(1)}%', style: TextStyle(fontSize: 11, color: Colors.purple[700], fontWeight: FontWeight.w600)),
+                Text(
+                  'Views: $totalViews',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  'Clicks: $totalClicks',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  'CTR: ${totalCtr.toStringAsFixed(1)}%',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.purple[700],
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 if (popup.abTestMethod != null)
-                  Text('Method: ${popup.abTestMethod}', style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+                  Text(
+                    'Method: ${popup.abTestMethod}',
+                    style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                  ),
               ],
             ),
           ),
@@ -793,7 +984,12 @@ class PopupListView extends GetView<PopupController> {
             ),
           ),
 
-          Divider(height: 1, color: Colors.grey[200], indent: 14, endIndent: 14),
+          Divider(
+            height: 1,
+            color: Colors.grey[200],
+            indent: 14,
+            endIndent: 14,
+          ),
 
           // Variant B
           Padding(
@@ -816,17 +1012,29 @@ class PopupListView extends GetView<PopupController> {
               child: Wrap(
                 spacing: 4,
                 runSpacing: 4,
-                children: popup.categoryNames!.take(3).map((cat) {
-                  return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Colors.teal.withValues(alpha: 0.06),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.teal.withValues(alpha: 0.15)),
-                    ),
-                    child: Text(cat, style: const TextStyle(fontSize: 11, color: Colors.teal)),
-                  );
-                }).toList(),
+                children:
+                    popup.categoryNames!.take(3).map((cat) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.teal.withValues(alpha: 0.06),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.teal.withValues(alpha: 0.15),
+                          ),
+                        ),
+                        child: Text(
+                          cat,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.teal,
+                          ),
+                        ),
+                      );
+                    }).toList(),
               ),
             ),
 
@@ -838,7 +1046,10 @@ class PopupListView extends GetView<PopupController> {
               children: [
                 OutlinedButton.icon(
                   onPressed: () {
-                    Get.to(() => AddPopupView(), arguments: {'popup': popup})?.then((_) {
+                    Get.to(
+                      () => AddPopupView(),
+                      arguments: {'popup': popup},
+                    )?.then((_) {
                       controller.refreshData();
                     });
                   },
@@ -847,9 +1058,17 @@ class PopupListView extends GetView<PopupController> {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.teal,
                     side: BorderSide(color: Colors.teal.withValues(alpha: 0.3)),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -859,10 +1078,20 @@ class PopupListView extends GetView<PopupController> {
                   label: const Text('Delete'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFFEF4444),
-                    side: BorderSide(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    side: BorderSide(
+                      color: const Color(0xFFEF4444).withValues(alpha: 0.3),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
@@ -895,14 +1124,24 @@ class PopupListView extends GetView<PopupController> {
               color: Colors.grey[100],
               border: Border.all(color: color.withValues(alpha: 0.3)),
             ),
-            child: imageUrl != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(imageUrl, width: 40, height: 40, fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Icon(Icons.image, size: 18, color: Colors.grey[400]),
-                    ),
-                  )
-                : Icon(Icons.image, size: 18, color: Colors.grey[400]),
+            child:
+                imageUrl != null
+                    ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        imageUrl,
+                        width: 40,
+                        height: 40,
+                        fit: BoxFit.cover,
+                        errorBuilder:
+                            (_, __, ___) => Icon(
+                              Icons.image,
+                              size: 18,
+                              color: Colors.grey[400],
+                            ),
+                      ),
+                    )
+                    : Icon(Icons.image, size: 18, color: Colors.grey[400]),
           ),
           const SizedBox(width: 10),
           Column(
@@ -911,22 +1150,46 @@ class PopupListView extends GetView<PopupController> {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: Text(label, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600)),
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: color,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                   if (isWinner) ...[
                     const SizedBox(width: 6),
-                    Icon(Icons.emoji_events, size: 14, color: Colors.amber[700]),
-                    Text(' Winner', style: TextStyle(fontSize: 10, color: Colors.amber[700], fontWeight: FontWeight.w600)),
+                    Icon(
+                      Icons.emoji_events,
+                      size: 14,
+                      color: Colors.amber[700],
+                    ),
+                    Text(
+                      ' Winner',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.amber[700],
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ],
                 ],
               ),
               const SizedBox(height: 4),
-              Text('CTR: ${ctr.toStringAsFixed(1)}%', style: TextStyle(fontSize: 11, color: Colors.grey[600])),
+              Text(
+                'CTR: ${ctr.toStringAsFixed(1)}%',
+                style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+              ),
             ],
           ),
           const Spacer(),
@@ -947,7 +1210,10 @@ class PopupListView extends GetView<PopupController> {
   Widget _buildMiniStat(String value, String label) {
     return Column(
       children: [
-        Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+        ),
         Text(label, style: TextStyle(fontSize: 9, color: Colors.grey[500])),
       ],
     );
@@ -968,7 +1234,11 @@ class PopupListView extends GetView<PopupController> {
           const SizedBox(width: 4),
           Text(
             label,
-            style: TextStyle(fontSize: 11, color: chipColor, fontWeight: FontWeight.w500),
+            style: TextStyle(
+              fontSize: 11,
+              color: chipColor,
+              fontWeight: FontWeight.w500,
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -977,11 +1247,20 @@ class PopupListView extends GetView<PopupController> {
     );
   }
 
-  Widget _buildAnalyticItem(String label, String value, IconData icon, {bool highlight = false}) {
+  Widget _buildAnalyticItem(
+    String label,
+    String value,
+    IconData icon, {
+    bool highlight = false,
+  }) {
     return Expanded(
       child: Column(
         children: [
-          Icon(icon, size: 16, color: highlight ? Colors.teal : Colors.grey[400]),
+          Icon(
+            icon,
+            size: 16,
+            color: highlight ? Colors.teal : Colors.grey[400],
+          ),
           const SizedBox(height: 4),
           Text(
             value,
@@ -1010,12 +1289,13 @@ class PopupListView extends GetView<PopupController> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             IconButton(
-              onPressed: controller.currentPage.value > 1
-                  ? () {
-                      controller.currentPage.value--;
-                      controller.fetchPopups();
-                    }
-                  : null,
+              onPressed:
+                  controller.currentPage.value > 1
+                      ? () {
+                        controller.currentPage.value--;
+                        controller.fetchPopups();
+                      }
+                      : null,
               icon: const Icon(Icons.chevron_left),
               color: Colors.teal,
               disabledColor: Colors.grey[300],
@@ -1028,16 +1308,21 @@ class PopupListView extends GetView<PopupController> {
               ),
               child: Text(
                 '${controller.currentPage.value} / ${controller.totalPages.value}',
-                style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             IconButton(
-              onPressed: controller.currentPage.value < controller.totalPages.value
-                  ? () {
-                      controller.currentPage.value++;
-                      controller.fetchPopups();
-                    }
-                  : null,
+              onPressed:
+                  controller.currentPage.value < controller.totalPages.value
+                      ? () {
+                        controller.currentPage.value++;
+                        controller.fetchPopups();
+                      }
+                      : null,
               icon: const Icon(Icons.chevron_right),
               color: Colors.teal,
               disabledColor: Colors.grey[300],
@@ -1054,7 +1339,10 @@ class PopupListView extends GetView<PopupController> {
         padding: const EdgeInsets.all(20),
         decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1064,17 +1352,26 @@ class PopupListView extends GetView<PopupController> {
               child: Container(
                 width: 40,
                 height: 4,
-                decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
             const SizedBox(height: 16),
-            const Text('Filter by Type', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            const Text(
+              'Filter by Type',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
             const SizedBox(height: 12),
             ...controller.typeOptions.map((option) {
-              final isSelected = controller.selectedType.value == option['value'];
+              final isSelected =
+                  controller.selectedType.value == option['value'];
               return ListTile(
                 leading: Icon(
-                  isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+                  isSelected
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_off,
                   color: isSelected ? Colors.teal : Colors.grey[400],
                   size: 20,
                 ),
@@ -1103,7 +1400,10 @@ class PopupListView extends GetView<PopupController> {
         padding: const EdgeInsets.all(20),
         decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1113,17 +1413,26 @@ class PopupListView extends GetView<PopupController> {
               child: Container(
                 width: 40,
                 height: 4,
-                decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
             const SizedBox(height: 16),
-            const Text('Filter by Status', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            const Text(
+              'Filter by Status',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
             const SizedBox(height: 12),
             ...controller.statusOptions.map((option) {
-              final isSelected = controller.selectedStatus.value == option['value'];
+              final isSelected =
+                  controller.selectedStatus.value == option['value'];
               return ListTile(
                 leading: Icon(
-                  isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+                  isSelected
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_off,
                   color: isSelected ? Colors.teal : Colors.grey[400],
                   size: 20,
                 ),
@@ -1173,7 +1482,20 @@ class PopupListView extends GetView<PopupController> {
   }
 
   String _formatShortDate(DateTime date) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${date.day} ${months[date.month - 1]} ${date.year.toString().substring(2)}';
   }
 
@@ -1227,12 +1549,18 @@ class AddPopupController extends GetxController {
   var abTestStartTime = Rx<DateTime?>(null);
   var abTestEndTime = Rx<DateTime?>(null);
 
+  // Date time validation error messages
+  var startTimeError = RxnString();
+  var endTimeError = RxnString();
+  var abTestStartTimeError = RxnString();
+  var abTestEndTimeError = RxnString();
+
   final formKey = GlobalKey<FormState>();
 
   // ALL options lists
   final typeOptions = [
     {'value': 'banner_popup', 'label': 'Banner Popup'},
-    {'value': 'lead_generation_popup', 'label': 'Lead Generation'},
+
     {'value': 'feature_product_popup', 'label': 'Feature Product'},
   ];
 
@@ -1321,8 +1649,61 @@ class AddPopupController extends GetxController {
     }
   }
 
+  bool _validateDateTimes() {
+    bool isValid = true;
+
+    // Clear previous errors
+    startTimeError.value = null;
+    endTimeError.value = null;
+    abTestStartTimeError.value = null;
+    abTestEndTimeError.value = null;
+
+    // Validate start time
+    if (startTime.value == null) {
+      startTimeError.value = 'Start time is required';
+      isValid = false;
+    }
+
+    // Validate end time
+    if (endTime.value == null) {
+      endTimeError.value = 'End time is required';
+      isValid = false;
+    }
+
+    // End time must be after start time
+    if (startTime.value != null &&
+        endTime.value != null &&
+        !endTime.value!.isAfter(startTime.value!)) {
+      endTimeError.value = 'End time must be after start time';
+      isValid = false;
+    }
+
+    // A/B test date validations
+    if (isAbTest.value) {
+      if (abTestStartTime.value == null) {
+        abTestStartTimeError.value = 'Test start time is required';
+        isValid = false;
+      }
+      if (abTestEndTime.value == null) {
+        abTestEndTimeError.value = 'Test end time is required';
+        isValid = false;
+      }
+      if (abTestStartTime.value != null &&
+          abTestEndTime.value != null &&
+          !abTestEndTime.value!.isAfter(abTestStartTime.value!)) {
+        abTestEndTimeError.value = 'Test end time must be after start time';
+        isValid = false;
+      }
+    }
+
+    return isValid;
+  }
+
   Future<void> savePopup() async {
-    if (!formKey.currentState!.validate()) {
+    final formValid = formKey.currentState!.validate();
+    final datesValid = _validateDateTimes();
+
+    if (!formValid || !datesValid) {
       return;
     }
 
@@ -1331,14 +1712,8 @@ class AddPopupController extends GetxController {
 
       // Upload image first if a new image is selected
       if (selectedImage.value != null) {
-        final thumbnailId = await _uploadImage(selectedImage.value!);
-        if (thumbnailId != null) {
-          selectedThumbnailId.value = thumbnailId;
-        } else {
-          _handleError('Failed to upload image');
-          isLoading.value = false;
-          return;
-        }
+        final thumbnailId = await uploadMedia([selectedImage.value!]);
+        selectedThumbnailId.value = thumbnailId;
       }
 
       final data = _buildFormData();
@@ -1372,54 +1747,6 @@ class AddPopupController extends GetxController {
       );
     } finally {
       isLoading.value = false;
-    }
-  }
-
-  Future<String?> _uploadImage(File imageFile) async {
-    try {
-      final uri = Uri.parse('https://api.libanbuy.com/api/media/insert');
-
-      final request = http.MultipartRequest('POST', uri);
-
-      // Add headers
-      request.headers['X-Request-From'] = 'Application';
-      request.headers['Accept'] = 'application/json';
-
-      // Add image file
-      final imageStream = http.ByteStream(imageFile.openRead());
-      final imageLength = await imageFile.length();
-      final multipartFile = http.MultipartFile(
-        'media',
-        imageStream,
-        imageLength,
-        filename: imageFile.path.split('/').last,
-      );
-      request.files.add(multipartFile);
-
-      // Add additional fields
-      request.fields['media_type'] = 'image';
-      request.fields['context'] = 'popup';
-
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final responseData = json.decode(response.body);
-        // Extract media ID from response
-        // Adjust this based on your API response structure
-        if (responseData['media'] != null &&
-            responseData['media']['id'] != null) {
-          return responseData['media']['id'].toString();
-        } else if (responseData['id'] != null) {
-          return responseData['id'].toString();
-        }
-      }
-
-      print('Image upload failed: ${response.statusCode} - ${response.body}');
-      return null;
-    } catch (e) {
-      print('Error uploading image: $e');
-      return null;
     }
   }
 
@@ -1524,6 +1851,11 @@ class AddPopupController extends GetxController {
           time.hour,
           time.minute,
         );
+        // Clear error for this field
+        if (dateTimeVar == startTime) startTimeError.value = null;
+        if (dateTimeVar == endTime) endTimeError.value = null;
+        if (dateTimeVar == abTestStartTime) abTestStartTimeError.value = null;
+        if (dateTimeVar == abTestEndTime) abTestEndTimeError.value = null;
       }
     }
   }
@@ -1599,18 +1931,28 @@ class AddPopupView extends StatelessWidget {
               const SizedBox(height: 16),
               _buildLinkSettingsCard(),
               const SizedBox(height: 16),
-              Obx(() => controller.isAbTest.value
-                  ? Column(children: [
-                      _buildAbTestCard(),
-                      const SizedBox(height: 16),
-                    ])
-                  : const SizedBox.shrink()),
-              Obx(() => controller.selectedType.value == 'feature_product_popup'
-                  ? Column(children: [
-                      _buildProductCard(),
-                      const SizedBox(height: 16),
-                    ])
-                  : const SizedBox.shrink()),
+              Obx(
+                () =>
+                    controller.isAbTest.value
+                        ? Column(
+                          children: [
+                            _buildAbTestCard(),
+                            const SizedBox(height: 16),
+                          ],
+                        )
+                        : const SizedBox.shrink(),
+              ),
+              // Obx(
+              //   () =>
+              //       controller.selectedType.value == 'feature_product_popup'
+              //           ? Column(
+              //             children: [
+              //               _buildProductCard(),
+              //               const SizedBox(height: 16),
+              //             ],
+              //           )
+              //           : const SizedBox.shrink(),
+              // ),
               _buildActionButtons(),
               const SizedBox(height: 24),
             ],
@@ -1620,7 +1962,11 @@ class AddPopupView extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title, IconData icon, {bool required = false}) {
+  Widget _buildSectionHeader(
+    String title,
+    IconData icon, {
+    bool required = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
@@ -1652,7 +1998,11 @@ class AddPopupView extends StatelessWidget {
               ),
               child: const Text(
                 'Required',
-                style: TextStyle(fontSize: 10, color: Colors.teal, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.teal,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
@@ -1686,7 +2036,11 @@ class AddPopupView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionHeader('Basic Information', Icons.info_outline, required: true),
+          _buildSectionHeader(
+            'Basic Information',
+            Icons.info_outline,
+            required: true,
+          ),
           _buildTextField(
             'Popup Name',
             controller.nameController,
@@ -1716,6 +2070,12 @@ class AddPopupView extends StatelessWidget {
             controller.descriptionController,
             'Describe your popup content and purpose',
             maxLines: 3,
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Description is required';
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 12),
           _buildSwitchRow(
@@ -1736,48 +2096,65 @@ class AddPopupView extends StatelessWidget {
     );
   }
 
-  Widget _buildSwitchRow(String title, String subtitle, RxBool value, IconData icon) {
-    return Obx(() => Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: value.value ? Colors.teal.withValues(alpha: 0.04) : Colors.grey[50],
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: value.value ? Colors.teal.withValues(alpha: 0.2) : Colors.grey[200]!,
+  Widget _buildSwitchRow(
+    String title,
+    String subtitle,
+    RxBool value,
+    IconData icon,
+  ) {
+    return Obx(
+      () => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color:
+              value.value
+                  ? Colors.teal.withValues(alpha: 0.04)
+                  : Colors.grey[50],
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color:
+                value.value
+                    ? Colors.teal.withValues(alpha: 0.2)
+                    : Colors.grey[200]!,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: value.value ? Colors.teal : Colors.grey[400],
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: value.value ? Colors.teal[800] : Colors.grey[700],
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                  ),
+                ],
+              ),
+            ),
+            Switch(
+              value: value.value,
+              onChanged: (v) => value.value = v,
+              activeThumbColor: Colors.teal,
+              activeTrackColor: Colors.teal.withValues(alpha: 0.3),
+            ),
+          ],
         ),
       ),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: value.value ? Colors.teal : Colors.grey[400]),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: value.value ? Colors.teal[800] : Colors.grey[700],
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                ),
-              ],
-            ),
-          ),
-          Switch(
-            value: value.value,
-            onChanged: (v) => value.value = v,
-            activeThumbColor: Colors.teal,
-            activeTrackColor: Colors.teal.withValues(alpha: 0.3),
-          ),
-        ],
-      ),
-    ));
+    );
   }
 
   Widget _buildImageUploadCard() {
@@ -1792,14 +2169,18 @@ class AddPopupView extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Obx(() {
-            final hasImage = controller.selectedImage.value != null ||
+            final hasImage =
+                controller.selectedImage.value != null ||
                 controller.existingImageUrl.value.isNotEmpty;
 
             return Container(
               width: double.infinity,
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: hasImage ? Colors.teal.withValues(alpha: 0.3) : Colors.grey[300]!,
+                  color:
+                      hasImage
+                          ? Colors.teal.withValues(alpha: 0.3)
+                          : Colors.grey[300]!,
                   width: hasImage ? 1.5 : 1,
                 ),
                 borderRadius: BorderRadius.circular(12),
@@ -1821,24 +2202,32 @@ class AddPopupView extends StatelessWidget {
                           topLeft: Radius.circular(11),
                           topRight: Radius.circular(11),
                         ),
-                        child: controller.selectedImage.value != null
-                            ? Image.file(
-                                controller.selectedImage.value!,
-                                fit: BoxFit.cover,
-                              )
-                            : Image.network(
-                                controller.existingImageUrl.value,
-                                fit: BoxFit.cover,
-                                loadingBuilder: (_, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return const Center(
-                                    child: CircularProgressIndicator(color: Colors.teal),
-                                  );
-                                },
-                                errorBuilder: (_, __, ___) => Center(
-                                  child: Icon(Icons.broken_image, size: 48, color: Colors.grey[400]),
+                        child:
+                            controller.selectedImage.value != null
+                                ? Image.file(
+                                  controller.selectedImage.value!,
+                                  fit: BoxFit.cover,
+                                )
+                                : Image.network(
+                                  controller.existingImageUrl.value,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder: (_, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return const Center(
+                                      child: CircularProgressIndicator(
+                                        color: Colors.teal,
+                                      ),
+                                    );
+                                  },
+                                  errorBuilder:
+                                      (_, __, ___) => Center(
+                                        child: Icon(
+                                          Icons.broken_image,
+                                          size: 48,
+                                          color: Colors.grey[400],
+                                        ),
+                                      ),
                                 ),
-                              ),
                       ),
                     ),
                     Container(
@@ -1859,9 +2248,15 @@ class AddPopupView extends StatelessWidget {
                               label: const Text('Change'),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: Colors.teal,
-                                side: BorderSide(color: Colors.teal.withValues(alpha: 0.3)),
-                                padding: const EdgeInsets.symmetric(vertical: 10),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                side: BorderSide(
+                                  color: Colors.teal.withValues(alpha: 0.3),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
                             ),
                           ),
@@ -1873,9 +2268,17 @@ class AddPopupView extends StatelessWidget {
                               label: const Text('Remove'),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: const Color(0xFFEF4444),
-                                side: BorderSide(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
-                                padding: const EdgeInsets.symmetric(vertical: 10),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                side: BorderSide(
+                                  color: const Color(
+                                    0xFFEF4444,
+                                  ).withValues(alpha: 0.3),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
                             ),
                           ),
@@ -1896,17 +2299,28 @@ class AddPopupView extends StatelessWidget {
                                 color: Colors.teal.withValues(alpha: 0.08),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.cloud_upload_outlined, size: 40, color: Colors.teal),
+                              child: const Icon(
+                                Icons.cloud_upload_outlined,
+                                size: 40,
+                                color: Colors.teal,
+                              ),
                             ),
                             const SizedBox(height: 14),
                             Text(
                               'Tap to upload image',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.grey[700]),
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey[700],
+                              ),
                             ),
                             const SizedBox(height: 6),
                             Text(
                               'JPG, PNG supported (Max 5MB)',
-                              style: TextStyle(fontSize: 12, color: Colors.grey[400]),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[400],
+                              ),
                             ),
                           ],
                         ),
@@ -1932,6 +2346,12 @@ class AddPopupView extends StatelessWidget {
             'Display Location',
             controller.pageLocationController,
             'e.g., Show on all pages',
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Display location is required';
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 16),
           _buildTextField(
@@ -1963,7 +2383,11 @@ class AddPopupView extends StatelessWidget {
                 child: _buildDateTimeField(
                   'Start Time',
                   controller.startTime,
-                  () => controller.selectDateTime(controller.startTime, 'Start Time'),
+                  () => controller.selectDateTime(
+                    controller.startTime,
+                    'Start Time',
+                  ),
+                  errorText: controller.startTimeError,
                 ),
               ),
               const SizedBox(width: 12),
@@ -1971,7 +2395,9 @@ class AddPopupView extends StatelessWidget {
                 child: _buildDateTimeField(
                   'End Time',
                   controller.endTime,
-                  () => controller.selectDateTime(controller.endTime, 'End Time'),
+                  () =>
+                      controller.selectDateTime(controller.endTime, 'End Time'),
+                  errorText: controller.endTimeError,
                 ),
               ),
             ],
@@ -2051,12 +2477,20 @@ class AddPopupView extends StatelessWidget {
                     color: Colors.purple.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: Icon(Icons.science_outlined, size: 16, color: Colors.purple[700]),
+                  child: Icon(
+                    Icons.science_outlined,
+                    size: 16,
+                    color: Colors.purple[700],
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Text(
                   'A/B Test Configuration',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.purple[800]),
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.purple[800],
+                  ),
                 ),
               ],
             ),
@@ -2077,7 +2511,11 @@ class AddPopupView extends StatelessWidget {
                 Expanded(
                   child: Text(
                     'Variant A (Control) is your primary popup. Configure Variant B below.',
-                    style: TextStyle(fontSize: 12, color: Colors.blue[800], fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.blue[800],
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
@@ -2117,7 +2555,11 @@ class AddPopupView extends StatelessWidget {
                       child: _buildDateTimeField(
                         'Test Start',
                         controller.abTestStartTime,
-                        () => controller.selectDateTime(controller.abTestStartTime, 'A/B Test Start'),
+                        () => controller.selectDateTime(
+                          controller.abTestStartTime,
+                          'A/B Test Start',
+                        ),
+                        errorText: controller.abTestStartTimeError,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -2125,7 +2567,11 @@ class AddPopupView extends StatelessWidget {
                       child: _buildDateTimeField(
                         'Test End',
                         controller.abTestEndTime,
-                        () => controller.selectDateTime(controller.abTestEndTime, 'A/B Test End'),
+                        () => controller.selectDateTime(
+                          controller.abTestEndTime,
+                          'A/B Test End',
+                        ),
+                        errorText: controller.abTestEndTimeError,
                       ),
                     ),
                   ],
@@ -2157,7 +2603,10 @@ class AddPopupView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionHeader('Product Information', Icons.shopping_bag_outlined),
+          _buildSectionHeader(
+            'Product Information',
+            Icons.shopping_bag_outlined,
+          ),
           _buildTextField(
             'Product ID',
             controller.productIdController,
@@ -2199,47 +2648,62 @@ class AddPopupView extends StatelessWidget {
             width: double.infinity,
             height: 52,
             child: ElevatedButton(
-              onPressed: controller.isLoading.value ? null : controller.savePopup,
+              onPressed:
+                  controller.isLoading.value ? null : controller.savePopup,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.teal,
                 foregroundColor: Colors.white,
                 disabledBackgroundColor: Colors.teal.withValues(alpha: 0.5),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 elevation: 0,
               ),
-              child: controller.isLoading.value
-                  ? Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              child:
+                  controller.isLoading.value
+                      ? Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          controller.isEditMode.value ? 'Updating...' : 'Saving...',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ],
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          controller.isEditMode.value ? Icons.save_outlined : Icons.add_circle_outline,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          controller.isEditMode.value ? 'Update Popup' : 'Create Popup',
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
+                          const SizedBox(width: 12),
+                          Text(
+                            controller.isEditMode.value
+                                ? 'Updating...'
+                                : 'Saving...',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        ],
+                      )
+                      : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            controller.isEditMode.value
+                                ? Icons.save_outlined
+                                : Icons.add_circle_outline,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            controller.isEditMode.value
+                                ? 'Update Popup'
+                                : 'Create Popup',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
             ),
           ),
         ),
@@ -2252,7 +2716,9 @@ class AddPopupView extends StatelessWidget {
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.grey[600],
               side: BorderSide(color: Colors.grey[300]!),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             child: const Text(
               'Cancel',
@@ -2313,9 +2779,15 @@ class AddPopupView extends StatelessWidget {
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+              borderSide: const BorderSide(
+                color: Color(0xFFEF4444),
+                width: 1.5,
+              ),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 14,
+            ),
           ),
           validator: validator,
         ),
@@ -2353,14 +2825,19 @@ class AddPopupView extends StatelessWidget {
               child: DropdownButton<String>(
                 value: selectedValue.value,
                 isExpanded: true,
-                icon: Icon(Icons.keyboard_arrow_down, color: Colors.grey[500], size: 20),
+                icon: Icon(
+                  Icons.keyboard_arrow_down,
+                  color: Colors.grey[500],
+                  size: 20,
+                ),
                 style: TextStyle(fontSize: 14, color: Colors.grey[800]),
-                items: options.map((option) {
-                  return DropdownMenuItem<String>(
-                    value: option['value']!,
-                    child: Text(option['label']!),
-                  );
-                }).toList(),
+                items:
+                    options.map((option) {
+                      return DropdownMenuItem<String>(
+                        value: option['value']!,
+                        child: Text(option['label']!),
+                      );
+                    }).toList(),
                 onChanged: (value) => selectedValue.value = value!,
               ),
             ),
@@ -2373,8 +2850,9 @@ class AddPopupView extends StatelessWidget {
   Widget _buildDateTimeField(
     String label,
     Rx<DateTime?> dateTime,
-    VoidCallback onTap,
-  ) {
+    VoidCallback onTap, {
+    RxnString? errorText,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2389,43 +2867,85 @@ class AddPopupView extends StatelessWidget {
         const SizedBox(height: 6),
         GestureDetector(
           onTap: onTap,
-          child: Obx(() => Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-            decoration: BoxDecoration(
-              color: Colors.grey[50],
-              border: Border.all(
-                color: dateTime.value != null ? Colors.teal.withValues(alpha: 0.3) : Colors.grey[200]!,
-              ),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.calendar_today_outlined,
-                  size: 16,
-                  color: dateTime.value != null ? Colors.teal : Colors.grey[400],
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    dateTime.value != null
-                        ? '${dateTime.value!.day}/${dateTime.value!.month}/${dateTime.value!.year} ${dateTime.value!.hour}:${dateTime.value!.minute.toString().padLeft(2, '0')}'
-                        : 'Select date & time',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: dateTime.value != null ? Colors.grey[800] : Colors.grey[400],
+          child: Obx(
+            () {
+              final hasError =
+                  errorText != null && errorText.value != null;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 14,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[50],
+                      border: Border.all(
+                        color:
+                            hasError
+                                ? const Color(0xFFEF4444)
+                                : dateTime.value != null
+                                    ? Colors.teal.withValues(alpha: 0.3)
+                                    : Colors.grey[200]!,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today_outlined,
+                          size: 16,
+                          color:
+                              hasError
+                                  ? const Color(0xFFEF4444)
+                                  : dateTime.value != null
+                                      ? Colors.teal
+                                      : Colors.grey[400],
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            dateTime.value != null
+                                ? '${dateTime.value!.day}/${dateTime.value!.month}/${dateTime.value!.year} ${dateTime.value!.hour}:${dateTime.value!.minute.toString().padLeft(2, '0')}'
+                                : 'Select date & time',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color:
+                                  dateTime.value != null
+                                      ? Colors.grey[800]
+                                      : Colors.grey[400],
+                            ),
+                          ),
+                        ),
+                        if (dateTime.value != null)
+                          GestureDetector(
+                            onTap: () => dateTime.value = null,
+                            child: Icon(
+                              Icons.clear,
+                              size: 16,
+                              color: Colors.grey[400],
+                            ),
+                          ),
+                      ],
                     ),
                   ),
-                ),
-                if (dateTime.value != null)
-                  GestureDetector(
-                    onTap: () => dateTime.value = null,
-                    child: Icon(Icons.clear, size: 16, color: Colors.grey[400]),
-                  ),
-              ],
-            ),
-          )),
+                  if (hasError)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6, left: 14),
+                      child: Text(
+                        errorText.value!,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFFEF4444),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
         ),
       ],
     );

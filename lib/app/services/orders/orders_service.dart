@@ -100,9 +100,10 @@ class OrderService extends GetxService {
       if (refresh) {
         if (page == 1) {
           currentPage.value = 1;
-          orders.clear();
           hasMorePages.value = true;
           _pageCache.clear();
+          // Note: do NOT clear orders here. assignAll() below will
+          // replace them once the API responds, avoiding a shimmer flash.
         } else {
           _pageCache.remove(page);
         }

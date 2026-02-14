@@ -322,7 +322,7 @@ class AdminAuctionService extends GetxService {
       await _saveProductsToCache(products);
     } catch (e, stackTrace) {
       Logger().e('Error fetching auctions', error: e, stackTrace: stackTrace);
-      _showErrorSnackbar('Failed to load auctions: ${e.toString()}');
+      // _showErrorSnackbar('Failed to load auctions: ${e.toString()}');
     } finally {
       isLoading.value = false;
       isRefreshing.value = false;

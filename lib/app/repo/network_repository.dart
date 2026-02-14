@@ -167,8 +167,7 @@ class NetworkRepository {
           return fromJson(await compute(_decodeJsonMap, cachedData));
         }
 
-        // If no cache, throw exception
-        throw ApiException('${response.reasonPhrase}');
+        return fromJson({});
       } else {
         final cachedData = await _getFromCache(fullUrl);
         if (cachedData != null) {
@@ -217,7 +216,8 @@ class NetworkRepository {
       if (!forceRefresh) {
         final cachedData = await _getFromCache(fullUrl);
         if (cachedData != null) {
-          return await compute<String, dynamic>(_decodeJsonDynamic, cachedData) as T;
+          return await compute<String, dynamic>(_decodeJsonDynamic, cachedData)
+              as T;
         }
       }
 
@@ -235,12 +235,14 @@ class NetworkRepository {
         await _saveToCache(fullUrl, response.body);
 
         // Parse and return
-        return await compute<String, dynamic>(_decodeJsonDynamic, response.body) as T;
+        return await compute<String, dynamic>(_decodeJsonDynamic, response.body)
+            as T;
       } else {
         // Try cache if network request fails
         final cachedData = await _getFromCache(fullUrl);
         if (cachedData != null) {
-          return await compute<String, dynamic>(_decodeJsonDynamic, cachedData) as T;
+          return await compute<String, dynamic>(_decodeJsonDynamic, cachedData)
+              as T;
         }
 
         // If no cache, throw exception
@@ -252,21 +254,24 @@ class NetworkRepository {
       // Timeout handling
       final cachedData = await _getFromCache(fullUrl);
       if (cachedData != null) {
-        return await compute<String, dynamic>(_decodeJsonDynamic, cachedData) as T;
+        return await compute<String, dynamic>(_decodeJsonDynamic, cachedData)
+            as T;
       }
       throw ApiException('Request timed out');
     } on SocketException {
       // No internet connection
       final cachedData = await _getFromCache(fullUrl);
       if (cachedData != null) {
-        return await compute<String, dynamic>(_decodeJsonDynamic, cachedData) as T;
+        return await compute<String, dynamic>(_decodeJsonDynamic, cachedData)
+            as T;
       }
       throw ApiException('No internet connection');
     } catch (e) {
       // Generic error handling
       final cachedData = await _getFromCache(fullUrl);
       if (cachedData != null) {
-        return await compute<String, dynamic>(_decodeJsonDynamic, cachedData) as T;
+        return await compute<String, dynamic>(_decodeJsonDynamic, cachedData)
+            as T;
       }
       throw ApiException('Unexpected error: $e');
     }

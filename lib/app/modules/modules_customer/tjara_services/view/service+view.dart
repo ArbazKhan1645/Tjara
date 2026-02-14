@@ -1054,7 +1054,7 @@ class _ServicesScreenState extends State<ServicesScreen>
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.only(left: 0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -1070,7 +1070,7 @@ class _ServicesScreenState extends State<ServicesScreen>
                 color: Colors.orange.shade400,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 6),
             Text(
               'No Services Found',
               style: TextStyle(

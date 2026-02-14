@@ -25,6 +25,7 @@ class OrdersDashboardController extends GetxController {
 
   var isLoading = true.obs;
   var orderItems = <OrderItem>[].obs;
+  RxBool orderWasEdited = false.obs;
   Future<void> deleteOrder(String id, BuildContext context) async {
     final url = Uri.parse("https://api.libanbuy.com/api/orders/$id/delete");
 
@@ -314,6 +315,154 @@ class OrdersDashboardController extends GetxController {
         e.toString(),
       );
     }
+  }
+
+  /// Delete a single item from an order.
+  Future<bool> deleteOrderItem(
+    String orderId,
+    String itemId,
+    BuildContext context,
+  ) async {
+    final url = Uri.parse(
+      "https://api.libanbuy.com/api/orders/$orderId/items/delete",
+    );
+
+    try {
+      final response = await http.delete(
+        url,
+        headers: {
+          "X-Request-From": "Application",
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode({"item_id": itemId}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        NotificationHelper.showSuccess(
+          context,
+          'Success',
+          data['message'] ?? 'Item deleted',
+        );
+        orderWasEdited.value = true;
+        return true;
+      } else {
+        NotificationHelper.showError(
+          context,
+          'Failed',
+          'Failed to delete item',
+        );
+        return false;
+      }
+    } catch (e) {
+      NotificationHelper.showError(context, 'Error', e.toString());
+      return false;
+    }
+  }
+
+  /// Update order tracking number and/or delivery charges.
+  /// Sends full meta array with existing values preserved.
+  Future<bool> updateOrderDetails({
+    required String orderId,
+    required BuildContext context,
+    String? trackingNumber,
+    String? shippingTotal,
+    required Order currentOrder,
+  }) async {
+    final url = Uri.parse(
+      "https://api.libanbuy.com/api/orders/$orderId/update",
+    );
+    final meta = currentOrder.meta ?? {};
+
+    final List<Map<String, String>> metaArray = [
+      {
+        "tracking_number":
+            trackingNumber ?? meta['tracking_number']?.toString() ?? '',
+      },
+      {
+        "custom_buyer_name":
+            meta['custom_buyer_name']?.toString() ?? '',
+      },
+      {
+        "custom_buyer_phone":
+            meta['custom_buyer_phone']?.toString() ?? '',
+      },
+      {
+        "custom_buyer_address":
+            meta['custom_buyer_address']?.toString() ?? '',
+      },
+    ];
+
+    final Map<String, dynamic> body = {
+      "meta": metaArray,
+      "shipping_total":
+          shippingTotal ?? meta['shipping_total']?.toString() ?? '0',
+      "status": currentOrder.status ?? 'pending',
+    };
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          "X-Request-From": "Application",
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 200) {
+        if (selectedOrder.value != null) {
+          if (trackingNumber != null) {
+            selectedOrder.value!.meta?['tracking_number'] = trackingNumber;
+          }
+          if (shippingTotal != null) {
+            selectedOrder.value!.meta?['shipping_total'] = shippingTotal;
+          }
+          selectedOrder.refresh();
+        }
+        orderWasEdited.value = true;
+        final data = jsonDecode(response.body);
+        NotificationHelper.showSuccess(
+          context,
+          'Success',
+          data['message'] ?? 'Updated successfully',
+        );
+        return true;
+      } else {
+        NotificationHelper.showError(
+          context,
+          'Failed',
+          'Failed to update order',
+        );
+        return false;
+      }
+    } catch (e) {
+      NotificationHelper.showError(context, 'Error', e.toString());
+      return false;
+    }
+  }
+
+  /// Fetch a single order by ID from the API and return full Order object.
+  /// API: GET https://api.libanbuy.com/api/orders/{id}
+  /// Response: { "order": { ... } }
+  Future<Order?> fetchSingleOrder(String orderId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://api.libanbuy.com/api/orders/$orderId'),
+        headers: {'X-Request-From': 'Application'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['order'] != null && data['order'] is Map<String, dynamic>) {
+          return Order.fromJson(data['order']);
+        }
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error fetching single order: $e');
+    }
+    return null;
   }
 }
 

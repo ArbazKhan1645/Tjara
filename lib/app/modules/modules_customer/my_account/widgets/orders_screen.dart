@@ -26,7 +26,7 @@ class OrdersScreen extends StatefulWidget {
 }
 
 class _OrdersScreenState extends State<OrdersScreen>
-    with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
+    with AutomaticKeepAliveClientMixin {
   // Controllers and Services
   late final OrdersDashboardController _controller;
   late final OrderService _orderService;
@@ -53,17 +53,13 @@ class _OrdersScreenState extends State<OrdersScreen>
   bool _isSearchingShops = false;
   Timer? _shopSearchDebounce;
 
-  // Order items cache (fixes FutureBuilder rebuild issue)
-  final Map<String, Future<List<dynamic>>> _orderItemsFutures = {};
+  // Order items cache – eagerly loaded, no FutureBuilder
+  final Map<String, List<dynamic>> _orderItemsCache = {};
+  final Set<String> _orderItemsLoading = {};
 
   // UI State
   bool _isAppBarExpanded = true;
   bool _hasInitialized = false;
-
-  // Real-time updates
-  Timer? _refreshTimer;
-  DateTime? _lastRefreshTime;
-  static const Duration _refreshInterval = Duration(seconds: 30);
 
   // Performance
   static const Duration _animationDuration = Duration(milliseconds: 200);
@@ -125,50 +121,14 @@ class _OrdersScreenState extends State<OrdersScreen>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     _initializeControllers();
     _loadOrders();
-    _startPeriodicRefresh();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed) {
-      _refreshOrdersIfNeeded();
-    }
   }
 
   void _initializeControllers() {
     _controller = Get.put(OrdersDashboardController());
     _orderService = Get.find<OrderService>();
     _scrollController = ScrollController()..addListener(_onScroll);
-  }
-
-  void _startPeriodicRefresh() {
-    _refreshTimer?.cancel();
-    _refreshTimer = Timer.periodic(_refreshInterval, (timer) {
-      if (mounted && !_orderService.isLoading.value) {
-        _refreshOrdersInBackground();
-      }
-    });
-  }
-
-  Future<void> _refreshOrdersIfNeeded() async {
-    final now = DateTime.now();
-    if (_lastRefreshTime == null ||
-        now.difference(_lastRefreshTime!).inSeconds > 30) {
-      await _refreshOrdersInBackground();
-    }
-  }
-
-  Future<void> _refreshOrdersInBackground() async {
-    try {
-      _lastRefreshTime = DateTime.now();
-      await _fetchWithFilters(page: 1, refresh: true);
-    } catch (e) {
-      print('Background refresh failed: $e');
-    }
   }
 
   String _getUserId() {
@@ -280,13 +240,21 @@ class _OrdersScreenState extends State<OrdersScreen>
 
   Future<void> _fetchWithFilters({int page = 1, bool refresh = false}) async {
     final params = _buildFilterParams();
-    _orderItemsFutures.clear();
+    _orderItemsCache.clear();
+    _orderItemsLoading.clear();
     await _orderService.fetchOrders(
       page: page,
       refresh: refresh,
       userId: _getUserId(),
       queryOverrides: params,
     );
+    _preloadOrderItems();
+  }
+
+  void _preloadOrderItems() {
+    for (final order in _orderService.orders) {
+      _loadOrderItemsIfNeeded(order.id.toString());
+    }
   }
 
   Future<void> _loadOrders() async {
@@ -295,7 +263,6 @@ class _OrdersScreenState extends State<OrdersScreen>
       _hasInitialized = true;
       _orderService.resetPagination();
       await _fetchWithFilters(page: 1, refresh: true);
-      _lastRefreshTime = DateTime.now();
     } catch (e) {
       if (mounted) {
         _showErrorSnackbar('Failed to load orders: $e');
@@ -305,7 +272,8 @@ class _OrdersScreenState extends State<OrdersScreen>
 
   void _applyFilters() {
     _orderService.resetPagination();
-    _orderItemsFutures.clear();
+    _orderItemsCache.clear();
+    _orderItemsLoading.clear();
     _fetchWithFilters(page: 1, refresh: true);
   }
 
@@ -392,12 +360,21 @@ class _OrdersScreenState extends State<OrdersScreen>
     });
   }
 
-  // ─── CACHED ORDER ITEMS (Fixes FutureBuilder rebuild) ───
-  Future<List<dynamic>> _getCachedOrderItems(String orderId) {
-    return _orderItemsFutures.putIfAbsent(
-      orderId,
-      () => _controller.fetchOrderItemsFuture(orderId),
-    );
+  // ─── EAGER ORDER ITEMS LOADING (no FutureBuilder) ───
+  void _loadOrderItemsIfNeeded(String orderId) {
+    if (_orderItemsCache.containsKey(orderId) ||
+        _orderItemsLoading.contains(orderId)) {
+      return;
+    }
+    _orderItemsLoading.add(orderId);
+    _controller.fetchOrderItemsFuture(orderId).then((items) {
+      if (mounted) {
+        setState(() {
+          _orderItemsCache[orderId] = items;
+          _orderItemsLoading.remove(orderId);
+        });
+      }
+    });
   }
 
   void _onScroll() {
@@ -410,10 +387,9 @@ class _OrdersScreenState extends State<OrdersScreen>
 
   Future<void> _refreshOrders() async {
     try {
-      _orderService.resetPagination();
-      _orderItemsFutures.clear();
+      _orderItemsCache.clear();
+      _orderItemsLoading.clear();
       await _fetchWithFilters(page: 1, refresh: true);
-      _lastRefreshTime = DateTime.now();
     } catch (e) {
       if (mounted) _showErrorSnackbar('Failed to refresh orders: $e');
     }
@@ -426,7 +402,8 @@ class _OrdersScreenState extends State<OrdersScreen>
       return;
     }
     try {
-      _orderItemsFutures.clear();
+      _orderItemsCache.clear();
+      _orderItemsLoading.clear();
       await _fetchWithFilters(page: page, refresh: true);
     } catch (e) {
       if (mounted) _showErrorSnackbar('Failed to load page $page: $e');
@@ -447,7 +424,6 @@ class _OrdersScreenState extends State<OrdersScreen>
 
   @override
   void dispose() {
-    _refreshTimer?.cancel();
     _shopSearchDebounce?.cancel();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
@@ -455,7 +431,6 @@ class _OrdersScreenState extends State<OrdersScreen>
     _buyerNameSearchCtrl.dispose();
     _phoneSearchCtrl.dispose();
     _shopSearchCtrl.dispose();
-    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -1339,6 +1314,10 @@ class _OrdersScreenState extends State<OrdersScreen>
     final paymentStatus = order.transaction?.paymentStatus ?? '';
     final createdAt = order.createdAt;
 
+    // Check if this is an auction order
+    final isAuctionVal = order.meta?['is_auction_order']?.toString();
+    final bool isAuctionOrder = isAuctionVal == 'true' || isAuctionVal == '1';
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -1391,6 +1370,34 @@ class _OrdersScreenState extends State<OrdersScreen>
               ],
             ),
           ),
+
+          // ── Auction Banner ──
+          if (isAuctionOrder)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.amber.shade700, Colors.orange.shade600],
+                ),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.gavel_rounded, size: 14, color: Colors.white),
+                  SizedBox(width: 6),
+                  Text(
+                    'Auction Order',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
           // ── Body: Info rows ──
           Padding(
@@ -1470,126 +1477,194 @@ class _OrdersScreenState extends State<OrdersScreen>
             decoration: BoxDecoration(
               border: Border(top: BorderSide(color: Colors.grey.shade200)),
             ),
-            child: Row(
+            child: Column(
               children: [
-                Expanded(
-                  child: InkWell(
-                    onTap: () async {
-                      await _controller.fetchOrderItems(order.id.toString());
-                      _controller.setSelectedOrder(order);
-                      if (mounted) {
-                        Get.toNamed(
-                          Routes.ORDERS_DASHBOARD,
-                          preventDuplicates: false,
-                        );
-                      }
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.edit_outlined,
-                            size: 16,
-                            color: Colors.teal.shade600,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'View / Edit',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.teal.shade600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                Container(width: 1, height: 40, color: Colors.grey.shade200),
-                Expanded(
-                  child: PopupMenuButton<String>(
-                    onSelected: (value) => _handleOrderAction(value, order),
-                    offset: const Offset(0, -120),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.more_horiz,
-                            size: 16,
-                            color: Colors.grey.shade600,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'More',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    itemBuilder: (context) {
-                      final List<PopupMenuEntry<String>> items = [
-                        const PopupMenuItem(
-                          value: 'delete',
+                Row(
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        onTap: () async {
+                          await _controller.fetchOrderItems(
+                            order.id.toString(),
+                          );
+                          _controller.setSelectedOrder(order);
+                          if (mounted) {
+                            Get.toNamed(
+                              Routes.ORDERS_DASHBOARD,
+                              preventDuplicates: false,
+                            );
+                          }
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
                           child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
-                                Icons.delete_outline,
-                                color: Colors.red,
-                                size: 18,
+                                Icons.edit_outlined,
+                                size: 16,
+                                color: Colors.teal.shade600,
                               ),
-                              SizedBox(width: 8),
-                              Text('Delete Order'),
+                              const SizedBox(width: 6),
+                              Text(
+                                'View / Edit',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.teal.shade600,
+                                ),
+                              ),
                             ],
                           ),
                         ),
-                      ];
-
-                      if (order.status?.toLowerCase() == 'pending') {
-                        items.addAll([
-                          const PopupMenuItem(
-                            value: 'add_to_cart',
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.shopping_cart_outlined,
-                                  color: Colors.orange,
-                                  size: 18,
+                      ),
+                    ),
+                    Container(
+                      width: 1,
+                      height: 40,
+                      color: Colors.grey.shade200,
+                    ),
+                    Expanded(
+                      child: PopupMenuButton<String>(
+                        onSelected: (value) => _handleOrderAction(value, order),
+                        offset: const Offset(0, -120),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.more_horiz,
+                                size: 16,
+                                color: Colors.grey.shade600,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'More',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey.shade600,
                                 ),
-                                SizedBox(width: 8),
-                                Text('Add to Cart'),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                          const PopupMenuItem(
-                            value: 'cancel',
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.cancel_outlined,
-                                  color: Colors.grey,
-                                  size: 18,
-                                ),
-                                SizedBox(width: 8),
-                                Text('Cancel Order'),
-                              ],
+                        ),
+                        itemBuilder: (context) {
+                          final List<PopupMenuEntry<String>> items = [
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.delete_outline,
+                                    color: Colors.red,
+                                    size: 18,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text('Delete Order'),
+                                ],
+                              ),
                             ),
-                          ),
-                        ]);
-                      }
+                          ];
 
-                      return items;
-                    },
-                  ),
+                          if (order.status?.toLowerCase() == 'pending') {
+                            items.addAll([
+                              const PopupMenuItem(
+                                value: 'add_to_cart',
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.shopping_cart_outlined,
+                                      color: Colors.orange,
+                                      size: 18,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text('Add to Cart'),
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuItem(
+                                value: 'cancel',
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.cancel_outlined,
+                                      color: Colors.grey,
+                                      size: 18,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text('Cancel Order'),
+                                  ],
+                                ),
+                              ),
+                            ]);
+                          }
+
+                          return items;
+                        },
+                      ),
+                    ),
+                  ],
                 ),
+                // View Batch button - only shown when batch has orders
+                if (order.batchInfo != null &&
+                    (order.batchInfo!.orders?.isNotEmpty ?? false))
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        top: BorderSide(color: Colors.grey.shade200),
+                      ),
+                    ),
+                    child: InkWell(
+                      onTap: () => _showBatchInfoDialog(order),
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(16),
+                        bottomRight: Radius.circular(16),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.inventory_2_outlined,
+                              size: 16,
+                              color: Colors.indigo.shade600,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'View Batch Info',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.indigo.shade600,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.indigo.shade50,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                '${order.batchInfo!.totalOrders ?? 0}',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.indigo.shade700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -1779,93 +1854,87 @@ class _OrdersScreenState extends State<OrdersScreen>
     }
   }
 
-  // ─── ORDER ITEMS (Cached - no FutureBuilder rebuild) ───
+  // ─── ORDER ITEMS (Eager loaded - no FutureBuilder) ───
   Widget _buildOrderItemsRow(Order order) {
-    return FutureBuilder<List<dynamic>>(
-      future: _getCachedOrderItems(order.id.toString()),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Row(
-            children: [
-              Icon(
-                Icons.inventory_2_outlined,
-                size: 14,
-                color: Colors.grey.shade400,
-              ),
-              const SizedBox(width: 6),
-              SizedBox(
-                width: 14,
-                height: 14,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.grey.shade400,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                'Loading items...',
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-              ),
-            ],
-          );
-        }
+    final orderId = order.id.toString();
 
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Row(
-            children: [
-              Icon(
-                Icons.inventory_2_outlined,
-                size: 14,
-                color: Colors.grey.shade400,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                'No items',
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-              ),
-            ],
-          );
-        }
-
-        final items = snapshot.data!;
-        return Row(
-          children: [
-            Icon(
-              Icons.inventory_2_outlined,
-              size: 14,
-              color: Colors.grey.shade600,
+    // Still loading or not yet loaded
+    if (!_orderItemsCache.containsKey(orderId)) {
+      return Row(
+        children: [
+          Icon(
+            Icons.inventory_2_outlined,
+            size: 14,
+            color: Colors.grey.shade400,
+          ),
+          const SizedBox(width: 6),
+          SizedBox(
+            width: 14,
+            height: 14,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Colors.grey.shade400,
             ),
-            const SizedBox(width: 8),
-            ...items
-                .take(4)
-                .map(
-                  (item) => Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: _buildOrderItemThumb(item),
-                  ),
-                ),
-            if (items.length > 4)
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(
-                  child: Text(
-                    '+${items.length - 4}',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            'Loading items...',
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+          ),
+        ],
+      );
+    }
+
+    final items = _orderItemsCache[orderId]!;
+    if (items.isEmpty) {
+      return Row(
+        children: [
+          Icon(
+            Icons.inventory_2_outlined,
+            size: 14,
+            color: Colors.grey.shade400,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            'No items',
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+          ),
+        ],
+      );
+    }
+
+    return Row(
+      children: [
+        Icon(Icons.inventory_2_outlined, size: 14, color: Colors.grey.shade600),
+        const SizedBox(width: 8),
+        ...items
+            .take(4)
+            .map(
+              (item) => Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: _buildOrderItemThumb(item),
+              ),
+            ),
+        if (items.length > 4)
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: Text(
+                '+${items.length - 4}',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade600,
                 ),
               ),
-          ],
-        );
-      },
+            ),
+          ),
+      ],
     );
   }
 
@@ -1897,6 +1966,384 @@ class _OrdersScreenState extends State<OrdersScreen>
                 size: 16,
                 color: Colors.grey.shade400,
               ),
+    );
+  }
+
+  // ─── BATCH INFO DIALOG ───
+  void _showBatchInfoDialog(Order order) {
+    final batch = order.batchInfo!;
+    final batchOrders = batch.orders ?? [];
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 24,
+          ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(dialogContext).size.height * 0.75,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: const BoxDecoration(
+                    color: Colors.teal,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.inventory_2_rounded,
+                            color: Colors.white,
+                            size: 22,
+                          ),
+                          const SizedBox(width: 8),
+                          const Expanded(
+                            child: Text(
+                              'Order Batch Details',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () => Navigator.of(dialogContext).pop(),
+                            borderRadius: BorderRadius.circular(20),
+                            child: const Padding(
+                              padding: EdgeInsets.all(4),
+                              child: Icon(
+                                Icons.close,
+                                size: 20,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (batch.sessionId != null &&
+                          batch.sessionId!.isNotEmpty &&
+                          batch.sessionId != 'null') ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.tag,
+                              size: 14,
+                              color: Colors.white,
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                'Session: ${batch.sessionId}',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        children: [
+                          _buildBatchInfoChip(
+                            Icons.shopping_bag_outlined,
+                            'Total Orders: ${batch.totalOrders ?? batchOrders.length}',
+                          ),
+                          if (batch.orderPosition != null)
+                            _buildBatchInfoChip(
+                              Icons.format_list_numbered,
+                              'Position: ${batch.orderPosition}',
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                // Orders list - card based responsive layout
+                if (batchOrders.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(
+                      'No orders in this batch',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                  )
+                else
+                  Flexible(
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      itemCount: batchOrders.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      itemBuilder: (ctx, index) {
+                        final batchOrder = batchOrders[index];
+                        final bOrderId =
+                            batchOrder['order_number']?.toString() ??
+                            batchOrder['id']?.toString() ??
+                            '--';
+                        final bShopName =
+                            batchOrder['shop']?['name']?.toString() ?? 'N/A';
+                        final bAmount =
+                            (batchOrder['order_total'] is num)
+                                ? (batchOrder['order_total'] as num)
+                                    .toStringAsFixed(2)
+                                : batchOrder['order_total']?.toString() ??
+                                    '0.00';
+                        final bStatus =
+                            batchOrder['status']?.toString() ?? 'unknown';
+
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.grey.shade200),
+                          ),
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Column(
+                                  children: [
+                                    // Order # and Status
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          '#$bOrderId',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.teal.shade700,
+                                          ),
+                                        ),
+                                        _buildStatusChip(bStatus),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    // Shop and Amount
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                Icons.store_outlined,
+                                                size: 14,
+                                                color: Colors.grey.shade500,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Expanded(
+                                                child: Text(
+                                                  bShopName,
+                                                  style: const TextStyle(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Text(
+                                          '\$$bAmount',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.green.shade700,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // View Details button
+                              Container(
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    top: BorderSide(
+                                      color: Colors.grey.shade200,
+                                    ),
+                                  ),
+                                ),
+                                child: InkWell(
+                                  onTap:
+                                      () => _navigateToOrderFromBatch(
+                                        dialogContext,
+                                        batchOrder,
+                                      ),
+                                  borderRadius: const BorderRadius.only(
+                                    bottomLeft: Radius.circular(10),
+                                    bottomRight: Radius.circular(10),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.visibility_outlined,
+                                          size: 14,
+                                          color: Colors.teal.shade600,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'View Details',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.teal.shade600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                // Footer
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      top: BorderSide(color: Colors.grey.shade200),
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(16),
+                      bottomRight: Radius.circular(16),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.grey.shade700,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
+                        ),
+                        child: const Text(
+                          'Close',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// Navigate to order detail from batch dialog.
+  /// Fetches full order data from API since batch orders are raw maps.
+  Future<void> _navigateToOrderFromBatch(
+    BuildContext dialogContext,
+    Map<String, dynamic> batchOrder,
+  ) async {
+    Navigator.of(dialogContext).pop();
+
+    // Show loading
+    Get.dialog(
+      const Center(child: CircularProgressIndicator(color: Colors.teal)),
+      barrierDismissible: false,
+    );
+
+    try {
+      // Fetch full order by ID from API
+      final fullOrder = await _controller.fetchSingleOrder(
+        batchOrder['id'].toString(),
+      );
+
+      // Close loading
+      if (Get.isDialogOpen == true) Get.back();
+
+      if (fullOrder != null) {
+        _controller.setSelectedOrder(fullOrder);
+        if (mounted) {
+          Get.toNamed(Routes.ORDERS_DASHBOARD, preventDuplicates: false);
+        }
+      } else {
+        if (mounted) _showErrorSnackbar('Failed to load order details');
+      }
+    } catch (e) {
+      if (Get.isDialogOpen == true) Get.back();
+      if (mounted) _showErrorSnackbar('Failed to load order details');
+    }
+  }
+
+  Widget _buildBatchInfoChip(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.indigo.shade100),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: Colors.indigo.shade600),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.indigo.shade700,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

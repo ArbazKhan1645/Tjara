@@ -320,7 +320,7 @@ class AdminCarsService extends GetxService {
       await _saveProductsToCache(products);
     } catch (e, stackTrace) {
       Logger().e('Error fetching cars', error: e, stackTrace: stackTrace);
-      _showErrorSnackbar('Failed to load cars: ${e.toString()}');
+      // _showErrorSnackbar('Failed to load cars: ${e.toString()}');
     } finally {
       isLoading.value = false;
       isRefreshing.value = false;

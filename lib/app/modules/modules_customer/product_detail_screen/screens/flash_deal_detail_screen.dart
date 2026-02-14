@@ -1688,6 +1688,7 @@ class _FlashDealDetailScreenState extends State<FlashDealDetailScreen>
                 children: [
                   _buildFlashDealBanner(),
                   const SizedBox(height: 10),
+                  _buildPromotionBadge(product),
                   _buildPriceSection(),
                   const SizedBox(height: 6),
                   Row(
@@ -1869,6 +1870,89 @@ class _FlashDealDetailScreenState extends State<FlashDealDetailScreen>
     );
   }
 
+  // ══════════════════════════════════════════════════════════════════════════
+  // PROMOTION BANNER WIDGETS
+  // ══════════════════════════════════════════════════════════════════════════
+  Widget _buildPromotionBadge(SingleModelClass? product) {
+    final promotions = product?.product?.appliedPromotions;
+    if (promotions == null || promotions.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final promo = promotions.last;
+    final discountValue = double.tryParse(promo.discountValue ?? '0') ?? 0;
+    if (discountValue <= 0) return const SizedBox.shrink();
+
+    final isPercentage = promo.discountType == 'percentage';
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF26A69A), Color(0xFF00897B)],
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.bolt, size: 14, color: Colors.white),
+          const SizedBox(width: 4),
+          Text(
+            isPercentage
+                ? '${discountValue.toStringAsFixed(1)}% Discount'
+                : '\$${discountValue.toStringAsFixed(2)} Off',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          _buildPromotionRibbon(product),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPromotionRibbon(SingleModelClass? product) {
+    final promotions = product?.product?.appliedPromotions;
+    if (promotions == null || promotions.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final promo = promotions.last;
+
+    final name = (promo.name ?? '').toUpperCase();
+    if (name.isEmpty) return const SizedBox.shrink();
+
+    return Expanded(
+      child: Container(
+        margin: const EdgeInsets.only(left: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFfda730), Color(0xFFfda730)],
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Center(
+          child: Text(
+            name,
+            maxLines: 1,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildFlashDealBanner() {
     return Container(
       height: 50,
@@ -1972,22 +2056,15 @@ class _FlashDealDetailScreenState extends State<FlashDealDetailScreen>
     if (_currentProduct?.salePrice != null &&
         _currentProduct!.salePrice != 0 &&
         _currentProduct!.salePrice != 0.00) {
+      final hasDiscount =
+          _currentProduct!.price != null &&
+          _currentProduct!.salePrice! < _currentProduct!.price!;
       return Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Text(
-            '\$${_currentProduct!.salePrice!.toStringAsFixed(2)}',
-            style: const TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-              color: _primaryColor,
-            ),
-          ),
-          if (_currentProduct!.price != null &&
-              _currentProduct!.salePrice! < _currentProduct!.price!) ...[
-            const SizedBox(width: 8),
+          if (hasDiscount)
             Padding(
-              padding: const EdgeInsets.only(bottom: 3),
+              padding: const EdgeInsets.only(bottom: 5),
               child: Text(
                 '\$${_currentProduct!.price!.toStringAsFixed(2)}',
                 style: TextStyle(
@@ -1997,7 +2074,15 @@ class _FlashDealDetailScreenState extends State<FlashDealDetailScreen>
                 ),
               ),
             ),
-          ],
+          if (hasDiscount) const SizedBox(width: 6),
+          Text(
+            '\$${_currentProduct!.salePrice!.toStringAsFixed(2)}',
+            style: const TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+              color: _primaryColor,
+            ),
+          ),
         ],
       );
     }

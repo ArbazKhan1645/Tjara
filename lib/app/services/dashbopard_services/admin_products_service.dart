@@ -327,7 +327,7 @@ class AdminProductsService extends GetxService {
       await _saveProductsToCache(products);
     } catch (e, stackTrace) {
       Logger().e('Error fetching products', error: e, stackTrace: stackTrace);
-      _showErrorSnackbar('Failed to load products: ${e.toString()}');
+      // _showErrorSnackbar('Failed to load products: ${e.toString()}');
     } finally {
       isLoading.value = false;
       isRefreshing.value = false;

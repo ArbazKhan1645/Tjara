@@ -114,7 +114,7 @@ class Product {
   // New nullable fields
   final bool? hasGlobalPromotion;
   final dynamic discountInfo;
-  final List<dynamic>? appliedPromotions;
+  final List<AppliedPromotion>? appliedPromotions;
   final ProductBids? bids;
   final ProductDelivery? delivery;
   final num? estimatedDeliveryCost;
@@ -160,7 +160,7 @@ class Product {
     // New nullable fields
     bool? hasGlobalPromotion,
     dynamic discountInfo,
-    List<dynamic>? appliedPromotions,
+    List<AppliedPromotion>? appliedPromotions,
     ProductBids? bids,
     ProductDelivery? delivery,
     num? estimatedDeliveryCost,
@@ -274,7 +274,9 @@ class Product {
       appliedPromotions:
           json["applied_promotions"] == null
               ? null
-              : List<dynamic>.from(json["applied_promotions"]),
+              : List<AppliedPromotion>.from(
+                json["applied_promotions"].map((x) => AppliedPromotion.fromJson(x)),
+              ),
       bids: json["bids"] == null ? null : ProductBids.fromJson(json["bids"]),
       delivery:
           json["delivery"] == null
@@ -324,7 +326,7 @@ class Product {
     // New nullable fields
     "has_global_promotion": hasGlobalPromotion,
     "discount_info": discountInfo,
-    "applied_promotions": appliedPromotions,
+    "applied_promotions": appliedPromotions?.map((e) => e.toJson()).toList(),
     "bids": bids?.toJson(),
     "delivery": delivery?.toJson(),
     "estimated_delivery_cost": estimatedDeliveryCost,
@@ -335,6 +337,75 @@ class Product {
   @override
   String toString() {
     return "$id, $prevId, $shopId, $slug, $name, $productType, $productGroup, $thumbnailId, $description, $stock, $isFeatured, $isDeal, $price, $salePrice, $reservedPrice, $auctionStartTime, $auctionEndTime, $winnerId, $minPrice, $maxPrice, $saleStartTime, $saleEndTime, $status, $createdAt, $updatedAt, $thumbnail, $shop, $categories, $brands, $video, $model, $year, $meta, $gallery, ";
+  }
+}
+
+// ==================== APPLIED PROMOTION ====================
+
+class AppliedPromotion {
+  AppliedPromotion({
+    this.id,
+    this.shopId,
+    this.name,
+    this.description,
+    this.discountType,
+    this.applyTo,
+    this.discountValue,
+    this.startDate,
+    this.endDate,
+    this.status,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  final String? id;
+  final String? shopId;
+  final String? name;
+  final String? description;
+  final String? discountType;
+  final String? applyTo;
+  final String? discountValue;
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final String? status;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  factory AppliedPromotion.fromJson(Map<String, dynamic> json) {
+    return AppliedPromotion(
+      id: json["id"],
+      shopId: json["shop_id"],
+      name: json["name"],
+      description: json["description"],
+      discountType: json["discount_type"],
+      applyTo: json["apply_to"],
+      discountValue: json["discount_value"]?.toString(),
+      startDate: DateTime.tryParse(json["start_date"] ?? ""),
+      endDate: DateTime.tryParse(json["end_date"] ?? ""),
+      status: json["status"],
+      createdAt: DateTime.tryParse(json["created_at"] ?? ""),
+      updatedAt: DateTime.tryParse(json["updated_at"] ?? ""),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "shop_id": shopId,
+    "name": name,
+    "description": description,
+    "discount_type": discountType,
+    "apply_to": applyTo,
+    "discount_value": discountValue,
+    "start_date": startDate?.toIso8601String(),
+    "end_date": endDate?.toIso8601String(),
+    "status": status,
+    "created_at": createdAt?.toIso8601String(),
+    "updated_at": updatedAt?.toIso8601String(),
+  };
+
+  @override
+  String toString() {
+    return "AppliedPromotion(name: $name, discountType: $discountType, discountValue: $discountValue)";
   }
 }
 

@@ -784,11 +784,15 @@ class ApplyPromotionWidget extends StatelessWidget {
 
   Widget _buildPromotionsList() {
     return Obx(() {
-      if (controller.isLoading.value && controller.promotions.isEmpty) {
+      var data =
+          controller.promotions
+              .where((e) => e.isCurrentlyActive == true)
+              .toList();
+      if (controller.isLoading.value && data.isEmpty) {
         return _buildShimmerList(5);
       }
 
-      if (controller.promotions.isEmpty) {
+      if (data.isEmpty) {
         return _buildEmptyState(
           icon: Icons.local_offer_outlined,
           message: 'No promotions available',
@@ -838,9 +842,9 @@ class ApplyPromotionWidget extends StatelessWidget {
             constraints: const BoxConstraints(maxHeight: 350),
             child: ListView.builder(
               shrinkWrap: true,
-              itemCount: controller.promotions.length,
+              itemCount: data.length,
               itemBuilder: (context, index) {
-                final promotion = controller.promotions[index];
+                final promotion = data[index];
                 return _buildPromotionItem(promotion);
               },
             ),
